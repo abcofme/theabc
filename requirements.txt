@@ -1,0 +1,12 @@
+aiogram[i18n]==3.4.1
+SQLAlchemy[asyncio]==2.0.29
+alembic==1.13.1
+pydantic==2.5.*
+pydantic-settings==2.2.1
+psycopg2-binary==2.9.9
+asyncpg==0.29.0
+loguru==0.7.2
+asyncio-throttle==1.0.2
+APScheduler==3.10.4
+redis==5.0.3
+yookassa==3.1.0

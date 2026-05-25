@@ -1,0 +1,189 @@
+# Russian translations for PROJECT.
+# Copyright (C) 2024 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2024-04-16 12:56+0500\n"
+"PO-Revision-Date: 2024-04-16 12:56+0500\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.14.0\n"
+
+msgid "messages.start.welcome"
+msgstr "Приветствуем на пути к самопознанию!\n"
+"Вы находитесь в боте «Азбука Я», который поможет вам лучше узнать себя с помощью психодиагностических тестов.\n\n"
+"Зачем это вам?\n\n"
+"- Самоанализ: Откройте для себя новые грани своей личности и узнайте свои сильные стороны и научитесь работать со слабыми.\n\n"
+"- Личностный рост: Тесты помогут вам определить направления для саморазвития и профессионального роста.\n\n"
+"- Научный подход: Наши тесты основаны только на проверенных методиках, их разработкой занималась команда ведущих психологов и психодиагностов, что гарантирует точный и информативный результат.\n\n"
+"Начните тестирование прямо сейчас и откройте новые горизонты вашего внутреннего мира!\n\n"
+"Если вам что-либо не понятно в ваших результатах, вы хотите более подробную диагностику или остались не раскрытые вопросы, то после прохождения тестов советуем записаться на консультацию к нашим квалифицированным специалистам через кнопку «👨‍💼Связаться с психологом»"
+
+msgid "message.admin.choose_category"
+msgstr "Бот «Азбука Я» предлагаем тесты в следующих категориях:"
+
+msgid "message.admin.insert_or_choose_test_name"
+msgstr "🔍 Введите или выберите название теста"
+
+msgid "message.admin.insert_test_description"
+msgstr "🔍 Введите описание теста"
+
+msgid "message.admin.insert_or_choose_question_name"
+msgstr "🔍 Введите или выберите название вопроса"
+
+msgid "message.admin.insert_or_choose_answer_name"
+msgstr "🔍 Введите название ответа или нажмите, чтобы удалить"
+
+msgid "message.successful.deleted"
+msgstr "✅ Успешно удалено!"
+
+msgid "message.admin.insert_answer_points"
+msgstr "Введите число баллов за ответ"
+
+msgid "message.tests.choose_category"
+msgstr "📂 Выберите категорию тестов"
+
+msgid "message.tests.choose_type"
+msgstr "📝 Выберите тип тестов"
+
+msgid "message.tests.payment"
+msgstr "💳 Ссылка на оплату: {url}\n\n"
+
+msgid "messages.test.choose_test"
+msgstr "📋 Выберите тест из списка\n\n"
+
+msgid "messages.test.choose_test.no_free_tests"
+msgstr "📋 В данной категории нет бесплатных пробных тестов\n\n"
+
+msgid "messages.tests.result_does_not_exist"
+msgstr "❌ Результатов для данного тестирования ещё нет"
+
+msgid "messages.tests.result"
+msgstr "Бот «Азбука Я» поздравляет вас! Вы завершили тест. Вот ваш результат:\n\n"
+"{result}\n\n"
+"Понравилось? Пройдите ещё тесты и узнайте о себе больше. Выберите следующий тест из списка или получите полный доступ ко всем тестам за 999 рублей!\n\n"
+"Бот «Азбука Я» благодарит вас, что прошли тест! 😊 Я рад быть вашим проводником на пути к самопознанию. Не забудьте поделиться ботом «Азбука Я» с друзьями и возвращайтесь за новыми познаниями себя и профессиональным разбором вашей проблемы специалистом!"
+
+msgid "message.payment_description.buy_all_tests"
+msgstr "Покупка всех тестирований в боте"
+
+msgid "message.payment_description.buy_current_test"
+msgstr "Покупка всех тестирований в категории {name}"
+
+msgid "message.payment.correct"
+msgstr "Здравствуйте, {name},\n\n"
+"Поздравляем! Вы сделали важный шаг на пути к самопознанию и личностному росту.\n\n"
+"Мы искренне благодарим вас за покупку подписки к полному доступу к тестированию по всем категориям «Азбука Я». Ваша поддержка вдохновляет нас продолжать разрабатывать и улучшать наш сервис, чтобы помочь вам лучше понять себя и раскрыть свой потенциал.\n"
+"Что теперь?\n"
+"1. Начните исследование: Пройдите все доступные тесты и узнайте о себе больше. \n"
+"2. Получите ценные рекомендации: После каждого пройденного теста вам будут даны советы для личного и профессионального роста.\n"
+"3. Оставайтесь на связи: Мы всегда готовы помочь и ответить на все ваши вопросы.\n\n"
+"Если у вас возникли сложности или вопросы, служба поддержки чат-бота «Азбука Я» всегда готова помочь.\n\n"
+"Важно помнить: результаты тестов актуальны для текущего момента и могут измениться со временем. Если у вас возникнут сильные эмоции или есть психические расстройства, мы рекомендуем обратиться к специалисту.\n\n"
+"Мы рады быть вашим проводником в мире самопознания и личностного развития. Не забудьте поделиться вашим опытом с друзьями и пригласить их присоединиться к нашему сообществу.\n\n"
+"Бот «Азбука Я». Желает вам увлекательного и плодотворного путешествия к самопознанию!\n\n"
+"С уважением,\n"
+"Команда «Азбука Я»\n"
+
+msgid "message.payment.not_correct"
+msgstr "🚫 Оплата ещё не прошла или произошла ошибка..."
+
+msgid "messages.profile.results"
+msgstr "📊<b>Результаты ваших тестирований</b>📊\n\n"
+
+msgid "messages.psychologist.request_success.for_chat"
+msgstr "🙋‍♀️<b>Новая заявка психологу</b>🙋‍♀️\n"
+"Пользователь ID{user_id}\n"
+"Username: {username}\n"
+"Имя в телеграме: {name}"
+
+msgid "messages.tech_support.request_success.for_chat"
+msgstr "🙋‍♀️<b>Новая заявка в тех. поддержку</b>🙋‍♀️\n"
+"Пользователь ID{user_id}\n"
+"Username: {username}\n"
+"Имя в телеграме: {name}\n"
+"Запрос:\n\n{request}"
+
+msgid "messages.psychologist.request_success.for_user"
+msgstr "Ваша заявка была отправлена психологу и находится в рассмотрении!\n"
+"Откройте свой профиль, чтобы с вами могли связаться"
+
+msgid "messages.tech_support.request_success.for_user"
+msgstr "Ваша заявка была отправлена в тех. поддержку и находится в рассмотрении!\n"
+"Откройте свой профиль, чтобы с вами могли связаться"
+
+msgid "messages.admin.menu"
+msgstr "👨‍💻<b>Админская панель</b>👨‍💻\n\n"
+"Переходы по ссылкам: \n\n"
+"{by_links}\n\n"
+"🔑 <b>Чтобы получить новую ссылку, отправьте уникальный идентификатор</b>"
+
+msgid "messages.admin.mailings.create.insert_message"
+msgstr "Отправьте сообщение, которое хотите использовать для рассылки"
+
+msgid "messages.admin.mailings.accept_create"
+msgstr "Подтвердите отправку сейчас рассылки с данным сообщением"
+
+msgid "messages.admin.mailings.create.successful"
+msgstr "Рассылка успешно создана и начнётся в течение минуты"
+
+msgid "buttons.admin.mailings.create"
+msgstr "Создать рассылку"
+
+msgid "buttons.admin.mailings.accept"
+msgstr "Начать рассылку"
+
+msgid "buttons.back"
+msgstr "🔙 Назад"
+
+msgid "buttons.left"
+msgstr "Назад ⏪"
+
+msgid "buttons.right"
+msgstr "Далее ⏩"
+
+msgid "buttons.profile"
+msgstr "📓 Профиль"
+
+msgid "buttons.tests"
+msgstr "🧑‍💻 Тесты"
+
+msgid "buttons.free_tests"
+msgstr "🆓 Пробные тесты"
+
+msgid "buttons.full_tests"
+msgstr "💵 Полная версия - {price}Р"
+
+msgid "buttons.full_tests.opened"
+msgstr "💎 Полная версия"
+
+msgid "buttons.buy_all_tests_btn"
+msgstr "💰 Купить все тесты - 999Р"
+
+msgid "buttons.psychologist"
+msgstr "👨‍⚕️ Связаться с психологом"
+
+msgid "buttons.previous_question"
+msgstr "🔙 Предыдущий вопрос"
+
+msgid "buttons.check_payment"
+msgstr "Я оплатил!"
+
+msgid "buttons.admin.menu"
+msgstr "📜 Админ-панель"
+
+msgid "buttons.tech_support"
+msgstr "Техническая поддержка"
+
+msgid "buttons.referal"
+msgstr "Реферальная программа"
