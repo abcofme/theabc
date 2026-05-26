@@ -18,7 +18,7 @@ class ResultDAO:
                     and_(
                         Result.test_id == test_id,
                         Result.range_from <= points,
-                        Result.range_to > points,
+                        Result.range_to >= points,
                     )
                 )
             )
