@@ -10,3 +10,5 @@ asyncio-throttle==1.0.2
 APScheduler==3.10.4
 redis==5.0.3
 yookassa==3.1.0
+fastapi==0.111.0
+uvicorn==0.29.0
