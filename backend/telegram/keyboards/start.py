@@ -1,4 +1,5 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types.web_app_info import WebAppInfo
 from aiogram.utils.i18n import gettext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
@@ -6,6 +7,12 @@ from backend.database.models import User
 from backend.telegram.callback_data.profile import Profile, Psychologist, TechSupport, MainMenu, Referal
 from backend.telegram.callback_data.tests import Tests
 from backend.telegram.keyboards.admin.menu import admin_menu_btn
+from settings import settings
+
+diary_btn = InlineKeyboardButton(
+    text="Личный дневник 📝",
+    web_app=WebAppInfo(url=settings.WEB_APP_URL)
+)
 
 profile_btn = InlineKeyboardButton(
     text=gettext("buttons.profile"),
@@ -40,37 +47,19 @@ referal_btn = InlineKeyboardButton(
 
 def start_kb(user: User) -> InlineKeyboardMarkup:
     buttons = [
-        [
-            tests_btn
-        ],
-        [
-            profile_btn
-        ],
-        [
-            psychologist_btn
-        ],
-        [
-            tech_support_btn
-        ],
-        [
-            referal_btn
-        ]
+        [diary_btn],
+        [tests_btn],
+        [profile_btn],
+        [psychologist_btn],
+        [tech_support_btn],
+        [referal_btn]
     ]
     if user.admin:
-        buttons.append([
-            admin_menu_btn
-        ])
-    return InlineKeyboardBuilder(
-        buttons
-    ).as_markup()
-
+        buttons.append([admin_menu_btn])
+    return InlineKeyboardBuilder(buttons).as_markup()
 
 def menu_kb() -> InlineKeyboardMarkup:
     buttons = [
-        [
-            main_menu_btn
-        ],
+        [main_menu_btn],
     ]
-    return InlineKeyboardBuilder(
-        buttons
-    ).as_markup()
+    return InlineKeyboardBuilder(buttons).as_markup()

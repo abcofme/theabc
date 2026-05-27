@@ -10,7 +10,7 @@ class Settings(BaseSettings):
 
     DEBUG: bool = False
     BOT_TOKEN: str
-
+    WEB_APP_URL: str
     ACCOUNT_ID: str
     SECRET_KEY: str
     BOT_LINK: str
