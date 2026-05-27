@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import WebApp from '@twa-dev/sdk';
 import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X } from 'lucide-react';
 
-// ВНИМАНИЕ: Замените на реальный IP или домен вашего сервера
+const WebApp = window.Telegram.WebApp;
 const API_URL = "http://89.19.216.208:8000";
 
 export default function ProfileTab() {

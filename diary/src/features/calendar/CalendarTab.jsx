@@ -16,9 +16,8 @@ import {
 } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { ChevronDown, X, Plus, BookOpen, Check } from 'lucide-react';
-import WebApp from '@twa-dev/sdk';
 
-// ВНИМАНИЕ: Замените на реальный IP или домен вашего сервера
+const WebApp = window.Telegram.WebApp;
 const API_URL = "http://89.19.216.208:8000";
 
 export default function CalendarTab() {

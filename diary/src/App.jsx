@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import WebApp from '@twa-dev/sdk';
 import { Calendar as CalendarIcon, Sparkles, User } from 'lucide-react';
 import CalendarTab from './features/calendar/CalendarTab';
 import ProfileTab from './features/profile/ProfileTab';
+
+const WebApp = window.Telegram.WebApp;
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('diary');
