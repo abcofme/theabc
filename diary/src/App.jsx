@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import CalendarTab from './features/calendar/CalendarTab';
 import ProfileTab from './features/profile/ProfileTab'; // <- Добавить эту строку
 import { Calendar as CalendarIcon, Sparkles, User } from 'lucide-react';
-import CalendarTab from './features/calendar/CalendarTab';
 
 export default function App() {
   // Состояние текущей активной вкладки

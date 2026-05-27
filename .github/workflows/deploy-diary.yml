@@ -1,0 +1,47 @@
+name: Deploy Diary to GitHub Pages
+
+on:
+  push:
+    # Замените 'main' на 'master', если ваша основная ветка называется иначе
+    branches:
+      - main 
+    # Сценарий будет запускаться только при изменениях во фронтенде
+    paths:
+      - 'diary/**'
+      - '.github/workflows/deploy-diary.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          # Указываем путь к lock-файлу монорепозитория для кэширования
+          cache-dependency-path: diary/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd diary
+          npm ci
+
+      - name: Build project
+        run: |
+          cd diary
+          npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Указываем папку дистрибутива внутри директории фронтенда
+          publish_dir: ./diary/dist
