@@ -6,6 +6,8 @@ services:
     restart: always
     depends_on:
       - redis
+    ports:
+      - "8000:8000"
 
   redis:
     env_file: .env
@@ -20,7 +22,6 @@ services:
       - redis-data:/data
     ports:
       - ${REDIS_PORT}:6379
-      - "8000:8000"
 
 volumes:
   redis-data:
