@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   format, 
   startOfMonth, 
@@ -11,10 +11,15 @@ import {
   isToday, 
   setMonth, 
   setYear,
-  getYear
+  getYear,
+  parseISO
 } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { ChevronDown, X, Plus, BookOpen, Check } from 'lucide-react';
+import WebApp from '@twa-dev/sdk';
+
+// ВНИМАНИЕ: Замените на реальный IP или домен вашего сервера
+const API_URL = "http://89.19.216.208:8000";
 
 export default function CalendarTab() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -22,10 +27,8 @@ export default function CalendarTab() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  const [diaryEntries, setDiaryEntries] = useState([
-    { id: 1, date: new Date(), event: 'Событие 1', reaction: 'Реакция 1' },
-    { id: 2, date: new Date(), event: 'Ваня доебывал меня на тему, люблю ли я Иисуса', reaction: 'Заебался' }
-  ]);
+  // Начинаем с пустого массива, данные придут с сервера
+  const [diaryEntries, setDiaryEntries] = useState([]);
 
   const [newEvent, setNewEvent] = useState('');
   const [newReaction, setNewReaction] = useState('');
@@ -42,29 +45,83 @@ export default function CalendarTab() {
   const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
   const now = new Date();
 
+  // === 1. ЗАГРУЗКА ДАННЫХ С СЕРВЕРА ПРИ СМЕНЕ МЕСЯЦА ===
+  useEffect(() => {
+    if (WebApp.initData) {
+      const year = getYear(currentMonth);
+      const month = currentMonth.getMonth() + 1; // getMonth возвращает 0-11
+      
+      fetch(`${API_URL}/api/diary?year=${year}&month=${month}`, {
+        headers: {
+          "Authorization": `Bearer ${WebApp.initData}`
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        // Преобразуем строковые даты из БД обратно в объекты Date
+        const formattedData = data.map(entry => ({
+          ...entry,
+          date: parseISO(entry.date)
+        }));
+        setDiaryEntries(formattedData);
+      })
+      .catch(err => console.error("Ошибка загрузки дневника:", err));
+    }
+  }, [currentMonth]); // Перезапрашиваем при смене месяца
+
   const handleDayClick = (date) => {
     setSelectedDate(date);
     setIsSheetOpen(true);
   };
 
-  const handleAddEntry = (e) => {
+  // === 2. СОХРАНЕНИЕ НОВОЙ ЗАПИСИ НА СЕРВЕР ===
+  const handleAddEntry = async (e) => {
     e.preventDefault();
-    if (!newEvent.trim() || !newReaction.trim()) return;
+    if (!newEvent.trim() || !newReaction.trim() || !selectedDate) return;
 
-    const newEntry = {
-      id: Date.now(),
-      date: selectedDate,
-      event: newEvent,
-      reaction: newReaction
-    };
+    // Форматируем дату для бэкенда (YYYY-MM-DD)
+    const dateStr = format(selectedDate, 'yyyy-MM-dd');
 
-    setDiaryEntries([...diaryEntries, newEntry]);
-    setNewEvent('');
-    setNewReaction('');
+    try {
+      const response = await fetch(`${API_URL}/api/diary`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${WebApp.initData}`
+        },
+        body: JSON.stringify({
+          date: dateStr,
+          event: newEvent,
+          reaction: newReaction
+        })
+      });
+
+      if (response.ok) {
+        const resData = await response.json();
+        
+        // Добавляем новую запись в локальный стейт, чтобы она сразу появилась на экране
+        const newEntry = {
+          id: resData.id,
+          date: selectedDate,
+          event: newEvent,
+          reaction: newReaction
+        };
+
+        setDiaryEntries([...diaryEntries, newEntry]);
+        setNewEvent('');
+        setNewReaction('');
+        WebApp.HapticFeedback.notificationOccurred('success'); // Небольшая вибрация в Telegram
+      } else {
+        WebApp.showAlert("Произошла ошибка при сохранении.");
+      }
+    } catch (error) {
+      console.error("Ошибка сети:", error);
+      WebApp.showAlert("Нет связи с сервером.");
+    }
   };
 
   const activeEntries = diaryEntries.filter(entry => 
-    selectedDate && isSameDay(new Date(entry.date), selectedDate)
+    selectedDate && isSameDay(entry.date, selectedDate)
   );
 
   return (
@@ -146,7 +203,7 @@ export default function CalendarTab() {
           {dayCells.map((date, index) => {
             const isCurrentMonth = isSameMonth(date, currentMonth);
             const isDayToday = isToday(date);
-            const hasEntries = diaryEntries.some(e => isSameDay(new Date(e.date), date));
+            const hasEntries = diaryEntries.some(e => isSameDay(e.date, date));
             const isFutureDay = date > now;
 
             return (

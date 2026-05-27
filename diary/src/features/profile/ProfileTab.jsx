@@ -1,93 +1,65 @@
-import React, { useState, useEffect } from 'react';
-import { UserCircle, ClipboardList, CheckCircle2, CircleDashed } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import WebApp from '@twa-dev/sdk';
 
 export default function ProfileTab() {
-  // Состояние для хранения данных пользователя из Telegram
-  const [tgUser, setTgUser] = useState(null);
-
-  // Имитация базы данных (пока не подключен сервер на FastAPI)
-  const [tests, setTests] = useState([
-    { id: 1, title: 'Уровень тревожности (Шкала Бека)', result: 'Низкий уровень (12 баллов)' },
-    { id: 2, title: 'Опросник депрессии', result: 'Норма (4 балла)' },
-    { id: 3, title: 'Эмоциональное выгорание', result: null }, // null означает, что результат нет
-    { id: 4, title: 'Тип привязанности', result: null },
-  ]);
+  const [categories, setCategories] = useState([]);
+  
+  // Получаем данные пользователя напрямую из Telegram
+  const user = WebApp.initDataUnsafe?.user;
 
   useEffect(() => {
-    // Пытаемся получить объект WebApp из Telegram
-    const webApp = window.Telegram?.WebApp;
-    
-    // Если приложение открыто внутри Telegram, достаем юзера
-    if (webApp && webApp.initDataUnsafe?.user) {
-      setTgUser(webApp.initDataUnsafe.user);
-    } else {
-      // Если мы открыли сайт просто в браузере (как сейчас на localhost), 
-      // ставим заглушку, чтобы было удобно верстать
-      setTgUser({
-        first_name: 'Разработчик',
-        last_name: 'Проекта',
-        username: 'dev_azbuka',
-        photo_url: '' // Пустая строка покажет стандартную иконку
-      });
+    if (WebApp.initData) {
+      // Запрашиваем прогресс тестов из нашей общей базы
+      // ВАЖНО: Замените IP_ВАШЕГО_СЕРВЕРА на реальный IP
+      fetch("http://89.19.216.208:8000/api/profile", {
+        headers: {
+          "Authorization": `Bearer ${WebApp.initData}`
+        }
+      })
+      .then(res => res.json())
+      .then(data => setCategories(data.categories))
+      .catch(err => console.error("Ошибка загрузки профиля:", err));
     }
   }, []);
 
   return (
-    <div className="flex flex-col h-full animate-in fade-in duration-500">
-      
-      {/* ПРОФИЛЬ (Аватарка и Данные) */}
-      <div className="flex flex-col items-center mt-6 mb-8">
-        <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-emerald-500/50 bg-neutral-900 flex items-center justify-center mb-4 shadow-lg shadow-emerald-900/20">
-          {tgUser?.photo_url ? (
-            <img src={tgUser.photo_url} alt="Аватар" className="w-full h-full object-cover" />
-          ) : (
-            <UserCircle size={64} className="text-neutral-500" />
-          )}
-        </div>
-        
-        <h2 className="text-2xl font-bold text-neutral-100">
-          {tgUser ? `${tgUser.first_name} ${tgUser.last_name || ''}`.trim() : 'Загрузка...'}
-        </h2>
-        
-        {tgUser?.username && (
-          <p className="text-emerald-400 font-medium mt-1">
-            @{tgUser.username}
-          </p>
+    <div className="p-4">
+      {/* 1. Блок пользователя: Аватарка и Юзернейм */}
+      <div className="flex items-center gap-4 mb-6 p-4 bg-white rounded-xl shadow">
+        {user?.photo_url ? (
+          <img src={user.photo_url} alt="Avatar" className="w-16 h-16 rounded-full" />
+        ) : (
+          <div className="w-16 h-16 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center font-bold text-xl">
+            {user?.first_name?.[0] || '?'}
+          </div>
         )}
-      </div>
-
-      {/* СПИСОК ТЕСТОВ ИЗ БОТА */}
-      <div className="flex-1 bg-neutral-900/40 border border-neutral-800/80 rounded-3xl p-4 backdrop-blur-sm overflow-y-auto mb-2">
-        <h3 className="text-lg font-bold text-neutral-300 mb-5 flex items-center gap-2">
-          <ClipboardList size={20} className="text-emerald-500" />
-          Результаты тестов
-        </h3>
-
-        <div className="space-y-3 pb-4">
-          {tests.map(test => (
-            <div key={test.id} className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 transition-colors hover:border-neutral-700">
-              <h4 className="text-base font-semibold text-neutral-200 mb-3">
-                {test.title}
-              </h4>
-              
-              {test.result ? (
-                // Дизайн пройденного теста
-                <div className="flex items-center gap-2 text-emerald-400 text-sm font-medium bg-emerald-500/10 w-fit px-3 py-1.5 rounded-xl">
-                  <CheckCircle2 size={18} />
-                  <span>{test.result}</span>
-                </div>
-              ) : (
-                // Дизайн не пройденного теста
-                <div className="flex items-center gap-2 text-neutral-500 text-sm font-medium bg-neutral-800/50 w-fit px-3 py-1.5 rounded-xl">
-                  <CircleDashed size={18} />
-                  <span>Тест еще не пройден</span>
-                </div>
-              )}
-            </div>
-          ))}
+        <div>
+          <h2 className="text-xl font-bold">{user?.first_name}</h2>
+          <p className="text-gray-500">@{user?.username}</p>
         </div>
       </div>
 
+      {/* 2. Список категорий и тестов */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-bold">Мои тесты</h3>
+        {categories.map(cat => (
+          <div key={cat.id} className="border rounded-lg p-3 bg-white">
+            <h4 className="font-semibold mb-2">{cat.name}</h4>
+            <div className="space-y-2">
+              {cat.tests.map(test => (
+                <div key={test.id} className="flex justify-between items-center text-sm border-b pb-1 cursor-pointer">
+                  <span>{test.name}</span>
+                  {test.passed ? (
+                    <span className="text-green-500 font-medium">Пройден</span>
+                  ) : (
+                    <span className="text-red-500 font-medium">Не пройден</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
