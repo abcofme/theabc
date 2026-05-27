@@ -203,3 +203,14 @@ class Mailing(BaseModel):
     sent: Mapped[list] = mapped_column(JSONB(), default=[])
 
     user_id: Mapped[int] = mapped_column(BigInteger(), nullable=True)
+
+
+class DiaryEntry(BaseModel):
+    __tablename__ = "diary_entries"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    user: Mapped["User"] = relationship("User")
+
+    date: Mapped[date] = mapped_column(Date(), nullable=False)
+    event: Mapped[str] = mapped_column(Text(), nullable=False)
+    reaction: Mapped[str] = mapped_column(Text(), nullable=False)

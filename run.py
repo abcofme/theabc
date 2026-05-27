@@ -1,5 +1,5 @@
 import asyncio
-
+import uvicorn # <-- НОВЫЙ ИМПОРТ
 from loguru import logger
 
 from backend.database import engine
@@ -10,12 +10,11 @@ from backend.scheduler import scheduler
 from backend.telegram.bot import dp, bot
 from backend.telegram.middlewares import register_middlewares
 from migrate import run_async_upgrade
+from backend.api.main import app as fastapi_app # <-- НОВЫЙ ИМПОРТ
 
 configure_logger()
 
-
 async def start_app():
-    # -> Logging
     logger.info("-> Bot online")
 
     await create_all_tables(engine, Base.metadata)
@@ -25,16 +24,20 @@ async def start_app():
     from backend.telegram import handlers  # NOQA
 
     await bot.delete_webhook()
-
     scheduler.start()
 
+    # --- НОВЫЙ КОД ЗАПУСКА FASTAPI ---
+    config = uvicorn.Config(app=fastapi_app, host="0.0.0.0", port=8000, loop="asyncio")
+    server = uvicorn.Server(config)
+    
+    # Запускаем и бота, и сервер API одновременно
     await asyncio.gather(
+        server.serve(),
         dp.start_polling(
             bot,
             allowed_updates=dp.resolve_used_update_types(),
         )
     )
-
 
 if __name__ == '__main__':
     asyncio.run(start_app())
