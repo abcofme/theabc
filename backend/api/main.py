@@ -47,11 +47,16 @@ async def get_profile(
         if p.hardcode_value:
             user_results[p.test_id] = p.hardcode_value
         else:
+            if p.value is None:
+                user_results[p.test_id] = "Баллы: 0"
+                continue
+                
             # Ищем текстовый результат по баллам
+            # ИСПРАВЛЕНИЕ: строгое (>) на нестрогое (>=) неравенство
             res_query = select(Result).where(
                 Result.test_id == p.test_id,
                 Result.range_from <= p.value,
-                Result.range_to > p.value
+                Result.range_to >= p.value
             )
             res_obj = (await session.execute(res_query)).scalars().first()
             user_results[p.test_id] = res_obj.name.capitalize() if res_obj and res_obj.name else f"Баллы: {p.value}"
