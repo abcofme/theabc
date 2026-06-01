@@ -18,7 +18,7 @@ def async_session_db(
         engine: AsyncEngine,
         expire_on_commit: bool,
 ) -> async_sessionmaker[AsyncSession]:
-    return async_sessionmaker(engine=engine, expire_on_commit=expire_on_commit)
+    return async_sessionmaker(bind=engine, expire_on_commit=expire_on_commit)
 
 
 async def create_all_tables(engine: AsyncEngine, metadata: MetaData):
