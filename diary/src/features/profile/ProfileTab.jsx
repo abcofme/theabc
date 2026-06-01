@@ -85,7 +85,7 @@ export default function ProfileTab() {
           onClick={() => setActiveTab('reports')}
           className={`flex-1 py-2 font-bold transition-colors ${activeTab === 'reports' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-neutral-500 hover:text-neutral-300'}`}
         >
-          Отчеты
+          Мой анализ
         </button>
       </div>
 
@@ -156,17 +156,25 @@ export default function ProfileTab() {
       )}
 
       {activeTab === 'reports' && (
-        <div className="flex-1 overflow-y-auto px-4 pb-6 flex items-center justify-center text-neutral-500 text-center h-full">
-          <p>Здесь будут отображаться ваши отчеты.</p>
+        <div className="flex-1 overflow-y-auto px-4 pb-6 flex flex-col gap-4 mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <button className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-5 text-left hover:bg-neutral-800/80 transition-all active:scale-[0.98]">
+            <h3 className="text-lg font-bold text-blue-400 mb-2">Какие события чаще всего повторяются в моей жизни?</h3>
+            <p className="text-sm text-neutral-400">Узнайте, какие ситуации в вашей жизни имеют свойство повторяться, и проанализируйте реакции на них</p>
+          </button>
+          
+          <button className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-5 text-left hover:bg-neutral-800/80 transition-all active:scale-[0.98]">
+            <h3 className="text-lg font-bold text-amber-500 mb-2">На какие ситуации я реагирую эффективно. А на какие нет?</h3>
+            <p className="text-sm text-neutral-400">Узнайте, насколько ваша реакция на событие эффективна</p>
+          </button>
         </div>
       )}
 
       {/* 4. ВСПЛЫВАЮЩЕЕ ОКНО С РЕЗУЛЬТАТОМ ТЕСТА */}
       {selectedResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-sm animate-in fade-in duration-500">
           {/* Область клика вокруг окна для закрытия */}
           <div className="absolute inset-0" onClick={() => setSelectedResult(null)}></div>
-          <div className="relative bg-neutral-900 border border-neutral-700 rounded-[2rem] w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
+          <div className="relative bg-neutral-900 border border-neutral-700 rounded-[2rem] w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-500">
             {/* Заголовок модального окна */}
             <div className="p-5 sm:p-6 border-b border-neutral-800 flex justify-between items-start">
               <div className="pr-4">

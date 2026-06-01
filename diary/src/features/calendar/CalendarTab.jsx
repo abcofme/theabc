@@ -14,9 +14,7 @@ export default function CalendarTab({ onSheetOpen }) {
   
   // Начинаем с пустого массива, данные придут с сервера
   const [diaryEntries, setDiaryEntries] = useState([]);
-  const [newEvent, setNewEvent] = useState('');
-  const [newReaction, setNewReaction] = useState('');
-  const [newRating, setNewRating] = useState(0);
+  const [newEntries, setNewEntries] = useState([{ event: '', reaction: '', rating: 0 }]);
 
   const tgUser = WebApp.initDataUnsafe?.user || {
     first_name: "Пользователь",
@@ -66,50 +64,68 @@ export default function CalendarTab({ onSheetOpen }) {
     if (date > now) return;
     setSelectedDate(date);
     setIsSheetOpen(true);
-    setNewEvent('');
-    setNewReaction('');
-    setNewRating(0);
+    setNewEntries([{ event: '', reaction: '', rating: 0 }]);
+  };
+
+  const updateEntry = (index, field, value) => {
+    const updated = [...newEntries];
+    updated[index][field] = value;
+    setNewEntries(updated);
+  };
+
+  const handleAddMore = () => {
+    setNewEntries([...newEntries, { event: '', reaction: '', rating: 0 }]);
   };
 
   const handleAddEntry = async (e) => {
     e.preventDefault();
-    if (!newEvent.trim() || !newReaction.trim() || newRating === 0 || !selectedDate || !WebApp.initData) return;
+    if (!selectedDate || !WebApp.initData) return;
+
+    const validEntries = newEntries.filter(ent => ent.event.trim() && ent.reaction.trim() && ent.rating > 0);
+    if (validEntries.length === 0) return;
 
     // Форматируем дату для бэкенда (YYYY-MM-DD)
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
+    let hasError = false;
 
-    try {
-      const response = await fetch(`${API_URL}/api/diary`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${WebApp.initData}`
-        },
-        body: JSON.stringify({
-          date: dateStr,
-          event: newEvent,
-          reaction: newReaction,
-          rating: newRating
-        })
-      });
+    for (const entry of validEntries) {
+      try {
+        const response = await fetch(`${API_URL}/api/diary`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${WebApp.initData}`
+          },
+          body: JSON.stringify({
+            date: dateStr,
+            event: entry.event,
+            reaction: entry.reaction,
+            rating: entry.rating
+          })
+        });
 
-      if (response.ok) {
-        const resData = await response.json();
-        // Добавляем новую запись в локальный стейт, чтобы она сразу появилась на экране
-        const newEntry = { id: resData.id, date: selectedDate, event: newEvent, reaction: newReaction, rating: newRating };
-        setDiaryEntries([...diaryEntries, newEntry]);
-        setNewEvent('');
-        setNewReaction('');
-        setNewRating(0);
-        WebApp.HapticFeedback.notificationOccurred('success'); // Небольшая вибрация в Telegram
-      } else {
-        WebApp.showAlert("Произошла ошибка при сохранении.");
+        if (response.ok) {
+          const resData = await response.json();
+          const newEntry = { id: resData.id, date: selectedDate, event: entry.event, reaction: entry.reaction, rating: entry.rating };
+          setDiaryEntries(prev => [...prev, newEntry]);
+        } else {
+          hasError = true;
+        }
+      } catch (error) {
+        console.error("Ошибка сети:", error);
+        hasError = true;
       }
-    } catch (error) {
-      console.error("Ошибка сети:", error);
-      WebApp.showAlert("Нет связи с сервером.");
+    }
+
+    if (!hasError) {
+      setNewEntries([{ event: '', reaction: '', rating: 0 }]);
+      WebApp.HapticFeedback.notificationOccurred('success');
+    } else {
+      WebApp.showAlert("Произошла ошибка при сохранении. Возможно, не все записи сохранены.");
     }
   };
+
+  const isSubmitDisabled = newEntries.some(ent => !ent.event.trim() || !ent.reaction.trim() || ent.rating === 0);
 
   const activeEntries = diaryEntries.filter(entry =>
     selectedDate && isSameDay(entry.date, selectedDate)
@@ -135,7 +151,7 @@ export default function CalendarTab({ onSheetOpen }) {
         </div>
 
         {isDropdownOpen && (
-          <div className="absolute top-14 left-0 z-40 w-80 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-150">
+          <div className="absolute top-14 left-0 z-40 w-80 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-500">
             <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Выберите месяц</div>
             <div className="grid grid-cols-3 gap-1.5 mb-4">
               {monthsRu.map((m, idx) => (
@@ -220,7 +236,7 @@ export default function CalendarTab({ onSheetOpen }) {
 
       {/* ПОЛНОЭКРАННОЕ ОКНО С ЗАПИСЯМИ */}
       {isSheetOpen && (
-        <div className="fixed inset-0 z-50 bg-neutral-950 flex flex-col animate-in slide-in-from-bottom-8 duration-300">
+        <div className="fixed inset-0 z-50 bg-neutral-950 flex flex-col animate-in slide-in-from-bottom-8 duration-500">
           <div className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-6 flex flex-col overflow-y-auto">
             <div className="flex justify-between items-start mb-8 pt-4">
               <div>
@@ -269,56 +285,77 @@ export default function CalendarTab({ onSheetOpen }) {
               )}
             </div>
 
-            <form onSubmit={handleAddEntry} className="border-t border-neutral-900 pt-6 flex flex-col gap-4 mt-auto mb-safe">
+            <form onSubmit={handleAddEntry} className="border-t border-neutral-900 pt-6 flex flex-col gap-6 mt-auto mb-safe pb-4">
               <h4 className="text-sm font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
                 <Plus size={16} />
                 Новая запись дневника
               </h4>
-              <div>
-                <input
-                  type="text"
-                  placeholder="Что произошло? (Событие)"
-                  value={newEvent}
-                  onChange={(e) => setNewEvent(e.target.value)}
-                  className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3.5 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all"
-                />
-              </div>
-              <div>
-                <textarea
-                  placeholder="Моя реакция, чувства..."
-                  value={newReaction}
-                  onChange={(e) => setNewReaction(e.target.value)}
-                  rows="3"
-                  className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3.5 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all resize-none"
-                />
-              </div>
               
-              <div className="mt-2">
-                <span className="text-sm font-bold text-neutral-400 block mb-3">Оцените день по пятибальной шкале:</span>
-                <div className="flex justify-between gap-2">
-                  {[1, 2, 3, 4, 5].map(num => (
-                    <button
-                      key={num}
-                      type="button"
-                      onClick={() => setNewRating(num)}
-                      className={`flex-1 py-3 rounded-xl font-bold transition-all text-lg ${
-                        newRating === num 
-                          ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30 scale-105' 
-                          : 'bg-neutral-900 border border-neutral-800 text-neutral-400 hover:bg-neutral-800'
-                      }`}
-                    >
-                      {num}
-                    </button>
-                  ))}
-                </div>
+              <div className="flex flex-col gap-6">
+                {newEntries.map((entry, index) => (
+                  <div key={index} className="bg-neutral-900/40 p-4 rounded-2xl border border-neutral-800/60 flex flex-col gap-4 relative">
+                    {newEntries.length > 1 && (
+                      <div className="absolute -top-3 -right-2 bg-neutral-800 text-neutral-400 text-xs font-bold px-2 py-1 rounded-lg">
+                        Событие {index + 1}
+                      </div>
+                    )}
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Что произошло? (Событие)"
+                        value={entry.event}
+                        onChange={(e) => updateEntry(index, 'event', e.target.value)}
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3.5 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all"
+                      />
+                    </div>
+                    <div>
+                      <textarea
+                        placeholder="Моя реакция, чувства..."
+                        value={entry.reaction}
+                        onChange={(e) => updateEntry(index, 'reaction', e.target.value)}
+                        rows="3"
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3.5 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all resize-none"
+                      />
+                    </div>
+                    
+                    <div className="mt-1">
+                      <span className="text-sm font-bold text-neutral-400 block mb-3">Оцените день по пятибальной шкале:</span>
+                      <div className="flex justify-between gap-2">
+                        {[1, 2, 3, 4, 5].map(num => (
+                          <button
+                            key={num}
+                            type="button"
+                            onClick={() => updateEntry(index, 'rating', num)}
+                            className={`flex-1 py-3 rounded-xl font-bold transition-all text-lg ${
+                              entry.rating === num 
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30 scale-105' 
+                                : 'bg-neutral-900 border border-neutral-800 text-neutral-400 hover:bg-neutral-800'
+                            }`}
+                          >
+                            {num}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <button
-                type="submit"
-                disabled={!newEvent.trim() || !newReaction.trim() || newRating === 0}
-                className="w-full bg-blue-600 disabled:bg-blue-900/40 disabled:text-blue-400/50 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-blue-900/20 mt-4"
+                type="button"
+                onClick={handleAddMore}
+                className="w-full bg-neutral-800/80 hover:bg-neutral-700 text-blue-400 font-bold py-3.5 rounded-xl transition-all border border-neutral-700/50 flex items-center justify-center gap-2"
               >
-                Сохранить запись
+                <Plus size={18} />
+                Добавить событие
+              </button>
+
+              <button
+                type="submit"
+                disabled={isSubmitDisabled}
+                className="w-full bg-blue-600 disabled:bg-blue-900/40 disabled:text-blue-400/50 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-blue-900/20"
+              >
+                Сохранить {newEntries.length > 1 ? 'все записи' : 'запись'}
               </button>
             </form>
           </div>

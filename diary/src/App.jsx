@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar as CalendarIcon, Sparkles, User } from 'lucide-react';
+import { Calendar as CalendarIcon, Sparkles, User, Brain } from 'lucide-react';
 import CalendarTab from './features/calendar/CalendarTab';
 import ProfileTab from './features/profile/ProfileTab';
 
@@ -30,7 +30,7 @@ export default function App() {
       <main className={`flex-1 overflow-y-auto p-4 ${isNavHidden ? '' : 'pb-24'}`}>
         {/* Передаем функцию скрытия меню в CalendarTab */}
         {activeTab === 'diary' && <CalendarTab onSheetOpen={setIsNavHidden} />}
-        {activeTab === 'ai' && (
+        {activeTab === 'reports' && (
           <div className="text-center mt-10 text-purple-400">
             <h1 className="text-2xl font-bold mb-2">ИИ Анализ</h1>
             <p className="text-purple-500/50">Coming soon. Следите за обновлениями!</p>
@@ -52,22 +52,18 @@ export default function App() {
             <span className="text-xs mt-1">Дневник</span>
           </button>
           <button
-            onClick={() => setActiveTab('ai')}
-            className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
-              activeTab === 'ai' ? 'text-purple-400' : 'text-neutral-500 hover:text-neutral-300'
-            }`}
+            onClick={() => setActiveTab('reports')}
+            className={`flex flex-col items-center justify-center w-full py-2 ${activeTab === 'reports' ? 'text-blue-400' : 'text-neutral-500 hover:text-neutral-300'}`}
           >
-            <Sparkles size={24} />
-            <span className="text-xs mt-1">ИИ Отчеты</span>
+            <Brain size={24} />
+            <span className="text-xs mt-1">Мой анализ</span>
           </button>
           <button
             onClick={() => setActiveTab('profile')}
-            className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
-              activeTab === 'profile' ? 'text-emerald-400' : 'text-neutral-500 hover:text-neutral-300'
-            }`}
+            className={`flex flex-col items-center justify-center w-full py-2 ${activeTab === 'profile' ? 'text-blue-400' : 'text-neutral-500 hover:text-neutral-300'}`}
           >
             <User size={24} />
-            <span className="text-xs mt-1">Кабинет</span>
+            <span className="text-xs mt-1">Профиль</span>
           </button>
         </nav>
       )}
