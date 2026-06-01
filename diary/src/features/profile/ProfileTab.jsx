@@ -91,13 +91,13 @@ export default function ProfileTab() {
 
       {/* 3. КОНТЕНТ ВКЛАДОК */}
       {activeSubTab === 'tests' && (
-        <div className="flex-1 overflow-y-auto px-2 pb-6 space-y-3 animate-in fade-in duration-700">
+        <div className="flex-1 overflow-y-auto px-2 pb-6 space-y-3 animate-in fade-in duration-700 flex flex-col">
           {loading ? (
-            <div className="flex justify-center items-center py-12">
+            <div className="flex justify-center items-center py-12 flex-1">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
             </div>
           ) : categories.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center text-neutral-500 text-center h-full py-12">
+            <div className="flex-1 flex items-center justify-center text-neutral-500 text-center py-12">
               <p>Здесь будут ваши результаты тестов.</p>
             </div>
           ) : (
@@ -156,8 +156,8 @@ export default function ProfileTab() {
       )}
 
       {activeSubTab === 'analyses' && (
-        <div className="flex-1 flex flex-col items-center justify-center text-neutral-500 pb-12 animate-in fade-in duration-700">
-          <p>Раздел анализов скоро появится.</p>
+        <div className="flex-1 flex flex-col items-center justify-center text-neutral-500 pb-12 animate-in fade-in duration-700 px-2 text-center">
+          <p>Здесь будут ваши отчеты из раздела "Мои анализы".</p>
         </div>
       )}
 

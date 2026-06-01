@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, isToday, setMonth, setYear, getYear, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { ChevronDown, X, Plus, BookOpen, Check } from 'lucide-react';
+import { ChevronDown, X, Plus, BookOpen, Check, Trash2 } from 'lucide-react';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://restoration-relative-federation-forth.trycloudflare.com";
@@ -11,6 +11,8 @@ export default function CalendarTab({ onSheetOpen }) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState(null);
   
   // Начинаем с пустого массива, данные придут с сервера
   const [diaryEntries, setDiaryEntries] = useState([]);
@@ -81,17 +83,17 @@ export default function CalendarTab({ onSheetOpen }) {
 
   const handleAddEntry = async (e) => {
     e.preventDefault();
-    if (!selectedDate || !WebApp.initData || newRating === 0) return;
-
-    const validEntries = newEntries.filter(ent => ent.event.trim() && ent.reaction.trim());
-    if (validEntries.length === 0) return;
-
-    // Форматируем дату для бэкенда (YYYY-MM-DD)
+    if (newEntries.some(entry => !entry.event.trim() || !entry.reaction.trim()) || newRating === 0) {
+      WebApp.showAlert("Пожалуйста, заполните все события, реакции и укажите общую оценку дня.");
+      return;
+    }
+    
+    setIsSubmitting(true);
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    let hasError = false;
-
-    for (const entry of validEntries) {
-      try {
+    
+    try {
+      // Сохраняем все записи последовательно
+      for (const entry of newEntries) {
         const response = await fetch(`${API_URL}/api/diary`, {
           method: "POST",
           headers: {
@@ -102,24 +104,26 @@ export default function CalendarTab({ onSheetOpen }) {
             date: dateStr,
             event: entry.event,
             reaction: entry.reaction,
-            rating: newRating // Send the same global rating for all entries on this day
+            rating: newRating
           })
         });
 
-        if (response.ok) {
-          const resData = await response.json();
-          const newEntry = { id: resData.id, date: selectedDate, event: entry.event, reaction: entry.reaction, rating: newRating };
-          setDiaryEntries(prev => [...prev, newEntry]);
-        } else {
-          hasError = true;
+        if (!response.ok) {
+          throw new Error("Ошибка сохранения");
         }
-      } catch (error) {
-        console.error("Ошибка сети:", error);
-        hasError = true;
+        
+        const data = await response.json();
+        // Добавляем новую запись в локальный стейт, чтобы она отобразилась мгновенно
+        setDiaryEntries(prev => [...prev, {
+          id: data.id,
+          date: selectedDate,
+          event: entry.event,
+          reaction: entry.reaction,
+          rating: newRating
+        }]);
       }
-    }
-
-    if (!hasError) {
+      
+      // Сбрасываем форму
       setNewEntries([{ event: '', reaction: '' }]);
       setNewRating(0);
       WebApp.HapticFeedback.notificationOccurred('success');
@@ -269,8 +273,14 @@ export default function CalendarTab({ onSheetOpen }) {
               ) : null}
               {activeEntries.length > 0 ? (
                 activeEntries.map(entry => (
-                  <div key={entry.id} className="bg-neutral-900/80 border border-neutral-800 p-5 rounded-2xl shadow-inner">
-                    <div className="mb-4">
+                  <div key={entry.id} className="bg-neutral-900/80 border border-neutral-800 p-5 rounded-2xl shadow-inner relative">
+                    <button 
+                      onClick={() => setEntryToDelete(entry)}
+                      className="absolute top-4 right-4 p-2 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors active:scale-95"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                    <div className="mb-4 pr-8">
                       <span className="text-xs font-bold text-blue-400 uppercase tracking-wider block mb-1.5">Событие:</span>
                       <p className="text-base text-neutral-200 font-medium">{entry.event}</p>
                     </div>
@@ -361,6 +371,30 @@ export default function CalendarTab({ onSheetOpen }) {
                 Сохранить {newEntries.length > 1 ? 'все записи' : 'запись'}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* МОДАЛКА УДАЛЕНИЯ ЗАПИСИ */}
+      {entryToDelete && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-neutral-900 border border-neutral-800 p-6 rounded-3xl w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-300">
+            <h3 className="text-xl font-bold text-white mb-2 text-center">Удалить запись?</h3>
+            <p className="text-neutral-400 text-sm text-center mb-6">Эта запись будет навсегда удалена из вашего дневника.</p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setEntryToDelete(null)}
+                className="flex-1 py-3 bg-neutral-800 text-neutral-300 font-bold rounded-2xl active:scale-95 transition-transform"
+              >
+                Нет
+              </button>
+              <button 
+                onClick={handleDeleteEntry}
+                className="flex-1 py-3 bg-red-500/20 text-red-500 font-bold rounded-2xl border border-red-500/30 active:scale-95 transition-transform"
+              >
+                Да
+              </button>
+            </div>
           </div>
         </div>
       )}

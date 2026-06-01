@@ -123,3 +123,26 @@ async def create_diary_entry(
     await session.refresh(new_entry)
     
     return {"id": new_entry.id, "status": "success"}
+
+# Эндпоинт 4: Удаление записи из дневника
+@app.delete("/api/diary/{entry_id}")
+async def delete_diary_entry(
+    entry_id: int,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    user_id = user_data.get("id")
+    
+    # Находим запись по id и проверяем, что она принадлежит пользователю
+    query = select(DiaryEntry).where(DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id)
+    result = await session.execute(query)
+    entry = result.scalars().first()
+    
+    if not entry:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Entry not found or unauthorized")
+        
+    await session.delete(entry)
+    await session.commit()
+    
+    return {"status": "success"}
