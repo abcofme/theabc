@@ -14,7 +14,8 @@ export default function CalendarTab({ onSheetOpen }) {
   
   // Начинаем с пустого массива, данные придут с сервера
   const [diaryEntries, setDiaryEntries] = useState([]);
-  const [newEntries, setNewEntries] = useState([{ event: '', reaction: '', rating: 0 }]);
+  const [newEntries, setNewEntries] = useState([{ event: '', reaction: '' }]);
+  const [newRating, setNewRating] = useState(0);
 
   const tgUser = WebApp.initDataUnsafe?.user || {
     first_name: "Пользователь",
@@ -64,7 +65,8 @@ export default function CalendarTab({ onSheetOpen }) {
     if (date > now) return;
     setSelectedDate(date);
     setIsSheetOpen(true);
-    setNewEntries([{ event: '', reaction: '', rating: 0 }]);
+    setNewEntries([{ event: '', reaction: '' }]);
+    setNewRating(0);
   };
 
   const updateEntry = (index, field, value) => {
@@ -74,14 +76,14 @@ export default function CalendarTab({ onSheetOpen }) {
   };
 
   const handleAddMore = () => {
-    setNewEntries([...newEntries, { event: '', reaction: '', rating: 0 }]);
+    setNewEntries([...newEntries, { event: '', reaction: '' }]);
   };
 
   const handleAddEntry = async (e) => {
     e.preventDefault();
-    if (!selectedDate || !WebApp.initData) return;
+    if (!selectedDate || !WebApp.initData || newRating === 0) return;
 
-    const validEntries = newEntries.filter(ent => ent.event.trim() && ent.reaction.trim() && ent.rating > 0);
+    const validEntries = newEntries.filter(ent => ent.event.trim() && ent.reaction.trim());
     if (validEntries.length === 0) return;
 
     // Форматируем дату для бэкенда (YYYY-MM-DD)
@@ -100,13 +102,13 @@ export default function CalendarTab({ onSheetOpen }) {
             date: dateStr,
             event: entry.event,
             reaction: entry.reaction,
-            rating: entry.rating
+            rating: newRating // Send the same global rating for all entries on this day
           })
         });
 
         if (response.ok) {
           const resData = await response.json();
-          const newEntry = { id: resData.id, date: selectedDate, event: entry.event, reaction: entry.reaction, rating: entry.rating };
+          const newEntry = { id: resData.id, date: selectedDate, event: entry.event, reaction: entry.reaction, rating: newRating };
           setDiaryEntries(prev => [...prev, newEntry]);
         } else {
           hasError = true;
@@ -118,14 +120,15 @@ export default function CalendarTab({ onSheetOpen }) {
     }
 
     if (!hasError) {
-      setNewEntries([{ event: '', reaction: '', rating: 0 }]);
+      setNewEntries([{ event: '', reaction: '' }]);
+      setNewRating(0);
       WebApp.HapticFeedback.notificationOccurred('success');
     } else {
       WebApp.showAlert("Произошла ошибка при сохранении. Возможно, не все записи сохранены.");
     }
   };
 
-  const isSubmitDisabled = newEntries.some(ent => !ent.event.trim() || !ent.reaction.trim() || ent.rating === 0);
+  const isSubmitDisabled = newEntries.some(ent => !ent.event.trim() || !ent.reaction.trim()) || newRating === 0;
 
   const activeEntries = diaryEntries.filter(entry =>
     selectedDate && isSameDay(entry.date, selectedDate)
@@ -142,7 +145,7 @@ export default function CalendarTab({ onSheetOpen }) {
           <span className="capitalize">
             {format(currentMonth, 'LLLL yyyy', { locale: ru })}
           </span>
-          <ChevronDown size={20} className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown size={20} className={`transition-transform duration-700 ${isDropdownOpen ? 'rotate-180' : ''}`} />
         </button>
 
         {/* Измененное название дневника */}
@@ -151,7 +154,7 @@ export default function CalendarTab({ onSheetOpen }) {
         </div>
 
         {isDropdownOpen && (
-          <div className="absolute top-14 left-0 z-40 w-80 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-500">
+          <div className="absolute top-14 left-0 z-40 w-80 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-700">
             <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Выберите месяц</div>
             <div className="grid grid-cols-3 gap-1.5 mb-4">
               {monthsRu.map((m, idx) => (
@@ -236,7 +239,7 @@ export default function CalendarTab({ onSheetOpen }) {
 
       {/* ПОЛНОЭКРАННОЕ ОКНО С ЗАПИСЯМИ */}
       {isSheetOpen && (
-        <div className="fixed inset-0 z-50 bg-neutral-950 flex flex-col animate-in slide-in-from-bottom-8 duration-500">
+        <div className="fixed inset-0 z-50 bg-neutral-950 flex flex-col animate-in slide-in-from-bottom-8 duration-700">
           <div className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-6 flex flex-col overflow-y-auto">
             <div className="flex justify-between items-start mb-8 pt-4">
               <div>
@@ -317,26 +320,6 @@ export default function CalendarTab({ onSheetOpen }) {
                         className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3.5 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all resize-none"
                       />
                     </div>
-                    
-                    <div className="mt-1">
-                      <span className="text-sm font-bold text-neutral-400 block mb-3">Оцените день по пятибальной шкале:</span>
-                      <div className="flex justify-between gap-2">
-                        {[1, 2, 3, 4, 5].map(num => (
-                          <button
-                            key={num}
-                            type="button"
-                            onClick={() => updateEntry(index, 'rating', num)}
-                            className={`flex-1 py-3 rounded-xl font-bold transition-all text-lg ${
-                              entry.rating === num 
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30 scale-105' 
-                                : 'bg-neutral-900 border border-neutral-800 text-neutral-400 hover:bg-neutral-800'
-                            }`}
-                          >
-                            {num}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 ))}
               </div>
@@ -349,6 +332,26 @@ export default function CalendarTab({ onSheetOpen }) {
                 <Plus size={18} />
                 Добавить событие
               </button>
+
+              <div className="mt-4 pt-4 border-t border-neutral-800/50">
+                <span className="text-sm font-bold text-neutral-400 block mb-3">Оцените день по пятибальной шкале:</span>
+                <div className="flex justify-between gap-2">
+                  {[1, 2, 3, 4, 5].map(num => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => setNewRating(num)}
+                      className={`flex-1 py-3 rounded-xl font-bold transition-all text-lg ${
+                        newRating === num 
+                          ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30 scale-105' 
+                          : 'bg-neutral-900 border border-neutral-800 text-neutral-400 hover:bg-neutral-800'
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <button
                 type="submit"

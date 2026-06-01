@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Calendar as CalendarIcon, Sparkles, User, Brain } from 'lucide-react';
 import CalendarTab from './features/calendar/CalendarTab';
 import ProfileTab from './features/profile/ProfileTab';
+import ReportsTab from './features/reports/ReportsTab';
 
 const WebApp = window.Telegram.WebApp;
 
@@ -30,21 +31,16 @@ export default function App() {
       <main className={`flex-1 overflow-y-auto p-4 ${isNavHidden ? '' : 'pb-24'}`}>
         {/* Передаем функцию скрытия меню в CalendarTab */}
         {activeTab === 'diary' && <CalendarTab onSheetOpen={setIsNavHidden} />}
-        {activeTab === 'reports' && (
-          <div className="text-center mt-10 text-purple-400">
-            <h1 className="text-2xl font-bold mb-2">ИИ Анализ</h1>
-            <p className="text-purple-500/50">Coming soon. Следите за обновлениями!</p>
-          </div>
-        )}
+        {activeTab === 'reports' && <ReportsTab />}
         {activeTab === 'profile' && <ProfileTab />}
       </main>
 
       {/* Отрисовываем меню только если isNavHidden === false */}
       {!isNavHidden && (
-        <nav className="fixed bottom-0 left-0 w-full bg-neutral-900 border-t border-neutral-800 flex justify-around p-3 pb-safe z-50">
+        <nav className="fixed bottom-0 left-0 w-full bg-neutral-900 border-t border-neutral-800 flex justify-between p-2 pb-safe z-50">
           <button
             onClick={() => setActiveTab('diary')}
-            className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
+            className={`flex-1 flex flex-col items-center justify-center py-2 transition-colors ${
               activeTab === 'diary' ? 'text-blue-400' : 'text-neutral-500 hover:text-neutral-300'
             }`}
           >
@@ -53,14 +49,18 @@ export default function App() {
           </button>
           <button
             onClick={() => setActiveTab('reports')}
-            className={`flex flex-col items-center justify-center w-full py-2 ${activeTab === 'reports' ? 'text-blue-400' : 'text-neutral-500 hover:text-neutral-300'}`}
+            className={`flex-1 flex flex-col items-center justify-center py-2 transition-colors ${
+              activeTab === 'reports' ? 'text-blue-400' : 'text-neutral-500 hover:text-neutral-300'
+            }`}
           >
             <Brain size={24} />
             <span className="text-xs mt-1">Мой анализ</span>
           </button>
           <button
             onClick={() => setActiveTab('profile')}
-            className={`flex flex-col items-center justify-center w-full py-2 ${activeTab === 'profile' ? 'text-blue-400' : 'text-neutral-500 hover:text-neutral-300'}`}
+            className={`flex-1 flex flex-col items-center justify-center py-2 transition-colors ${
+              activeTab === 'profile' ? 'text-blue-400' : 'text-neutral-500 hover:text-neutral-300'
+            }`}
           >
             <User size={24} />
             <span className="text-xs mt-1">Профиль</span>
