@@ -127,8 +127,11 @@ export default function CalendarTab({ onSheetOpen }) {
       setNewEntries([{ event: '', reaction: '' }]);
       setNewRating(0);
       WebApp.HapticFeedback.notificationOccurred('success');
-    } else {
+    } catch (error) {
+      console.error(error);
       WebApp.showAlert("Произошла ошибка при сохранении. Возможно, не все записи сохранены.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
