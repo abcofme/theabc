@@ -1,6 +1,6 @@
 import asyncio
 from sqlalchemy import text
-from backend.database.engine import engine
+from backend.database import engine
 
 async def migrate():
     async with engine.begin() as conn:
