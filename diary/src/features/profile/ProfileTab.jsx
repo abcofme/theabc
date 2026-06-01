@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X } from 'lucide-react';
 
 const WebApp = window.Telegram.WebApp;
-const API_URL = "http://89.19.216.208:8000";
+const API_URL = "https://89.19.216.208.nip.io";
 
 export default function ProfileTab() {
   const [categories, setCategories] = useState([]);

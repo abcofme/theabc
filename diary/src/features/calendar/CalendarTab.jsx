@@ -4,7 +4,7 @@ import { ru } from 'date-fns/locale';
 import { ChevronDown, X, Plus, BookOpen, Check } from 'lucide-react';
 
 const WebApp = window.Telegram.WebApp;
-const API_URL = "http://89.19.216.208:8000";
+const API_URL = "https://89.19.216.208.nip.io";
 
 export default function CalendarTab({ onSheetOpen }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());

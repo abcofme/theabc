@@ -16,7 +16,7 @@ app = FastAPI(title="TheABC Diary API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], # В идеале здесь должен быть URL вашего Github Pages
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
