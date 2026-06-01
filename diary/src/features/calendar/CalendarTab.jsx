@@ -16,6 +16,12 @@ export default function CalendarTab({ onSheetOpen }) {
   const [diaryEntries, setDiaryEntries] = useState([]);
   const [newEvent, setNewEvent] = useState('');
   const [newReaction, setNewReaction] = useState('');
+  const [newRating, setNewRating] = useState(0);
+
+  const tgUser = WebApp.initDataUnsafe?.user || {
+    first_name: "Пользователь",
+    username: "username"
+  };
 
   const monthsRu = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
   const years = [2024, 2025, 2026, 2027, 2028];
@@ -62,11 +68,12 @@ export default function CalendarTab({ onSheetOpen }) {
     setIsSheetOpen(true);
     setNewEvent('');
     setNewReaction('');
+    setNewRating(0);
   };
 
   const handleAddEntry = async (e) => {
     e.preventDefault();
-    if (!newEvent.trim() || !newReaction.trim() || !selectedDate || !WebApp.initData) return;
+    if (!newEvent.trim() || !newReaction.trim() || newRating === 0 || !selectedDate || !WebApp.initData) return;
 
     // Форматируем дату для бэкенда (YYYY-MM-DD)
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
@@ -81,17 +88,19 @@ export default function CalendarTab({ onSheetOpen }) {
         body: JSON.stringify({
           date: dateStr,
           event: newEvent,
-          reaction: newReaction
+          reaction: newReaction,
+          rating: newRating
         })
       });
 
       if (response.ok) {
         const resData = await response.json();
         // Добавляем новую запись в локальный стейт, чтобы она сразу появилась на экране
-        const newEntry = { id: resData.id, date: selectedDate, event: newEvent, reaction: newReaction };
+        const newEntry = { id: resData.id, date: selectedDate, event: newEvent, reaction: newReaction, rating: newRating };
         setDiaryEntries([...diaryEntries, newEntry]);
         setNewEvent('');
         setNewReaction('');
+        setNewRating(0);
         WebApp.HapticFeedback.notificationOccurred('success'); // Небольшая вибрация в Telegram
       } else {
         WebApp.showAlert("Произошла ошибка при сохранении.");
@@ -122,7 +131,7 @@ export default function CalendarTab({ onSheetOpen }) {
 
         {/* Измененное название дневника */}
         <div className="text-white font-bold text-sm sm:text-base whitespace-nowrap text-right overflow-hidden text-ellipsis">
-          Личный дневник Азбука Я
+          Дневник @{tgUser.username || tgUser.first_name}
         </div>
 
         {isDropdownOpen && (
@@ -238,10 +247,18 @@ export default function CalendarTab({ onSheetOpen }) {
                       <span className="text-xs font-bold text-amber-500/90 uppercase tracking-wider block mb-1.5">Событие:</span>
                       <p className="text-base text-neutral-200 font-medium">{entry.event}</p>
                     </div>
-                    <div>
+                    <div className="mb-4">
                       <span className="text-xs font-bold text-blue-400 uppercase tracking-wider block mb-1.5">Реакция:</span>
                       <p className="text-base text-neutral-300 italic">«{entry.reaction}»</p>
                     </div>
+                    {entry.rating && (
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider mr-2">Оценка:</span>
+                        <div className="flex gap-1 text-amber-400 text-lg">
+                          {'★'.repeat(entry.rating)}{'☆'.repeat(5 - entry.rating)}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (
@@ -275,10 +292,31 @@ export default function CalendarTab({ onSheetOpen }) {
                   className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3.5 text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all resize-none"
                 />
               </div>
+              
+              <div className="mt-2">
+                <span className="text-sm font-bold text-neutral-400 block mb-3">Оцените день по пятибальной шкале:</span>
+                <div className="flex justify-between gap-2">
+                  {[1, 2, 3, 4, 5].map(num => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => setNewRating(num)}
+                      className={`flex-1 py-3 rounded-xl font-bold transition-all text-lg ${
+                        newRating === num 
+                          ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30 scale-105' 
+                          : 'bg-neutral-900 border border-neutral-800 text-neutral-400 hover:bg-neutral-800'
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <button
                 type="submit"
-                disabled={!newEvent.trim() || !newReaction.trim()}
-                className="w-full bg-blue-600 disabled:bg-blue-900/40 disabled:text-blue-400/50 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-blue-900/20 mt-2"
+                disabled={!newEvent.trim() || !newReaction.trim() || newRating === 0}
+                className="w-full bg-blue-600 disabled:bg-blue-900/40 disabled:text-blue-400/50 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-blue-900/20 mt-4"
               >
                 Сохранить запись
               </button>

@@ -214,3 +214,4 @@ class DiaryEntry(BaseModel):
     date: Mapped[date] = mapped_column(Date(), nullable=False)
     event: Mapped[str] = mapped_column(Text(), nullable=False)
     reaction: Mapped[str] = mapped_column(Text(), nullable=False)
+    rating: Mapped[int] = mapped_column(Integer(), nullable=True)

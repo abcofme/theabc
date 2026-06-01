@@ -97,14 +97,14 @@ async def get_diary_entries(
     filtered = [e for e in entries if e.date.year == year and e.date.month == month]
     
     return [
-        {"id": e.id, "date": e.date.isoformat(), "event": e.event, "reaction": e.reaction}
+        {"id": e.id, "date": e.date.isoformat(), "event": e.event, "reaction": e.reaction, "rating": getattr(e, "rating", None)}
         for e in filtered
     ]
 
 # Эндпоинт 3: Создание записи в дневнике
 @app.post("/api/diary")
 async def create_diary_entry(
-    data: dict, # Ожидаем JSON: {"date": "YYYY-MM-DD", "event": "...", "reaction": "..."}
+    data: dict, # Ожидаем JSON: {"date": "YYYY-MM-DD", "event": "...", "reaction": "...", "rating": 5}
     user_data: dict = Depends(validate_twa_data),
     session: AsyncSession = Depends(get_session)
 ):
@@ -115,7 +115,8 @@ async def create_diary_entry(
         user_id=user_id,
         date=entry_date,
         event=data["event"],
-        reaction=data["reaction"]
+        reaction=data["reaction"],
+        rating=data.get("rating")
     )
     session.add(new_entry)
     await session.commit()

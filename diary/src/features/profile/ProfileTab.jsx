@@ -97,8 +97,8 @@ export default function ProfileTab() {
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
             </div>
           ) : categories.length === 0 ? (
-            <div className="text-center text-neutral-500 py-12">
-              Данных о тестах пока нет.
+            <div className="flex-1 flex items-center justify-center text-neutral-500 text-center h-full py-12">
+              <p>Здесь будут ваши результаты тестов.</p>
             </div>
           ) : (
             categories.map(cat => (

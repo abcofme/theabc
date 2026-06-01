@@ -10,3 +10,8 @@ html, body {
 #root {
   height: 100%;
 }
+
+/* Плавные анимации для всех интерактивных элементов */
+button, a, input, textarea, select, .transition-all {
+  @apply transition-all duration-300 ease-out;
+}
