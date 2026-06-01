@@ -259,25 +259,25 @@ export default function CalendarTab({ onSheetOpen }) {
             </div>
 
             <div className="flex-1 space-y-4 mb-8">
+              {activeEntries.length > 0 && activeEntries[0].rating ? (
+                <div className="flex items-center gap-2 mb-4 bg-neutral-900/40 p-4 rounded-2xl border border-neutral-800">
+                  <span className="text-sm font-bold text-neutral-400 uppercase tracking-wider">Оценка дня:</span>
+                  <div className="flex gap-1 text-amber-400 text-xl">
+                    {'★'.repeat(activeEntries[0].rating)}{'☆'.repeat(5 - activeEntries[0].rating)}
+                  </div>
+                </div>
+              ) : null}
               {activeEntries.length > 0 ? (
                 activeEntries.map(entry => (
                   <div key={entry.id} className="bg-neutral-900/80 border border-neutral-800 p-5 rounded-2xl shadow-inner">
                     <div className="mb-4">
-                      <span className="text-xs font-bold text-amber-500/90 uppercase tracking-wider block mb-1.5">Событие:</span>
+                      <span className="text-xs font-bold text-blue-400 uppercase tracking-wider block mb-1.5">Событие:</span>
                       <p className="text-base text-neutral-200 font-medium">{entry.event}</p>
                     </div>
-                    <div className="mb-4">
+                    <div>
                       <span className="text-xs font-bold text-blue-400 uppercase tracking-wider block mb-1.5">Реакция:</span>
-                      <p className="text-base text-neutral-300 italic">«{entry.reaction}»</p>
+                      <p className="text-base text-neutral-300">{entry.reaction}</p>
                     </div>
-                    {entry.rating && (
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider mr-2">Оценка:</span>
-                        <div className="flex gap-1 text-amber-400 text-lg">
-                          {'★'.repeat(entry.rating)}{'☆'.repeat(5 - entry.rating)}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 ))
               ) : (

@@ -9,7 +9,7 @@ export default function ProfileTab() {
   const [loading, setLoading] = useState(true);
   
   // Новый стейт для вкладок
-  const [activeTab, setActiveTab] = useState('tests'); // 'tests' | 'reports'
+  const [activeSubTab, setActiveSubTab] = useState('tests'); // 'tests' | 'analyses'
 
   // Хранит ID открытой категории (аккордеон)
   const [openCategory, setOpenCategory] = useState(null);
@@ -73,8 +73,25 @@ export default function ProfileTab() {
         </div>
       </div>
 
+      {/* 2. ВКЛАДКИ */}
+      <div className="flex border-b border-neutral-800 mb-4 mx-4">
+        <button 
+          onClick={() => setActiveSubTab('tests')}
+          className={`flex-1 py-2 font-bold transition-colors duration-700 ${activeSubTab === 'tests' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-neutral-500 hover:text-neutral-300'}`}
+        >
+          Тесты
+        </button>
+        <button 
+          onClick={() => setActiveSubTab('analyses')}
+          className={`flex-1 py-2 font-bold transition-colors duration-700 ${activeSubTab === 'analyses' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-neutral-500 hover:text-neutral-300'}`}
+        >
+          Анализы
+        </button>
+      </div>
+
       {/* 3. КОНТЕНТ ВКЛАДОК */}
-        <div className="flex-1 overflow-y-auto px-2 pb-6 space-y-3">
+      {activeSubTab === 'tests' && (
+        <div className="flex-1 overflow-y-auto px-2 pb-6 space-y-3 animate-in fade-in duration-700">
           {loading ? (
             <div className="flex justify-center items-center py-12">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
@@ -136,6 +153,13 @@ export default function ProfileTab() {
             ))
           )}
         </div>
+      )}
+
+      {activeSubTab === 'analyses' && (
+        <div className="flex-1 flex flex-col items-center justify-center text-neutral-500 pb-12 animate-in fade-in duration-700">
+          <p>Раздел анализов скоро появится.</p>
+        </div>
+      )}
 
       {/* 4. ВСПЛЫВАЮЩЕЕ ОКНО С РЕЗУЛЬТАТОМ ТЕСТА */}
       {selectedResult && (

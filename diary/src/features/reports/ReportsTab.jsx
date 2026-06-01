@@ -21,11 +21,11 @@ export default function ReportsTab() {
         
         <button className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-5 text-left hover:bg-neutral-800/80 transition-all duration-700 active:scale-[0.98]">
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-amber-500/10 rounded-xl shrink-0 mt-1">
-              <Zap className="text-amber-500" size={24} />
+            <div className="p-3 bg-blue-500/10 rounded-xl shrink-0 mt-1">
+              <Zap className="text-blue-400" size={24} />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-amber-500 mb-2 leading-tight">На какие ситуации я реагирую эффективно. А на какие нет?</h3>
+              <h3 className="text-lg font-bold text-blue-400 mb-2 leading-tight">На какие ситуации я реагирую эффективно. А на какие нет?</h3>
               <p className="text-sm text-neutral-400 leading-relaxed">Узнайте, насколько ваша реакция на событие эффективна.</p>
             </div>
           </div>
