@@ -135,6 +135,27 @@ export default function CalendarTab({ onSheetOpen }) {
     }
   };
 
+  const handleDeleteEntry = async () => {
+    if (!entryToDelete) return;
+    
+    try {
+      const response = await fetch(`${API_URL}/api/diary/${entryToDelete.id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${WebApp.initData}`
+        }
+      });
+      
+      if (!response.ok) throw new Error("Ошибка удаления");
+      
+      setDiaryEntries(prev => prev.filter(e => e.id !== entryToDelete.id));
+      setEntryToDelete(null);
+    } catch (error) {
+      console.error(error);
+      WebApp.showAlert("Произошла ошибка при удалении.");
+    }
+  };
+
   const isSubmitDisabled = newEntries.some(ent => !ent.event.trim() || !ent.reaction.trim()) || newRating === 0;
 
   const activeEntries = diaryEntries.filter(entry =>
