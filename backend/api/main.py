@@ -168,6 +168,25 @@ async def delete_diary_entry(
     
     return {"status": "success"}
 
+# Эндпоинт 4.5: Удаление оценки дня у записи
+@app.delete("/api/diary/{entry_id}/rating")
+async def delete_diary_rating(
+    entry_id: int,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    user_id = user_data.get("id")
+    query = select(DiaryEntry).where(DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id)
+    entry = (await session.execute(query)).scalars().first()
+    
+    if not entry:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Entry not found")
+        
+    entry.rating = None
+    await session.commit()
+    return {"status": "success"}
+
 # Эндпоинт 5: Очистка портрета личности (Тест)
 @app.delete("/api/portrait/clear")
 async def clear_personality_portrait(
@@ -362,6 +381,7 @@ async def analyze_reaction(
 "{entry.reaction}"
 
 Оцени от 0 до 100, насколько эта реакция соответствует описанному портрету личности (где 0 - совершенно нетипично, 100 - полностью соответствует портрету).
+ВАЖНО: Если реакция представляет собой бессмысленный набор букв, бред, спам или совершенно нереалистичный ответ, СТРОГО верни 0.
 Выведи ТОЛЬКО одно целое число от 0 до 100, без дополнительных символов, текста или форматирования."""
 
     ai_token = os.getenv("TIMEWEB_AI_TOKEN")

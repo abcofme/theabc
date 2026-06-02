@@ -102,9 +102,15 @@ export default function CalendarTab({ onSheetOpen }) {
     setNewEntries([...newEntries, { event: '', reaction: '' }]);
   };
 
+  const activeEntries = diaryEntries.filter(entry =>
+    selectedDate && isSameDay(entry.date, selectedDate)
+  );
+
+  const hasDailyRating = activeEntries.some(e => e.rating);
+
   const handleAddEntry = async (e) => {
     e.preventDefault();
-    if (newEntries.some(entry => !entry.event.trim() || !entry.reaction.trim()) || newRating === 0) {
+    if (newEntries.some(entry => !entry.event.trim() || !entry.reaction.trim()) || (!hasDailyRating && newRating === 0)) {
       WebApp.showAlert("Пожалуйста, заполните все события, реакции и укажите общую оценку дня.");
       return;
     }
@@ -125,7 +131,7 @@ export default function CalendarTab({ onSheetOpen }) {
             date: dateStr,
             event: entry.event,
             reaction: entry.reaction,
-            rating: newRating
+            rating: hasDailyRating ? null : newRating
           })
         });
 
@@ -198,7 +204,23 @@ export default function CalendarTab({ onSheetOpen }) {
     }
   };
 
-  const isSubmitDisabled = newEntries.some(ent => !ent.event.trim() || !ent.reaction.trim()) || newRating === 0;
+  const isSubmitDisabled = newEntries.some(ent => !ent.event.trim() || !ent.reaction.trim()) || (!hasDailyRating && newRating === 0);
+
+  const handleDeleteRating = async (entryId) => {
+    try {
+      const response = await fetch(`${API_URL}/api/diary/${entryId}/rating`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${WebApp.initData}`
+        }
+      });
+      if (!response.ok) throw new Error("Ошибка удаления оценки");
+      setDiaryEntries(prev => prev.map(e => e.id === entryId ? { ...e, rating: null } : e));
+    } catch (error) {
+      console.error(error);
+      WebApp.showAlert("Произошла ошибка при удалении оценки.");
+    }
+  };
 
   const handleManualAnalysis = (entryId) => {
     if (!hasPortrait) return;
@@ -402,12 +424,24 @@ export default function CalendarTab({ onSheetOpen }) {
             </div>
 
             <div className="flex-1 space-y-4 mb-8">
-              {activeEntries.length > 0 && activeEntries[0].rating ? (
-                <div className="flex items-center gap-2 mb-4 bg-neutral-900/40 p-4 rounded-2xl border border-neutral-800">
-                  <span className="text-sm font-bold text-neutral-400 uppercase tracking-wider">Оценка дня:</span>
-                  <div className="flex gap-1 text-amber-400 text-xl">
-                    {'★'.repeat(activeEntries[0].rating)}{'☆'.repeat(5 - activeEntries[0].rating)}
+              {activeEntries.some(e => e.rating) ? (
+                <div className="flex items-center justify-between gap-2 mb-4 bg-neutral-900/40 p-4 rounded-2xl border border-neutral-800 relative group">
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm font-bold text-neutral-400 uppercase tracking-wider">Оценка дня:</span>
+                    <div className="flex gap-1 text-amber-400 text-xl">
+                      {(() => {
+                        const ratedEntry = activeEntries.find(e => e.rating);
+                        return '★'.repeat(ratedEntry.rating) + '☆'.repeat(5 - ratedEntry.rating);
+                      })()}
+                    </div>
                   </div>
+                  <button 
+                    onClick={() => handleDeleteRating(activeEntries.find(e => e.rating).id)}
+                    className="p-2 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors active:scale-95"
+                    title="Удалить оценку дня"
+                  >
+                    <Trash2 size={18} />
+                  </button>
                 </div>
               ) : null}
               {activeEntries.length > 0 ? (
@@ -483,32 +517,34 @@ export default function CalendarTab({ onSheetOpen }) {
                 Добавить событие
               </button>
 
-              <div className="mt-4 pt-4 border-t border-neutral-800/50">
-                <span className="text-sm font-bold text-neutral-400 block mb-3">Оцените день по пятибальной шкале:</span>
-                <div className="flex justify-between gap-2">
-                  {[1, 2, 3, 4, 5].map(num => (
-                    <button
-                      key={num}
-                      type="button"
-                      onClick={() => setNewRating(num)}
-                      className={`flex-1 py-3 rounded-xl font-bold transition-all text-lg ${
-                        newRating === num 
-                          ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30 scale-105' 
-                          : 'bg-neutral-900 border border-neutral-800 text-neutral-400 hover:bg-neutral-800'
-                      }`}
-                    >
-                      {num}
-                    </button>
-                  ))}
+              {!hasDailyRating && (
+                <div className="mt-4 pt-4 border-t border-neutral-800/50">
+                  <span className="text-sm font-bold text-neutral-400 block mb-3">Оцените день по пятибальной шкале:</span>
+                  <div className="flex justify-between gap-2">
+                    {[1, 2, 3, 4, 5].map(num => (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => setNewRating(num)}
+                        className={`flex-1 py-3 rounded-xl font-bold transition-all text-lg ${
+                          newRating === num 
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30 scale-105' 
+                            : 'bg-neutral-900 border border-neutral-800 text-neutral-400 hover:bg-neutral-800'
+                        }`}
+                      >
+                        {newRating >= num ? '★' : '☆'}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <button
                 type="submit"
-                disabled={isSubmitDisabled}
+                disabled={isSubmitDisabled || isSubmitting}
                 className="w-full bg-blue-600 disabled:bg-blue-900/40 disabled:text-blue-400/50 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-blue-900/20"
               >
-                Сохранить {newEntries.length > 1 ? 'все записи' : 'запись'}
+                {isSubmitting ? 'Сохранение...' : `Сохранить ${newEntries.length > 1 ? 'все записи' : 'запись'}`}
               </button>
             </form>
           </div>
