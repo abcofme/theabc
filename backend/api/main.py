@@ -118,7 +118,7 @@ async def get_diary_entries(
     filtered = [e for e in entries if e.date.year == year and e.date.month == month]
     
     return [
-        {"id": e.id, "date": e.date.isoformat(), "event": e.event, "reaction": e.reaction, "rating": getattr(e, "rating", None)}
+        {"id": e.id, "date": e.date.isoformat(), "event": e.event, "reaction": e.reaction, "rating": getattr(e, "rating", None), "portrait_match_score": getattr(e, "portrait_match_score", None)}
         for e in filtered
     ]
 
@@ -239,8 +239,8 @@ async def generate_personality_portrait(
 [
   {{"left": "Интроверсия", "right": "Экстраверсия", "leftValue": 30, "rightValue": 70, "description": "Вы черпаете энергию изнутри, но легко адаптируетесь к общению."}},
   {{"left": "Стрессоустойчивость", "right": "Ранимость", "leftValue": 60, "rightValue": 40, "description": "Вы хорошо справляетесь с давлением, но чувствительны к несправедливости."}},
-  {{"left": "Новаторство", "right": "Консерватизм", "leftValue": 80, "rightValue": 20, "description": "Вы открыты новому опыту и смело ломаете устаревшие рамки."}},
-  {{"left": "Сотрудничество", "right": "Соперничество", "leftValue": 50, "rightValue": 50, "description": "Вы цените командную работу, но умеете отстаивать свои лидерские амбиции."}},
+  {{"left": "Консерватизм", "right": "Новаторство", "leftValue": 80, "rightValue": 20, "description": "Вы открыты новому опыту и смело ломаете устаревшие рамки."}},
+  {{"left": "Соперничество", "right": "Сотрудничество", "leftValue": 50, "rightValue": 50, "description": "Вы цените командную работу, но умеете отстаивать свои лидерские амбиции."}},
   {{"left": "Системность", "right": "Гибкость", "leftValue": 40, "rightValue": 60, "description": "Вы предпочитаете действовать по ситуации, а не по жесткому плану."}}
 ]
 ```
@@ -325,3 +325,86 @@ async def generate_personality_portrait(
     await session.commit()
     
     return {"status": "success", "portrait": {"content": generated_text, "tests_count": total_tests}}
+
+# Эндпоинт 7: Анализ соответствия реакции портрету
+@app.post("/api/analyze-reaction/{entry_id}")
+async def analyze_reaction(
+    entry_id: int,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    import os
+    import httpx
+    import re
+    
+    user_id = user_data.get("id")
+    
+    # Получаем запись дневника
+    entry = (await session.execute(select(DiaryEntry).where(DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id))).scalars().first()
+    if not entry:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Entry not found")
+        
+    # Получаем портрет личности
+    portrait = (await session.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
+    if not portrait:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Personality portrait not found")
+
+    prompt = f"""Ты — ИИ-психолог.
+Ниже представлен психологический портрет пользователя:
+{portrait.content}
+
+Пользователь описал ситуацию:
+"{entry.event}"
+
+И свою реакцию на нее:
+"{entry.reaction}"
+
+Оцени от 0 до 100, насколько эта реакция соответствует описанному портрету личности (где 0 - совершенно нетипично, 100 - полностью соответствует портрету).
+Выведи ТОЛЬКО одно целое число от 0 до 100, без дополнительных символов, текста или форматирования."""
+
+    ai_token = os.getenv("TIMEWEB_AI_TOKEN")
+    ai_url = os.getenv("TIMEWEB_AI_URL", "https://api.timeweb.cloud/ai/v1/chat/completions")
+    if not ai_url.endswith("/chat/completions"):
+        ai_url = ai_url.rstrip("/") + "/chat/completions"
+        
+    if not ai_token:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail="TIMEWEB_AI_TOKEN is not set")
+        
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            ai_response = await client.post(
+                ai_url,
+                headers={
+                    "Authorization": f"Bearer {ai_token}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "deepseek-v4-flash-thinking",
+                    "messages": [
+                        {"role": "user", "content": prompt}
+                    ]
+                }
+            )
+            ai_response.raise_for_status()
+            ai_data = ai_response.json()
+            generated_text = ai_data["choices"][0]["message"]["content"].strip()
+            
+            # Извлекаем числа из ответа
+            numbers = re.findall(r'\d+', generated_text)
+            if numbers:
+                score = int(numbers[0])
+                score = max(0, min(100, score)) # clamp 0-100
+            else:
+                score = 50 # fallback
+                
+            entry.portrait_match_score = score
+            await session.commit()
+            
+            return {"status": "success", "score": score}
+            
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")

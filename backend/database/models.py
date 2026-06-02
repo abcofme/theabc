@@ -215,6 +215,7 @@ class DiaryEntry(BaseModel):
     event: Mapped[str] = mapped_column(Text(), nullable=False)
     reaction: Mapped[str] = mapped_column(Text(), nullable=False)
     rating: Mapped[int] = mapped_column(Integer(), nullable=True)
+    portrait_match_score: Mapped[int] = mapped_column(Integer(), nullable=True)
 
 class PersonalityPortrait(BaseModel):
     __tablename__ = "personality_portraits"

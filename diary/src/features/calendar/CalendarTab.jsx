@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, isToday, setMonth, setYear, getYear, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { ChevronDown, X, Plus, BookOpen, Check, Trash2 } from 'lucide-react';
+import { ChevronDown, X, Plus, BookOpen, Check, Trash2, Lock, Activity, Sparkles } from 'lucide-react';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://restoration-relative-federation-forth.trycloudflare.com";
@@ -11,6 +11,24 @@ export default function CalendarTab({ onSheetOpen }) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [hasPortrait, setHasPortrait] = useState(false);
+  const [analyzingIds, setAnalyzingIds] = useState([]);
+
+  // Загружаем наличие портрета
+  useEffect(() => {
+    fetch(`${API_URL}/api/profile`, {
+      headers: {
+        "Authorization": `Bearer ${WebApp.initData}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.portrait) {
+          setHasPortrait(true);
+        }
+      })
+      .catch(console.error);
+  }, []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [entryToDelete, setEntryToDelete] = useState(null);
   
@@ -53,12 +71,15 @@ export default function CalendarTab({ onSheetOpen }) {
     })
       .then(res => res.json())
       .then(data => {
-        // data ожидается в формате [{ id, date, event, reaction }, ...]
-        const parsed = data.map(item => ({
-            ...item,
-            date: parseISO(item.date) // преобразуем строку 'YYYY-MM-DD' обратно в объект Date
+        const loadedEntries = data.map(entry => ({
+          id: entry.id,
+          date: new Date(entry.date),
+          event: entry.event,
+          reaction: entry.reaction,
+          rating: entry.rating,
+          portrait_match_score: entry.portrait_match_score
         }));
-        setDiaryEntries(parsed || []);
+        setDiaryEntries(loadedEntries);
       })
       .catch(err => console.error("Ошибка загрузки дневника:", err));
   }, [currentMonth]);
@@ -119,8 +140,29 @@ export default function CalendarTab({ onSheetOpen }) {
           date: selectedDate,
           event: entry.event,
           reaction: entry.reaction,
-          rating: newRating
+          rating: newRating,
+          portrait_match_score: null
         }]);
+
+        if (hasPortrait) {
+          setAnalyzingIds(prev => [...prev, data.id]);
+          fetch(`${API_URL}/api/analyze-reaction/${data.id}`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${WebApp.initData}`
+            }
+          })
+            .then(res => res.json())
+            .then(analysisData => {
+              if (analysisData.status === "success") {
+                setDiaryEntries(prevEntries => prevEntries.map(e => e.id === data.id ? { ...e, portrait_match_score: analysisData.score } : e));
+              }
+            })
+            .catch(console.error)
+            .finally(() => {
+              setAnalyzingIds(prev => prev.filter(id => id !== data.id));
+            });
+        }
       }
       
       // Сбрасываем форму
@@ -157,6 +199,79 @@ export default function CalendarTab({ onSheetOpen }) {
   };
 
   const isSubmitDisabled = newEntries.some(ent => !ent.event.trim() || !ent.reaction.trim()) || newRating === 0;
+
+  const handleManualAnalysis = (entryId) => {
+    if (!hasPortrait) return;
+    setAnalyzingIds(prev => [...prev, entryId]);
+    fetch(`${API_URL}/api/analyze-reaction/${entryId}`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${WebApp.initData}`
+      }
+    })
+      .then(res => res.json())
+      .then(analysisData => {
+        if (analysisData.status === "success") {
+          setDiaryEntries(prevEntries => prevEntries.map(e => e.id === entryId ? { ...e, portrait_match_score: analysisData.score } : e));
+        }
+      })
+      .catch(console.error)
+      .finally(() => {
+        setAnalyzingIds(prev => prev.filter(id => id !== entryId));
+      });
+  };
+
+  const renderMatchScale = (entry) => {
+    if (!hasPortrait) {
+      return (
+        <div className="mt-5 pt-5 border-t border-neutral-800">
+          <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">Насколько реакция соответствует портрету?</p>
+          <div className="h-2 w-full bg-neutral-800 rounded-full overflow-hidden mb-2"></div>
+          <p className="text-xs font-medium text-neutral-500 flex items-center gap-1.5 leading-tight"><Lock size={12}/> Для разблокировки шкалы сформируйте портрет личности в профиле</p>
+        </div>
+      );
+    }
+
+    const isAnalyzing = analyzingIds.includes(entry.id);
+
+    if (entry.portrait_match_score === null || entry.portrait_match_score === undefined) {
+      return (
+        <div className="mt-5 pt-5 border-t border-neutral-800">
+          <p className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3">Соответствие портрету личности:</p>
+          {isAnalyzing ? (
+            <div className="flex items-center gap-3">
+              <div className="h-2 flex-1 bg-neutral-800 rounded-full overflow-hidden relative">
+                <div className="absolute inset-0 bg-neutral-700 animate-pulse"></div>
+              </div>
+              <span className="text-xs text-neutral-400 font-bold flex items-center gap-1"><Sparkles size={12}/> Анализ...</span>
+            </div>
+          ) : (
+            <button onClick={() => handleManualAnalysis(entry.id)} className="w-full py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
+              <Activity size={16} /> Проанализировать реакцию
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    const score = entry.portrait_match_score;
+    let colorClass = "bg-green-500";
+    if (score <= 25) colorClass = "bg-red-500";
+    else if (score <= 50) colorClass = "bg-orange-500";
+    else if (score <= 75) colorClass = "bg-yellow-400";
+
+    return (
+      <div className="mt-5 pt-5 border-t border-neutral-800">
+        <p className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3">Соответствие портрету личности:</p>
+        <div className="flex items-center gap-3">
+          <div className="h-2 flex-1 bg-neutral-800 rounded-full overflow-hidden shadow-inner relative">
+            <div className={`absolute top-0 bottom-0 left-0 ${colorClass} transition-all duration-1000 ease-out`} style={{ width: `${score}%` }}></div>
+          </div>
+          <span className={`text-sm font-bold ${colorClass.replace('bg-', 'text-')}`}>{score}%</span>
+        </div>
+      </div>
+    );
+  };
 
   const activeEntries = diaryEntries.filter(entry =>
     selectedDate && isSameDay(entry.date, selectedDate)
@@ -312,6 +427,7 @@ export default function CalendarTab({ onSheetOpen }) {
                       <span className="text-xs font-bold text-blue-400 uppercase tracking-wider block mb-1.5">Реакция:</span>
                       <p className="text-base text-neutral-300">{entry.reaction}</p>
                     </div>
+                    {renderMatchScale(entry)}
                   </div>
                 ))
               ) : (
