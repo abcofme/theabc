@@ -222,33 +222,64 @@ export default function ProfileTab() {
         <>
           {/* ПОРТРЕТ ЛИЧНОСТИ КНОПКИ */}
           <div className="mx-4 mb-4 flex flex-col gap-3">
-            <button 
-              onClick={handleGeneratePortrait}
-              disabled={isGeneratingPortrait}
-              className="w-full bg-neutral-900/60 border border-neutral-800/80 rounded-2xl p-4 text-left hover:bg-neutral-800/80 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
-            >
-              <div>
-                <h3 className="text-base sm:text-lg font-bold text-neutral-200 mb-1">Сформировать портрет</h3>
-                <p className="text-xs sm:text-sm text-neutral-500">{isGeneratingPortrait ? 'Генерация...' : 'Обновить на основе новых тестов'}</p>
-              </div>
-              {isGeneratingPortrait ? (
-                <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <Wand2 className="text-neutral-500" size={24} />
-              )}
-            </button>
-            
-            {portraitData && (
+            {!portraitData ? (
               <button 
-                onClick={() => setActiveSubTab('portrait')}
-                className="w-full bg-gradient-to-r from-blue-900/30 to-blue-800/10 border border-blue-900/50 rounded-2xl p-4 text-left hover:bg-blue-900/40 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
+                onClick={() => {
+                  if (!allTestsPassed) {
+                    WebApp.showAlert("Пройдите все тесты, чтобы сформировать портрет личности.");
+                    return;
+                  }
+                  handleGeneratePortrait();
+                }}
+                disabled={isGeneratingPortrait}
+                className={`w-full rounded-2xl p-4 text-left transition-all duration-700 flex items-center justify-between ${
+                  allTestsPassed 
+                    ? "bg-neutral-900/60 border border-neutral-800/80 hover:bg-neutral-800/80 active:scale-[0.98]" 
+                    : "bg-neutral-900/30 border border-neutral-800/40 opacity-70"
+                }`}
               >
                 <div>
-                  <h3 className="text-lg font-bold text-blue-400 mb-1">Мой портрет личности</h3>
-                  <p className="text-sm text-neutral-400">Открыть сформированный портрет</p>
+                  <h3 className="text-base sm:text-lg font-bold text-neutral-200 mb-1">Сформировать портрет</h3>
+                  <p className="text-xs sm:text-sm text-neutral-500">
+                    {isGeneratingPortrait ? 'Генерация...' : allTestsPassed ? 'Анализ ваших тестов' : `Пройдено ${totalPassed} из ${totalTests} тестов`}
+                  </p>
                 </div>
-                <ClipboardList className="text-blue-500" size={24} />
+                {isGeneratingPortrait ? (
+                  <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <Wand2 className={allTestsPassed ? "text-neutral-500" : "text-neutral-600"} size={24} />
+                )}
               </button>
+            ) : (
+              <>
+                {totalPassed > portraitData.tests_count && allTestsPassed && (
+                  <button 
+                    onClick={handleGeneratePortrait}
+                    disabled={isGeneratingPortrait}
+                    className="w-full bg-neutral-900/60 border border-neutral-800/80 rounded-2xl p-4 text-left hover:bg-neutral-800/80 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
+                  >
+                    <div>
+                      <h3 className="text-base sm:text-lg font-bold text-neutral-200 mb-1">Сформировать заново</h3>
+                      <p className="text-xs sm:text-sm text-neutral-500">{isGeneratingPortrait ? 'Генерация...' : 'Обновить на основе новых тестов'}</p>
+                    </div>
+                    {isGeneratingPortrait ? (
+                      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <Wand2 className="text-neutral-500" size={24} />
+                    )}
+                  </button>
+                )}
+                <button 
+                  onClick={() => setActiveSubTab('portrait')}
+                  className="w-full bg-gradient-to-r from-blue-900/30 to-blue-800/10 border border-blue-900/50 rounded-2xl p-4 text-left hover:bg-blue-900/40 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
+                >
+                  <div>
+                    <h3 className="text-lg font-bold text-blue-400 mb-1">Мой портрет личности</h3>
+                    <p className="text-sm text-neutral-400">Открыть сформированный портрет</p>
+                  </div>
+                  <ClipboardList className="text-blue-500" size={24} />
+                </button>
+              </>
             )}
           </div>
 
