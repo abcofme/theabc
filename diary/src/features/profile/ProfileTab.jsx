@@ -98,16 +98,16 @@ export default function ProfileTab() {
   }
 
   const PortraitScale = ({ left, right, leftValue, rightValue, description }) => (
-    <div className="mb-8">
+    <div className="mb-10 w-full">
       <div className="flex justify-between text-base sm:text-lg font-bold text-neutral-200 mb-3">
         <span>{left}</span>
         <span>{right}</span>
       </div>
-      <div className="h-4 w-full bg-neutral-800 rounded-full overflow-hidden flex shadow-inner mb-3">
+      <div className="h-4 w-full bg-neutral-800 rounded-full overflow-hidden flex shadow-inner mb-4">
         <div className="h-full bg-blue-500 transition-all duration-1000 ease-out" style={{ width: `${leftValue}%` }}></div>
         <div className="h-full bg-orange-500 transition-all duration-1000 ease-out" style={{ width: `${rightValue}%` }}></div>
       </div>
-      {description && <p className="text-sm sm:text-base text-neutral-400 font-medium leading-relaxed">{description}</p>}
+      {description && <div className="mt-4"><p className="text-sm sm:text-base text-neutral-400 font-medium leading-relaxed block break-words">{description}</p></div>}
     </div>
   );
 
@@ -152,19 +152,14 @@ export default function ProfileTab() {
         </strong>
       ),
       ul: ({node, ...props}) => {
-        const isBarriers = sectionTitle.includes('барьеры');
-        return <ul className={`space-y-6 mb-10 mt-6 ${isBarriers ? 'px-4 sm:px-8 max-w-xl mx-auto' : 'pl-2'}`} {...props} />
+        return <ul className="space-y-6 mb-10 mt-6 pl-1 w-full" {...props} />
       },
       li: ({node, ...props}) => {
         const isBarriers = sectionTitle.includes('барьеры');
         return (
-          <li className={`flex items-start text-base sm:text-lg font-semibold text-neutral-200 break-words ${isBarriers ? 'border-b border-neutral-800/50 pb-4 last:border-0' : ''}`}>
-            {isBarriers ? (
-              <span className="text-red-400 font-black mr-3 mt-1 shrink-0">•</span>
-            ) : (
-              <IconComponent className={`shrink-0 ${iconColor} mr-3 mt-1`} size={22} />
-            )}
-            <span>{props.children}</span>
+          <li className={`flex items-start text-base sm:text-lg font-semibold text-neutral-200 break-words w-full ${isBarriers ? 'border-b border-neutral-800/50 pb-4 last:border-0' : ''}`}>
+            <IconComponent className={`shrink-0 ${iconColor} mr-3 mt-1`} size={22} />
+            <span className="flex-1 block">{props.children}</span>
           </li>
         );
       },
