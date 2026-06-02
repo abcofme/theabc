@@ -217,12 +217,12 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
     from backend.database.models import PersonalityPortrait
     from sqlalchemy import select
     try:
-        async with httpx.AsyncClient(timeout=None) as client:
+        async with httpx.AsyncClient(timeout=120.0) as client:
             ai_response = await client.post(
                 ai_url,
                 headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                 json={
-                    "model": "claude-4.8-opus",
+                    "model": "gpt-4o-mini",
                     "messages": [{"role": "user", "content": prompt}]
                 }
             )
@@ -232,7 +232,7 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
                     ai_url,
                     headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                     json={
-                        "model": "claude-3-5-sonnet",
+                        "model": "gpt-3.5-turbo",
                         "messages": [{"role": "user", "content": prompt}]
                     }
                 )
@@ -349,8 +349,12 @@ async def generate_personality_portrait(
     # 3. Делаем запрос к Timeweb Cloud API (Claude 3.5 Sonnet)
     # Используем OpenAI совместимый эндпоинт от Timeweb
     ai_token = os.getenv("TIMEWEB_AI_TOKEN")
-    ai_url = os.getenv("TIMEWEB_AI_URL", "https://api.timeweb.cloud/ai/v1/chat/completions")
+    ai_url = os.getenv("TIMEWEB_AI_PORTRAIT_URL", os.getenv("TIMEWEB_AI_URL"))
     
+    if not ai_url:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail="AI URL not configured")
+        
     if not ai_url.endswith("/chat/completions"):
         ai_url = ai_url.rstrip("/") + "/chat/completions"
     
@@ -563,7 +567,12 @@ async def generate_report(
         raise HTTPException(status_code=400, detail="Неизвестный тип отчета.")
 
     ai_token = os.getenv("TIMEWEB_AI_TOKEN")
-    ai_url = os.getenv("TIMEWEB_AI_URL", "https://api.timeweb.cloud/ai/v1/chat/completions")
+    ai_url = os.getenv("TIMEWEB_AI_REPORTS_URL", os.getenv("TIMEWEB_AI_URL"))
+    
+    if not ai_url:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail="AI URL not configured")
+        
     if not ai_url.endswith("/chat/completions"):
         ai_url = ai_url.rstrip("/") + "/chat/completions"
         
@@ -604,7 +613,12 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
     
     try:
         ai_token = os.getenv("TIMEWEB_AI_TOKEN")
-        ai_url = os.getenv("TIMEWEB_AI_URL", "https://api.timeweb.cloud/ai/v1/chat/completions")
+        ai_url = os.getenv("TIMEWEB_AI_SCALE_URL", os.getenv("TIMEWEB_AI_URL"))
+        
+        if not ai_url:
+            print("TIMEWEB_AI_URL is not set")
+            return
+            
         if not ai_url.endswith("/chat/completions"):
             ai_url = ai_url.rstrip("/") + "/chat/completions"
             
@@ -642,7 +656,7 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                         "Content-Type": "application/json"
                     },
                     json={
-                        "model": "claude-4.8-opus",
+                        "model": "deepseek-chat",
                         "messages": [
                             {"role": "user", "content": prompt}
                         ]
@@ -657,7 +671,7 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                             "Content-Type": "application/json"
                         },
                         json={
-                            "model": "claude-3-5-sonnet",
+                            "model": "gpt-3.5-turbo",
                             "messages": [
                                 {"role": "user", "content": prompt}
                             ]
