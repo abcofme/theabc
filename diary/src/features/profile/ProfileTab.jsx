@@ -97,93 +97,98 @@ export default function ProfileTab() {
     }
   }
 
-  const PortraitScale = ({ left, right, leftValue, rightValue }) => (
-    <div className="mb-6">
+  const PortraitScale = ({ left, right, leftValue, rightValue, description }) => (
+    <div className="mb-8">
       <div className="flex justify-between text-base sm:text-lg font-bold text-neutral-200 mb-3">
         <span>{left}</span>
         <span>{right}</span>
       </div>
-      <div className="h-4 w-full bg-neutral-800 rounded-full overflow-hidden flex shadow-inner">
+      <div className="h-4 w-full bg-neutral-800 rounded-full overflow-hidden flex shadow-inner mb-3">
         <div className="h-full bg-blue-500 transition-all duration-1000 ease-out" style={{ width: `${leftValue}%` }}></div>
         <div className="h-full bg-orange-500 transition-all duration-1000 ease-out" style={{ width: `${rightValue}%` }}></div>
       </div>
+      {description && <p className="text-sm sm:text-base text-neutral-400 font-medium leading-relaxed">{description}</p>}
     </div>
   );
 
-  // Храним текущий раздел во время рендера Markdown
-  const currentSectionRef = useRef("");
+  const getMarkdownComponents = (sectionTitle) => {
+    let IconComponent = Sparkles;
+    let iconColor = "text-blue-400";
 
-  const MarkdownComponents = {
-    h1: ({node, ...props}) => (
-      <h1 className="text-3xl sm:text-4xl font-black text-blue-400 text-center mb-10 mt-6 first:mt-2 uppercase drop-shadow-sm break-words" {...props} />
-    ),
-    h2: ({node, ...props}) => {
-      let textStr = "";
-      if (typeof props.children === 'string') textStr = props.children;
-      else if (Array.isArray(props.children)) textStr = props.children.map(c => typeof c === 'string' ? c : '').join('');
-      
-      currentSectionRef.current = textStr; // Сохраняем текущий раздел
+    if (sectionTitle.includes('Поведенческие')) {
+      IconComponent = Target;
+      iconColor = "text-emerald-400";
+    } else if (sectionTitle.includes('ценностей')) {
+      IconComponent = Heart;
+      iconColor = "text-amber-400";
+    } else if (sectionTitle.includes('барьеры')) {
+      IconComponent = Flame;
+      iconColor = "text-red-400";
+    }
 
-      let icon = null;
-      if (textStr.includes('Устойчивые')) icon = <Activity className="text-blue-400 inline mb-1 mr-3" size={28} />;
-      else if (textStr.includes('Поведенческие')) icon = <Brain className="text-emerald-400 inline mb-1 mr-3" size={28} />;
-      else if (textStr.includes('ценностей')) icon = <Star className="text-amber-400 inline mb-1 mr-3" size={28} />;
-      else if (textStr.includes('барьеры')) icon = <ShieldAlert className="text-red-400 inline mb-1 mr-3" size={28} />;
-      else if (textStr.includes('Личность')) icon = <User className="text-blue-400 inline mb-1 mr-3" size={28} />;
+    return {
+      h1: ({node, ...props}) => (
+        <h1 className="text-3xl sm:text-4xl font-black text-blue-400 text-center mb-10 mt-6 first:mt-2 uppercase drop-shadow-sm break-words" {...props} />
+      ),
+      h2: ({node, ...props}) => {
+        let textStr = "";
+        if (typeof props.children === 'string') textStr = props.children;
+        else if (Array.isArray(props.children)) textStr = props.children.map(c => typeof c === 'string' ? c : '').join('');
+        
+        let h2Icon = null;
+        if (textStr.includes('Устойчивые')) h2Icon = <Activity className="text-blue-400 inline mb-1 mr-3" size={28} />;
+        else if (textStr.includes('Поведенческие')) h2Icon = <Brain className="text-emerald-400 inline mb-1 mr-3" size={28} />;
+        else if (textStr.includes('ценностей')) h2Icon = <Star className="text-amber-400 inline mb-1 mr-3" size={28} />;
+        else if (textStr.includes('барьеры')) h2Icon = <ShieldAlert className="text-red-400 inline mb-1 mr-3" size={28} />;
+        else if (textStr.includes('Личность')) h2Icon = <User className="text-blue-400 inline mb-1 mr-3" size={28} />;
 
-      return <h2 className="text-2xl sm:text-3xl font-bold text-neutral-100 mt-14 mb-8 flex items-center justify-center border-b border-neutral-800/80 pb-4 break-words text-center">{icon} {props.children}</h2>
-    },
-    p: ({node, ...props}) => <p className="text-neutral-200 leading-relaxed mb-8 text-base sm:text-lg font-semibold text-left break-words" {...props} />,
-    strong: ({node, ...props}) => {
-      const section = currentSectionRef.current;
-      let IconComponent = Sparkles;
-      let iconColor = "text-blue-400";
-
-      if (section.includes('Поведенческие')) {
-        IconComponent = Target;
-        iconColor = "text-emerald-400";
-      } else if (section.includes('ценностей')) {
-        IconComponent = Heart;
-        iconColor = "text-amber-400";
-      } else if (section.includes('барьеры')) {
-        IconComponent = Flame;
-        iconColor = "text-red-400";
-      }
-
-      return (
-        <strong className="text-white font-black break-words" {...props}>
-          <IconComponent className={`inline ${iconColor} mb-1 mr-1.5`} size={20} />
+        return <h2 className="text-2xl sm:text-3xl font-bold text-neutral-100 mt-14 mb-8 flex items-center justify-center border-b border-neutral-800/80 pb-4 break-words text-center">{h2Icon} {props.children}</h2>
+      },
+      p: ({node, ...props}) => <p className="text-neutral-200 leading-loose mb-8 text-base sm:text-lg font-semibold text-left break-words" {...props} />,
+      strong: ({node, ...props}) => (
+        <strong className="text-white font-black text-lg sm:text-xl break-words" {...props}>
+          <IconComponent className={`inline ${iconColor} mb-1 mr-2`} size={22} />
           {props.children}
         </strong>
-      );
-    },
-    ul: ({node, ...props}) => <ul className="space-y-5 mb-10 mt-4 pl-2" {...props} />,
-    li: ({node, ...props}) => (
-      <li className="flex items-start text-base sm:text-lg font-medium text-neutral-300 break-words">
-        <span className="text-blue-500 mr-3 mt-1.5 shrink-0">•</span>
-        <span>{props.children}</span>
-      </li>
-    ),
-    code: ({node, inline, className, children, ...props}) => {
-      const match = /language-(\w+)/.exec(className || '')
-      if (!inline && match && match[1] === 'json') {
-        const jsonString = String(children).replace(/\n$/, '');
-        let scalesData = [];
-        try {
-          scalesData = JSON.parse(jsonString);
-        } catch (e) {
-          return <code className={className} {...props}>{children}</code>;
-        }
+      ),
+      ul: ({node, ...props}) => {
+        const isBarriers = sectionTitle.includes('барьеры');
+        return <ul className={`space-y-6 mb-10 mt-6 ${isBarriers ? 'px-4 sm:px-8 max-w-xl mx-auto' : 'pl-2'}`} {...props} />
+      },
+      li: ({node, ...props}) => {
+        const isBarriers = sectionTitle.includes('барьеры');
         return (
-          <div className="my-10 px-2 sm:px-4">
-            {scalesData.map((s, idx) => (
-              <PortraitScale key={idx} left={s.left} right={s.right} leftValue={s.leftValue} rightValue={s.rightValue} />
-            ))}
-          </div>
-        )
+          <li className={`flex items-start text-base sm:text-lg font-semibold text-neutral-200 break-words ${isBarriers ? 'border-b border-neutral-800/50 pb-4 last:border-0' : ''}`}>
+            {isBarriers ? (
+              <span className="text-red-400 font-black mr-3 mt-1 shrink-0">•</span>
+            ) : (
+              <IconComponent className={`shrink-0 ${iconColor} mr-3 mt-1`} size={22} />
+            )}
+            <span>{props.children}</span>
+          </li>
+        );
+      },
+      code: ({node, inline, className, children, ...props}) => {
+        const match = /language-(\w+)/.exec(className || '')
+        if (!inline && match && match[1] === 'json') {
+          const jsonString = String(children).replace(/\n$/, '');
+          let scalesData = [];
+          try {
+            scalesData = JSON.parse(jsonString);
+          } catch (e) {
+            return <code className={className} {...props}>{children}</code>;
+          }
+          return (
+            <div className="my-10 px-2 sm:px-4">
+              {scalesData.map((s, idx) => (
+                <PortraitScale key={idx} left={s.left} right={s.right} leftValue={s.leftValue} rightValue={s.rightValue} description={s.description} />
+              ))}
+            </div>
+          )
+        }
+        return <code className="bg-neutral-800 text-blue-300 px-1.5 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>
       }
-      return <code className="bg-neutral-800 text-blue-300 px-1.5 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>
-    }
+    };
   };
 
   const toggleCategory = (id) => {
@@ -364,9 +369,15 @@ export default function ProfileTab() {
 
               {portraitData && (
                 <div className="px-1 sm:px-4 mb-4 overflow-x-hidden">
-                  <ReactMarkdown components={MarkdownComponents}>
-                    {markdownContent}
-                  </ReactMarkdown>
+                  {markdownContent.split(/(?=^#\s)/m).map((sectionText, i) => {
+                    if (!sectionText.trim()) return null;
+                    const firstLine = sectionText.trim().split('\n')[0];
+                    return (
+                      <ReactMarkdown key={i} components={getMarkdownComponents(firstLine)}>
+                        {sectionText}
+                      </ReactMarkdown>
+                    );
+                  })}
                 </div>
               )}
 
