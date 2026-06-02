@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -205,6 +206,54 @@ async def clear_personality_portrait(
     return {"status": "not_found", "message": "Портрет не найден"}
 
 # Эндпоинт 6: Генерация портрета личности
+
+async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str, ai_url: str, ai_token: str):
+    import httpx
+    from fastapi import HTTPException
+    from backend.database import async_session
+    from backend.database.models import PersonalityPortrait
+    from sqlalchemy import select
+    try:
+        async with httpx.AsyncClient(timeout=None) as client:
+            ai_response = await client.post(
+                ai_url,
+                headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
+                json={
+                    "model": "claude-4.8-opus",
+                    "messages": [{"role": "user", "content": prompt}]
+                }
+            )
+            
+            if ai_response.status_code == 404:
+                ai_response = await client.post(
+                    ai_url,
+                    headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
+                    json={
+                        "model": "claude-3-5-sonnet",
+                        "messages": [{"role": "user", "content": prompt}]
+                    }
+                )
+
+            ai_response.raise_for_status()
+            ai_data = ai_response.json()
+            generated_text = ai_data["choices"][0]["message"]["content"].strip()
+            
+            async with async_session() as db:
+                existing = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
+                if existing:
+                    existing.content = generated_text
+                    existing.tests_count = user_tests_count
+                    new_portrait = existing
+                else:
+                    new_portrait = PersonalityPortrait(user_id=user_id, content=generated_text, tests_count=user_tests_count)
+                    db.add(new_portrait)
+                await db.commit()
+                await db.refresh(new_portrait)
+            return {"status": "success", "portrait": new_portrait}
+    except Exception as e:
+        print("BG portrait failed:", e)
+        raise HTTPException(status_code=500, detail=f"Failed to generate portrait: {str(e)}")
+
 @app.post("/api/portrait/generate")
 async def generate_personality_portrait(
     user_data: dict = Depends(validate_twa_data),
@@ -306,128 +355,11 @@ async def generate_personality_portrait(
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail="TIMEWEB_AI_TOKEN is not set on the server")
         
+    task = asyncio.create_task(_analyze_reaction_bg(user_id, entry_id, prompt, ai_url, ai_token))
     try:
-        async with httpx.AsyncClient(timeout=120.0) as client:
-            ai_response = await client.post(
-                ai_url,
-                headers={
-                    "Authorization": f"Bearer {ai_token}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "gpt-4o-mini",
-                    "messages": [
-                        {"role": "user", "content": prompt}
-                    ]
-                }
-            )
-            ai_response.raise_for_status()
-            ai_data = ai_response.json()
-            generated_text = ai_data["choices"][0]["message"]["content"]
-    except httpx.HTTPStatusError as e:
-        error_text = e.response.text
-        from fastapi import HTTPException
-        raise HTTPException(status_code=500, detail=f"Ошибка API ИИ ({e.response.status_code}): {error_text}")
-    except Exception as e:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=500, detail=f"Системная ошибка генерации ИИ ({type(e).__name__}): {str(e)} | URL: {ai_url}")
-
-    # 4. Сохраняем в БД
-    portrait = (await session.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
-    if not portrait:
-        portrait = PersonalityPortrait(user_id=user_id, content=generated_text, tests_count=total_tests)
-        session.add(portrait)
-    else:
-        portrait.content = generated_text
-        portrait.tests_count = total_tests
-        
-    await session.commit()
-    
-    return {"status": "success", "portrait": {"content": generated_text, "tests_count": total_tests}}
-
-# Эндпоинт 7: Анализ соответствия реакции портрету
-@app.post("/api/analyze-reaction/{entry_id}")
-async def analyze_reaction(
-    entry_id: int,
-    user_data: dict = Depends(validate_twa_data),
-    session: AsyncSession = Depends(get_session)
-):
-    import os
-    import httpx
-    import re
-    
-    user_id = user_data.get("id")
-    
-    # Получаем запись дневника
-    entry = (await session.execute(select(DiaryEntry).where(DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id))).scalars().first()
-    if not entry:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="Entry not found")
-        
-    # Получаем портрет личности
-    portrait = (await session.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
-    if not portrait:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=400, detail="Personality portrait not found")
-
-    prompt = f"""Ты — ИИ-психолог.
-Ниже представлен психологический портрет пользователя:
-{portrait.content}
-
-Пользователь описал ситуацию:
-"{entry.event}"
-
-И свою реакцию на нее:
-"{entry.reaction}"
-
-Оцени от 0 до 100, насколько эта реакция соответствует описанному портрету личности (где 0 - совершенно нетипично, 100 - полностью соответствует портрету).
-ВАЖНО: Если реакция представляет собой бессмысленный набор букв, бред, спам или совершенно нереалистичный ответ, СТРОГО верни 0.
-Выведи ТОЛЬКО одно целое число от 0 до 100, без дополнительных символов, текста или форматирования."""
-
-    ai_token = os.getenv("TIMEWEB_AI_TOKEN")
-    ai_url = os.getenv("TIMEWEB_AI_URL", "https://api.timeweb.cloud/ai/v1/chat/completions")
-    if not ai_url.endswith("/chat/completions"):
-        ai_url = ai_url.rstrip("/") + "/chat/completions"
-        
-    if not ai_token:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=500, detail="TIMEWEB_AI_TOKEN is not set")
-        
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            ai_response = await client.post(
-                ai_url,
-                headers={
-                    "Authorization": f"Bearer {ai_token}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "deepseek-v4-flash-thinking",
-                    "messages": [
-                        {"role": "user", "content": prompt}
-                    ]
-                }
-            )
-            ai_response.raise_for_status()
-            ai_data = ai_response.json()
-            generated_text = ai_data["choices"][0]["message"]["content"].strip()
-            
-            # Извлекаем числа из ответа
-            numbers = re.findall(r'\d+', generated_text)
-            if numbers:
-                score = int(numbers[0])
-                score = max(0, min(100, score)) # clamp 0-100
-            else:
-                score = 50 # fallback
-                
-            entry.portrait_match_score = score
-            await session.commit()
-            
-            return {"status": "success", "score": score}
-            
-    except Exception as e:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        return await asyncio.shield(task)
+    except asyncio.CancelledError:
+        raise
 
 from pydantic import BaseModel
 from typing import Optional
@@ -456,6 +388,57 @@ async def get_reports(
         "content": r.content,
         "created_at": r.created_at
     } for r in reports]
+
+
+async def _generate_report_bg(user_id: int, report_title: str, report_prompt: str, start_d, end_d, ai_url: str, ai_token: str, num_entries: int):
+    import httpx
+    from fastapi import HTTPException
+    from backend.database import async_session
+    from backend.database.models import BehavioralReport
+    try:
+        payload = {
+            "model": "claude-4.8-opus",
+            "messages": [{"role": "user", "content": report_prompt}]
+        }
+        print(f"--- Отправка запроса к ИИ ({payload['model']}) ---")
+        print(f"URL: {ai_url}")
+        print(f"Записей дневника передано: {num_entries}")
+        print("-------------------------------------------------", flush=True)
+
+        async with httpx.AsyncClient(timeout=None) as client:
+            ai_response = await client.post(
+                ai_url,
+                headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
+                json=payload
+            )
+            
+            if ai_response.status_code == 404:
+                payload["model"] = "claude-3-5-sonnet"
+                ai_response = await client.post(
+                    ai_url,
+                    headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
+                    json=payload
+                )
+
+            ai_response.raise_for_status()
+            ai_data = ai_response.json()
+            generated_text = ai_data["choices"][0]["message"]["content"].strip()
+            
+            async with async_session() as db:
+                new_report = BehavioralReport(
+                    user_id=user_id,
+                    title=report_title,
+                    period_start=start_d,
+                    period_end=end_d,
+                    content=generated_text
+                )
+                db.add(new_report)
+                await db.commit()
+                await db.refresh(new_report)
+            return {"status": "success", "report": new_report}
+    except Exception as e:
+        print("BG report failed:", e)
+        raise HTTPException(status_code=500, detail=f"Failed to generate report: {str(e)}")
 
 @app.post("/api/reports/generate")
 async def generate_report(
