@@ -215,3 +215,12 @@ class DiaryEntry(BaseModel):
     event: Mapped[str] = mapped_column(Text(), nullable=False)
     reaction: Mapped[str] = mapped_column(Text(), nullable=False)
     rating: Mapped[int] = mapped_column(Integer(), nullable=True)
+
+class PersonalityPortrait(BaseModel):
+    __tablename__ = "personality_portraits"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    user: Mapped["User"] = relationship("User")
+    
+    content: Mapped[str] = mapped_column(Text(), nullable=False)
+    tests_count: Mapped[int] = mapped_column(Integer(), default=0)

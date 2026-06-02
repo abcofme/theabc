@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X } from 'lucide-react';
+import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X, ChevronLeft, Lock, Wand2 } from 'lucide-react';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://restoration-relative-federation-forth.trycloudflare.com";
 
 export default function ProfileTab() {
   const [categories, setCategories] = useState([]);
+  const [totalTests, setTotalTests] = useState(0);
+  const [passedTests, setPassedTests] = useState(0);
+  const [portraitData, setPortraitData] = useState(null);
+  const [isGeneratingPortrait, setIsGeneratingPortrait] = useState(false);
   const [loading, setLoading] = useState(true);
   
   // Новый стейт для вкладок
-  const [activeSubTab, setActiveSubTab] = useState('tests'); // 'tests' | 'analyses'
+  const [activeSubTab, setActiveSubTab] = useState('tests'); // 'tests' | 'analyses' | 'portrait'
 
   // Хранит ID открытой категории (аккордеон)
   const [openCategory, setOpenCategory] = useState(null);
@@ -33,6 +37,9 @@ export default function ProfileTab() {
         .then(res => res.json())
         .then(data => {
           setCategories(data.categories || []);
+          setTotalTests(data.total_tests || 0);
+          setPassedTests(data.passed_tests || 0);
+          setPortraitData(data.portrait || null);
           setLoading(false);
         })
         .catch(err => {
@@ -44,6 +51,25 @@ export default function ProfileTab() {
       setLoading(false);
     }
   }, []);
+
+  const handleGeneratePortrait = async () => {
+    setIsGeneratingPortrait(true);
+    try {
+      const response = await fetch(`${API_URL}/api/portrait/generate`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${WebApp.initData}` }
+      });
+      if (!response.ok) throw new Error("Ошибка генерации");
+      const data = await response.json();
+      setPortraitData(data.portrait);
+      WebApp.HapticFeedback.notificationOccurred('success');
+    } catch (error) {
+      console.error(error);
+      WebApp.showAlert("Произошла ошибка при генерации портрета.");
+    } finally {
+      setIsGeneratingPortrait(false);
+    }
+  };
 
   const toggleCategory = (id) => {
     setOpenCategory(openCategory === id ? null : id);
@@ -71,23 +97,42 @@ export default function ProfileTab() {
           <h2 className="text-xl sm:text-2xl font-bold text-neutral-100 truncate">{tgUser.first_name}</h2>
           <p className="text-sm sm:text-base text-blue-400 font-medium truncate">@{tgUser.username}</p>
         </div>
+        </div>
       </div>
 
-      {/* 2. ВКЛАДКИ */}
-      <div className="flex border-b border-neutral-800 mb-4 mx-4">
-        <button 
-          onClick={() => setActiveSubTab('tests')}
-          className={`flex-1 py-2 font-bold transition-colors duration-700 ${activeSubTab === 'tests' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-neutral-500 hover:text-neutral-300'}`}
-        >
-          Тесты
-        </button>
-        <button 
-          onClick={() => setActiveSubTab('analyses')}
-          className={`flex-1 py-2 font-bold transition-colors duration-700 ${activeSubTab === 'analyses' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-neutral-500 hover:text-neutral-300'}`}
-        >
-          Анализы
-        </button>
-      </div>
+      {activeSubTab !== 'portrait' && (
+        <>
+          {/* 1.5. ПОРТРЕТ ЛИЧНОСТИ КНОПКА */}
+          <div className="mx-4 mb-4">
+            <button 
+              onClick={() => setActiveSubTab('portrait')}
+              className="w-full bg-gradient-to-r from-blue-900/30 to-blue-800/10 border border-blue-900/50 rounded-2xl p-4 text-left hover:bg-blue-900/40 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
+            >
+              <div>
+                <h3 className="text-lg font-bold text-blue-400 mb-1">Мой портрет личности</h3>
+                <p className="text-sm text-neutral-400">Узнайте свой портрет личности!</p>
+              </div>
+              <Wand2 className="text-blue-500" size={24} />
+            </button>
+          </div>
+
+          {/* 2. ВКЛАДКИ */}
+          <div className="flex border-b border-neutral-800 mb-4 mx-4">
+            <button 
+              onClick={() => setActiveSubTab('tests')}
+              className={`flex-1 py-2 font-bold transition-colors duration-700 ${activeSubTab === 'tests' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-neutral-500 hover:text-neutral-300'}`}
+            >
+              Тесты
+            </button>
+            <button 
+              onClick={() => setActiveSubTab('analyses')}
+              className={`flex-1 py-2 font-bold transition-colors duration-700 ${activeSubTab === 'analyses' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-neutral-500 hover:text-neutral-300'}`}
+            >
+              Анализы
+            </button>
+          </div>
+        </>
+      )}
 
       {/* 3. КОНТЕНТ ВКЛАДОК */}
       {activeSubTab === 'tests' && (
@@ -158,6 +203,82 @@ export default function ProfileTab() {
       {activeSubTab === 'analyses' && (
         <div className="flex-1 flex flex-col items-center justify-center text-neutral-500 pb-12 animate-in fade-in duration-700 px-2 text-center">
           <p>Здесь будут ваши отчеты из раздела "Мои анализы".</p>
+        </div>
+      )}
+
+      {activeSubTab === 'portrait' && (
+        <div className="flex-1 overflow-y-auto px-4 pb-6 animate-in fade-in slide-in-from-right-8 duration-500 flex flex-col">
+          <button 
+            onClick={() => setActiveSubTab('tests')}
+            className="flex items-center gap-2 text-neutral-400 hover:text-white mb-6 transition-colors self-start"
+          >
+            <ChevronLeft size={20} />
+            <span className="font-medium">Назад</span>
+          </button>
+          
+          <div className="flex items-start gap-4 mb-6">
+            <div className="p-3 bg-blue-500/10 rounded-xl shrink-0 mt-1">
+              <Wand2 className="text-blue-400" size={24} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-blue-400 mb-2 leading-tight">Мой портрет личности</h2>
+              <p className="text-sm text-neutral-400 leading-relaxed">Узнайте свой портрет личности!</p>
+            </div>
+          </div>
+
+          {isGeneratingPortrait ? (
+            <div className="flex-1 flex flex-col items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+              <p className="text-neutral-300 font-medium text-center">Портрет личности формируется.</p>
+              <p className="text-neutral-500 text-sm text-center mt-2 px-4">
+                Портрет личности генерируется ИИ агентом из Timeweb Cloud, модель ChatGPT.
+              </p>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col">
+              {portraitData && (
+                <div className="bg-neutral-900 border border-neutral-800 p-5 rounded-2xl mb-6 shadow-sm prose prose-invert prose-blue max-w-none text-sm sm:text-base">
+                  <div dangerouslySetInnerHTML={{ __html: portraitData.content.replace(/\n/g, '<br/>') }} />
+                </div>
+              )}
+
+              {totalTests > 0 && passedTests < totalTests && !portraitData && (
+                <div className="flex flex-col items-center text-center mt-auto bg-neutral-900/60 border border-neutral-800 p-6 rounded-3xl">
+                  <Lock className="text-neutral-500 mb-3" size={32} />
+                  <p className="text-neutral-400 text-sm mb-6">Чтобы сформировать портрет личности, пройдите все тесты.</p>
+                  <button disabled className="w-full py-4 rounded-2xl bg-neutral-800 text-neutral-500 font-bold border border-neutral-700 cursor-not-allowed">
+                    Сформировать
+                  </button>
+                </div>
+              )}
+
+              {totalTests > 0 && passedTests === totalTests && !portraitData && (
+                <div className="mt-auto">
+                  <button onClick={handleGeneratePortrait} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] shadow-lg shadow-blue-900/20">
+                    Сформировать
+                  </button>
+                </div>
+              )}
+
+              {portraitData && portraitData.tests_count < totalTests && (
+                <div className="mt-4 bg-neutral-900/60 border border-neutral-800 p-6 rounded-3xl text-center">
+                  <p className="text-neutral-300 text-sm mb-4 font-medium">Добавлены новые тесты! После прохождения вы можете сформировать новый портрет личности</p>
+                  {passedTests < totalTests ? (
+                    <>
+                      <Lock className="text-neutral-500 mb-3 mx-auto" size={24} />
+                      <button disabled className="w-full py-4 rounded-2xl bg-neutral-800 text-neutral-500 font-bold border border-neutral-700 cursor-not-allowed">
+                        Сформировать
+                      </button>
+                    </>
+                  ) : (
+                    <button onClick={handleGeneratePortrait} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] shadow-lg shadow-blue-900/20">
+                      Сформировать
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
