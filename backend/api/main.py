@@ -355,9 +355,21 @@ async def generate_personality_portrait(
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail="TIMEWEB_AI_TOKEN is not set on the server")
         
-    task = asyncio.create_task(_analyze_reaction_bg(user_id, entry_id, prompt, ai_url, ai_token))
+    task = asyncio.create_task(_generate_portrait_bg(user_id, total_tests, prompt, ai_url, ai_token))
     try:
-        return await asyncio.shield(task)
+        result = await asyncio.shield(task)
+        if result["status"] == "success":
+            p = result["portrait"]
+            return {
+                "status": "success",
+                "portrait": {
+                    "id": p.id,
+                    "content": p.content,
+                    "tests_count": p.tests_count,
+                    "created_at": p.created_at
+                }
+            }
+        return result
     except asyncio.CancelledError:
         raise
 
