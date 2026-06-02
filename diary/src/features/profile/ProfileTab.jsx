@@ -90,19 +90,30 @@ export default function ProfileTab() {
   };
 
   let scales = [];
-  let markdownContent = "";
+  let markdownContent = portraitData ? portraitData.content : "";
   if (portraitData) {
     const text = portraitData.content;
-    const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
+    const jsonMatch = text.match(/```json\n?([\s\S]*?)\n?```/i);
+    let rawJson = "";
+    
     if (jsonMatch) {
+      rawJson = jsonMatch[1];
+      markdownContent = text.replace(jsonMatch[0], "");
+    } else {
+      // Fallback: If AI forgets ```json tags
+      const fallbackMatch = text.match(/\[\s*\{[\s\S]*"leftValue"[\s\S]*\}\s*\]/);
+      if (fallbackMatch) {
+        rawJson = fallbackMatch[0];
+        markdownContent = text.replace(fallbackMatch[0], "");
+      }
+    }
+    
+    if (rawJson) {
       try {
-        scales = JSON.parse(jsonMatch[1]);
+        scales = JSON.parse(rawJson);
       } catch (e) {
         console.error("Scale parsing error", e);
       }
-      markdownContent = text.replace(jsonMatch[0], "");
-    } else {
-      markdownContent = text;
     }
   }
 
