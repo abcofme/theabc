@@ -392,6 +392,9 @@ export default function ProfileTab() {
               )}
             </div>
           )}
+        </div>
+      )}
+
       {/* 4. ВСПЛЫВАЮЩЕЕ ОКНО С РЕЗУЛЬТАТОМ ТЕСТА */}
       {selectedResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-sm animate-in fade-in duration-700">
