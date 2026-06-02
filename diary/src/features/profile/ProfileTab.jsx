@@ -225,7 +225,7 @@ export default function ProfileTab() {
             {!portraitData ? (
               <button 
                 onClick={() => {
-                  if (!allTestsPassed) {
+                  if (!(totalTests > 0 && passedTests === totalTests)) {
                     WebApp.showAlert("Пройдите все тесты, чтобы сформировать портрет личности.");
                     return;
                   }
@@ -233,7 +233,7 @@ export default function ProfileTab() {
                 }}
                 disabled={isGeneratingPortrait}
                 className={`w-full rounded-2xl p-4 text-left transition-all duration-700 flex items-center justify-between ${
-                  allTestsPassed 
+                  (totalTests > 0 && passedTests === totalTests) 
                     ? "bg-neutral-900/60 border border-neutral-800/80 hover:bg-neutral-800/80 active:scale-[0.98]" 
                     : "bg-neutral-900/30 border border-neutral-800/40 opacity-70"
                 }`}
@@ -241,18 +241,18 @@ export default function ProfileTab() {
                 <div>
                   <h3 className="text-base sm:text-lg font-bold text-neutral-200 mb-1">Сформировать портрет</h3>
                   <p className="text-xs sm:text-sm text-neutral-500">
-                    {isGeneratingPortrait ? 'Генерация...' : allTestsPassed ? 'Анализ ваших тестов' : `Пройдено ${totalPassed} из ${totalTests} тестов`}
+                    {isGeneratingPortrait ? 'Генерация...' : (totalTests > 0 && passedTests === totalTests) ? 'Анализ ваших тестов' : `Пройдено ${passedTests} из ${totalTests} тестов`}
                   </p>
                 </div>
                 {isGeneratingPortrait ? (
                   <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                 ) : (
-                  <Wand2 className={allTestsPassed ? "text-neutral-500" : "text-neutral-600"} size={24} />
+                  <Wand2 className={(totalTests > 0 && passedTests === totalTests) ? "text-neutral-500" : "text-neutral-600"} size={24} />
                 )}
               </button>
             ) : (
               <>
-                {totalPassed > portraitData.tests_count && allTestsPassed && (
+                {passedTests > portraitData.tests_count && (totalTests > 0 && passedTests === totalTests) && (
                   <button 
                     onClick={handleGeneratePortrait}
                     disabled={isGeneratingPortrait}
