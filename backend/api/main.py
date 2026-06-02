@@ -552,70 +552,24 @@ async def generate_report(
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail="AI token not configured")
 
+    task = asyncio.create_task(_generate_report_bg(user_id, report_title, report_prompt, start_d, end_d, ai_url, ai_token, len(entries)))
     try:
-        payload = {
-            "model": "claude-4.8-opus",
-            "messages": [
-                {"role": "user", "content": report_prompt}
-            ]
-        }
-        
-        print(f"--- Отправка запроса к ИИ ({payload['model']}) ---")
-        print(f"URL: {ai_url}")
-        print(f"Записей дневника передано: {len(entries)}")
-        print(f"Промпт: {report_prompt[:500]}... [обрезано для логов]")
-        print("-------------------------------------------------", flush=True)
-
-        async with httpx.AsyncClient(timeout=120.0) as client:
-            ai_response = await client.post(
-                ai_url,
-                headers={
-                    "Authorization": f"Bearer {ai_token}",
-                    "Content-Type": "application/json"
-                },
-                json=payload
-            )
-            
-            if ai_response.status_code == 404:
-                # Fallback to claude-3-5-sonnet if 4.8 is not found
-                ai_response = await client.post(
-                    ai_url,
-                    headers={
-                        "Authorization": f"Bearer {ai_token}",
-                        "Content-Type": "application/json"
-                    },
-                    json={
-                        "model": "claude-3-5-sonnet",
-                        "messages": [
-                            {"role": "user", "content": report_prompt}
-                        ]
-                    }
-                )
-
-            ai_response.raise_for_status()
-            ai_data = ai_response.json()
-            generated_text = ai_data["choices"][0]["message"]["content"].strip()
-            
-            new_report = BehavioralReport(
-                user_id=user_id,
-                title=report_title,
-                period_start=start_d,
-                period_end=end_d,
-                content=generated_text
-            )
-            session.add(new_report)
-            await session.commit()
-            await session.refresh(new_report)
-            
+        result = await asyncio.shield(task)
+        # Wait, the BG task returns a dict with "status": "success", "report": <BehavioralReport>
+        # but the BehavioralReport model might not be serializable if the session is closed!
+        # Ah! `new_report` is returned from a closed session!
+        # This will raise DetachedInstanceError when FastAPI tries to serialize it!
+        # Let's return the dictionary directly from the shield or parse it.
+        if result["status"] == "success":
+            r = result["report"]
             return {
-                "id": new_report.id,
-                "title": new_report.title,
-                "period_start": new_report.period_start,
-                "period_end": new_report.period_end,
-                "content": new_report.content,
-                "created_at": new_report.created_at
+                "id": r.id,
+                "title": r.title,
+                "period_start": r.period_start,
+                "period_end": r.period_end,
+                "content": r.content,
+                "created_at": r.created_at
             }
-            
-    except Exception as e:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=500, detail=f"Generation failed: {str(e)}")
+        return result
+    except asyncio.CancelledError:
+        raise
