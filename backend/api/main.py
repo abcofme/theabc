@@ -557,6 +557,10 @@ async def generate_report(
         raise HTTPException(status_code=400, detail="Неизвестный тип отчета.")
 
     ai_token = os.getenv("TIMEWEB_AI_TOKEN")
+    ai_url = os.getenv("TIMEWEB_AI_URL", "https://api.timeweb.cloud/ai/v1/chat/completions")
+    if not ai_url.endswith("/chat/completions"):
+        ai_url = ai_url.rstrip("/") + "/chat/completions"
+        
     if not ai_token:
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail="AI token not configured")
@@ -564,7 +568,7 @@ async def generate_report(
     try:
         async with httpx.AsyncClient(timeout=120.0) as client:
             ai_response = await client.post(
-                "https://api.timeweb.cloud/api/v1/llm/v1/chat/completions",
+                ai_url,
                 headers={
                     "Authorization": f"Bearer {ai_token}",
                     "Content-Type": "application/json"
@@ -580,7 +584,7 @@ async def generate_report(
             if ai_response.status_code == 404:
                 # Fallback to claude-3-5-sonnet if 4.8 is not found
                 ai_response = await client.post(
-                    "https://api.timeweb.cloud/api/v1/llm/v1/chat/completions",
+                    ai_url,
                     headers={
                         "Authorization": f"Bearer {ai_token}",
                         "Content-Type": "application/json"
