@@ -97,7 +97,6 @@ export default function ProfileTab() {
           <h2 className="text-xl sm:text-2xl font-bold text-neutral-100 truncate">{tgUser.first_name}</h2>
           <p className="text-sm sm:text-base text-blue-400 font-medium truncate">@{tgUser.username}</p>
         </div>
-        </div>
       </div>
 
       {activeSubTab !== 'portrait' && (
