@@ -345,8 +345,7 @@ export default function ProfileTab() {
                   </div>
                 )}
               </div>
-            ))
-            )}
+            ))}
             </>
           )}
         </div>
