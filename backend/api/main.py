@@ -288,7 +288,7 @@ async def generate_personality_portrait(
         raise HTTPException(status_code=500, detail="TIMEWEB_AI_TOKEN is not set on the server")
         
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with httpx.AsyncClient(timeout=120.0) as client:
             ai_response = await client.post(
                 ai_url,
                 headers={
