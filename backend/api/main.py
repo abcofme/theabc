@@ -277,7 +277,7 @@ async def generate_personality_portrait(
         raise HTTPException(status_code=500, detail=f"Ошибка API ИИ ({e.response.status_code}): {error_text}")
     except Exception as e:
         from fastapi import HTTPException
-        raise HTTPException(status_code=500, detail=f"Системная ошибка генерации ИИ: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Системная ошибка генерации ИИ ({type(e).__name__}): {str(e)} | URL: {ai_url}")
 
     # 4. Сохраняем в БД
     portrait = (await session.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
