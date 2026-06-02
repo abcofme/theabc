@@ -8,7 +8,7 @@ from sqlalchemy.orm import joinedload
 from backend.api.security import validate_twa_data
 from sqlalchemy.orm import selectinload, joinedload
 from backend.database import async_session
-from backend.database.models import User, Category, Test, Question, Answer, Progress, Result, DiaryEntry, PersonalityPortrait
+from backend.database.models import User, Category, Test, Question, Answer, Progress, Result, DiaryEntry, PersonalityPortrait, BehavioralReport
 from backend.telegram.views.hardcoded_tests import get_hardcoded_test_result
 
 app = FastAPI(title="TheABC Diary API")
@@ -465,6 +465,7 @@ async def generate_report(
 ):
     import httpx
     import json
+    import os
     from datetime import datetime, timedelta
     
     user_id = user_data.get("id")
