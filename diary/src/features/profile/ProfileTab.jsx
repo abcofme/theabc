@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X, ChevronLeft, Lock, Wand2, Trash2, Brain, Activity, Star, ShieldAlert, Sparkles } from 'lucide-react';
+import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X, ChevronLeft, Lock, Wand2, Trash2, Brain, Activity, Star, ShieldAlert, Sparkles, Zap, Target, Heart, Flame } from 'lucide-react';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://restoration-relative-federation-forth.trycloudflare.com";
@@ -110,15 +110,20 @@ export default function ProfileTab() {
     </div>
   );
 
+  // Храним текущий раздел во время рендера Markdown
+  const currentSectionRef = useRef("");
+
   const MarkdownComponents = {
     h1: ({node, ...props}) => (
-      <h1 className="text-3xl sm:text-4xl font-black text-blue-400 text-center mb-10 mt-6 first:mt-2 uppercase tracking-widest drop-shadow-sm break-words" {...props} />
+      <h1 className="text-3xl sm:text-4xl font-black text-blue-400 text-center mb-10 mt-6 first:mt-2 uppercase drop-shadow-sm break-words" {...props} />
     ),
     h2: ({node, ...props}) => {
       let textStr = "";
       if (typeof props.children === 'string') textStr = props.children;
       else if (Array.isArray(props.children)) textStr = props.children.map(c => typeof c === 'string' ? c : '').join('');
       
+      currentSectionRef.current = textStr; // Сохраняем текущий раздел
+
       let icon = null;
       if (textStr.includes('Устойчивые')) icon = <Activity className="text-blue-400 inline mb-1 mr-3" size={28} />;
       else if (textStr.includes('Поведенческие')) icon = <Brain className="text-emerald-400 inline mb-1 mr-3" size={28} />;
@@ -128,8 +133,30 @@ export default function ProfileTab() {
 
       return <h2 className="text-2xl sm:text-3xl font-bold text-neutral-100 mt-14 mb-8 flex items-center justify-center border-b border-neutral-800/80 pb-4 break-words text-center">{icon} {props.children}</h2>
     },
-    p: ({node, ...props}) => <p className="text-neutral-300 leading-relaxed mb-8 text-base sm:text-lg font-medium text-justify sm:text-left break-words" {...props} />,
-    strong: ({node, ...props}) => <strong className="text-white font-black tracking-wide break-words" {...props}><Sparkles className="inline text-blue-400 mb-1 mr-1.5" size={20} />{props.children}</strong>,
+    p: ({node, ...props}) => <p className="text-neutral-200 leading-relaxed mb-8 text-base sm:text-lg font-semibold text-left break-words" {...props} />,
+    strong: ({node, ...props}) => {
+      const section = currentSectionRef.current;
+      let IconComponent = Sparkles;
+      let iconColor = "text-blue-400";
+
+      if (section.includes('Поведенческие')) {
+        IconComponent = Target;
+        iconColor = "text-emerald-400";
+      } else if (section.includes('ценностей')) {
+        IconComponent = Heart;
+        iconColor = "text-amber-400";
+      } else if (section.includes('барьеры')) {
+        IconComponent = Flame;
+        iconColor = "text-red-400";
+      }
+
+      return (
+        <strong className="text-white font-black break-words" {...props}>
+          <IconComponent className={`inline ${iconColor} mb-1 mr-1.5`} size={20} />
+          {props.children}
+        </strong>
+      );
+    },
     ul: ({node, ...props}) => <ul className="space-y-5 mb-10 mt-4 pl-2" {...props} />,
     li: ({node, ...props}) => (
       <li className="flex items-start text-base sm:text-lg font-medium text-neutral-300 break-words">
