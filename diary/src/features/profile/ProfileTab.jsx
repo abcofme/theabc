@@ -294,7 +294,9 @@ export default function ProfileTab() {
               <p>Здесь будут ваши результаты тестов.</p>
             </div>
           ) : (
-            categories.map(cat => (
+            <>
+              <h2 className="text-xl font-bold text-white px-2 mt-2 mb-2">Результаты тестов</h2>
+              {categories.map(cat => (
               <div key={cat.id} className="bg-neutral-900 border border-neutral-800/80 rounded-2xl overflow-hidden shadow-sm transition-all duration-700">
                 {/* Кнопка категории (Аккордеон) */}
                 <button
@@ -344,6 +346,8 @@ export default function ProfileTab() {
                 )}
               </div>
             ))
+            )}
+            </>
           )}
         </div>
         </>

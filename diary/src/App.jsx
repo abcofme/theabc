@@ -54,7 +54,7 @@ export default function App() {
             }`}
           >
             <Brain size={24} />
-            <span className="text-xs mt-1">Мой анализ</span>
+            <span className="text-xs mt-1">Поведенческий код</span>
           </button>
           <button
             onClick={() => setActiveTab('profile')}
