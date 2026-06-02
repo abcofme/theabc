@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X, ChevronLeft, Lock, Wand2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X, ChevronLeft, Lock, Wand2, Trash2 } from 'lucide-react';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://restoration-relative-federation-forth.trycloudflare.com";
@@ -72,6 +73,51 @@ export default function ProfileTab() {
       setIsGeneratingPortrait(false);
     }
   };
+
+  const handleClearPortrait = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/portrait/clear`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${WebApp.initData}` }
+      });
+      if (response.ok) {
+        setPortraitData(null);
+        WebApp.HapticFeedback.notificationOccurred('success');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  let scales = [];
+  let markdownContent = "";
+  if (portraitData) {
+    const text = portraitData.content;
+    const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
+    if (jsonMatch) {
+      try {
+        scales = JSON.parse(jsonMatch[1]);
+      } catch (e) {
+        console.error("Scale parsing error", e);
+      }
+      markdownContent = text.replace(jsonMatch[0], "");
+    } else {
+      markdownContent = text;
+    }
+  }
+
+  const PortraitScale = ({ left, right, leftValue, rightValue }) => (
+    <div className="mb-5 bg-neutral-900/50 border border-neutral-800 p-4 rounded-2xl shadow-sm">
+      <div className="flex justify-between text-sm sm:text-base font-bold text-neutral-200 mb-3">
+        <span>{left} <span className="text-blue-400 font-normal text-xs sm:text-sm">({leftValue}%)</span></span>
+        <span><span className="text-purple-400 font-normal text-xs sm:text-sm">({rightValue}%)</span> {right}</span>
+      </div>
+      <div className="h-3 w-full bg-neutral-800 rounded-full overflow-hidden flex shadow-inner">
+        <div className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-1000 ease-out" style={{ width: `${leftValue}%` }}></div>
+        <div className="h-full bg-gradient-to-l from-purple-600 to-purple-400 transition-all duration-1000 ease-out" style={{ width: `${rightValue}%` }}></div>
+      </div>
+    </div>
+  );
 
   const toggleCategory = (id) => {
     setOpenCategory(openCategory === id ? null : id);
@@ -234,46 +280,63 @@ export default function ProfileTab() {
             </div>
           ) : (
             <div className="flex-1 flex flex-col">
+              {portraitData && portraitData.tests_count < totalTests && (
+                <div className="mb-6 bg-neutral-900/60 border border-neutral-800 p-6 rounded-3xl text-center">
+                  <p className="text-neutral-300 text-sm mb-4 font-medium">Добавлены новые тесты! После прохождения вы можете сформировать новый портрет личности</p>
+                  {passedTests < totalTests ? (
+                    <button disabled className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-neutral-800 text-neutral-500 font-bold border border-neutral-700 cursor-not-allowed">
+                      <Lock size={18} /> Сформировать
+                    </button>
+                  ) : (
+                    <button onClick={handleGeneratePortrait} className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] shadow-lg shadow-blue-900/20">
+                      <Wand2 size={18} /> Сформировать
+                    </button>
+                  )}
+                </div>
+              )}
+
               {portraitData && (
-                <div className="bg-neutral-900 border border-neutral-800 p-5 rounded-2xl mb-6 shadow-sm prose prose-invert prose-blue max-w-none text-sm sm:text-base">
-                  <div dangerouslySetInnerHTML={{ __html: portraitData.content.replace(/\n/g, '<br/>') }} />
+                <div className="bg-neutral-900 border border-neutral-800 p-5 rounded-2xl mb-2 shadow-sm">
+                  <div className="prose prose-invert prose-blue max-w-none text-base sm:text-lg 
+                                  prose-headings:text-center prose-headings:text-blue-400 prose-headings:font-bold prose-headings:my-6
+                                  prose-h1:text-2xl prose-h2:text-xl prose-strong:text-white prose-strong:font-bold prose-p:leading-relaxed">
+                    <ReactMarkdown>{markdownContent}</ReactMarkdown>
+                  </div>
+                  {scales.length > 0 && (
+                    <div className="mt-8 border-t border-neutral-800 pt-6">
+                      <h2 className="text-xl font-bold text-blue-400 text-center mb-6">Устойчивые черты личности</h2>
+                      {scales.map((s, idx) => (
+                        <PortraitScale key={idx} left={s.left} right={s.right} leftValue={s.leftValue} rightValue={s.rightValue} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
               {totalTests > 0 && passedTests < totalTests && !portraitData && (
                 <div className="flex flex-col items-center text-center mt-auto bg-neutral-900/60 border border-neutral-800 p-6 rounded-3xl">
-                  <Lock className="text-neutral-500 mb-3" size={32} />
                   <p className="text-neutral-400 text-sm mb-6">Чтобы сформировать портрет личности, пройдите все тесты.</p>
-                  <button disabled className="w-full py-4 rounded-2xl bg-neutral-800 text-neutral-500 font-bold border border-neutral-700 cursor-not-allowed">
-                    Сформировать
+                  <button disabled className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-neutral-800 text-neutral-500 font-bold border border-neutral-700 cursor-not-allowed">
+                    <Lock size={18} /> Сформировать
                   </button>
                 </div>
               )}
 
               {totalTests > 0 && passedTests === totalTests && !portraitData && (
                 <div className="mt-auto">
-                  <button onClick={handleGeneratePortrait} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] shadow-lg shadow-blue-900/20">
-                    Сформировать
+                  <button onClick={handleGeneratePortrait} className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] shadow-lg shadow-blue-900/20">
+                    <Wand2 size={18} /> Сформировать
                   </button>
                 </div>
               )}
 
-              {portraitData && portraitData.tests_count < totalTests && (
-                <div className="mt-4 bg-neutral-900/60 border border-neutral-800 p-6 rounded-3xl text-center">
-                  <p className="text-neutral-300 text-sm mb-4 font-medium">Добавлены новые тесты! После прохождения вы можете сформировать новый портрет личности</p>
-                  {passedTests < totalTests ? (
-                    <>
-                      <Lock className="text-neutral-500 mb-3 mx-auto" size={24} />
-                      <button disabled className="w-full py-4 rounded-2xl bg-neutral-800 text-neutral-500 font-bold border border-neutral-700 cursor-not-allowed">
-                        Сформировать
-                      </button>
-                    </>
-                  ) : (
-                    <button onClick={handleGeneratePortrait} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] shadow-lg shadow-blue-900/20">
-                      Сформировать
-                    </button>
-                  )}
-                </div>
+              {portraitData && (
+                <button 
+                  onClick={handleClearPortrait}
+                  className="mt-4 flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-red-900/10 text-red-400 hover:bg-red-900/30 border border-red-900/30 transition-colors font-medium text-sm"
+                >
+                  <Trash2 size={18} /> Очистить портрет (Test)
+                </button>
               )}
             </div>
           )}
