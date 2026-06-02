@@ -228,8 +228,9 @@ export default function ReportsTab() {
         <div className="flex flex-col gap-4 px-2">
           {reportTypes.map(rtype => {
             const typeReports = reports.filter(r => 
+              r.title === rtype.title || 
               (rtype.id === 'repeating_events' && r.title.includes('Повторяющиеся')) || 
-              (rtype.id === 'effective_reactions' && r.title.includes('Эффективность'))
+              (rtype.id === 'effective_reactions' && r.title.includes('эффективно'))
             );
             const isOpen = openCategory === rtype.id;
             
