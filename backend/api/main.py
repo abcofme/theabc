@@ -271,9 +271,13 @@ async def generate_personality_portrait(
             ai_response.raise_for_status()
             ai_data = ai_response.json()
             generated_text = ai_data["choices"][0]["message"]["content"]
+    except httpx.HTTPStatusError as e:
+        error_text = e.response.text
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=f"Ошибка API ИИ ({e.response.status_code}): {error_text}")
     except Exception as e:
         from fastapi import HTTPException
-        raise HTTPException(status_code=500, detail=f"Ошибка генерации ИИ: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Системная ошибка генерации ИИ: {str(e)}")
 
     # 4. Сохраняем в БД
     portrait = (await session.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()

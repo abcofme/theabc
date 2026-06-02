@@ -59,13 +59,15 @@ export default function ProfileTab() {
         method: "POST",
         headers: { "Authorization": `Bearer ${WebApp.initData}` }
       });
-      if (!response.ok) throw new Error("Ошибка генерации");
       const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || "Неизвестная ошибка сервера");
+      }
       setPortraitData(data.portrait);
       WebApp.HapticFeedback.notificationOccurred('success');
     } catch (error) {
       console.error(error);
-      WebApp.showAlert("Произошла ошибка при генерации портрета.");
+      WebApp.showAlert(`Произошла ошибка при генерации портрета: ${error.message}`);
     } finally {
       setIsGeneratingPortrait(false);
     }
@@ -228,10 +230,7 @@ export default function ProfileTab() {
           {isGeneratingPortrait ? (
             <div className="flex-1 flex flex-col items-center justify-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-              <p className="text-neutral-300 font-medium text-center">Портрет личности формируется.</p>
-              <p className="text-neutral-500 text-sm text-center mt-2 px-4">
-                Портрет личности генерируется ИИ агентом из Timeweb Cloud, модель ChatGPT.
-              </p>
+              <p className="text-neutral-300 font-medium text-center">Портрет личности формируется...</p>
             </div>
           ) : (
             <div className="flex-1 flex flex-col">
