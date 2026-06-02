@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X, ChevronLeft, Lock, Wand2, Trash2, Brain, Activity, Star, ShieldAlert } from 'lucide-react';
+import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X, ChevronLeft, Lock, Wand2, Trash2, Brain, Activity, Star, ShieldAlert, Sparkles } from 'lucide-react';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://restoration-relative-federation-forth.trycloudflare.com";
@@ -98,21 +98,21 @@ export default function ProfileTab() {
   }
 
   const PortraitScale = ({ left, right, leftValue, rightValue }) => (
-    <div className="mb-5 bg-neutral-900/50 border border-neutral-800 p-4 rounded-2xl shadow-sm hover:border-neutral-700 transition-colors">
-      <div className="flex justify-between text-sm sm:text-base font-bold text-neutral-200 mb-3">
-        <span>{left} <span className="text-blue-400 font-normal text-xs sm:text-sm">({leftValue}%)</span></span>
-        <span><span className="text-purple-400 font-normal text-xs sm:text-sm">({rightValue}%)</span> {right}</span>
+    <div className="mb-6">
+      <div className="flex justify-between text-base sm:text-lg font-bold text-neutral-200 mb-3">
+        <span>{left}</span>
+        <span>{right}</span>
       </div>
-      <div className="h-3.5 w-full bg-neutral-800 rounded-full overflow-hidden flex shadow-inner">
-        <div className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-1000 ease-out" style={{ width: `${leftValue}%` }}></div>
-        <div className="h-full bg-gradient-to-l from-purple-600 to-purple-400 transition-all duration-1000 ease-out" style={{ width: `${rightValue}%` }}></div>
+      <div className="h-4 w-full bg-neutral-800 rounded-full overflow-hidden flex shadow-inner">
+        <div className="h-full bg-blue-500 transition-all duration-1000 ease-out" style={{ width: `${leftValue}%` }}></div>
+        <div className="h-full bg-orange-500 transition-all duration-1000 ease-out" style={{ width: `${rightValue}%` }}></div>
       </div>
     </div>
   );
 
   const MarkdownComponents = {
     h1: ({node, ...props}) => (
-      <h1 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 text-center mb-8 mt-10 first:mt-2 uppercase tracking-widest drop-shadow-sm" {...props} />
+      <h1 className="text-3xl sm:text-4xl font-black text-blue-400 text-center mb-10 mt-6 first:mt-2 uppercase tracking-widest drop-shadow-sm break-words" {...props} />
     ),
     h2: ({node, ...props}) => {
       let textStr = "";
@@ -120,20 +120,20 @@ export default function ProfileTab() {
       else if (Array.isArray(props.children)) textStr = props.children.map(c => typeof c === 'string' ? c : '').join('');
       
       let icon = null;
-      if (textStr.includes('Устойчивые')) icon = <Activity className="text-blue-400 inline mb-1 mr-2" size={24} />;
-      else if (textStr.includes('Поведенческие')) icon = <Brain className="text-emerald-400 inline mb-1 mr-2" size={24} />;
-      else if (textStr.includes('ценностей')) icon = <Star className="text-amber-400 inline mb-1 mr-2" size={24} />;
-      else if (textStr.includes('барьеры')) icon = <ShieldAlert className="text-red-400 inline mb-1 mr-2" size={24} />;
-      else if (textStr.includes('Личность')) icon = <User className="text-blue-400 inline mb-1 mr-2" size={24} />;
+      if (textStr.includes('Устойчивые')) icon = <Activity className="text-blue-400 inline mb-1 mr-3" size={28} />;
+      else if (textStr.includes('Поведенческие')) icon = <Brain className="text-emerald-400 inline mb-1 mr-3" size={28} />;
+      else if (textStr.includes('ценностей')) icon = <Star className="text-amber-400 inline mb-1 mr-3" size={28} />;
+      else if (textStr.includes('барьеры')) icon = <ShieldAlert className="text-red-400 inline mb-1 mr-3" size={28} />;
+      else if (textStr.includes('Личность')) icon = <User className="text-blue-400 inline mb-1 mr-3" size={28} />;
 
-      return <h2 className="text-xl sm:text-2xl font-bold text-neutral-100 mt-12 mb-8 flex items-center justify-center border-b border-neutral-800/80 pb-3 shadow-[0_4px_20px_-15px_rgba(0,0,0,0.5)]">{icon} {props.children}</h2>
+      return <h2 className="text-2xl sm:text-3xl font-bold text-neutral-100 mt-14 mb-8 flex items-center justify-center border-b border-neutral-800/80 pb-4 break-words text-center">{icon} {props.children}</h2>
     },
-    p: ({node, ...props}) => <p className="text-neutral-300 leading-relaxed mb-6 text-sm sm:text-base text-justify sm:text-left" {...props} />,
-    strong: ({node, ...props}) => <strong className="text-white font-bold tracking-wide" {...props} />,
-    ul: ({node, ...props}) => <ul className="space-y-4 mb-8 mt-4" {...props} />,
+    p: ({node, ...props}) => <p className="text-neutral-300 leading-relaxed mb-8 text-base sm:text-lg font-medium text-justify sm:text-left break-words" {...props} />,
+    strong: ({node, ...props}) => <strong className="text-white font-black tracking-wide break-words" {...props}><Sparkles className="inline text-blue-400 mb-1 mr-1.5" size={20} />{props.children}</strong>,
+    ul: ({node, ...props}) => <ul className="space-y-5 mb-10 mt-4 pl-2" {...props} />,
     li: ({node, ...props}) => (
-      <li className="flex items-start text-sm sm:text-base text-neutral-300">
-        <span className="text-blue-500 mr-3 mt-1 shrink-0">•</span>
+      <li className="flex items-start text-base sm:text-lg font-medium text-neutral-300 break-words">
+        <span className="text-blue-500 mr-3 mt-1.5 shrink-0">•</span>
         <span>{props.children}</span>
       </li>
     ),
@@ -148,7 +148,7 @@ export default function ProfileTab() {
           return <code className={className} {...props}>{children}</code>;
         }
         return (
-          <div className="my-10 bg-neutral-900/40 p-2 sm:p-4 rounded-3xl border border-neutral-800/50 shadow-inner">
+          <div className="my-10 px-2 sm:px-4">
             {scalesData.map((s, idx) => (
               <PortraitScale key={idx} left={s.left} right={s.right} leftValue={s.leftValue} rightValue={s.rightValue} />
             ))}
@@ -336,7 +336,7 @@ export default function ProfileTab() {
               )}
 
               {portraitData && (
-                <div className="bg-neutral-900 border border-neutral-800 p-5 sm:p-7 rounded-3xl mb-2 shadow-xl shadow-black/20">
+                <div className="px-1 sm:px-4 mb-4 overflow-x-hidden">
                   <ReactMarkdown components={MarkdownComponents}>
                     {markdownContent}
                   </ReactMarkdown>
