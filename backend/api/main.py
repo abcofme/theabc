@@ -144,6 +144,9 @@ async def create_diary_entry(
     await session.commit()
     await session.refresh(new_entry)
     
+    # Запускаем анализ реакции в фоне
+    asyncio.create_task(_analyze_reaction_bg(user_id, new_entry.id))
+    
     return {"id": new_entry.id, "status": "success"}
 
 # Эндпоинт 4: Удаление записи из дневника
@@ -589,3 +592,109 @@ async def generate_report(
         return result
     except asyncio.CancelledError:
         raise
+
+async def _analyze_reaction_bg(user_id: int, entry_id: int):
+    import os
+    import httpx
+    import re
+    from fastapi import HTTPException
+    from backend.database import async_session
+    from backend.database.models import DiaryEntry, PersonalityPortrait
+    from sqlalchemy import select
+    
+    try:
+        ai_token = os.getenv("TIMEWEB_AI_TOKEN")
+        ai_url = os.getenv("TIMEWEB_AI_URL", "https://api.timeweb.cloud/ai/v1/chat/completions")
+        if not ai_url.endswith("/chat/completions"):
+            ai_url = ai_url.rstrip("/") + "/chat/completions"
+            
+        if not ai_token:
+            print("TIMEWEB_AI_TOKEN is not set")
+            return
+            
+        async with async_session() as db:
+            entry = (await db.execute(select(DiaryEntry).where(DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id))).scalars().first()
+            if not entry:
+                return
+                
+            portrait = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
+            if not portrait:
+                return
+                
+            prompt = f"""Ты — ИИ-психолог.
+Ниже представлен психологический портрет пользователя:
+{portrait.content}
+
+Пользователь описал ситуацию:
+"{entry.event}"
+
+И свою реакцию на нее:
+"{entry.reaction}"
+
+Оцени от 0 до 100, насколько эта реакция соответствует описанному портрету личности (где 0 - совершенно нетипично, 100 - полностью соответствует портрету).
+Выведи ТОЛЬКО одно целое число от 0 до 100, без дополнительных символов, текста или форматирования."""
+
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                ai_response = await client.post(
+                    ai_url,
+                    headers={
+                        "Authorization": f"Bearer {ai_token}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "claude-4.8-opus",
+                        "messages": [
+                            {"role": "user", "content": prompt}
+                        ]
+                    }
+                )
+                
+                if ai_response.status_code == 404:
+                    ai_response = await client.post(
+                        ai_url,
+                        headers={
+                            "Authorization": f"Bearer {ai_token}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "model": "claude-3-5-sonnet",
+                            "messages": [
+                                {"role": "user", "content": prompt}
+                            ]
+                        }
+                    )
+                    
+                ai_response.raise_for_status()
+                ai_data = ai_response.json()
+                generated_text = ai_data["choices"][0]["message"]["content"].strip()
+                
+                numbers = re.findall(r'\d+', generated_text)
+                if numbers:
+                    score = int(numbers[0])
+                    score = max(0, min(100, score))
+                else:
+                    score = 50
+                    
+                entry.portrait_match_score = score
+                await db.commit()
+                return score
+                
+    except Exception as e:
+        print("BG analyze reaction failed:", e)
+
+@app.post("/api/analyze-reaction/{entry_id}")
+async def analyze_reaction(
+    entry_id: int,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    import asyncio
+    user_id = user_data.get("id")
+    
+    # Just run it directly since it's triggered manually
+    score = await _analyze_reaction_bg(user_id, entry_id)
+    if score is not None:
+        return {"status": "success", "score": score}
+    else:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail="Failed to analyze reaction")
