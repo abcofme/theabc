@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     REDIS_PORT: int = None
     REDIS_PASSWORD: str = None
 
+    TIMEWEB_AI_TOKEN: str = None
+    TIMEWEB_AI_URL: str = None
+
     @property
     def url(self) -> str:
         return (
