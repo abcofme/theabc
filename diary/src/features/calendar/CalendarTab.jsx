@@ -295,9 +295,7 @@ export default function CalendarTab({ onSheetOpen }) {
     );
   };
 
-  const activeEntries = diaryEntries.filter(entry =>
-    selectedDate && isSameDay(entry.date, selectedDate)
-  );
+
 
   return (
     <div className="flex flex-col h-full relative select-none">
