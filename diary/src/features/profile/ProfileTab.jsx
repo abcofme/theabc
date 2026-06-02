@@ -54,6 +54,10 @@ export default function ProfileTab() {
   }, []);
 
   const handleGeneratePortrait = async () => {
+    if (portraitData && portraitData.tests_count >= passedTests) {
+      WebApp.showAlert("У вас нет новых пройденных тестов для обновления портрета.");
+      return;
+    }
     setIsGeneratingPortrait(true);
     try {
       const response = await fetch(`${API_URL}/api/portrait/generate`, {
@@ -248,26 +252,7 @@ export default function ProfileTab() {
             )}
           </div>
 
-          {/* 2. ВКЛАДКИ */}
-          <div className="flex border-b border-neutral-800 mb-4 mx-4">
-            <button 
-              onClick={() => setActiveSubTab('tests')}
-              className={`flex-1 py-2 font-bold transition-colors duration-700 ${activeSubTab === 'tests' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-neutral-500 hover:text-neutral-300'}`}
-            >
-              Тесты
-            </button>
-            <button 
-              onClick={() => setActiveSubTab('analyses')}
-              className={`flex-1 py-2 font-bold transition-colors duration-700 ${activeSubTab === 'analyses' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-neutral-500 hover:text-neutral-300'}`}
-            >
-              Поведенческий код
-            </button>
-          </div>
-        </>
-      )}
-
-      {/* 3. КОНТЕНТ ВКЛАДОК */}
-      {activeSubTab === 'tests' && (
+          {/* 3. КОНТЕНТ ВКЛАДОК (теперь только результаты) */}
         <div className="flex-1 overflow-y-auto px-2 pb-6 space-y-3 animate-in fade-in duration-700 flex flex-col">
           {loading ? (
             <div className="flex justify-center items-center py-12 flex-1">
@@ -330,12 +315,7 @@ export default function ProfileTab() {
             ))
           )}
         </div>
-      )}
-
-      {activeSubTab === 'analyses' && (
-        <div className="flex-1 flex flex-col items-center justify-center text-neutral-500 pb-12 animate-in fade-in duration-700 px-2 text-center">
-          <p>Здесь будут ваши отчеты из раздела "Мои анализы".</p>
-        </div>
+        </>
       )}
 
       {activeSubTab === 'portrait' && (
@@ -412,9 +392,6 @@ export default function ProfileTab() {
               )}
             </div>
           )}
-        </div>
-      )}
-
       {/* 4. ВСПЛЫВАЮЩЕЕ ОКНО С РЕЗУЛЬТАТОМ ТЕСТА */}
       {selectedResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-sm animate-in fade-in duration-700">

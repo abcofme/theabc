@@ -49,7 +49,7 @@ export default function ReportsTab() {
     },
     {
       id: 'effective_reactions',
-      title: 'На какие ситуации я реагирую эффективно. А на какие нет?',
+      title: 'На какие ситуации я реагирую эффективно, а на какие нет?',
       desc: 'Узнайте, насколько ваша реакция на событие эффективна.',
       icon: Zap,
       color: 'text-amber-400',
