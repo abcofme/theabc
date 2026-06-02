@@ -225,3 +225,14 @@ class PersonalityPortrait(BaseModel):
     
     content: Mapped[str] = mapped_column(Text(), nullable=False)
     tests_count: Mapped[int] = mapped_column(Integer(), default=0)
+
+class BehavioralReport(BaseModel):
+    __tablename__ = "behavioral_reports"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    user: Mapped["User"] = relationship("User")
+
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    period_start: Mapped[date] = mapped_column(Date(), nullable=True)
+    period_end: Mapped[date] = mapped_column(Date(), nullable=True)
+    content: Mapped[str] = mapped_column(Text(), nullable=False)

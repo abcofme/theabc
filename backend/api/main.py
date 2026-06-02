@@ -428,3 +428,194 @@ async def analyze_reaction(
     except Exception as e:
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
+from pydantic import BaseModel
+from typing import Optional
+from datetime import date as DateType
+
+class ReportGenerateRequest(BaseModel):
+    period: str
+    start_date: Optional[DateType] = None
+    end_date: Optional[DateType] = None
+    report_type: str
+
+@app.get("/api/reports")
+async def get_reports(
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    user_id = user_data.get("id")
+    query = select(BehavioralReport).where(BehavioralReport.user_id == user_id).order_by(BehavioralReport.created_at.desc())
+    reports = (await session.execute(query)).scalars().all()
+    
+    return [{
+        "id": r.id,
+        "title": r.title,
+        "period_start": r.period_start,
+        "period_end": r.period_end,
+        "content": r.content,
+        "created_at": r.created_at
+    } for r in reports]
+
+@app.post("/api/reports/generate")
+async def generate_report(
+    req: ReportGenerateRequest,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    import httpx
+    import json
+    from datetime import datetime, timedelta
+    
+    user_id = user_data.get("id")
+    
+    # 1. Получаем портрет личности
+    portrait_query = select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id)
+    portrait = (await session.execute(portrait_query)).scalars().first()
+    
+    if not portrait:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Для формирования отчета сначала необходимо сформировать портрет личности.")
+
+    # 2. Определяем даты
+    today = datetime.now().date()
+    start_d = None
+    end_d = today
+    
+    if req.period == 'week':
+        start_d = today - timedelta(days=7)
+    elif req.period == 'month':
+        start_d = today - timedelta(days=30)
+    elif req.period == '3months':
+        start_d = today - timedelta(days=90)
+    elif req.period == 'year':
+        start_d = today - timedelta(days=365)
+    elif req.period == 'custom':
+        start_d = req.start_date
+        end_d = req.end_date if req.end_date else today
+        
+    # 3. Достаем записи дневника
+    diary_query = select(DiaryEntry).where(DiaryEntry.user_id == user_id)
+    if start_d:
+        diary_query = diary_query.where(DiaryEntry.date >= start_d)
+    if end_d:
+        diary_query = diary_query.where(DiaryEntry.date <= end_d)
+        
+    diary_query = diary_query.order_by(DiaryEntry.date.asc())
+    entries = (await session.execute(diary_query)).scalars().all()
+    
+    if not entries:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Недостаточно записей в дневнике за этот период для формирования отчета.")
+
+    # Формируем текст записей для промпта
+    entries_text = ""
+    for e in entries:
+        entries_text += f"- Дата: {e.date}\nСобытие: {e.event}\nРеакция: {e.reaction}\nОценка дня: {e.rating if e.rating else 'Не указана'}\n\n"
+
+    # Формируем промпт в зависимости от типа отчета
+    report_title = ""
+    report_prompt = ""
+    
+    if req.report_type == 'repeating_events':
+        report_title = "Повторяющиеся события"
+        report_prompt = f"""Ты выступаешь в роли профессионального психолога-аналитика.
+Твоя задача: найти повторяющиеся паттерны событий в жизни пользователя на основе его дневника и сопоставить их с его портретом личности.
+Портрет личности пользователя:
+{portrait.content}
+
+Записи дневника:
+{entries_text}
+
+Создай глубокий, живой, динамичный и точный отчет, обращаясь к пользователю на "Вы".
+Структура отчета (используй Markdown-разметку, как в портрете личности, с заголовками h2, жирным текстом и маркированными списками):
+1. **Главный паттерн**: Самое яркое повторяющееся событие или реакция.
+2. **Как это связано с вашим Портретом**: Почему именно так вы реагируете (со ссылкой на черты личности из Портрета).
+3. **Рекомендация по трансформации**: Практический совет, как разорвать негативный паттерн или усилить позитивный.
+
+Пиши интересно, без воды, показывай динамику."""
+    elif req.report_type == 'effective_reactions':
+        report_title = "Эффективность реакций"
+        report_prompt = f"""Ты выступаешь в роли профессионального психолога-аналитика.
+Твоя задача: оценить эффективность реакций пользователя на различные жизненные ситуации на основе его дневника и портрета личности.
+Портрет личности пользователя:
+{portrait.content}
+
+Записи дневника:
+{entries_text}
+
+Создай глубокий, живой, динамичный и точный отчет, обращаясь к пользователю на "Вы".
+Структура отчета (используй Markdown-разметку, как в портрете личности, с заголовками h2, жирным текстом и маркированными списками):
+1. **Зоны эффективности**: В каких ситуациях (дни, события) ваша реакция была максимально конструктивной.
+2. **Зоны роста**: Где ваши автоматические реакции мешают вам, исходя из вашего Портрета личности.
+3. **План улучшения**: Практический совет по управлению своей реакцией в будущем.
+
+Пиши интересно, без воды, показывай динамику."""
+    else:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Неизвестный тип отчета.")
+
+    ai_token = os.getenv("TIMEWEB_AI_TOKEN")
+    if not ai_token:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail="AI token not configured")
+
+    try:
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            ai_response = await client.post(
+                "https://api.timeweb.cloud/api/v1/llm/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {ai_token}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "claude-4.8-opus",
+                    "messages": [
+                        {"role": "user", "content": report_prompt}
+                    ]
+                }
+            )
+            
+            if ai_response.status_code == 404:
+                # Fallback to claude-3-5-sonnet if 4.8 is not found
+                ai_response = await client.post(
+                    "https://api.timeweb.cloud/api/v1/llm/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {ai_token}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "claude-3-5-sonnet",
+                        "messages": [
+                            {"role": "user", "content": report_prompt}
+                        ]
+                    }
+                )
+
+            ai_response.raise_for_status()
+            ai_data = ai_response.json()
+            generated_text = ai_data["choices"][0]["message"]["content"].strip()
+            
+            new_report = BehavioralReport(
+                user_id=user_id,
+                title=report_title,
+                period_start=start_d,
+                period_end=end_d,
+                content=generated_text
+            )
+            session.add(new_report)
+            await session.commit()
+            await session.refresh(new_report)
+            
+            return {
+                "id": new_report.id,
+                "title": new_report.title,
+                "period_start": new_report.period_start,
+                "period_end": new_report.period_end,
+                "content": new_report.content,
+                "created_at": new_report.created_at
+            }
+            
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=f"Generation failed: {str(e)}")

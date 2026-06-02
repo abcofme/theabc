@@ -110,8 +110,8 @@ export default function CalendarTab({ onSheetOpen }) {
 
   const handleAddEntry = async (e) => {
     e.preventDefault();
-    if (newEntries.some(entry => !entry.event.trim() || !entry.reaction.trim()) || (!hasDailyRating && newRating === 0)) {
-      WebApp.showAlert("Пожалуйста, заполните все события, реакции и укажите общую оценку дня.");
+    if (newEntries.some(entry => !entry.event.trim() || !entry.reaction.trim())) {
+      WebApp.showAlert("Пожалуйста, заполните все события и реакции.");
       return;
     }
     
@@ -204,7 +204,7 @@ export default function CalendarTab({ onSheetOpen }) {
     }
   };
 
-  const isSubmitDisabled = newEntries.some(ent => !ent.event.trim() || !ent.reaction.trim()) || (!hasDailyRating && newRating === 0);
+  const isSubmitDisabled = newEntries.some(ent => !ent.event.trim() || !ent.reaction.trim());
 
   const handleDeleteRating = async (entryId) => {
     try {
@@ -385,15 +385,14 @@ export default function CalendarTab({ onSheetOpen }) {
                 } ${
                   isDayToday ? '!border-blue-500/80 !text-blue-400 bg-blue-950/20' : ''
                 } ${
+                  hasEntries && isCurrentMonth ? '!bg-emerald-500/20 !border-emerald-500/50 !text-emerald-400 font-bold' : ''
+                } ${
                   isFutureDay ? 'opacity-40 cursor-default' : 'cursor-pointer'
                 }`}
               >
                 <span className={`text-base font-bold ${isDayToday ? 'scale-110' : ''}`}>
                   {format(date, 'd')}
                 </span>
-                {hasEntries && isCurrentMonth && (
-                  <Check size={20} className="text-emerald-500 mt-1" strokeWidth={3} />
-                )}
               </button>
             );
           })}

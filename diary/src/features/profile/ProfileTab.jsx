@@ -107,7 +107,7 @@ export default function ProfileTab() {
         <div className="h-full bg-blue-500 transition-all duration-1000 ease-out" style={{ width: `${leftValue}%` }}></div>
         <div className="h-full bg-orange-500 transition-all duration-1000 ease-out" style={{ width: `${rightValue}%` }}></div>
       </div>
-      {description && <div className="mt-4"><p className="text-sm sm:text-base text-neutral-400 font-medium leading-relaxed block break-words">{description}</p></div>}
+      {description && <div className="mt-4"><p className="text-sm sm:text-base text-neutral-400 font-medium leading-relaxed block break-words whitespace-pre-wrap">{description}</p></div>}
     </div>
   );
 
@@ -216,18 +216,36 @@ export default function ProfileTab() {
 
       {activeSubTab !== 'portrait' && (
         <>
-          {/* 1.5. ПОРТРЕТ ЛИЧНОСТИ КНОПКА */}
-          <div className="mx-4 mb-4">
+          {/* ПОРТРЕТ ЛИЧНОСТИ КНОПКИ */}
+          <div className="mx-4 mb-4 flex flex-col gap-3">
             <button 
-              onClick={() => setActiveSubTab('portrait')}
-              className="w-full bg-gradient-to-r from-blue-900/30 to-blue-800/10 border border-blue-900/50 rounded-2xl p-4 text-left hover:bg-blue-900/40 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
+              onClick={handleGeneratePortrait}
+              disabled={isGeneratingPortrait}
+              className="w-full bg-neutral-900/60 border border-neutral-800/80 rounded-2xl p-4 text-left hover:bg-neutral-800/80 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
             >
               <div>
-                <h3 className="text-lg font-bold text-blue-400 mb-1">Мой портрет личности</h3>
-                <p className="text-sm text-neutral-400">Узнайте свой портрет личности!</p>
+                <h3 className="text-base sm:text-lg font-bold text-neutral-200 mb-1">Сформировать портрет</h3>
+                <p className="text-xs sm:text-sm text-neutral-500">{isGeneratingPortrait ? 'Генерация...' : 'Обновить на основе новых тестов'}</p>
               </div>
-              <Wand2 className="text-blue-500" size={24} />
+              {isGeneratingPortrait ? (
+                <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <Wand2 className="text-neutral-500" size={24} />
+              )}
             </button>
+            
+            {portraitData && (
+              <button 
+                onClick={() => setActiveSubTab('portrait')}
+                className="w-full bg-gradient-to-r from-blue-900/30 to-blue-800/10 border border-blue-900/50 rounded-2xl p-4 text-left hover:bg-blue-900/40 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
+              >
+                <div>
+                  <h3 className="text-lg font-bold text-blue-400 mb-1">Мой портрет личности</h3>
+                  <p className="text-sm text-neutral-400">Открыть сформированный портрет</p>
+                </div>
+                <ClipboardList className="text-blue-500" size={24} />
+              </button>
+            )}
           </div>
 
           {/* 2. ВКЛАДКИ */}
@@ -242,7 +260,7 @@ export default function ProfileTab() {
               onClick={() => setActiveSubTab('analyses')}
               className={`flex-1 py-2 font-bold transition-colors duration-700 ${activeSubTab === 'analyses' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-neutral-500 hover:text-neutral-300'}`}
             >
-              Анализы
+              Поведенческий код
             </button>
           </div>
         </>
