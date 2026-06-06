@@ -34,14 +34,14 @@ export default function AdminPanel({ onBack }) {
       });
       
       if (!response.ok) {
-        throw new Error("Ошибка доступа");
+        throw new Error(`Ошибка ${response.status}: ${await response.text()}`);
       }
       
       const data = await response.json();
       setStats(data);
     } catch (error) {
       console.error(error);
-      WebApp.showAlert("Ошибка при загрузке статистики");
+      WebApp.showAlert(error.message || "Ошибка при загрузке статистики");
     } finally {
       setLoading(false);
     }
