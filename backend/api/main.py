@@ -720,3 +720,75 @@ async def analyze_reaction(
     else:
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail="Failed to analyze reaction")
+
+@app.get("/api/admin/stats")
+async def get_admin_stats(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    unique: bool = False,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from fastapi import HTTPException
+    from sqlalchemy import or_
+    
+    username = user_data.get("username", "")
+    if username not in ['ingenfrid', 'key_crp', 'fondlife']:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    start_dt = None
+    end_dt = None
+    if start_date:
+        start_dt = datetime.fromisoformat(start_date)
+    if end_date:
+        end_dt = datetime.fromisoformat(end_date)
+        
+    def apply_filters(query, model):
+        if start_dt:
+            query = query.where(model.created_at >= start_dt)
+        if end_dt:
+            query = query.where(model.created_at <= end_dt)
+        return query
+        
+    def get_count_expr(model):
+        if unique:
+            return func.count(func.distinct(model.user_id))
+        return func.count(model.id)
+
+    diary_q = select(get_count_expr(DiaryEntry))
+    diary_q = apply_filters(diary_q, DiaryEntry)
+    diary_count = (await session.execute(diary_q)).scalar() or 0
+    
+    reports_q = select(get_count_expr(BehavioralReport))
+    reports_q = apply_filters(reports_q, BehavioralReport)
+    reports_count = (await session.execute(reports_q)).scalar() or 0
+    
+    portraits_q = select(get_count_expr(PersonalityPortrait))
+    portraits_q = apply_filters(portraits_q, PersonalityPortrait)
+    portraits_count = (await session.execute(portraits_q)).scalar() or 0
+    
+    cats_query = select(Category).options(joinedload(Category.tests))
+    categories = (await session.execute(cats_query)).scalars().unique().all()
+    
+    test_counts = []
+    for cat in categories:
+        cat_data = {"id": cat.id, "name": cat.name, "tests": []}
+        for t in cat.tests:
+            prog_q = select(get_count_expr(Progress)).where(Progress.test_id == t.id)
+            prog_q = apply_filters(prog_q, Progress)
+            prog_q = prog_q.where(or_(Progress.value.isnot(None), Progress.hardcode_value.isnot(None)))
+            
+            count = (await session.execute(prog_q)).scalar() or 0
+            cat_data["tests"].append({
+                "id": t.id,
+                "name": t.name,
+                "count": count
+            })
+        test_counts.append(cat_data)
+        
+    return {
+        "diary_count": diary_count,
+        "reports_count": reports_count,
+        "portraits_count": portraits_count,
+        "test_counts": test_counts
+    }

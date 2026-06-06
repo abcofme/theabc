@@ -1,6 +1,7 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X, ChevronLeft, Lock, Wand2, Trash2, Brain, Activity, Star, ShieldAlert, Sparkles, Zap, Target, Heart, Flame, ClipboardList } from 'lucide-react';
+import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X, ChevronLeft, Lock, Wand2, Trash2, Brain, Activity, Star, ShieldAlert, Sparkles, Target, Heart, Flame, ClipboardList } from 'lucide-react';
+import AdminPanel from '../admin/AdminPanel';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://restoration-relative-federation-forth.trycloudflare.com";
@@ -216,9 +217,21 @@ export default function ProfileTab() {
           <h2 className="text-xl sm:text-2xl font-bold text-white truncate">{tgUser.first_name}</h2>
           <p className="text-sm sm:text-base text-white font-medium truncate">@{tgUser.username}</p>
         </div>
+        {['ingenfrid', 'key_crp', 'fondlife'].includes(tgUser.username) && (
+          <button 
+            onClick={() => setActiveSubTab('admin')}
+            className="p-2 sm:px-4 sm:py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold rounded-xl transition-colors shadow-sm"
+          >
+            Админ-панель
+          </button>
+        )}
       </div>
 
-      {activeSubTab !== 'portrait' && (
+      {activeSubTab === 'admin' && (
+        <AdminPanel onBack={() => setActiveSubTab('tests')} />
+      )}
+
+      {activeSubTab === 'tests' && (
         <>
           {/* ПОРТРЕТ ЛИЧНОСТИ КНОПКИ */}
           <div className="mx-4 mb-4 flex flex-col gap-3">
