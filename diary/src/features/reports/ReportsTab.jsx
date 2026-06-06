@@ -97,7 +97,7 @@ export default function ReportsTab() {
 
   const getMarkdownComponents = () => ({
     h1: ({node, ...props}) => <h1 className="text-2xl sm:text-3xl font-black text-white text-center mb-8 mt-4 uppercase drop-shadow-sm break-words" {...props} />,
-    h2: ({node, ...props}) => <h2 className="text-xl sm:text-2xl font-bold text-white mt-10 mb-6 flex items-center justify-center border-b border-rose-800/80 pb-4 break-words text-center"><Sparkles className="text-white inline mb-1 mr-3" size={24} /> {props.children}</h2>,
+    h2: ({node, ...props}) => <h2 className="text-xl sm:text-2xl font-bold text-white mt-10 mb-6 flex items-center justify-center pb-4 break-words text-center"><Sparkles className="text-white inline mb-1 mr-3" size={24} /> {props.children}</h2>,
     p: ({node, ...props}) => <p className="text-white leading-relaxed mb-6 text-base font-medium text-left break-words" {...props} />,
     strong: ({node, ...props}) => <strong className="text-white font-bold text-lg break-words" {...props} />,
     ul: ({node, ...props}) => <ul className="space-y-4 mb-8 mt-4 pl-1 w-full" {...props} />,
@@ -120,8 +120,8 @@ export default function ReportsTab() {
           <span className="font-medium">Назад</span>
         </button>
         
-        <div className="bg-rose-900/60 border border-rose-800/80 rounded-3xl p-5 sm:p-8 mb-6 shadow-xl backdrop-blur-sm">
-          <div className="flex items-center gap-2 text-white mb-6 border-b border-rose-800 pb-4">
+        <div className="bg-rose-900/60 rounded-3xl p-5 sm:p-8 mb-6 shadow-xl backdrop-blur-sm">
+          <div className="flex items-center gap-2 text-white mb-6 pb-4">
             <Calendar size={16} />
             <span className="text-sm font-medium">Отчет от {new Date(viewReport.created_at).toLocaleDateString('ru-RU')}</span>
           </div>
@@ -155,13 +155,13 @@ export default function ReportsTab() {
           </div>
         </div>
 
-        <div className="bg-rose-900 border border-rose-800 rounded-2xl p-5 mb-6">
+        <div className="bg-rose-900 rounded-2xl p-5 mb-6">
           <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Выбрать период</h3>
           <div className="relative mb-4">
             <select 
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="w-full appearance-none bg-rose-950 border border-rose-800 text-white text-base rounded-xl p-4 pr-10 focus:outline-none focus:border-blue-500/50 transition-colors"
+              className="w-full appearance-none bg-rose-950 text-white text-base rounded-xl p-4 pr-10 focus:outline-none focus: transition-colors"
             >
               <option value="week">За последнюю неделю</option>
               <option value="month">За последний месяц</option>
@@ -181,7 +181,7 @@ export default function ReportsTab() {
                   type="date" 
                   value={customStart}
                   onChange={(e) => setCustomStart(e.target.value)}
-                  className="w-full bg-rose-950 border border-rose-800 text-white text-base rounded-xl p-3 focus:outline-none focus:border-blue-500/50"
+                  className="w-full bg-rose-950 text-white text-base rounded-xl p-3 focus:outline-none focus:"
                 />
               </div>
               <div>
@@ -190,7 +190,7 @@ export default function ReportsTab() {
                   type="date" 
                   value={customEnd}
                   onChange={(e) => setCustomEnd(e.target.value)}
-                  className="w-full bg-rose-950 border border-rose-800 text-white text-base rounded-xl p-3 focus:outline-none focus:border-blue-500/50"
+                  className="w-full bg-rose-950 text-white text-base rounded-xl p-3 focus:outline-none focus:"
                 />
               </div>
             </div>
@@ -203,7 +203,7 @@ export default function ReportsTab() {
           className="w-full bg-blue-600 disabled:bg-blue-900/50 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
         >
           {isGenerating ? (
-            <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Анализ ИИ...</>
+            <><div className="w-5 h-5 rounded-full animate-spin"></div> Анализ ИИ...</>
           ) : (
             'Проанализировать'
           )}
@@ -222,7 +222,7 @@ export default function ReportsTab() {
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-8 h-8 rounded-full animate-spin"></div>
         </div>
       ) : (
         <div className="flex flex-col gap-4 px-2">
@@ -235,7 +235,7 @@ export default function ReportsTab() {
             const isOpen = openCategory === rtype.id;
             
             return (
-              <div key={rtype.id} className="bg-rose-900/60 border border-rose-800 rounded-2xl overflow-hidden transition-all duration-300">
+              <div key={rtype.id} className="bg-rose-900/60 rounded-2xl overflow-hidden transition-all duration-300">
                 <button 
                   onClick={() => setOpenCategory(isOpen ? null : rtype.id)}
                   className="w-full p-5 text-left hover:bg-rose-800/80 transition-all flex items-start gap-4"
@@ -253,10 +253,10 @@ export default function ReportsTab() {
                 </button>
                 
                 {isOpen && (
-                  <div className="p-5 border-t border-rose-800/50 bg-rose-950/50 flex flex-col gap-3 animate-in fade-in slide-in-from-top-2">
+                  <div className="p-5 bg-rose-950/50 flex flex-col gap-3 animate-in fade-in slide-in-from-top-2">
                     <button 
                       onClick={() => setActiveForm(rtype.id)}
-                      className="w-full py-3 bg-rose-800 hover:bg-rose-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-colors border border-rose-700"
+                      className="w-full py-3 bg-rose-800 hover:bg-rose-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
                     >
                       <Plus size={18} />
                       Сформировать новый отчет
@@ -269,7 +269,7 @@ export default function ReportsTab() {
                           <button
                             key={r.id}
                             onClick={() => setViewReport(r)}
-                            className="w-full text-left bg-rose-900 border border-rose-800 p-4 rounded-xl hover:bg-rose-800/80 transition-colors flex items-center justify-between group"
+                            className="w-full text-left bg-rose-900 p-4 rounded-xl hover:bg-rose-800/80 transition-colors flex items-center justify-between group"
                           >
                             <div className="flex items-center gap-3">
                               <FileText className="text-white group-hover:text-white transition-colors" size={20} />

@@ -1,10 +1,11 @@
 @import "tailwindcss";
 
 @theme {
-  --color-rose-700: #59001b;
-  --color-rose-800: #3f0013;
-  --color-rose-900: #26000b;
-  --color-rose-950: #130005;
+  --color-white: #F5E6D3;
+  --color-rose-700: #8A2222;
+  --color-rose-800: #6D1B1B;
+  --color-rose-900: #5A1616;
+  --color-rose-950: #541515;
 }
 
 html, body {

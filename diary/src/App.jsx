@@ -37,7 +37,7 @@ export default function App() {
 
       {/* Отрисовываем меню только если isNavHidden === false */}
       {!isNavHidden && (
-        <nav className="fixed bottom-0 left-0 w-full bg-rose-900 border-t border-rose-800 flex justify-between p-2 pb-safe z-50">
+        <nav className="fixed bottom-0 left-0 w-full bg-rose-900 flex justify-between p-2 pb-safe z-50">
           <button
             onClick={() => setActiveTab('diary')}
             className={`flex-1 flex flex-col items-center justify-center py-2 transition-colors ${

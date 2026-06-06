@@ -146,7 +146,7 @@ export default function ProfileTab() {
         else if (textStr.includes('барьеры')) h2Icon = <ShieldAlert className="text-white inline mb-1 mr-3" size={28} />;
         else if (textStr.includes('Личность')) h2Icon = <User className="text-white inline mb-1 mr-3" size={28} />;
 
-        return <h2 className="text-2xl sm:text-3xl font-bold text-white mt-14 mb-8 flex items-center justify-center border-b border-rose-800/80 pb-4 break-words text-center">{h2Icon} {props.children}</h2>
+        return <h2 className="text-2xl sm:text-3xl font-bold text-white mt-14 mb-8 flex items-center justify-center pb-4 break-words text-center">{h2Icon} {props.children}</h2>
       },
       p: ({node, ...props}) => <p className="text-white leading-loose mb-8 text-base sm:text-lg font-semibold text-left break-words" {...props} />,
       strong: ({node, ...props}) => (
@@ -161,7 +161,7 @@ export default function ProfileTab() {
       li: ({node, ...props}) => {
         const isBarriers = sectionTitle.includes('барьеры');
         return (
-          <li className={`flex items-start text-base sm:text-lg font-semibold text-white break-words w-full ${isBarriers ? 'border-b border-rose-800/50 pb-4 last:border-0' : ''}`}>
+          <li className={`flex items-start text-base sm:text-lg font-semibold text-white break-words w-full ${isBarriers ? ' pb-4 last:' : ''}`}>
             <IconComponent className={`shrink-0 ${iconColor} mr-3 mt-1`} size={22} />
             <span className="flex-1 block">{props.children}</span>
           </li>
@@ -204,11 +204,11 @@ export default function ProfileTab() {
   return (
     <div className="flex flex-col h-full relative select-none bg-transparent">
       {/* 1. ШАПКА ПРОФИЛЯ (Аватар и Юзернейм) */}
-      <div className="flex items-center gap-4 p-4 sm:p-6 bg-rose-900/60 border border-rose-800/80 rounded-3xl mx-2 mt-2 mb-4 backdrop-blur-sm shadow-sm">
+      <div className="flex items-center gap-4 p-4 sm:p-6 bg-rose-900/60 rounded-3xl mx-2 mt-2 mb-4 backdrop-blur-sm shadow-sm">
         {tgUser.photo_url ? (
-          <img src={tgUser.photo_url} alt="Avatar" className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg border-2 border-rose-700" />
+          <img src={tgUser.photo_url} alt="Avatar" className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg" />
         ) : (
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-900/40 text-white rounded-full flex items-center justify-center font-bold text-2xl border-2 border-blue-800/50 shadow-inner">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-900/40 text-white rounded-full flex items-center justify-center font-bold text-2xl shadow-inner">
             {tgUser.first_name?.[0] || <User size={32} />}
           </div>
         )}
@@ -234,8 +234,8 @@ export default function ProfileTab() {
                 disabled={isGeneratingPortrait}
                 className={`w-full rounded-2xl p-4 text-left transition-all duration-700 flex items-center justify-between ${
                   (totalTests > 0 && passedTests === totalTests) 
-                    ? "bg-rose-900/60 border border-rose-800/80 hover:bg-rose-800/80 active:scale-[0.98]" 
-                    : "bg-rose-900/30 border border-rose-800/40 opacity-70"
+                    ? "bg-rose-900/60 hover:bg-rose-800/80 active:scale-[0.98]" 
+                    : "bg-rose-900/30 opacity-70"
                 }`}
               >
                 <div>
@@ -245,7 +245,7 @@ export default function ProfileTab() {
                   </p>
                 </div>
                 {isGeneratingPortrait ? (
-                  <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-6 h-6 rounded-full animate-spin"></div>
                 ) : (
                   <Wand2 className={(totalTests > 0 && passedTests === totalTests) ? "text-white" : "text-white"} size={24} />
                 )}
@@ -256,14 +256,14 @@ export default function ProfileTab() {
                   <button 
                     onClick={handleGeneratePortrait}
                     disabled={isGeneratingPortrait}
-                    className="w-full bg-rose-900/60 border border-rose-800/80 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
+                    className="w-full bg-rose-900/60 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
                   >
                     <div>
                       <h3 className="text-base sm:text-lg font-bold text-white mb-1">Сформировать заново</h3>
                       <p className="text-xs sm:text-sm text-white">{isGeneratingPortrait ? 'Генерация...' : 'Обновить на основе новых тестов'}</p>
                     </div>
                     {isGeneratingPortrait ? (
-                      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-6 h-6 rounded-full animate-spin"></div>
                     ) : (
                       <Wand2 className="text-white" size={24} />
                     )}
@@ -271,7 +271,7 @@ export default function ProfileTab() {
                 )}
                 <button 
                   onClick={() => setActiveSubTab('portrait')}
-                  className="w-full bg-gradient-to-r from-blue-900/30 to-blue-800/10 border border-blue-900/50 rounded-2xl p-4 text-left hover:bg-blue-900/40 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
+                  className="w-full bg-gradient-to-r from-blue-900/30 to-blue-800/10 rounded-2xl p-4 text-left hover:bg-blue-900/40 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
                 >
                   <div>
                     <h3 className="text-lg font-bold text-white mb-1">Мой портрет личности</h3>
@@ -287,7 +287,7 @@ export default function ProfileTab() {
         <div className="flex-1 overflow-y-auto px-2 pb-6 space-y-3 animate-in fade-in duration-700 flex flex-col">
           {loading ? (
             <div className="flex justify-center items-center py-12 flex-1">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+              <div className="animate-spin rounded-full h-10 w-10"></div>
             </div>
           ) : categories.length === 0 ? (
             <div className="flex-1 flex items-center justify-center text-white text-center py-12">
@@ -297,7 +297,7 @@ export default function ProfileTab() {
             <>
               <h2 className="text-xl font-bold text-white px-2 mt-2 mb-2">Результаты тестов</h2>
               {categories.map(cat => (
-              <div key={cat.id} className="bg-rose-900 border border-rose-800/80 rounded-2xl overflow-hidden shadow-sm transition-all duration-700">
+              <div key={cat.id} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-700">
                 {/* Кнопка категории (Аккордеон) */}
                 <button
                   onClick={() => toggleCategory(cat.id)}
@@ -315,7 +315,7 @@ export default function ProfileTab() {
 
                 {/* Содержимое категории (Список тестов) */}
                 {openCategory === cat.id && (
-                  <div className="bg-rose-950/40 border-t border-rose-800/80 px-4 py-2">
+                  <div className="bg-rose-950/40 px-4 py-2">
                     {cat.tests.length === 0 ? (
                       <div className="text-white text-sm py-3 italic">В этой категории пока нет тестов.</div>
                     ) : (
@@ -323,7 +323,7 @@ export default function ProfileTab() {
                         <div
                           key={test.id}
                           onClick={() => openResultModal(test)}
-                          className={`flex items-center justify-between py-3.5 border-b border-rose-800/50 last:border-0 
+                          className={`flex items-center justify-between py-3.5 last: 
                           ${ test.passed ? 'cursor-pointer hover:bg-rose-800/40 -mx-4 px-4 transition-colors active:bg-rose-800' : 'opacity-60 cursor-default' }`}
                         >
                           <span className="text-sm sm:text-base font-medium pr-3 text-white">
@@ -331,11 +331,11 @@ export default function ProfileTab() {
                           </span>
                           {/* Плашка Пройден / Не пройден */}
                           {test.passed ? (
-                            <span className="flex items-center gap-1.5 text-white text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-500/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap border border-emerald-500/20 shrink-0">
+                            <span className="flex items-center gap-1.5 text-white text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-500/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">
                               <CheckCircle size={14} /> Пройден
                             </span>
                           ) : (
-                            <span className="flex items-center gap-1.5 text-white text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-red-400/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap border border-red-400/20 shrink-0">
+                            <span className="flex items-center gap-1.5 text-white text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-red-400/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">
                               <XCircle size={14} /> Не пройден
                             </span>
                           )}
@@ -365,16 +365,16 @@ export default function ProfileTab() {
 
           {isGeneratingPortrait ? (
             <div className="flex-1 flex flex-col items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+              <div className="animate-spin rounded-full h-12 w-12 mb-4"></div>
               <p className="text-white font-medium text-center">Портрет личности формируется...</p>
             </div>
           ) : (
             <div className="flex-1 flex flex-col">
               {portraitData && portraitData.tests_count < totalTests && (
-                <div className="mb-6 bg-rose-900/60 border border-rose-800 p-6 rounded-3xl text-center">
+                <div className="mb-6 bg-rose-900/60 p-6 rounded-3xl text-center">
                   <p className="text-white text-sm mb-4 font-medium">Добавлены новые тесты! После прохождения вы можете сформировать новый портрет личности</p>
                   {passedTests < totalTests ? (
-                    <button disabled className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-rose-800 text-white font-bold border border-rose-700 cursor-not-allowed">
+                    <button disabled className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-rose-800 text-white font-bold cursor-not-allowed">
                       <Lock size={18} /> Мой портрет личности
                     </button>
                   ) : (
@@ -400,9 +400,9 @@ export default function ProfileTab() {
               )}
 
               {totalTests > 0 && passedTests < totalTests && !portraitData && (
-                <div className="flex flex-col items-center text-center mt-auto bg-rose-900/60 border border-rose-800 p-6 rounded-3xl">
+                <div className="flex flex-col items-center text-center mt-auto bg-rose-900/60 p-6 rounded-3xl">
                   <p className="text-white text-sm mb-6">Чтобы сформировать портрет личности, пройдите все тесты.</p>
-                  <button disabled className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-rose-800 text-white font-bold border border-rose-700 cursor-not-allowed">
+                  <button disabled className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-rose-800 text-white font-bold cursor-not-allowed">
                     <Lock size={18} /> Мой портрет личности
                   </button>
                 </div>
@@ -419,7 +419,7 @@ export default function ProfileTab() {
               {portraitData && (
                 <button 
                   onClick={handleClearPortrait}
-                  className="mt-4 flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-red-900/10 text-white hover:bg-red-900/30 border border-red-900/30 transition-colors font-medium text-sm"
+                  className="mt-4 flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-red-900/10 text-white hover:bg-red-900/30 transition-colors font-medium text-sm"
                 >
                   <Trash2 size={18} /> Очистить портрет (Test)
                 </button>
@@ -434,9 +434,9 @@ export default function ProfileTab() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-rose-950/80 backdrop-blur-sm animate-in fade-in duration-700">
           {/* Область клика вокруг окна для закрытия */}
           <div className="absolute inset-0" onClick={() => setSelectedResult(null)}></div>
-          <div className="relative bg-rose-900 border border-rose-700 rounded-[2rem] w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-700">
+          <div className="relative bg-rose-900 rounded-[2rem] w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-700">
             {/* Заголовок модального окна */}
-            <div className="p-5 sm:p-6 border-b border-rose-800 flex justify-between items-start">
+            <div className="p-5 sm:p-6 flex justify-between items-start">
               <div className="pr-4">
                 <span className="text-white text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1.5 block">
                   Результат тестирования
@@ -445,7 +445,7 @@ export default function ProfileTab() {
                   {selectedResult.name}
                 </h3>
               </div>
-              <button onClick={() => setSelectedResult(null)} className="p-2 bg-rose-800/50 hover:bg-rose-800 rounded-xl text-white hover:text-white transition-colors border border-transparent hover:border-rose-700 shrink-0">
+              <button onClick={() => setSelectedResult(null)} className="p-2 bg-rose-800/50 hover:bg-rose-800 rounded-xl text-white hover:text-white transition-colors hover: shrink-0">
                 <X size={20} />
               </button>
             </div>
@@ -456,7 +456,7 @@ export default function ProfileTab() {
               </div>
             </div>
             {/* Нижняя кнопка */}
-            <div className="p-4 sm:p-5 border-t border-rose-800 bg-rose-950/30 rounded-b-[2rem]">
+            <div className="p-4 sm:p-5 bg-rose-950/30 rounded-b-[2rem]">
               <button onClick={() => setSelectedResult(null)} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition-all active:bg-blue-700 shadow-lg shadow-blue-900/20">
                 Отлично
               </button>

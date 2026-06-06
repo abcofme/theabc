@@ -246,7 +246,7 @@ export default function CalendarTab({ onSheetOpen }) {
   const renderMatchScale = (entry) => {
     if (!hasPortrait) {
       return (
-        <div className="mt-5 pt-5 border-t border-rose-800">
+        <div className="mt-5 pt-5">
           <p className="text-xs font-bold text-white uppercase tracking-wider mb-3">Насколько реакция соответствует портрету?</p>
           <div className="h-2 w-full bg-rose-800 rounded-full overflow-hidden mb-2"></div>
           <p className="text-xs font-medium text-white flex items-center gap-1.5 leading-tight"><Lock size={12}/> Для разблокировки шкалы сформируйте портрет личности в профиле</p>
@@ -258,7 +258,7 @@ export default function CalendarTab({ onSheetOpen }) {
 
     if (entry.portrait_match_score === null || entry.portrait_match_score === undefined) {
       return (
-        <div className="mt-5 pt-5 border-t border-rose-800">
+        <div className="mt-5 pt-5">
           <p className="text-xs font-bold text-white uppercase tracking-wider mb-3">Соответствие портрету личности:</p>
           {isAnalyzing ? (
             <div className="flex items-center gap-3">
@@ -283,7 +283,7 @@ export default function CalendarTab({ onSheetOpen }) {
     else if (score <= 75) colorClass = "bg-yellow-400";
 
     return (
-      <div className="mt-5 pt-5 border-t border-rose-800">
+      <div className="mt-5 pt-5">
         <p className="text-xs font-bold text-white uppercase tracking-wider mb-3">Соответствие портрету личности:</p>
         <div className="flex items-center gap-3">
           <div className="h-2 flex-1 bg-rose-800 rounded-full overflow-hidden shadow-inner relative">
@@ -303,7 +303,7 @@ export default function CalendarTab({ onSheetOpen }) {
       <div className="mb-6 mt-2 relative flex items-center justify-between gap-2">
         <button
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="flex items-center gap-2 text-lg sm:text-2xl font-bold text-white hover:text-white transition-colors bg-rose-900/60 px-3 sm:px-4 py-2 rounded-xl border border-rose-800 shrink-0"
+          className="flex items-center gap-2 text-lg sm:text-2xl font-bold text-white hover:text-white transition-colors bg-rose-900/60 px-3 sm:px-4 py-2 rounded-xl shrink-0"
         >
           <span className="capitalize">
             {format(currentMonth, 'LLLL yyyy', { locale: ru })}
@@ -317,7 +317,7 @@ export default function CalendarTab({ onSheetOpen }) {
         </div>
 
         {isDropdownOpen && (
-          <div className="absolute top-14 left-0 z-40 w-80 bg-rose-900 border border-rose-800 rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-700">
+          <div className="absolute top-14 left-0 z-40 w-80 bg-rose-900 rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-700">
             <div className="text-xs font-semibold text-white uppercase tracking-wider mb-2">Выберите месяц</div>
             <div className="grid grid-cols-3 gap-1.5 mb-4">
               {monthsRu.map((m, idx) => (
@@ -358,7 +358,7 @@ export default function CalendarTab({ onSheetOpen }) {
       </div>
 
       {/* СЕТКА КАЛЕНДАРЯ */}
-      <div className="flex-1 flex flex-col bg-rose-900/40 border border-rose-800/80 rounded-3xl p-3 backdrop-blur-sm overflow-hidden min-h-[400px]">
+      <div className="flex-1 flex flex-col bg-rose-900/40 rounded-3xl p-3 backdrop-blur-sm overflow-hidden min-h-[400px]">
         <div className="grid grid-cols-7 mb-2 text-center">
           {weekDays.map(day => (
             <div key={day} className="text-xs font-semibold text-white uppercase py-2">
@@ -378,14 +378,14 @@ export default function CalendarTab({ onSheetOpen }) {
                 key={index}
                 onClick={() => handleDayClick(date)}
                 disabled={isFutureDay}
-                className={`flex flex-col items-center justify-center p-2 rounded-2xl border transition-all relative ${
+                className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all relative ${
                   isCurrentMonth
-                    ? `bg-rose-900/60 border-rose-800/40 text-white ${!isFutureDay && 'hover:bg-rose-800/80'}`
-                    : `bg-transparent border-transparent text-white ${!isFutureDay && 'hover:text-white'}`
+                    ? `bg-rose-900/60 text-white ${!isFutureDay && 'hover:bg-rose-800/80'}`
+                    : `bg-transparent text-white ${!isFutureDay && 'hover:text-white'}`
                 } ${
-                  isDayToday ? '!border-blue-500/80 !text-white bg-blue-950/20' : ''
+                  isDayToday ? '! !text-white bg-blue-950/20' : ''
                 } ${
-                  hasEntries && isCurrentMonth ? '!bg-emerald-500/20 !border-emerald-500/50 !text-white font-bold' : ''
+                  hasEntries && isCurrentMonth ? '!bg-emerald-500/20 ! !text-white font-bold' : ''
                 } ${
                   isFutureDay ? 'opacity-40 cursor-default' : 'cursor-pointer'
                 }`}
@@ -414,7 +414,7 @@ export default function CalendarTab({ onSheetOpen }) {
               </div>
               <button
                 onClick={() => setIsSheetOpen(false)}
-                className="p-2 bg-rose-900 hover:bg-rose-800 border border-rose-800 rounded-xl text-white hover:text-white transition-colors"
+                className="p-2 bg-rose-900 hover:bg-rose-800 rounded-xl text-white hover:text-white transition-colors"
               >
                 <X size={24} />
               </button>
@@ -422,7 +422,7 @@ export default function CalendarTab({ onSheetOpen }) {
 
             <div className="flex-1 space-y-4 mb-8">
               {activeEntries.some(e => e.rating) ? (
-                <div className="flex items-center justify-between gap-2 mb-4 bg-rose-900/40 p-4 rounded-2xl border border-rose-800 relative group">
+                <div className="flex items-center justify-between gap-2 mb-4 bg-rose-900/40 p-4 rounded-2xl relative group">
                   <div className="flex items-center gap-4">
                     <span className="text-sm font-bold text-white uppercase tracking-wider">Оценка дня:</span>
                     <div className="flex gap-1 text-white text-xl">
@@ -443,7 +443,7 @@ export default function CalendarTab({ onSheetOpen }) {
               ) : null}
               {activeEntries.length > 0 ? (
                 activeEntries.map(entry => (
-                  <div key={entry.id} className="bg-rose-900/80 border border-rose-800 p-5 rounded-2xl shadow-inner relative">
+                  <div key={entry.id} className="bg-rose-900/80 p-5 rounded-2xl shadow-inner relative">
                     <button 
                       onClick={() => setEntryToDelete(entry)}
                       className="absolute top-4 right-4 p-2 text-white hover:text-white hover:bg-red-500/10 rounded-xl transition-colors active:scale-95"
@@ -462,14 +462,14 @@ export default function CalendarTab({ onSheetOpen }) {
                   </div>
                 ))
               ) : (
-                <div className="h-full flex flex-col items-center justify-center text-center py-12 border border-dashed border-rose-800 rounded-2xl text-white gap-3 mt-4">
+                <div className="h-full flex flex-col items-center justify-center text-center py-12 rounded-2xl text-white gap-3 mt-4">
                   <BookOpen size={40} className="text-white" />
                   <span className="text-lg">Записей пока нет</span>
                 </div>
               )}
             </div>
 
-            <form onSubmit={handleAddEntry} className="border-t border-rose-900 pt-6 flex flex-col gap-6 mt-auto mb-safe pb-4">
+            <form onSubmit={handleAddEntry} className=" pt-6 flex flex-col gap-6 mt-auto mb-safe pb-4">
               <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
                 <Plus size={16} />
                 Новая запись дневника
@@ -477,7 +477,7 @@ export default function CalendarTab({ onSheetOpen }) {
               
               <div className="flex flex-col gap-6">
                 {newEntries.map((entry, index) => (
-                  <div key={index} className="bg-rose-900/40 p-4 rounded-2xl border border-rose-800/60 flex flex-col gap-4 relative">
+                  <div key={index} className="bg-rose-900/40 p-4 rounded-2xl flex flex-col gap-4 relative">
                     {newEntries.length > 1 && (
                       <div className="absolute -top-3 -right-2 bg-rose-800 text-white text-xs font-bold px-2 py-1 rounded-lg">
                         Событие {index + 1}
@@ -489,7 +489,7 @@ export default function CalendarTab({ onSheetOpen }) {
                         placeholder="Что произошло? (Событие)"
                         value={entry.event}
                         onChange={(e) => updateEntry(index, 'event', e.target.value)}
-                        className="w-full bg-rose-900 border border-rose-800 rounded-xl px-4 py-3.5 text-white placeholder:text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all"
+                        className="w-full bg-rose-900 rounded-xl px-4 py-3.5 text-white placeholder:text-white focus:outline-none focus: focus:ring-1 focus:ring-blue-500/50 transition-all"
                       />
                     </div>
                     <div>
@@ -498,7 +498,7 @@ export default function CalendarTab({ onSheetOpen }) {
                         value={entry.reaction}
                         onChange={(e) => updateEntry(index, 'reaction', e.target.value)}
                         rows="3"
-                        className="w-full bg-rose-900 border border-rose-800 rounded-xl px-4 py-3.5 text-white placeholder:text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all resize-none"
+                        className="w-full bg-rose-900 rounded-xl px-4 py-3.5 text-white placeholder:text-white focus:outline-none focus: focus:ring-1 focus:ring-blue-500/50 transition-all resize-none"
                       />
                     </div>
                   </div>
@@ -508,14 +508,14 @@ export default function CalendarTab({ onSheetOpen }) {
               <button
                 type="button"
                 onClick={handleAddMore}
-                className="w-full bg-rose-800/80 hover:bg-rose-700 text-white font-bold py-3.5 rounded-xl transition-all border border-rose-700/50 flex items-center justify-center gap-2"
+                className="w-full bg-rose-800/80 hover:bg-rose-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2"
               >
                 <Plus size={18} />
                 Добавить событие
               </button>
 
               {!hasDailyRating && (
-                <div className="mt-4 pt-4 border-t border-rose-800/50">
+                <div className="mt-4 pt-4">
                   <span className="text-sm font-bold text-white block mb-3">Оцените день по пятибальной шкале:</span>
                   <div className="flex justify-between gap-2">
                     {[1, 2, 3, 4, 5].map(num => (
@@ -526,7 +526,7 @@ export default function CalendarTab({ onSheetOpen }) {
                         className={`flex-1 py-3 rounded-xl font-bold transition-all text-lg ${
                           newRating === num 
                             ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30 scale-105' 
-                            : 'bg-rose-900 border border-rose-800 text-white hover:bg-rose-800'
+                            : 'bg-rose-900 text-white hover:bg-rose-800'
                         }`}
                       >
                         {newRating >= num ? '★' : '☆'}
@@ -551,7 +551,7 @@ export default function CalendarTab({ onSheetOpen }) {
       {/* МОДАЛКА УДАЛЕНИЯ ЗАПИСИ */}
       {entryToDelete && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-rose-950/80 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-rose-900 border border-rose-800 p-6 rounded-3xl w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-300">
+          <div className="bg-rose-900 p-6 rounded-3xl w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-300">
             <h3 className="text-xl font-bold text-white mb-2 text-center">Удалить запись?</h3>
             <p className="text-white text-sm text-center mb-6">Эта запись будет навсегда удалена из вашего дневника.</p>
             <div className="flex gap-3">
@@ -563,7 +563,7 @@ export default function CalendarTab({ onSheetOpen }) {
               </button>
               <button 
                 onClick={handleDeleteEntry}
-                className="flex-1 py-3 bg-red-500/20 text-white font-bold rounded-2xl border border-red-500/30 active:scale-95 transition-transform"
+                className="flex-1 py-3 bg-red-500/20 text-white font-bold rounded-2xl active:scale-95 transition-transform"
               >
                 Да
               </button>

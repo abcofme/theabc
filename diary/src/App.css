@@ -1,15 +1,12 @@
-.counter {
+﻿.counter {
   font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
+  padding: 5px 10px;: 5px;
   color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
+  background: var(--accent-bg);: 2px solid transparent;
+  transition: 0.3s;
   margin-bottom: 24px;
 
-  &:hover {
-    border-color: var(--accent-border);
+  &:hover {: var(--accent-);
   }
   &:focus-visible {
     outline: 2px solid var(--accent);
@@ -71,8 +68,7 @@
 }
 
 #next-steps {
-  display: flex;
-  border-top: 1px solid var(--border);
+  display: flex;: 1px solid var(--);
   text-align: left;
 
   & > div {
@@ -95,12 +91,9 @@
   }
 }
 
-#docs {
-  border-right: 1px solid var(--border);
+#docs {: 1px solid var(--);
 
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
+  @media (max-width: 1024px) {: none;: 1px solid var(--);
   }
 }
 
@@ -117,8 +110,7 @@
 
   a {
     color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
+    font-size: 16px;: 6px;
     background: var(--social-bg);
     display: flex;
     padding: 6px 12px;
@@ -148,14 +140,13 @@
     a {
       width: 100%;
       justify-content: center;
-      box-sizing: border-box;
+      box-sizing:;
     }
   }
 }
 
 #spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
+  height: 88px;: 1px solid var(--);
   @media (max-width: 1024px) {
     height: 48px;
   }
@@ -169,16 +160,13 @@
   &::after {
     content: '';
     position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
+    top: -4.5px;: 5px solid transparent;
   }
 
   &::before {
-    left: 0;
-    border-left-color: var(--border);
+    left: 0;: var(--);
   }
   &::after {
-    right: 0;
-    border-right-color: var(--border);
+    right: 0;: var(--);
   }
 }
