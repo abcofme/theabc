@@ -2,10 +2,26 @@
 
 @theme {
   --color-white: #F5E6D3;
-  --color-rose-700: #8A2222;
-  --color-rose-800: #6D1B1B;
-  --color-rose-900: #5A1616;
-  --color-rose-950: #541515;
+  
+  /* Rose (Burgundy) */
+  --color-rose-700: #822323;
+  --color-rose-800: #6A1C1C;
+  --color-rose-900: #541515;
+  --color-rose-950: #2B0A0A;
+
+  /* Blue as Dark Green */
+  --color-blue-400: #059669;
+  --color-blue-500: #047857;
+  --color-blue-600: #065f46;
+  --color-blue-700: #064e3b;
+  --color-blue-800: #022c22;
+  --color-blue-900: #011812;
+
+  /* Orange as Dark Yellow */
+  --color-orange-400: #ca8a04;
+  --color-orange-500: #a16207;
+  --color-orange-600: #854d0e;
+  --color-orange-700: #713f12;
 }
 
 html, body {
