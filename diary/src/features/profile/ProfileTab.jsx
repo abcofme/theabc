@@ -203,7 +203,7 @@ export default function ProfileTab() {
   };
 
   return (
-    <div className="flex flex-col h-full relative select-none bg-transparent">
+    <div className="flex flex-col h-full relative select-none bg-transparent max-w-2xl mx-auto w-full">
       {/* 1. ШАПКА ПРОФИЛЯ (Аватар и Юзернейм) */}
       <div className="flex items-center gap-4 p-4 sm:p-6 bg-rose-900/80 rounded-3xl mx-2 mt-2 mb-4 backdrop-blur-sm shadow-sm">
         {tgUser.photo_url ? (
