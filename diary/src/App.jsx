@@ -3,6 +3,7 @@ import { Calendar as CalendarIcon, Sparkles, User, Brain } from 'lucide-react';
 import CalendarTab from './features/calendar/CalendarTab';
 import ProfileTab from './features/profile/ProfileTab';
 import ReportsTab from './features/reports/ReportsTab';
+import bgLeaves from './assets/bg-leaves.png';
 
 const WebApp = window.Telegram.WebApp;
 
@@ -31,7 +32,7 @@ export default function App() {
       <div 
         className="absolute inset-0 pointer-events-none z-0"
         style={{
-          backgroundImage: "url('/bg-leaves.png')",
+          backgroundImage: `url(${bgLeaves})`,
           backgroundPosition: "bottom right",
           backgroundRepeat: "no-repeat",
           backgroundSize: "60%"
