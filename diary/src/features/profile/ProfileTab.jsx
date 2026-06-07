@@ -399,7 +399,7 @@ export default function ProfileTab() {
               )}
 
               {portraitData && (
-                <div className="px-1 sm:px-4 mb-4 overflow-x-hidden">
+                <div className="bg-rose-900/80 rounded-3xl p-5 sm:p-8 mb-6 shadow-xl backdrop-blur-sm overflow-x-hidden">
                   {markdownContent.split(/(?=^#\s)/m).map((sectionText, i) => {
                     if (!sectionText.trim()) return null;
                     const firstLine = sectionText.trim().split('\n')[0];
