@@ -203,7 +203,7 @@ export default function ProfileTab() {
   };
 
   return (
-    <div className="flex flex-col h-full relative select-none bg-transparent max-w-2xl mx-auto w-full">
+    <div className="flex flex-col relative select-none bg-transparent max-w-2xl mx-auto w-full">
       {/* 1. ШАПКА ПРОФИЛЯ (Аватар и Юзернейм) */}
       <div className="flex items-center gap-4 p-4 sm:p-6 bg-rose-900/80 rounded-3xl mx-2 mt-2 mb-4 backdrop-blur-sm shadow-sm">
         {tgUser.photo_url ? (
@@ -297,7 +297,7 @@ export default function ProfileTab() {
           </div>
 
           {/* 3. КОНТЕНТ ВКЛАДОК (теперь только результаты) */}
-        <div className="flex-1 overflow-y-auto px-2 pb-6 space-y-3 animate-in fade-in duration-700 flex flex-col">
+        <div className="px-2 pb-6 space-y-3 animate-in fade-in duration-700 flex flex-col">
           {loading ? (
             <div className="flex justify-center items-center py-12 flex-1">
               <div className="animate-spin rounded-full h-10 w-10"></div>
@@ -366,7 +366,7 @@ export default function ProfileTab() {
       )}
 
       {activeSubTab === 'portrait' && (
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 pt-6 pb-24 animate-in fade-in slide-in-from-right-8 duration-500 flex flex-col">
+        <div className="px-4 sm:px-6 pt-6 animate-in fade-in slide-in-from-right-8 duration-500 flex flex-col">
           <button 
             onClick={() => setActiveSubTab('tests')}
             className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-6 transition-colors self-start"
@@ -382,7 +382,7 @@ export default function ProfileTab() {
               <p className="text-[#F5E6D3] font-medium text-center">Портрет личности формируется...</p>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col">
+            <div className="flex flex-col">
               {portraitData && portraitData.tests_count < totalTests && (
                 <div className="mb-6 bg-rose-900/80 p-6 rounded-3xl text-center">
                   <p className="text-[#F5E6D3] text-sm mb-4 font-medium">Добавлены новые тесты! После прохождения вы можете сформировать новый портрет личности</p>
