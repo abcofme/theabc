@@ -4,7 +4,7 @@ import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X, ChevronLeft, Loc
 import AdminPanel from '../admin/AdminPanel';
 
 const WebApp = window.Telegram.WebApp;
-const API_URL = "https://restoration-relative-federation-forth.trycloudflare.com";
+const API_URL = "https://friendly-various-near-across.trycloudflare.com";
 
 export default function ProfileTab() {
   const [categories, setCategories] = useState([]);

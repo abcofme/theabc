@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, CheckCircle } from 'lucide-react';
 
 const WebApp = window.Telegram.WebApp;
-const API_URL = "https://restoration-relative-federation-forth.trycloudflare.com";
+const API_URL = "https://friendly-various-near-across.trycloudflare.com";
 
 export default function AdminPanel({ onBack }) {
   const [startDate, setStartDate] = useState('');
