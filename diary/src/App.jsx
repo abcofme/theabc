@@ -29,7 +29,7 @@ export default function App() {
   return (
     <div className="flex flex-col h-full font-sans bg-rose-950 relative">
       <div 
-        className="absolute inset-0 pointer-events-none opacity-30 z-0"
+        className="absolute inset-0 pointer-events-none z-0"
         style={{
           backgroundImage: "url('/bg-leaves.png')",
           backgroundPosition: "bottom right",
