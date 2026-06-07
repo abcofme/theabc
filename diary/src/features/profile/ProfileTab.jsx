@@ -247,20 +247,20 @@ export default function ProfileTab() {
                 disabled={isGeneratingPortrait}
                 className={`w-full rounded-2xl p-4 text-left transition-all duration-700 flex items-center justify-between ${
                   (totalTests > 0 && passedTests === totalTests) 
-                    ? "bg-rose-900/60 hover:bg-rose-800/80 active:scale-[0.98]" 
+                    ? "bg-emerald-900/60 hover:bg-emerald-800/80 active:scale-[0.98]" 
                     : "bg-rose-900/30 opacity-70"
                 }`}
               >
                 <div>
-                  <h3 className="text-base sm:text-lg font-bold text-white mb-1">Сформировать портрет</h3>
-                  <p className="text-xs sm:text-sm text-white">
+                  <h3 className={`text-base sm:text-lg font-bold mb-1 ${(totalTests > 0 && passedTests === totalTests) ? "text-emerald-400" : "text-white"}`}>Сформировать портрет</h3>
+                  <p className={`text-xs sm:text-sm ${(totalTests > 0 && passedTests === totalTests) ? "text-emerald-200" : "text-white"}`}>
                     {isGeneratingPortrait ? 'Генерация...' : (totalTests > 0 && passedTests === totalTests) ? 'Анализ ваших тестов' : `Пройдено ${passedTests} из ${totalTests} тестов`}
                   </p>
                 </div>
                 {isGeneratingPortrait ? (
                   <div className="w-6 h-6 rounded-full animate-spin"></div>
                 ) : (
-                  <Wand2 className={(totalTests > 0 && passedTests === totalTests) ? "text-white" : "text-white"} size={24} />
+                  <Wand2 className={(totalTests > 0 && passedTests === totalTests) ? "text-emerald-400" : "text-white"} size={24} />
                 )}
               </button>
             ) : (
@@ -284,13 +284,13 @@ export default function ProfileTab() {
                 )}
                 <button 
                   onClick={() => setActiveSubTab('portrait')}
-                  className="w-full bg-gradient-to-r from-blue-900/30 to-blue-800/10 rounded-2xl p-4 text-left hover:bg-blue-900/40 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
+                  className="w-full bg-gradient-to-r from-emerald-900/30 to-emerald-800/10 rounded-2xl p-4 text-left hover:bg-emerald-900/40 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
                 >
                   <div>
-                    <h3 className="text-lg font-bold text-white mb-1">Мой портрет личности</h3>
-                    <p className="text-sm text-white">Открыть сформированный портрет</p>
+                    <h3 className="text-lg font-bold text-emerald-400 mb-1">Мой портрет личности</h3>
+                    <p className="text-sm text-emerald-200">Открыть сформированный портрет</p>
                   </div>
-                  <ClipboardList className="text-white" size={24} />
+                  <ClipboardList className="text-emerald-400" size={24} />
                 </button>
               </>
             )}
@@ -339,16 +339,16 @@ export default function ProfileTab() {
                           className={`flex items-center justify-between py-3.5 last: 
                           ${ test.passed ? 'cursor-pointer hover:bg-rose-800/40 -mx-4 px-4 transition-colors active:bg-rose-800' : 'opacity-60 cursor-default' }`}
                         >
-                          <span className="text-sm sm:text-base font-medium pr-3 text-white">
+                          <span className="text-sm sm:text-base font-medium pr-3 text-white flex-1 truncate">
                             {test.name}
                           </span>
                           {/* Плашка Пройден / Не пройден */}
                           {test.passed ? (
-                            <span className="flex items-center gap-1.5 text-white text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-500/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">
+                            <span className="flex items-center gap-1.5 text-emerald-400 text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-500/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">
                               <CheckCircle size={14} /> Пройден
                             </span>
                           ) : (
-                            <span className="flex items-center gap-1.5 text-white text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-red-400/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">
+                            <span className="flex items-center gap-1.5 text-red-400 text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-red-400/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">
                               <XCircle size={14} /> Не пройден
                             </span>
                           )}
@@ -391,7 +391,7 @@ export default function ProfileTab() {
                       <Lock size={18} /> Мой портрет личности
                     </button>
                   ) : (
-                    <button onClick={handleGeneratePortrait} className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] shadow-lg shadow-blue-900/20">
+                    <button onClick={handleGeneratePortrait} className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] shadow-lg shadow-emerald-900/20">
                       <ClipboardList size={18} /> Мой портрет личности
                     </button>
                   )}
@@ -423,7 +423,7 @@ export default function ProfileTab() {
 
               {totalTests > 0 && passedTests === totalTests && !portraitData && (
                 <div className="mt-auto">
-                  <button onClick={handleGeneratePortrait} className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] shadow-lg shadow-blue-900/20">
+                  <button onClick={handleGeneratePortrait} className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] shadow-lg shadow-emerald-900/20">
                     <ClipboardList size={18} /> Мой портрет личности
                   </button>
                 </div>

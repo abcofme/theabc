@@ -44,16 +44,16 @@ export default function ReportsTab() {
       title: 'Какие события чаще всего повторяются в моей жизни?',
       desc: 'Узнайте, какие ситуации в вашей жизни имеют свойство повторяться, и проанализируйте реакции на них.',
       icon: Repeat,
-      color: 'text-white',
-      bg: 'bg-blue-500/10'
+      color: 'text-emerald-400',
+      bg: 'bg-emerald-500/10'
     },
     {
       id: 'effective_reactions',
       title: 'На какие ситуации я реагирую эффективно, а на какие нет?',
       desc: 'Узнайте, насколько ваша реакция на событие эффективна.',
       icon: Zap,
-      color: 'text-white',
-      bg: 'bg-amber-500/10'
+      color: 'text-emerald-400',
+      bg: 'bg-emerald-500/10'
     }
   ];
 
@@ -213,7 +213,7 @@ export default function ReportsTab() {
   }
 
   return (
-    <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-2xl mx-auto w-full pt-4 pb-20 overflow-y-auto">
+    <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-2xl mx-auto w-full pt-4 pb-20 overflow-y-scroll">
       <h2 className="text-2xl font-bold text-white mb-2 px-4 text-center">Поведенческий код</h2>
       
       <p className="text-sm text-white text-center px-4 mb-8 leading-relaxed">
