@@ -366,7 +366,7 @@ export default function ProfileTab() {
       )}
 
       {activeSubTab === 'portrait' && (
-        <div className="flex-1 overflow-y-auto px-4 pb-6 animate-in fade-in slide-in-from-right-8 duration-500 flex flex-col">
+        <div className="flex-1 overflow-y-auto px-4 pb-0 animate-in fade-in slide-in-from-right-8 duration-500 flex flex-col">
           <button 
             onClick={() => setActiveSubTab('tests')}
             className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-6 transition-colors self-start"
@@ -399,7 +399,7 @@ export default function ProfileTab() {
               )}
 
               {portraitData && (
-                <div className="bg-rose-900/80 rounded-3xl p-5 sm:p-8 mb-6 shadow-xl backdrop-blur-sm overflow-x-hidden">
+                <div className="bg-rose-900/80 rounded-3xl p-5 sm:p-8 mb-0 shadow-xl backdrop-blur-sm overflow-x-hidden">
                   {markdownContent.split(/(?=^#\s)/m).map((sectionText, i) => {
                     if (!sectionText.trim()) return null;
                     const firstLine = sectionText.trim().split('\n')[0];
@@ -429,14 +429,7 @@ export default function ProfileTab() {
                 </div>
               )}
 
-              {portraitData && (
-                <button 
-                  onClick={handleClearPortrait}
-                  className="mt-4 flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-red-900/10 text-[#F5E6D3] hover:bg-red-900/30 transition-colors font-medium text-sm"
-                >
-                  <Trash2 size={18} /> Очистить портрет (Test)
-                </button>
-              )}
+              
             </div>
           )}
         </div>

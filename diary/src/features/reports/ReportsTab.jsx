@@ -296,11 +296,11 @@ export default function ReportsTab() {
         </div>
       )}
 
-      <div className="mt-10 mb-8 mx-4 p-5 bg-blue-600/20 border border-blue-500/30 rounded-2xl text-center shadow-inner">
+      <div className="mt-10 mb-8 mx-4 p-5 bg-blue-600 rounded-2xl text-center shadow-md">
         <p className="text-sm font-medium text-[#F5E6D3] leading-relaxed">
           Команда проекта «Азбука Я» регулярно добавляет новые отчеты.<br/>Следите за обновлениями!
         </p>
-        <div className="flex items-center justify-center gap-2 mt-4 text-blue-500/70">
+        <div className="flex items-center justify-center gap-2 mt-4 text-[#F5E6D3]/70">
           <Star size={12} className="animate-pulse" />
           <Star size={16} className="animate-pulse delay-75" />
           <Star size={12} className="animate-pulse delay-150" />
