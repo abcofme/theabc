@@ -63,7 +63,7 @@ export default function AdminPanel({ onBack }) {
 
       <h2 className="text-2xl font-bold text-[#F5E6D3] mb-6">Админ-панель</h2>
 
-      <div className="bg-rose-900/80 p-5 rounded-3xl mb-6 flex flex-col gap-4">
+      <div className="bg-rose-900 p-5 rounded-3xl mb-6 flex flex-col gap-4">
         <div>
           <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">С:</label>
           <input 
@@ -102,7 +102,7 @@ export default function AdminPanel({ onBack }) {
       ) : stats ? (
         <div className="flex flex-col gap-4">
           
-          <div className="bg-rose-900/80 p-5 rounded-2xl flex items-center justify-between">
+          <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Calendar className="text-blue-500" size={24} />
               <span className="text-[#F5E6D3] font-medium">Записи в дневник</span>
@@ -110,7 +110,7 @@ export default function AdminPanel({ onBack }) {
             <span className="text-xl font-bold text-[#F5E6D3]">{stats.diary_count}</span>
           </div>
 
-          <div className="bg-rose-900/80 p-5 rounded-2xl flex items-center justify-between">
+          <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Brain className="text-orange-500" size={24} />
               <span className="text-[#F5E6D3] font-medium">Отчеты</span>
@@ -118,7 +118,7 @@ export default function AdminPanel({ onBack }) {
             <span className="text-xl font-bold text-[#F5E6D3]">{stats.reports_count}</span>
           </div>
 
-          <div className="bg-rose-900/80 p-5 rounded-2xl flex items-center justify-between">
+          <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
             <div className="flex items-center gap-3">
               <FileText className="text-emerald-500" size={24} />
               <span className="text-[#F5E6D3] font-medium">Портреты личности</span>

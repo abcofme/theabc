@@ -339,7 +339,7 @@ export default function ProfileTab() {
                           className={`flex items-center justify-between py-3.5 last: 
                           ${ test.passed ? 'cursor-pointer hover:bg-rose-800/40 -mx-4 px-4 transition-colors active:bg-rose-800' : 'opacity-60 cursor-default' }`}
                         >
-                          <span className="text-sm sm:text-base font-medium pr-3 text-[#F5E6D3] flex-1 truncate">
+                          <span className="text-sm sm:text-base font-medium pr-3 text-[#F5E6D3] flex-1 leading-snug">
                             {test.name}
                           </span>
                           {/* Плашка Пройден / Не пройден */}
