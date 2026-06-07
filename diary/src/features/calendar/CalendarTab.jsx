@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, isToday, setMonth, setYear, getYear, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { ChevronDown, X, Plus, BookOpen, Check, Trash2, Lock, Activity, Sparkles } from 'lucide-react';
@@ -428,7 +428,7 @@ export default function CalendarTab({ onSheetOpen }) {
                     <div className="flex gap-1 text-white text-xl">
                       {(() => {
                         const ratedEntry = activeEntries.find(e => e.rating);
-                        return '?'.repeat(ratedEntry.rating) + '?'.repeat(5 - ratedEntry.rating);
+                        return '★'.repeat(ratedEntry.rating) + '☆'.repeat(5 - ratedEntry.rating);
                       })()}
                     </div>
                   </div>
@@ -529,7 +529,7 @@ export default function CalendarTab({ onSheetOpen }) {
                             : 'bg-rose-900 text-white hover:bg-rose-800'
                         }`}
                       >
-                        {newRating >= num ? '?' : '?'}
+                        {newRating >= num ? '★' : '☆'}
                       </button>
                     ))}
                   </div>
