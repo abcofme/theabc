@@ -44,16 +44,16 @@ export default function ReportsTab() {
       title: 'Какие события чаще всего повторяются в моей жизни?',
       desc: 'Узнайте, какие ситуации в вашей жизни имеют свойство повторяться, и проанализируйте реакции на них.',
       icon: Repeat,
-      color: 'text-green-600',
-      bg: 'bg-green-800/20'
+      color: 'text-blue-500',
+      bg: 'bg-blue-600/20'
     },
     {
       id: 'effective_reactions',
       title: 'На какие ситуации я реагирую эффективно, а на какие нет?',
       desc: 'Узнайте, насколько ваша реакция на событие эффективна.',
       icon: Zap,
-      color: 'text-green-600',
-      bg: 'bg-green-800/20'
+      color: 'text-blue-500',
+      bg: 'bg-blue-600/20'
     }
   ];
 
@@ -120,7 +120,7 @@ export default function ReportsTab() {
           <span className="font-medium">Назад</span>
         </button>
         
-        <div className="bg-rose-900/60 rounded-3xl p-5 sm:p-8 mb-6 shadow-xl backdrop-blur-sm">
+        <div className="bg-rose-900/80 rounded-3xl p-5 sm:p-8 mb-6 shadow-xl backdrop-blur-sm">
           <div className="flex items-center gap-2 text-[#F5E6D3] mb-6 pb-4">
             <Calendar size={16} />
             <span className="text-sm font-medium">Отчет от {new Date(viewReport.created_at).toLocaleDateString('ru-RU')}</span>
@@ -150,7 +150,7 @@ export default function ReportsTab() {
             <rType.icon className={rType.color} size={24} />
           </div>
           <div>
-            <h2 className={`text-xl font-bold mb-2 leading-tight ${rType.color}`}>{rType.title}</h2>
+            <h2 className="text-xl font-bold mb-2 leading-tight text-[#F5E6D3]">{rType.title}</h2>
             <p className="text-sm text-[#F5E6D3] leading-relaxed">{rType.desc}</p>
           </div>
         </div>
@@ -235,7 +235,7 @@ export default function ReportsTab() {
             const isOpen = openCategory === rtype.id;
             
             return (
-              <div key={rtype.id} className="bg-rose-900/60 rounded-2xl overflow-hidden transition-all duration-300">
+              <div key={rtype.id} className="bg-rose-900/80 rounded-2xl overflow-hidden transition-all duration-300">
                 <button 
                   onClick={() => setOpenCategory(isOpen ? null : rtype.id)}
                   className="w-full p-5 text-left hover:bg-rose-800/80 transition-all flex items-start gap-4"
@@ -244,7 +244,7 @@ export default function ReportsTab() {
                     <rtype.icon className={rtype.color} size={24} />
                   </div>
                   <div className="flex-1">
-                    <h3 className={`text-lg font-bold mb-2 leading-tight ${rtype.color}`}>{rtype.title}</h3>
+                    <h3 className="text-lg font-bold mb-2 leading-tight text-[#F5E6D3]">{rtype.title}</h3>
                     <p className="text-sm text-[#F5E6D3] leading-relaxed line-clamp-2">{rtype.desc}</p>
                   </div>
                   <div className="mt-2 text-[#F5E6D3]">

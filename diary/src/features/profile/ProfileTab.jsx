@@ -205,7 +205,7 @@ export default function ProfileTab() {
   return (
     <div className="flex flex-col h-full relative select-none bg-transparent">
       {/* 1. ШАПКА ПРОФИЛЯ (Аватар и Юзернейм) */}
-      <div className="flex items-center gap-4 p-4 sm:p-6 bg-rose-900/60 rounded-3xl mx-2 mt-2 mb-4 backdrop-blur-sm shadow-sm">
+      <div className="flex items-center gap-4 p-4 sm:p-6 bg-rose-900/80 rounded-3xl mx-2 mt-2 mb-4 backdrop-blur-sm shadow-sm">
         {tgUser.photo_url ? (
           <img src={tgUser.photo_url} alt="Avatar" className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg" />
         ) : (
@@ -248,7 +248,7 @@ export default function ProfileTab() {
                 className={`w-full rounded-2xl p-4 text-left transition-all duration-700 flex items-center justify-between ${
                   (totalTests > 0 && passedTests === totalTests) 
                     ? "bg-green-900/80 hover:bg-green-800/80 active:scale-[0.98]" 
-                    : "bg-rose-900/30 opacity-70"
+                    : "bg-rose-900/50 opacity-90"
                 }`}
               >
                 <div>
@@ -269,7 +269,7 @@ export default function ProfileTab() {
                   <button 
                     onClick={handleGeneratePortrait}
                     disabled={isGeneratingPortrait}
-                    className="w-full bg-rose-900/60 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
+                    className="w-full bg-rose-900/80 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
                   >
                     <div>
                       <h3 className="text-base sm:text-lg font-bold text-[#F5E6D3] mb-1">Сформировать заново</h3>
@@ -384,7 +384,7 @@ export default function ProfileTab() {
           ) : (
             <div className="flex-1 flex flex-col">
               {portraitData && portraitData.tests_count < totalTests && (
-                <div className="mb-6 bg-rose-900/60 p-6 rounded-3xl text-center">
+                <div className="mb-6 bg-rose-900/80 p-6 rounded-3xl text-center">
                   <p className="text-[#F5E6D3] text-sm mb-4 font-medium">Добавлены новые тесты! После прохождения вы можете сформировать новый портрет личности</p>
                   {passedTests < totalTests ? (
                     <button disabled className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-rose-800 text-[#F5E6D3] font-bold cursor-not-allowed">
@@ -413,7 +413,7 @@ export default function ProfileTab() {
               )}
 
               {totalTests > 0 && passedTests < totalTests && !portraitData && (
-                <div className="flex flex-col items-center text-center mt-auto bg-rose-900/60 p-6 rounded-3xl">
+                <div className="flex flex-col items-center text-center mt-auto bg-rose-900/80 p-6 rounded-3xl">
                   <p className="text-[#F5E6D3] text-sm mb-6">Чтобы сформировать портрет личности, пройдите все тесты.</p>
                   <button disabled className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-rose-800 text-[#F5E6D3] font-bold cursor-not-allowed">
                     <Lock size={18} /> Мой портрет личности
@@ -469,7 +469,7 @@ export default function ProfileTab() {
               </div>
             </div>
             {/* Нижняя кнопка */}
-            <div className="p-4 sm:p-5 bg-rose-950/30 rounded-b-[2rem]">
+            <div className="p-4 sm:p-5 bg-rose-950/50 rounded-b-[2rem]">
               <button onClick={() => setSelectedResult(null)} className="w-full bg-blue-600 hover:bg-blue-500 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all active:bg-blue-700 shadow-lg shadow-blue-900/20">
                 Отлично
               </button>

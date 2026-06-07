@@ -303,7 +303,7 @@ export default function CalendarTab({ onSheetOpen }) {
       <div className="mb-6 mt-2 relative flex items-center justify-between gap-2">
         <button
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="flex items-center gap-2 text-lg sm:text-2xl font-bold text-[#F5E6D3] hover:text-[#F5E6D3] transition-colors bg-rose-900/60 px-3 sm:px-4 py-2 rounded-xl shrink-0"
+          className="flex items-center gap-2 text-lg sm:text-2xl font-bold text-[#F5E6D3] hover:text-[#F5E6D3] transition-colors bg-rose-900/80 px-3 sm:px-4 py-2 rounded-xl shrink-0"
         >
           <span className="capitalize">
             {format(currentMonth, 'LLLL yyyy', { locale: ru })}
@@ -380,7 +380,7 @@ export default function CalendarTab({ onSheetOpen }) {
                 disabled={isFutureDay}
                 className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all relative ${
                   isCurrentMonth
-                    ? `bg-rose-900/60 text-[#F5E6D3] ${!isFutureDay && 'hover:bg-rose-800/80'}`
+                    ? `bg-rose-900/80 text-[#F5E6D3] ${!isFutureDay && 'hover:bg-rose-800/80'}`
                     : `bg-transparent text-[#F5E6D3] ${!isFutureDay && 'hover:text-[#F5E6D3]'}`
                 } ${
                   isDayToday ? '! !text-[#F5E6D3] bg-blue-950/20' : ''
