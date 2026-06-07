@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Calendar as CalendarIcon, Sparkles, User, Brain } from 'lucide-react';
 import CalendarTab from './features/calendar/CalendarTab';
 import ProfileTab from './features/profile/ProfileTab';
@@ -27,8 +27,17 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-col h-full font-sans bg-rose-950">
-      <main className={`flex-1 overflow-y-auto p-4 ${isNavHidden ? '' : 'pb-24'}`}>
+    <div className="flex flex-col h-full font-sans bg-rose-950 relative">
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-30 z-0"
+        style={{
+          backgroundImage: "url('/bg-leaves.png')",
+          backgroundPosition: "bottom right",
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "60%"
+        }}
+      />
+      <main className={`flex-1 overflow-y-auto p-4 relative z-10 ${isNavHidden ? '' : 'pb-24'}`}>
         {/* Передаем функцию скрытия меню в CalendarTab */}
         {activeTab === 'diary' && <CalendarTab onSheetOpen={setIsNavHidden} />}
         {activeTab === 'reports' && <ReportsTab />}
