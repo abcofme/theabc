@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X, ChevronLeft, Lock, Wand2, Trash2, Brain, Activity, Star, ShieldAlert, Sparkles, Target, Heart, Flame, ClipboardList } from 'lucide-react';
 import AdminPanel from '../admin/AdminPanel';
@@ -14,23 +14,23 @@ export default function ProfileTab() {
   const [isGeneratingPortrait, setIsGeneratingPortrait] = useState(false);
   const [loading, setLoading] = useState(true);
   
-  // Новый стейт для вкладок
+  // РќРѕРІС‹Р№ СЃС‚РµР№С‚ РґР»СЏ РІРєР»Р°РґРѕРє
   const [activeSubTab, setActiveSubTab] = useState('tests'); // 'tests' | 'analyses' | 'portrait'
 
-  // Хранит ID открытой категории (аккордеон)
+  // РҐСЂР°РЅРёС‚ ID РѕС‚РєСЂС‹С‚РѕР№ РєР°С‚РµРіРѕСЂРёРё (Р°РєРєРѕСЂРґРµРѕРЅ)
   const [openCategory, setOpenCategory] = useState(null);
   
-  // Хранит данные теста, по которому кликнули, для показа в модальном окне
+  // РҐСЂР°РЅРёС‚ РґР°РЅРЅС‹Рµ С‚РµСЃС‚Р°, РїРѕ РєРѕС‚РѕСЂРѕРјСѓ РєР»РёРєРЅСѓР»Рё, РґР»СЏ РїРѕРєР°Р·Р° РІ РјРѕРґР°Р»СЊРЅРѕРј РѕРєРЅРµ
   const [selectedResult, setSelectedResult] = useState(null);
 
-  // Получаем данные пользователя из Telegram (если открыто в браузере - ставим заглушку)
+  // РџРѕР»СѓС‡Р°РµРј РґР°РЅРЅС‹Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РёР· Telegram (РµСЃР»Рё РѕС‚РєСЂС‹С‚Рѕ РІ Р±СЂР°СѓР·РµСЂРµ - СЃС‚Р°РІРёРј Р·Р°РіР»СѓС€РєСѓ)
   const tgUser = WebApp.initDataUnsafe?.user || {
-    first_name: "Пользователь",
+    first_name: "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ",
     username: "username",
     photo_url: ""
   };
 
-  // Загружаем данные с бэкенда при открытии вкладки
+  // Р—Р°РіСЂСѓР¶Р°РµРј РґР°РЅРЅС‹Рµ СЃ Р±СЌРєРµРЅРґР° РїСЂРё РѕС‚РєСЂС‹С‚РёРё РІРєР»Р°РґРєРё
   useEffect(() => {
     if (WebApp.initData) {
       fetch(`${API_URL}/api/profile`, {
@@ -45,18 +45,18 @@ export default function ProfileTab() {
           setLoading(false);
         })
         .catch(err => {
-          console.error("Ошибка загрузки профиля:", err);
+          console.error("РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё РїСЂРѕС„РёР»СЏ:", err);
           setLoading(false);
         });
     } else {
-      // Защита для локального тестирования
+      // Р—Р°С‰РёС‚Р° РґР»СЏ Р»РѕРєР°Р»СЊРЅРѕРіРѕ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ
       setLoading(false);
     }
   }, []);
 
   const handleGeneratePortrait = async () => {
     if (portraitData && portraitData.tests_count >= passedTests) {
-      WebApp.showAlert("У вас нет новых пройденных тестов для обновления портрета.");
+      WebApp.showAlert("РЈ РІР°СЃ РЅРµС‚ РЅРѕРІС‹С… РїСЂРѕР№РґРµРЅРЅС‹С… С‚РµСЃС‚РѕРІ РґР»СЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РїРѕСЂС‚СЂРµС‚Р°.");
       return;
     }
     setIsGeneratingPortrait(true);
@@ -67,13 +67,13 @@ export default function ProfileTab() {
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.detail || "Неизвестная ошибка сервера");
+        throw new Error(data.detail || "РќРµРёР·РІРµСЃС‚РЅР°СЏ РѕС€РёР±РєР° СЃРµСЂРІРµСЂР°");
       }
       setPortraitData(data.portrait);
       WebApp.HapticFeedback.notificationOccurred('success');
     } catch (error) {
       console.error(error);
-      WebApp.showAlert(`Произошла ошибка при генерации портрета: ${error.message}`);
+      WebApp.showAlert(`РџСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР° РїСЂРё РіРµРЅРµСЂР°С†РёРё РїРѕСЂС‚СЂРµС‚Р°: ${error.message}`);
     } finally {
       setIsGeneratingPortrait(false);
     }
@@ -120,13 +120,13 @@ export default function ProfileTab() {
     let IconComponent = Sparkles;
     let iconColor = "text-white";
 
-    if (sectionTitle.includes('Поведенческие')) {
+    if (sectionTitle.includes('РџРѕРІРµРґРµРЅС‡РµСЃРєРёРµ')) {
       IconComponent = Target;
       iconColor = "text-white";
-    } else if (sectionTitle.includes('ценностей')) {
+    } else if (sectionTitle.includes('С†РµРЅРЅРѕСЃС‚РµР№')) {
       IconComponent = Heart;
       iconColor = "text-white";
-    } else if (sectionTitle.includes('барьеры')) {
+    } else if (sectionTitle.includes('Р±Р°СЂСЊРµСЂС‹')) {
       IconComponent = Flame;
       iconColor = "text-white";
     }
@@ -141,11 +141,11 @@ export default function ProfileTab() {
         else if (Array.isArray(props.children)) textStr = props.children.map(c => typeof c === 'string' ? c : '').join('');
         
         let h2Icon = null;
-        if (textStr.includes('Устойчивые')) h2Icon = <Activity className="text-white inline mb-1 mr-3" size={28} />;
-        else if (textStr.includes('Поведенческие')) h2Icon = <Brain className="text-white inline mb-1 mr-3" size={28} />;
-        else if (textStr.includes('ценностей')) h2Icon = <Star className="text-white inline mb-1 mr-3" size={28} />;
-        else if (textStr.includes('барьеры')) h2Icon = <ShieldAlert className="text-white inline mb-1 mr-3" size={28} />;
-        else if (textStr.includes('Личность')) h2Icon = <User className="text-white inline mb-1 mr-3" size={28} />;
+        if (textStr.includes('РЈСЃС‚РѕР№С‡РёРІС‹Рµ')) h2Icon = <Activity className="text-white inline mb-1 mr-3" size={28} />;
+        else if (textStr.includes('РџРѕРІРµРґРµРЅС‡РµСЃРєРёРµ')) h2Icon = <Brain className="text-white inline mb-1 mr-3" size={28} />;
+        else if (textStr.includes('С†РµРЅРЅРѕСЃС‚РµР№')) h2Icon = <Star className="text-white inline mb-1 mr-3" size={28} />;
+        else if (textStr.includes('Р±Р°СЂСЊРµСЂС‹')) h2Icon = <ShieldAlert className="text-white inline mb-1 mr-3" size={28} />;
+        else if (textStr.includes('Р›РёС‡РЅРѕСЃС‚СЊ')) h2Icon = <User className="text-white inline mb-1 mr-3" size={28} />;
 
         return <h2 className="text-2xl sm:text-3xl font-bold text-white mt-14 mb-8 flex items-center justify-center pb-4 break-words text-center">{h2Icon} {props.children}</h2>
       },
@@ -160,7 +160,7 @@ export default function ProfileTab() {
         return <ul className="space-y-6 mb-10 mt-6 pl-1 w-full" {...props} />
       },
       li: ({node, ...props}) => {
-        const isBarriers = sectionTitle.includes('барьеры');
+        const isBarriers = sectionTitle.includes('Р±Р°СЂСЊРµСЂС‹');
         return (
           <li className={`flex items-start text-base sm:text-lg font-semibold text-white break-words w-full ${isBarriers ? ' pb-4 last:' : ''}`}>
             <IconComponent className={`shrink-0 ${iconColor} mr-3 mt-1`} size={22} />
@@ -198,13 +198,13 @@ export default function ProfileTab() {
   const openResultModal = (test) => {
     if (test.passed) {
       setSelectedResult(test);
-      WebApp.HapticFeedback.selectionChanged(); // Легкая вибрация при открытии
+      WebApp.HapticFeedback.selectionChanged(); // Р›РµРіРєР°СЏ РІРёР±СЂР°С†РёСЏ РїСЂРё РѕС‚РєСЂС‹С‚РёРё
     }
   };
 
   return (
     <div className="flex flex-col h-full relative select-none bg-transparent">
-      {/* 1. ШАПКА ПРОФИЛЯ (Аватар и Юзернейм) */}
+      {/* 1. РЁРђРџРљРђ РџР РћР¤РР›РЇ (РђРІР°С‚Р°СЂ Рё Р®Р·РµСЂРЅРµР№Рј) */}
       <div className="flex items-center gap-4 p-4 sm:p-6 bg-rose-900/60 rounded-3xl mx-2 mt-2 mb-4 backdrop-blur-sm shadow-sm">
         {tgUser.photo_url ? (
           <img src={tgUser.photo_url} alt="Avatar" className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg" />
@@ -222,7 +222,7 @@ export default function ProfileTab() {
             onClick={() => setActiveSubTab('admin')}
             className="p-2 sm:px-4 sm:py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold rounded-xl transition-colors shadow-sm"
           >
-            Админ-панель
+            РђРґРјРёРЅ-РїР°РЅРµР»СЊ
           </button>
         )}
       </div>
@@ -233,13 +233,13 @@ export default function ProfileTab() {
 
       {activeSubTab === 'tests' && (
         <>
-          {/* ПОРТРЕТ ЛИЧНОСТИ КНОПКИ */}
+          {/* РџРћР РўР Р•Рў Р›РР§РќРћРЎРўР РљРќРћРџРљР */}
           <div className="mx-4 mb-4 flex flex-col gap-3">
             {!portraitData ? (
               <button 
                 onClick={() => {
                   if (!(totalTests > 0 && passedTests === totalTests)) {
-                    WebApp.showAlert("Пройдите все тесты, чтобы сформировать портрет личности.");
+                    WebApp.showAlert("РџСЂРѕР№РґРёС‚Рµ РІСЃРµ С‚РµСЃС‚С‹, С‡С‚РѕР±С‹ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ РїРѕСЂС‚СЂРµС‚ Р»РёС‡РЅРѕСЃС‚Рё.");
                     return;
                   }
                   handleGeneratePortrait();
@@ -252,9 +252,9 @@ export default function ProfileTab() {
                 }`}
               >
                 <div>
-                  <h3 className="text-base sm:text-lg font-bold text-white mb-1">Сформировать портрет</h3>
+                  <h3 className="text-base sm:text-lg font-bold text-white mb-1">РЎС„РѕСЂРјРёСЂРѕРІР°С‚СЊ РїРѕСЂС‚СЂРµС‚</h3>
                   <p className="text-xs sm:text-sm text-white">
-                    {isGeneratingPortrait ? 'Генерация...' : (totalTests > 0 && passedTests === totalTests) ? 'Анализ ваших тестов' : `Пройдено ${passedTests} из ${totalTests} тестов`}
+                    {isGeneratingPortrait ? 'Р“РµРЅРµСЂР°С†РёСЏ...' : (totalTests > 0 && passedTests === totalTests) ? 'РђРЅР°Р»РёР· РІР°С€РёС… С‚РµСЃС‚РѕРІ' : `РџСЂРѕР№РґРµРЅРѕ ${passedTests} РёР· ${totalTests} С‚РµСЃС‚РѕРІ`}
                   </p>
                 </div>
                 {isGeneratingPortrait ? (
@@ -272,8 +272,8 @@ export default function ProfileTab() {
                     className="w-full bg-rose-900/60 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
                   >
                     <div>
-                      <h3 className="text-base sm:text-lg font-bold text-white mb-1">Сформировать заново</h3>
-                      <p className="text-xs sm:text-sm text-white">{isGeneratingPortrait ? 'Генерация...' : 'Обновить на основе новых тестов'}</p>
+                      <h3 className="text-base sm:text-lg font-bold text-white mb-1">РЎС„РѕСЂРјРёСЂРѕРІР°С‚СЊ Р·Р°РЅРѕРІРѕ</h3>
+                      <p className="text-xs sm:text-sm text-white">{isGeneratingPortrait ? 'Р“РµРЅРµСЂР°С†РёСЏ...' : 'РћР±РЅРѕРІРёС‚СЊ РЅР° РѕСЃРЅРѕРІРµ РЅРѕРІС‹С… С‚РµСЃС‚РѕРІ'}</p>
                     </div>
                     {isGeneratingPortrait ? (
                       <div className="w-6 h-6 rounded-full animate-spin"></div>
@@ -287,8 +287,8 @@ export default function ProfileTab() {
                   className="w-full bg-gradient-to-r from-blue-900/30 to-blue-800/10 rounded-2xl p-4 text-left hover:bg-blue-900/40 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
                 >
                   <div>
-                    <h3 className="text-lg font-bold text-white mb-1">Мой портрет личности</h3>
-                    <p className="text-sm text-white">Открыть сформированный портрет</p>
+                    <h3 className="text-lg font-bold text-white mb-1">РњРѕР№ РїРѕСЂС‚СЂРµС‚ Р»РёС‡РЅРѕСЃС‚Рё</h3>
+                    <p className="text-sm text-white">РћС‚РєСЂС‹С‚СЊ СЃС„РѕСЂРјРёСЂРѕРІР°РЅРЅС‹Р№ РїРѕСЂС‚СЂРµС‚</p>
                   </div>
                   <ClipboardList className="text-white" size={24} />
                 </button>
@@ -296,7 +296,7 @@ export default function ProfileTab() {
             )}
           </div>
 
-          {/* 3. КОНТЕНТ ВКЛАДОК (теперь только результаты) */}
+          {/* 3. РљРћРќРўР•РќРў Р’РљР›РђР”РћРљ (С‚РµРїРµСЂСЊ С‚РѕР»СЊРєРѕ СЂРµР·СѓР»СЊС‚Р°С‚С‹) */}
         <div className="flex-1 overflow-y-auto px-2 pb-6 space-y-3 animate-in fade-in duration-700 flex flex-col">
           {loading ? (
             <div className="flex justify-center items-center py-12 flex-1">
@@ -304,14 +304,14 @@ export default function ProfileTab() {
             </div>
           ) : categories.length === 0 ? (
             <div className="flex-1 flex items-center justify-center text-white text-center py-12">
-              <p>Здесь будут ваши результаты тестов.</p>
+              <p>Р—РґРµСЃСЊ Р±СѓРґСѓС‚ РІР°С€Рё СЂРµР·СѓР»СЊС‚Р°С‚С‹ С‚РµСЃС‚РѕРІ.</p>
             </div>
           ) : (
             <>
-              <h2 className="text-xl font-bold text-white px-2 mt-2 mb-2">Результаты тестов</h2>
+              <h2 className="text-xl font-bold text-white px-2 mt-2 mb-2">Р РµР·СѓР»СЊС‚Р°С‚С‹ С‚РµСЃС‚РѕРІ</h2>
               {categories.map(cat => (
               <div key={cat.id} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-700">
-                {/* Кнопка категории (Аккордеон) */}
+                {/* РљРЅРѕРїРєР° РєР°С‚РµРіРѕСЂРёРё (РђРєРєРѕСЂРґРµРѕРЅ) */}
                 <button
                   onClick={() => toggleCategory(cat.id)}
                   className="w-full flex items-center justify-between p-4 hover:bg-rose-800/70 transition-colors active:bg-rose-800"
@@ -326,11 +326,11 @@ export default function ProfileTab() {
                   )}
                 </button>
 
-                {/* Содержимое категории (Список тестов) */}
+                {/* РЎРѕРґРµСЂР¶РёРјРѕРµ РєР°С‚РµРіРѕСЂРёРё (РЎРїРёСЃРѕРє С‚РµСЃС‚РѕРІ) */}
                 {openCategory === cat.id && (
                   <div className="bg-rose-950/40 px-4 py-2">
                     {cat.tests.length === 0 ? (
-                      <div className="text-white text-sm py-3 italic">В этой категории пока нет тестов.</div>
+                      <div className="text-white text-sm py-3 italic">Р’ СЌС‚РѕР№ РєР°С‚РµРіРѕСЂРёРё РїРѕРєР° РЅРµС‚ С‚РµСЃС‚РѕРІ.</div>
                     ) : (
                       cat.tests.map(test => (
                         <div
@@ -342,14 +342,14 @@ export default function ProfileTab() {
                           <span className="text-sm sm:text-base font-medium pr-3 text-white">
                             {test.name}
                           </span>
-                          {/* Плашка Пройден / Не пройден */}
+                          {/* РџР»Р°С€РєР° РџСЂРѕР№РґРµРЅ / РќРµ РїСЂРѕР№РґРµРЅ */}
                           {test.passed ? (
                             <span className="flex items-center gap-1.5 text-white text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-500/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">
-                              <CheckCircle size={14} /> Пройден
+                              <CheckCircle size={14} /> РџСЂРѕР№РґРµРЅ
                             </span>
                           ) : (
                             <span className="flex items-center gap-1.5 text-white text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-red-400/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">
-                              <XCircle size={14} /> Не пройден
+                              <XCircle size={14} /> РќРµ РїСЂРѕР№РґРµРЅ
                             </span>
                           )}
                         </div>
@@ -372,27 +372,27 @@ export default function ProfileTab() {
             className="flex items-center gap-2 text-white hover:text-white mb-6 transition-colors self-start"
           >
             <ChevronLeft size={20} />
-            <span className="font-medium">Назад</span>
+            <span className="font-medium">РќР°Р·Р°Рґ</span>
           </button>
           {/* Header block removed as requested */}
 
           {isGeneratingPortrait ? (
             <div className="flex-1 flex flex-col items-center justify-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 mb-4"></div>
-              <p className="text-white font-medium text-center">Портрет личности формируется...</p>
+              <p className="text-white font-medium text-center">РџРѕСЂС‚СЂРµС‚ Р»РёС‡РЅРѕСЃС‚Рё С„РѕСЂРјРёСЂСѓРµС‚СЃСЏ...</p>
             </div>
           ) : (
             <div className="flex-1 flex flex-col">
               {portraitData && portraitData.tests_count < totalTests && (
                 <div className="mb-6 bg-rose-900/60 p-6 rounded-3xl text-center">
-                  <p className="text-white text-sm mb-4 font-medium">Добавлены новые тесты! После прохождения вы можете сформировать новый портрет личности</p>
+                  <p className="text-white text-sm mb-4 font-medium">Р”РѕР±Р°РІР»РµРЅС‹ РЅРѕРІС‹Рµ С‚РµСЃС‚С‹! РџРѕСЃР»Рµ РїСЂРѕС…РѕР¶РґРµРЅРёСЏ РІС‹ РјРѕР¶РµС‚Рµ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ РЅРѕРІС‹Р№ РїРѕСЂС‚СЂРµС‚ Р»РёС‡РЅРѕСЃС‚Рё</p>
                   {passedTests < totalTests ? (
                     <button disabled className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-rose-800 text-white font-bold cursor-not-allowed">
-                      <Lock size={18} /> Мой портрет личности
+                      <Lock size={18} /> РњРѕР№ РїРѕСЂС‚СЂРµС‚ Р»РёС‡РЅРѕСЃС‚Рё
                     </button>
                   ) : (
                     <button onClick={handleGeneratePortrait} className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] shadow-lg shadow-blue-900/20">
-                      <ClipboardList size={18} /> Мой портрет личности
+                      <ClipboardList size={18} /> РњРѕР№ РїРѕСЂС‚СЂРµС‚ Р»РёС‡РЅРѕСЃС‚Рё
                     </button>
                   )}
                 </div>
@@ -414,9 +414,9 @@ export default function ProfileTab() {
 
               {totalTests > 0 && passedTests < totalTests && !portraitData && (
                 <div className="flex flex-col items-center text-center mt-auto bg-rose-900/60 p-6 rounded-3xl">
-                  <p className="text-white text-sm mb-6">Чтобы сформировать портрет личности, пройдите все тесты.</p>
+                  <p className="text-white text-sm mb-6">Р§С‚РѕР±С‹ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ РїРѕСЂС‚СЂРµС‚ Р»РёС‡РЅРѕСЃС‚Рё, РїСЂРѕР№РґРёС‚Рµ РІСЃРµ С‚РµСЃС‚С‹.</p>
                   <button disabled className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-rose-800 text-white font-bold cursor-not-allowed">
-                    <Lock size={18} /> Мой портрет личности
+                    <Lock size={18} /> РњРѕР№ РїРѕСЂС‚СЂРµС‚ Р»РёС‡РЅРѕСЃС‚Рё
                   </button>
                 </div>
               )}
@@ -424,7 +424,7 @@ export default function ProfileTab() {
               {totalTests > 0 && passedTests === totalTests && !portraitData && (
                 <div className="mt-auto">
                   <button onClick={handleGeneratePortrait} className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] shadow-lg shadow-blue-900/20">
-                    <ClipboardList size={18} /> Мой портрет личности
+                    <ClipboardList size={18} /> РњРѕР№ РїРѕСЂС‚СЂРµС‚ Р»РёС‡РЅРѕСЃС‚Рё
                   </button>
                 </div>
               )}
@@ -434,7 +434,7 @@ export default function ProfileTab() {
                   onClick={handleClearPortrait}
                   className="mt-4 flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-red-900/10 text-white hover:bg-red-900/30 transition-colors font-medium text-sm"
                 >
-                  <Trash2 size={18} /> Очистить портрет (Test)
+                  <Trash2 size={18} /> РћС‡РёСЃС‚РёС‚СЊ РїРѕСЂС‚СЂРµС‚ (Test)
                 </button>
               )}
             </div>
@@ -442,17 +442,17 @@ export default function ProfileTab() {
         </div>
       )}
 
-      {/* 4. ВСПЛЫВАЮЩЕЕ ОКНО С РЕЗУЛЬТАТОМ ТЕСТА */}
+      {/* 4. Р’РЎРџР›Р«Р’РђР®Р©Р•Р• РћРљРќРћ РЎ Р Р•Р—РЈР›Р¬РўРђРўРћРњ РўР•РЎРўРђ */}
       {selectedResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-rose-950/80 backdrop-blur-sm animate-in fade-in duration-700">
-          {/* Область клика вокруг окна для закрытия */}
+          {/* РћР±Р»Р°СЃС‚СЊ РєР»РёРєР° РІРѕРєСЂСѓРі РѕРєРЅР° РґР»СЏ Р·Р°РєСЂС‹С‚РёСЏ */}
           <div className="absolute inset-0" onClick={() => setSelectedResult(null)}></div>
           <div className="relative bg-rose-900 rounded-[2rem] w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-700">
-            {/* Заголовок модального окна */}
+            {/* Р—Р°РіРѕР»РѕРІРѕРє РјРѕРґР°Р»СЊРЅРѕРіРѕ РѕРєРЅР° */}
             <div className="p-5 sm:p-6 flex justify-between items-start">
               <div className="pr-4">
                 <span className="text-white text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1.5 block">
-                  Результат тестирования
+                  Р РµР·СѓР»СЊС‚Р°С‚ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ
                 </span>
                 <h3 className="text-lg sm:text-xl font-bold text-white leading-tight">
                   {selectedResult.name}
@@ -462,16 +462,16 @@ export default function ProfileTab() {
                 <X size={20} />
               </button>
             </div>
-            {/* Текст результата */}
+            {/* РўРµРєСЃС‚ СЂРµР·СѓР»СЊС‚Р°С‚Р° */}
             <div className="p-5 sm:p-6 overflow-y-auto">
               <div className="text-white text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
-                {selectedResult.result_text || 'Нет детального описания результата.'}
+                {selectedResult.result_text || 'РќРµС‚ РґРµС‚Р°Р»СЊРЅРѕРіРѕ РѕРїРёСЃР°РЅРёСЏ СЂРµР·СѓР»СЊС‚Р°С‚Р°.'}
               </div>
             </div>
-            {/* Нижняя кнопка */}
+            {/* РќРёР¶РЅСЏСЏ РєРЅРѕРїРєР° */}
             <div className="p-4 sm:p-5 bg-rose-950/30 rounded-b-[2rem]">
               <button onClick={() => setSelectedResult(null)} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition-all active:bg-blue-700 shadow-lg shadow-blue-900/20">
-                Отлично
+                РћС‚Р»РёС‡РЅРѕ
               </button>
             </div>
           </div>

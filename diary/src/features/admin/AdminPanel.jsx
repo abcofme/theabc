@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, CheckCircle } from 'lucide-react';
 
 const WebApp = window.Telegram.WebApp;
@@ -34,14 +34,14 @@ export default function AdminPanel({ onBack }) {
       });
       
       if (!response.ok) {
-        throw new Error(`Ошибка ${response.status}: ${await response.text()}`);
+        throw new Error(`РћС€РёР±РєР° ${response.status}: ${await response.text()}`);
       }
       
       const data = await response.json();
       setStats(data);
     } catch (error) {
       console.error(error);
-      WebApp.showAlert(error.message || "Ошибка при загрузке статистики");
+      WebApp.showAlert(error.message || "РћС€РёР±РєР° РїСЂРё Р·Р°РіСЂСѓР·РєРµ СЃС‚Р°С‚РёСЃС‚РёРєРё");
     } finally {
       setLoading(false);
     }
@@ -58,14 +58,14 @@ export default function AdminPanel({ onBack }) {
         className="flex items-center gap-2 text-white hover:text-white mb-6 transition-colors self-start"
       >
         <ChevronLeft size={20} />
-        <span className="font-medium">Назад в профиль</span>
+        <span className="font-medium">РќР°Р·Р°Рґ РІ РїСЂРѕС„РёР»СЊ</span>
       </button>
 
-      <h2 className="text-2xl font-bold text-white mb-6">Админ-панель</h2>
+      <h2 className="text-2xl font-bold text-white mb-6">РђРґРјРёРЅ-РїР°РЅРµР»СЊ</h2>
 
       <div className="bg-rose-900/60 p-5 rounded-3xl mb-6 flex flex-col gap-4">
         <div>
-          <label className="text-white text-sm font-medium mb-1 block">С:</label>
+          <label className="text-white text-sm font-medium mb-1 block">РЎ:</label>
           <input 
             type="datetime-local" 
             value={startDate} 
@@ -74,7 +74,7 @@ export default function AdminPanel({ onBack }) {
           />
         </div>
         <div>
-          <label className="text-white text-sm font-medium mb-1 block">По:</label>
+          <label className="text-white text-sm font-medium mb-1 block">РџРѕ:</label>
           <input 
             type="datetime-local" 
             value={endDate} 
@@ -83,14 +83,14 @@ export default function AdminPanel({ onBack }) {
           />
         </div>
         <div>
-          <label className="text-white text-sm font-medium mb-1 block">Режим:</label>
+          <label className="text-white text-sm font-medium mb-1 block">Р РµР¶РёРј:</label>
           <select 
             value={isUnique ? 'unique' : 'total'}
             onChange={(e) => setIsUnique(e.target.value === 'unique')}
             className="w-full bg-rose-950/50 text-white p-3 rounded-xl focus:outline-none"
           >
-            <option value="total">Общее</option>
-            <option value="unique">Уникальное</option>
+            <option value="total">РћР±С‰РµРµ</option>
+            <option value="unique">РЈРЅРёРєР°Р»СЊРЅРѕРµ</option>
           </select>
         </div>
       </div>
@@ -105,7 +105,7 @@ export default function AdminPanel({ onBack }) {
           <div className="bg-rose-900/60 p-5 rounded-2xl flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Calendar className="text-blue-500" size={24} />
-              <span className="text-white font-medium">Записи в дневник</span>
+              <span className="text-white font-medium">Р—Р°РїРёСЃРё РІ РґРЅРµРІРЅРёРє</span>
             </div>
             <span className="text-xl font-bold text-white">{stats.diary_count}</span>
           </div>
@@ -113,7 +113,7 @@ export default function AdminPanel({ onBack }) {
           <div className="bg-rose-900/60 p-5 rounded-2xl flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Brain className="text-orange-500" size={24} />
-              <span className="text-white font-medium">Отчеты</span>
+              <span className="text-white font-medium">РћС‚С‡РµС‚С‹</span>
             </div>
             <span className="text-xl font-bold text-white">{stats.reports_count}</span>
           </div>
@@ -121,12 +121,12 @@ export default function AdminPanel({ onBack }) {
           <div className="bg-rose-900/60 p-5 rounded-2xl flex items-center justify-between">
             <div className="flex items-center gap-3">
               <FileText className="text-emerald-500" size={24} />
-              <span className="text-white font-medium">Портреты личности</span>
+              <span className="text-white font-medium">РџРѕСЂС‚СЂРµС‚С‹ Р»РёС‡РЅРѕСЃС‚Рё</span>
             </div>
             <span className="text-xl font-bold text-white">{stats.portraits_count}</span>
           </div>
 
-          <h3 className="text-xl font-bold text-white mt-4 mb-2">Количество прохождений тестов</h3>
+          <h3 className="text-xl font-bold text-white mt-4 mb-2">РљРѕР»РёС‡РµСЃС‚РІРѕ РїСЂРѕС…РѕР¶РґРµРЅРёР№ С‚РµСЃС‚РѕРІ</h3>
           {stats.test_counts.map(cat => (
             <div key={cat.id} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-700">
               <button
@@ -146,7 +146,7 @@ export default function AdminPanel({ onBack }) {
               {openCategory === cat.id && (
                 <div className="bg-rose-950/40 px-4 py-2">
                   {cat.tests.length === 0 ? (
-                    <div className="text-white text-sm py-3 italic">В этой категории пока нет тестов.</div>
+                    <div className="text-white text-sm py-3 italic">Р’ СЌС‚РѕР№ РєР°С‚РµРіРѕСЂРёРё РїРѕРєР° РЅРµС‚ С‚РµСЃС‚РѕРІ.</div>
                   ) : (
                     cat.tests.map(test => (
                       <div key={test.id} className="flex items-center justify-between py-3.5">

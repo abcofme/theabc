@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+п»їimport React, { useState, useEffect } from 'react';
 import { Repeat, Zap, ChevronLeft, ChevronDown, ChevronUp, Plus, Target, Sparkles, Calendar, FileText, Star } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
@@ -41,16 +41,16 @@ export default function ReportsTab() {
   const reportTypes = [
     {
       id: 'repeating_events',
-      title: 'Какие события чаще всего повторяются в моей жизни?',
-      desc: 'Узнайте, какие ситуации в вашей жизни имеют свойство повторяться, и проанализируйте реакции на них.',
+      title: 'РљР°РєРёРµ СЃРѕР±С‹С‚РёСЏ С‡Р°С‰Рµ РІСЃРµРіРѕ РїРѕРІС‚РѕСЂСЏСЋС‚СЃСЏ РІ РјРѕРµР№ Р¶РёР·РЅРё?',
+      desc: 'РЈР·РЅР°Р№С‚Рµ, РєР°РєРёРµ СЃРёС‚СѓР°С†РёРё РІ РІР°С€РµР№ Р¶РёР·РЅРё РёРјРµСЋС‚ СЃРІРѕР№СЃС‚РІРѕ РїРѕРІС‚РѕСЂСЏС‚СЊСЃСЏ, Рё РїСЂРѕР°РЅР°Р»РёР·РёСЂСѓР№С‚Рµ СЂРµР°РєС†РёРё РЅР° РЅРёС….',
       icon: Repeat,
       color: 'text-white',
       bg: 'bg-blue-500/10'
     },
     {
       id: 'effective_reactions',
-      title: 'На какие ситуации я реагирую эффективно, а на какие нет?',
-      desc: 'Узнайте, насколько ваша реакция на событие эффективна.',
+      title: 'РќР° РєР°РєРёРµ СЃРёС‚СѓР°С†РёРё СЏ СЂРµР°РіРёСЂСѓСЋ СЌС„С„РµРєС‚РёРІРЅРѕ, Р° РЅР° РєР°РєРёРµ РЅРµС‚?',
+      desc: 'РЈР·РЅР°Р№С‚Рµ, РЅР°СЃРєРѕР»СЊРєРѕ РІР°С€Р° СЂРµР°РєС†РёСЏ РЅР° СЃРѕР±С‹С‚РёРµ СЌС„С„РµРєС‚РёРІРЅР°.',
       icon: Zap,
       color: 'text-white',
       bg: 'bg-amber-500/10'
@@ -59,7 +59,7 @@ export default function ReportsTab() {
 
   const handleGenerate = async (type) => {
     if (selectedPeriod === 'custom' && !customStart) {
-      WebApp.showAlert("Пожалуйста, укажите начальную дату.");
+      WebApp.showAlert("РџРѕР¶Р°Р»СѓР№СЃС‚Р°, СѓРєР°Р¶РёС‚Рµ РЅР°С‡Р°Р»СЊРЅСѓСЋ РґР°С‚Сѓ.");
       return;
     }
     
@@ -82,7 +82,7 @@ export default function ReportsTab() {
       });
       
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Ошибка генерации");
+      if (!res.ok) throw new Error(data.detail || "РћС€РёР±РєР° РіРµРЅРµСЂР°С†РёРё");
       
       setReports(prev => [data, ...prev]);
       setActiveForm(null);
@@ -117,13 +117,13 @@ export default function ReportsTab() {
           className="flex items-center gap-2 text-white hover:text-white mb-6 transition-colors self-start"
         >
           <ChevronLeft size={20} />
-          <span className="font-medium">Назад</span>
+          <span className="font-medium">РќР°Р·Р°Рґ</span>
         </button>
         
         <div className="bg-rose-900/60 rounded-3xl p-5 sm:p-8 mb-6 shadow-xl backdrop-blur-sm">
           <div className="flex items-center gap-2 text-white mb-6 pb-4">
             <Calendar size={16} />
-            <span className="text-sm font-medium">Отчет от {new Date(viewReport.created_at).toLocaleDateString('ru-RU')}</span>
+            <span className="text-sm font-medium">РћС‚С‡РµС‚ РѕС‚ {new Date(viewReport.created_at).toLocaleDateString('ru-RU')}</span>
           </div>
           <ReactMarkdown components={getMarkdownComponents()}>
             {viewReport.content}
@@ -142,7 +142,7 @@ export default function ReportsTab() {
           className="flex items-center gap-2 text-white hover:text-white mb-6 transition-colors self-start"
         >
           <ChevronLeft size={20} />
-          <span className="font-medium">Назад</span>
+          <span className="font-medium">РќР°Р·Р°Рґ</span>
         </button>
         
         <div className="flex items-start gap-4 mb-6">
@@ -156,19 +156,19 @@ export default function ReportsTab() {
         </div>
 
         <div className="bg-rose-900 rounded-2xl p-5 mb-6">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Выбрать период</h3>
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Р’С‹Р±СЂР°С‚СЊ РїРµСЂРёРѕРґ</h3>
           <div className="relative mb-4">
             <select 
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
               className="w-full appearance-none bg-rose-950 text-white text-base rounded-xl p-4 pr-10 focus:outline-none focus: transition-colors"
             >
-              <option value="week">За последнюю неделю</option>
-              <option value="month">За последний месяц</option>
-              <option value="3months">За последние 3 месяца</option>
-              <option value="year">За год</option>
-              <option value="all">За всё время</option>
-              <option value="custom">Указать свой период</option>
+              <option value="week">Р—Р° РїРѕСЃР»РµРґРЅСЋСЋ РЅРµРґРµР»СЋ</option>
+              <option value="month">Р—Р° РїРѕСЃР»РµРґРЅРёР№ РјРµСЃСЏС†</option>
+              <option value="3months">Р—Р° РїРѕСЃР»РµРґРЅРёРµ 3 РјРµСЃСЏС†Р°</option>
+              <option value="year">Р—Р° РіРѕРґ</option>
+              <option value="all">Р—Р° РІСЃС‘ РІСЂРµРјСЏ</option>
+              <option value="custom">РЈРєР°Р·Р°С‚СЊ СЃРІРѕР№ РїРµСЂРёРѕРґ</option>
             </select>
             <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-white pointer-events-none" size={20} />
           </div>
@@ -176,7 +176,7 @@ export default function ReportsTab() {
           {selectedPeriod === 'custom' && (
             <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-2">
               <div>
-                <label className="text-xs text-white uppercase tracking-wider mb-1 block">От:</label>
+                <label className="text-xs text-white uppercase tracking-wider mb-1 block">РћС‚:</label>
                 <input 
                   type="date" 
                   value={customStart}
@@ -185,7 +185,7 @@ export default function ReportsTab() {
                 />
               </div>
               <div>
-                <label className="text-xs text-white uppercase tracking-wider mb-1 block">До (необязательно):</label>
+                <label className="text-xs text-white uppercase tracking-wider mb-1 block">Р”Рѕ (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ):</label>
                 <input 
                   type="date" 
                   value={customEnd}
@@ -203,9 +203,9 @@ export default function ReportsTab() {
           className="w-full bg-blue-600 disabled:bg-blue-900/50 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
         >
           {isGenerating ? (
-            <><div className="w-5 h-5 rounded-full animate-spin"></div> Анализ ИИ...</>
+            <><div className="w-5 h-5 rounded-full animate-spin"></div> РђРЅР°Р»РёР· РР...</>
           ) : (
-            'Проанализировать'
+            'РџСЂРѕР°РЅР°Р»РёР·РёСЂРѕРІР°С‚СЊ'
           )}
         </button>
       </div>
@@ -214,10 +214,10 @@ export default function ReportsTab() {
 
   return (
     <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-2xl mx-auto w-full pt-4 pb-20 overflow-y-auto">
-      <h2 className="text-2xl font-bold text-white mb-2 px-4 text-center">Поведенческий код</h2>
+      <h2 className="text-2xl font-bold text-white mb-2 px-4 text-center">РџРѕРІРµРґРµРЅС‡РµСЃРєРёР№ РєРѕРґ</h2>
       
       <p className="text-sm text-white text-center px-4 mb-8 leading-relaxed">
-        Здесь собраны отчеты, которые позволяют вам исследовать себя на основании ваших результатов тестирований, портрета личности, ежедневных записях о событиях и реакциях в дневнике, составить полную Азбуку Я.
+        Р—РґРµСЃСЊ СЃРѕР±СЂР°РЅС‹ РѕС‚С‡РµС‚С‹, РєРѕС‚РѕСЂС‹Рµ РїРѕР·РІРѕР»СЏСЋС‚ РІР°Рј РёСЃСЃР»РµРґРѕРІР°С‚СЊ СЃРµР±СЏ РЅР° РѕСЃРЅРѕРІР°РЅРёРё РІР°С€РёС… СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ С‚РµСЃС‚РёСЂРѕРІР°РЅРёР№, РїРѕСЂС‚СЂРµС‚Р° Р»РёС‡РЅРѕСЃС‚Рё, РµР¶РµРґРЅРµРІРЅС‹С… Р·Р°РїРёСЃСЏС… Рѕ СЃРѕР±С‹С‚РёСЏС… Рё СЂРµР°РєС†РёСЏС… РІ РґРЅРµРІРЅРёРєРµ, СЃРѕСЃС‚Р°РІРёС‚СЊ РїРѕР»РЅСѓСЋ РђР·Р±СѓРєСѓ РЇ.
       </p>
 
       {loading ? (
@@ -229,8 +229,8 @@ export default function ReportsTab() {
           {reportTypes.map(rtype => {
             const typeReports = reports.filter(r => 
               r.title === rtype.title || 
-              (rtype.id === 'repeating_events' && r.title.includes('Повторяющиеся')) || 
-              (rtype.id === 'effective_reactions' && r.title.includes('эффективно'))
+              (rtype.id === 'repeating_events' && r.title.includes('РџРѕРІС‚РѕСЂСЏСЋС‰РёРµСЃСЏ')) || 
+              (rtype.id === 'effective_reactions' && r.title.includes('СЌС„С„РµРєС‚РёРІРЅРѕ'))
             );
             const isOpen = openCategory === rtype.id;
             
@@ -259,12 +259,12 @@ export default function ReportsTab() {
                       className="w-full py-3 bg-rose-800 hover:bg-rose-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
                     >
                       <Plus size={18} />
-                      Сформировать новый отчет
+                      РЎС„РѕСЂРјРёСЂРѕРІР°С‚СЊ РЅРѕРІС‹Р№ РѕС‚С‡РµС‚
                     </button>
                     
                     {typeReports.length > 0 ? (
                       <div className="mt-4 flex flex-col gap-2">
-                        <span className="text-xs font-bold text-white uppercase tracking-wider mb-2">История отчетов</span>
+                        <span className="text-xs font-bold text-white uppercase tracking-wider mb-2">РСЃС‚РѕСЂРёСЏ РѕС‚С‡РµС‚РѕРІ</span>
                         {typeReports.map(r => (
                           <button
                             key={r.id}
@@ -274,10 +274,10 @@ export default function ReportsTab() {
                             <div className="flex items-center gap-3">
                               <FileText className="text-white group-hover:text-white transition-colors" size={20} />
                               <div>
-                                <div className="text-white font-medium mb-1">Отчет от {new Date(r.created_at).toLocaleDateString('ru-RU')}</div>
+                                <div className="text-white font-medium mb-1">РћС‚С‡РµС‚ РѕС‚ {new Date(r.created_at).toLocaleDateString('ru-RU')}</div>
                                 <div className="text-xs text-white">
                                   {r.period_start ? `${new Date(r.period_start).toLocaleDateString('ru-RU')} - ` : ''} 
-                                  {r.period_end ? new Date(r.period_end).toLocaleDateString('ru-RU') : 'Всё время'}
+                                  {r.period_end ? new Date(r.period_end).toLocaleDateString('ru-RU') : 'Р’СЃС‘ РІСЂРµРјСЏ'}
                                 </div>
                               </div>
                             </div>
@@ -286,7 +286,7 @@ export default function ReportsTab() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-white text-center mt-4">Вы еще не формировали этот тип отчета.</p>
+                      <p className="text-sm text-white text-center mt-4">Р’С‹ РµС‰Рµ РЅРµ С„РѕСЂРјРёСЂРѕРІР°Р»Рё СЌС‚РѕС‚ С‚РёРї РѕС‚С‡РµС‚Р°.</p>
                     )}
                   </div>
                 )}
@@ -298,7 +298,7 @@ export default function ReportsTab() {
 
       <div className="mt-10 px-6 pb-8 text-center opacity-80">
         <p className="text-sm font-medium text-white leading-relaxed">
-          Команда проекта «Азбука Я» регулярно добавляет новые отчеты.<br/>Следите за обновлениями!
+          РљРѕРјР°РЅРґР° РїСЂРѕРµРєС‚Р° В«РђР·Р±СѓРєР° РЇВ» СЂРµРіСѓР»СЏСЂРЅРѕ РґРѕР±Р°РІР»СЏРµС‚ РЅРѕРІС‹Рµ РѕС‚С‡РµС‚С‹.<br/>РЎР»РµРґРёС‚Рµ Р·Р° РѕР±РЅРѕРІР»РµРЅРёСЏРјРё!
         </p>
         <div className="flex items-center justify-center gap-2 mt-4 text-white/50">
           <Star size={12} className="animate-pulse" />

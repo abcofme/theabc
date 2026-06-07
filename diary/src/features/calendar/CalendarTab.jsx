@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+п»їimport React, { useState, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, isToday, setMonth, setYear, getYear, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { ChevronDown, X, Plus, BookOpen, Check, Trash2, Lock, Activity, Sparkles } from 'lucide-react';
@@ -14,7 +14,7 @@ export default function CalendarTab({ onSheetOpen }) {
   const [hasPortrait, setHasPortrait] = useState(false);
   const [analyzingIds, setAnalyzingIds] = useState([]);
 
-  // Загружаем наличие портрета
+  // Р—Р°РіСЂСѓР¶Р°РµРј РЅР°Р»РёС‡РёРµ РїРѕСЂС‚СЂРµС‚Р°
   useEffect(() => {
     fetch(`${API_URL}/api/profile`, {
       headers: {
@@ -32,34 +32,34 @@ export default function CalendarTab({ onSheetOpen }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [entryToDelete, setEntryToDelete] = useState(null);
   
-  // Начинаем с пустого массива, данные придут с сервера
+  // РќР°С‡РёРЅР°РµРј СЃ РїСѓСЃС‚РѕРіРѕ РјР°СЃСЃРёРІР°, РґР°РЅРЅС‹Рµ РїСЂРёРґСѓС‚ СЃ СЃРµСЂРІРµСЂР°
   const [diaryEntries, setDiaryEntries] = useState([]);
   const [newEntries, setNewEntries] = useState([{ event: '', reaction: '' }]);
   const [newRating, setNewRating] = useState(0);
 
   const tgUser = WebApp.initDataUnsafe?.user || {
-    first_name: "Пользователь",
+    first_name: "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ",
     username: "username"
   };
 
-  const monthsRu = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+  const monthsRu = ['РЇРЅРІР°СЂСЊ', 'Р¤РµРІСЂР°Р»СЊ', 'РњР°СЂС‚', 'РђРїСЂРµР»СЊ', 'РњР°Р№', 'РСЋРЅСЊ', 'РСЋР»СЊ', 'РђРІРіСѓСЃС‚', 'РЎРµРЅС‚СЏР±СЂСЊ', 'РћРєС‚СЏР±СЂСЊ', 'РќРѕСЏР±СЂСЊ', 'Р”РµРєР°Р±СЂСЊ'];
   const years = [2024, 2025, 2026, 2027, 2028];
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
   const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
   const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
   const dayCells = eachDayOfInterval({ start: startDate, end: endDate });
-  const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+  const weekDays = ['РџРЅ', 'Р’С‚', 'РЎСЂ', 'Р§С‚', 'РџС‚', 'РЎР±', 'Р’СЃ'];
   const now = new Date();
 
-  // Добавленный хук для скрытия/показа меню
+  // Р”РѕР±Р°РІР»РµРЅРЅС‹Р№ С…СѓРє РґР»СЏ СЃРєСЂС‹С‚РёСЏ/РїРѕРєР°Р·Р° РјРµРЅСЋ
   useEffect(() => {
     if (onSheetOpen) {
       onSheetOpen(isSheetOpen);
     }
   }, [isSheetOpen, onSheetOpen]);
 
-  // === 1. ЗАГРУЗКА ДАННЫХ С СЕРВЕРА ===
+  // === 1. Р—РђР“Р РЈР—РљРђ Р”РђРќРќР«РҐ РЎ РЎР•Р Р’Р•Р Рђ ===
   useEffect(() => {
     if (!WebApp.initData) return;
 
@@ -81,7 +81,7 @@ export default function CalendarTab({ onSheetOpen }) {
         }));
         setDiaryEntries(loadedEntries);
       })
-      .catch(err => console.error("Ошибка загрузки дневника:", err));
+      .catch(err => console.error("РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё РґРЅРµРІРЅРёРєР°:", err));
   }, [currentMonth]);
 
   const handleDayClick = (date) => {
@@ -111,7 +111,7 @@ export default function CalendarTab({ onSheetOpen }) {
   const handleAddEntry = async (e) => {
     e.preventDefault();
     if (newEntries.some(entry => !entry.event.trim() || !entry.reaction.trim())) {
-      WebApp.showAlert("Пожалуйста, заполните все события и реакции.");
+      WebApp.showAlert("РџРѕР¶Р°Р»СѓР№СЃС‚Р°, Р·Р°РїРѕР»РЅРёС‚Рµ РІСЃРµ СЃРѕР±С‹С‚РёСЏ Рё СЂРµР°РєС†РёРё.");
       return;
     }
     
@@ -119,7 +119,7 @@ export default function CalendarTab({ onSheetOpen }) {
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
     
     try {
-      // Сохраняем все записи последовательно
+      // РЎРѕС…СЂР°РЅСЏРµРј РІСЃРµ Р·Р°РїРёСЃРё РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕ
       for (const entry of newEntries) {
         const response = await fetch(`${API_URL}/api/diary`, {
           method: "POST",
@@ -136,11 +136,11 @@ export default function CalendarTab({ onSheetOpen }) {
         });
 
         if (!response.ok) {
-          throw new Error("Ошибка сохранения");
+          throw new Error("РћС€РёР±РєР° СЃРѕС…СЂР°РЅРµРЅРёСЏ");
         }
         
         const data = await response.json();
-        // Добавляем новую запись в локальный стейт, чтобы она отобразилась мгновенно
+        // Р”РѕР±Р°РІР»СЏРµРј РЅРѕРІСѓСЋ Р·Р°РїРёСЃСЊ РІ Р»РѕРєР°Р»СЊРЅС‹Р№ СЃС‚РµР№С‚, С‡С‚РѕР±С‹ РѕРЅР° РѕС‚РѕР±СЂР°Р·РёР»Р°СЃСЊ РјРіРЅРѕРІРµРЅРЅРѕ
         setDiaryEntries(prev => [...prev, {
           id: data.id,
           date: selectedDate,
@@ -171,13 +171,13 @@ export default function CalendarTab({ onSheetOpen }) {
         }
       }
       
-      // Сбрасываем форму
+      // РЎР±СЂР°СЃС‹РІР°РµРј С„РѕСЂРјСѓ
       setNewEntries([{ event: '', reaction: '' }]);
       setNewRating(0);
       WebApp.HapticFeedback.notificationOccurred('success');
     } catch (error) {
       console.error(error);
-      WebApp.showAlert("Произошла ошибка при сохранении. Возможно, не все записи сохранены.");
+      WebApp.showAlert("РџСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР° РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё. Р’РѕР·РјРѕР¶РЅРѕ, РЅРµ РІСЃРµ Р·Р°РїРёСЃРё СЃРѕС…СЂР°РЅРµРЅС‹.");
     } finally {
       setIsSubmitting(false);
     }
@@ -194,13 +194,13 @@ export default function CalendarTab({ onSheetOpen }) {
         }
       });
       
-      if (!response.ok) throw new Error("Ошибка удаления");
+      if (!response.ok) throw new Error("РћС€РёР±РєР° СѓРґР°Р»РµРЅРёСЏ");
       
       setDiaryEntries(prev => prev.filter(e => e.id !== entryToDelete.id));
       setEntryToDelete(null);
     } catch (error) {
       console.error(error);
-      WebApp.showAlert("Произошла ошибка при удалении.");
+      WebApp.showAlert("РџСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР° РїСЂРё СѓРґР°Р»РµРЅРёРё.");
     }
   };
 
@@ -214,11 +214,11 @@ export default function CalendarTab({ onSheetOpen }) {
           "Authorization": `Bearer ${WebApp.initData}`
         }
       });
-      if (!response.ok) throw new Error("Ошибка удаления оценки");
+      if (!response.ok) throw new Error("РћС€РёР±РєР° СѓРґР°Р»РµРЅРёСЏ РѕС†РµРЅРєРё");
       setDiaryEntries(prev => prev.map(e => e.id === entryId ? { ...e, rating: null } : e));
     } catch (error) {
       console.error(error);
-      WebApp.showAlert("Произошла ошибка при удалении оценки.");
+      WebApp.showAlert("РџСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР° РїСЂРё СѓРґР°Р»РµРЅРёРё РѕС†РµРЅРєРё.");
     }
   };
 
@@ -247,9 +247,9 @@ export default function CalendarTab({ onSheetOpen }) {
     if (!hasPortrait) {
       return (
         <div className="mt-5 pt-5">
-          <p className="text-xs font-bold text-white uppercase tracking-wider mb-3">Насколько реакция соответствует портрету?</p>
+          <p className="text-xs font-bold text-white uppercase tracking-wider mb-3">РќР°СЃРєРѕР»СЊРєРѕ СЂРµР°РєС†РёСЏ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РїРѕСЂС‚СЂРµС‚Сѓ?</p>
           <div className="h-2 w-full bg-rose-800 rounded-full overflow-hidden mb-2"></div>
-          <p className="text-xs font-medium text-white flex items-center gap-1.5 leading-tight"><Lock size={12}/> Для разблокировки шкалы сформируйте портрет личности в профиле</p>
+          <p className="text-xs font-medium text-white flex items-center gap-1.5 leading-tight"><Lock size={12}/> Р”Р»СЏ СЂР°Р·Р±Р»РѕРєРёСЂРѕРІРєРё С€РєР°Р»С‹ СЃС„РѕСЂРјРёСЂСѓР№С‚Рµ РїРѕСЂС‚СЂРµС‚ Р»РёС‡РЅРѕСЃС‚Рё РІ РїСЂРѕС„РёР»Рµ</p>
         </div>
       );
     }
@@ -259,17 +259,17 @@ export default function CalendarTab({ onSheetOpen }) {
     if (entry.portrait_match_score === null || entry.portrait_match_score === undefined) {
       return (
         <div className="mt-5 pt-5">
-          <p className="text-xs font-bold text-white uppercase tracking-wider mb-3">Соответствие портрету личности:</p>
+          <p className="text-xs font-bold text-white uppercase tracking-wider mb-3">РЎРѕРѕС‚РІРµС‚СЃС‚РІРёРµ РїРѕСЂС‚СЂРµС‚Сѓ Р»РёС‡РЅРѕСЃС‚Рё:</p>
           {isAnalyzing ? (
             <div className="flex items-center gap-3">
               <div className="h-2 flex-1 bg-rose-800 rounded-full overflow-hidden relative">
                 <div className="absolute inset-0 bg-rose-700 animate-pulse"></div>
               </div>
-              <span className="text-xs text-white font-bold flex items-center gap-1"><Sparkles size={12}/> Анализ...</span>
+              <span className="text-xs text-white font-bold flex items-center gap-1"><Sparkles size={12}/> РђРЅР°Р»РёР·...</span>
             </div>
           ) : (
             <button onClick={() => handleManualAnalysis(entry.id)} className="w-full py-2 bg-rose-800 hover:bg-rose-700 text-white font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
-              <Activity size={16} /> Проанализировать реакцию
+              <Activity size={16} /> РџСЂРѕР°РЅР°Р»РёР·РёСЂРѕРІР°С‚СЊ СЂРµР°РєС†РёСЋ
             </button>
           )}
         </div>
@@ -284,7 +284,7 @@ export default function CalendarTab({ onSheetOpen }) {
 
     return (
       <div className="mt-5 pt-5">
-        <p className="text-xs font-bold text-white uppercase tracking-wider mb-3">Соответствие портрету личности:</p>
+        <p className="text-xs font-bold text-white uppercase tracking-wider mb-3">РЎРѕРѕС‚РІРµС‚СЃС‚РІРёРµ РїРѕСЂС‚СЂРµС‚Сѓ Р»РёС‡РЅРѕСЃС‚Рё:</p>
         <div className="flex items-center gap-3">
           <div className="h-2 flex-1 bg-rose-800 rounded-full overflow-hidden shadow-inner relative">
             <div className={`absolute top-0 bottom-0 left-0 ${colorClass} transition-all duration-1000 ease-out`} style={{ width: `${score}%` }}></div>
@@ -299,7 +299,7 @@ export default function CalendarTab({ onSheetOpen }) {
 
   return (
     <div className="flex flex-col h-full relative select-none">
-      {/* ШАПКА: ВЫБОР МЕСЯЦА И НАЗВАНИЕ ДНЕВНИКА */}
+      {/* РЁРђРџРљРђ: Р’Р«Р‘РћР  РњР•РЎРЇР¦Рђ Р РќРђР—Р’РђРќРР• Р”РќР•Р’РќРРљРђ */}
       <div className="mb-6 mt-2 relative flex items-center justify-between gap-2">
         <button
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -311,14 +311,14 @@ export default function CalendarTab({ onSheetOpen }) {
           <ChevronDown size={20} className={`transition-transform duration-700 ${isDropdownOpen ? 'rotate-180' : ''}`} />
         </button>
 
-        {/* Измененное название дневника */}
+        {/* РР·РјРµРЅРµРЅРЅРѕРµ РЅР°Р·РІР°РЅРёРµ РґРЅРµРІРЅРёРєР° */}
         <div className="text-white font-bold text-sm sm:text-base whitespace-nowrap text-right overflow-hidden text-ellipsis">
-          Дневник @{tgUser.username || tgUser.first_name}
+          Р”РЅРµРІРЅРёРє @{tgUser.username || tgUser.first_name}
         </div>
 
         {isDropdownOpen && (
           <div className="absolute top-14 left-0 z-40 w-80 bg-rose-900 rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-700">
-            <div className="text-xs font-semibold text-white uppercase tracking-wider mb-2">Выберите месяц</div>
+            <div className="text-xs font-semibold text-white uppercase tracking-wider mb-2">Р’С‹Р±РµСЂРёС‚Рµ РјРµСЃСЏС†</div>
             <div className="grid grid-cols-3 gap-1.5 mb-4">
               {monthsRu.map((m, idx) => (
                 <button
@@ -336,7 +336,7 @@ export default function CalendarTab({ onSheetOpen }) {
               ))}
             </div>
 
-            <div className="text-xs font-semibold text-white uppercase tracking-wider mb-2">Выберите год</div>
+            <div className="text-xs font-semibold text-white uppercase tracking-wider mb-2">Р’С‹Р±РµСЂРёС‚Рµ РіРѕРґ</div>
             <div className="grid grid-cols-5 gap-1.5">
               {years.map(y => (
                 <button
@@ -357,7 +357,7 @@ export default function CalendarTab({ onSheetOpen }) {
         )}
       </div>
 
-      {/* СЕТКА КАЛЕНДАРЯ */}
+      {/* РЎР•РўРљРђ РљРђР›Р•РќР”РђР РЇ */}
       <div className="flex-1 flex flex-col bg-rose-900/40 rounded-3xl p-3 backdrop-blur-sm overflow-hidden min-h-[400px]">
         <div className="grid grid-cols-7 mb-2 text-center">
           {weekDays.map(day => (
@@ -399,7 +399,7 @@ export default function CalendarTab({ onSheetOpen }) {
         </div>
       </div>
 
-      {/* ПОЛНОЭКРАННОЕ ОКНО С ЗАПИСЯМИ */}
+      {/* РџРћР›РќРћР­РљР РђРќРќРћР• РћРљРќРћ РЎ Р—РђРџРРЎРЇРњР */}
       {isSheetOpen && (
         <div className="fixed inset-0 z-50 bg-rose-950 flex flex-col animate-in slide-in-from-bottom-8 duration-700">
           <div className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-6 flex flex-col overflow-y-auto">
@@ -424,7 +424,7 @@ export default function CalendarTab({ onSheetOpen }) {
               {activeEntries.some(e => e.rating) ? (
                 <div className="flex items-center justify-between gap-2 mb-4 bg-rose-900/40 p-4 rounded-2xl relative group">
                   <div className="flex items-center gap-4">
-                    <span className="text-sm font-bold text-white uppercase tracking-wider">Оценка дня:</span>
+                    <span className="text-sm font-bold text-white uppercase tracking-wider">РћС†РµРЅРєР° РґРЅСЏ:</span>
                     <div className="flex gap-1 text-white text-xl">
                       {(() => {
                         const ratedEntry = activeEntries.find(e => e.rating);
@@ -435,7 +435,7 @@ export default function CalendarTab({ onSheetOpen }) {
                   <button 
                     onClick={() => handleDeleteRating(activeEntries.find(e => e.rating).id)}
                     className="p-2 text-white hover:text-white hover:bg-red-500/10 rounded-xl transition-colors active:scale-95"
-                    title="Удалить оценку дня"
+                    title="РЈРґР°Р»РёС‚СЊ РѕС†РµРЅРєСѓ РґРЅСЏ"
                   >
                     <Trash2 size={18} />
                   </button>
@@ -451,11 +451,11 @@ export default function CalendarTab({ onSheetOpen }) {
                       <Trash2 size={18} />
                     </button>
                     <div className="mb-4 pr-8">
-                      <span className="text-xs font-bold text-white uppercase tracking-wider block mb-1.5">Событие:</span>
+                      <span className="text-xs font-bold text-white uppercase tracking-wider block mb-1.5">РЎРѕР±С‹С‚РёРµ:</span>
                       <p className="text-base text-white font-medium">{entry.event}</p>
                     </div>
                     <div>
-                      <span className="text-xs font-bold text-white uppercase tracking-wider block mb-1.5">Реакция:</span>
+                      <span className="text-xs font-bold text-white uppercase tracking-wider block mb-1.5">Р РµР°РєС†РёСЏ:</span>
                       <p className="text-base text-white">{entry.reaction}</p>
                     </div>
                     {renderMatchScale(entry)}
@@ -464,7 +464,7 @@ export default function CalendarTab({ onSheetOpen }) {
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center py-12 rounded-2xl text-white gap-3 mt-4">
                   <BookOpen size={40} className="text-white" />
-                  <span className="text-lg">Записей пока нет</span>
+                  <span className="text-lg">Р—Р°РїРёСЃРµР№ РїРѕРєР° РЅРµС‚</span>
                 </div>
               )}
             </div>
@@ -472,7 +472,7 @@ export default function CalendarTab({ onSheetOpen }) {
             <form onSubmit={handleAddEntry} className=" pt-6 flex flex-col gap-6 mt-auto mb-safe pb-4">
               <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
                 <Plus size={16} />
-                Новая запись дневника
+                РќРѕРІР°СЏ Р·Р°РїРёСЃСЊ РґРЅРµРІРЅРёРєР°
               </h4>
               
               <div className="flex flex-col gap-6">
@@ -480,13 +480,13 @@ export default function CalendarTab({ onSheetOpen }) {
                   <div key={index} className="bg-rose-900/40 p-4 rounded-2xl flex flex-col gap-4 relative">
                     {newEntries.length > 1 && (
                       <div className="absolute -top-3 -right-2 bg-rose-800 text-white text-xs font-bold px-2 py-1 rounded-lg">
-                        Событие {index + 1}
+                        РЎРѕР±С‹С‚РёРµ {index + 1}
                       </div>
                     )}
                     <div>
                       <input
                         type="text"
-                        placeholder="Что произошло? (Событие)"
+                        placeholder="Р§С‚Рѕ РїСЂРѕРёР·РѕС€Р»Рѕ? (РЎРѕР±С‹С‚РёРµ)"
                         value={entry.event}
                         onChange={(e) => updateEntry(index, 'event', e.target.value)}
                         className="w-full bg-rose-900 rounded-xl px-4 py-3.5 text-white placeholder:text-white focus:outline-none focus: focus:ring-1 focus:ring-blue-500/50 transition-all"
@@ -494,7 +494,7 @@ export default function CalendarTab({ onSheetOpen }) {
                     </div>
                     <div>
                       <textarea
-                        placeholder="Моя реакция, чувства..."
+                        placeholder="РњРѕСЏ СЂРµР°РєС†РёСЏ, С‡СѓРІСЃС‚РІР°..."
                         value={entry.reaction}
                         onChange={(e) => updateEntry(index, 'reaction', e.target.value)}
                         rows="3"
@@ -511,12 +511,12 @@ export default function CalendarTab({ onSheetOpen }) {
                 className="w-full bg-rose-800/80 hover:bg-rose-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2"
               >
                 <Plus size={18} />
-                Добавить событие
+                Р”РѕР±Р°РІРёС‚СЊ СЃРѕР±С‹С‚РёРµ
               </button>
 
               {!hasDailyRating && (
                 <div className="mt-4 pt-4">
-                  <span className="text-sm font-bold text-white block mb-3">Оцените день по пятибальной шкале:</span>
+                  <span className="text-sm font-bold text-white block mb-3">РћС†РµРЅРёС‚Рµ РґРµРЅСЊ РїРѕ РїСЏС‚РёР±Р°Р»СЊРЅРѕР№ С€РєР°Р»Рµ:</span>
                   <div className="flex justify-between gap-2">
                     {[1, 2, 3, 4, 5].map(num => (
                       <button
@@ -541,31 +541,31 @@ export default function CalendarTab({ onSheetOpen }) {
                 disabled={isSubmitDisabled || isSubmitting}
                 className="w-full bg-blue-600 disabled:bg-blue-900/40 disabled:text-white/50 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-blue-900/20"
               >
-                {isSubmitting ? 'Сохранение...' : `Сохранить ${newEntries.length > 1 ? 'все записи' : 'запись'}`}
+                {isSubmitting ? 'РЎРѕС…СЂР°РЅРµРЅРёРµ...' : `РЎРѕС…СЂР°РЅРёС‚СЊ ${newEntries.length > 1 ? 'РІСЃРµ Р·Р°РїРёСЃРё' : 'Р·Р°РїРёСЃСЊ'}`}
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* МОДАЛКА УДАЛЕНИЯ ЗАПИСИ */}
+      {/* РњРћР”РђР›РљРђ РЈР”РђР›Р•РќРРЇ Р—РђРџРРЎР */}
       {entryToDelete && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-rose-950/80 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-rose-900 p-6 rounded-3xl w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-300">
-            <h3 className="text-xl font-bold text-white mb-2 text-center">Удалить запись?</h3>
-            <p className="text-white text-sm text-center mb-6">Эта запись будет навсегда удалена из вашего дневника.</p>
+            <h3 className="text-xl font-bold text-white mb-2 text-center">РЈРґР°Р»РёС‚СЊ Р·Р°РїРёСЃСЊ?</h3>
+            <p className="text-white text-sm text-center mb-6">Р­С‚Р° Р·Р°РїРёСЃСЊ Р±СѓРґРµС‚ РЅР°РІСЃРµРіРґР° СѓРґР°Р»РµРЅР° РёР· РІР°С€РµРіРѕ РґРЅРµРІРЅРёРєР°.</p>
             <div className="flex gap-3">
               <button 
                 onClick={() => setEntryToDelete(null)}
                 className="flex-1 py-3 bg-rose-800 text-white font-bold rounded-2xl active:scale-95 transition-transform"
               >
-                Нет
+                РќРµС‚
               </button>
               <button 
                 onClick={handleDeleteEntry}
                 className="flex-1 py-3 bg-red-500/20 text-white font-bold rounded-2xl active:scale-95 transition-transform"
               >
-                Да
+                Р”Р°
               </button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+п»їimport React, { useState } from 'react';
 import { Calendar as CalendarIcon, Sparkles, User, Brain } from 'lucide-react';
 import CalendarTab from './features/calendar/CalendarTab';
 import ProfileTab from './features/profile/ProfileTab';
@@ -8,19 +8,19 @@ const WebApp = window.Telegram.WebApp;
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('diary');
-  // Добавляем стейт для отслеживания открытого окна записей
+  // Р”РѕР±Р°РІР»СЏРµРј СЃС‚РµР№С‚ РґР»СЏ РѕС‚СЃР»РµР¶РёРІР°РЅРёСЏ РѕС‚РєСЂС‹С‚РѕРіРѕ РѕРєРЅР° Р·Р°РїРёСЃРµР№
   const [isNavHidden, setIsNavHidden] = useState(false);
 
-  // Сообщаем Telegram, что приложение готово
+  // РЎРѕРѕР±С‰Р°РµРј Telegram, С‡С‚Рѕ РїСЂРёР»РѕР¶РµРЅРёРµ РіРѕС‚РѕРІРѕ
   WebApp.ready();
 
-  // Блокировка: если нет данных от Telegram, не пускаем
+  // Р‘Р»РѕРєРёСЂРѕРІРєР°: РµСЃР»Рё РЅРµС‚ РґР°РЅРЅС‹С… РѕС‚ Telegram, РЅРµ РїСѓСЃРєР°РµРј
   if (!WebApp.initData) {
     return (
       <div className="flex items-center justify-center h-screen bg-rose-950 text-center p-4">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Доступ запрещен</h2>
-          <p className="text-white">Дневник можно открыть только через нашего Telegram-бота.</p>
+          <h2 className="text-2xl font-bold text-white mb-2">Р”РѕСЃС‚СѓРї Р·Р°РїСЂРµС‰РµРЅ</h2>
+          <p className="text-white">Р”РЅРµРІРЅРёРє РјРѕР¶РЅРѕ РѕС‚РєСЂС‹С‚СЊ С‚РѕР»СЊРєРѕ С‡РµСЂРµР· РЅР°С€РµРіРѕ Telegram-Р±РѕС‚Р°.</p>
         </div>
       </div>
     );
@@ -29,13 +29,13 @@ export default function App() {
   return (
     <div className="flex flex-col h-full font-sans bg-rose-950">
       <main className={`flex-1 overflow-y-auto p-4 ${isNavHidden ? '' : 'pb-24'}`}>
-        {/* Передаем функцию скрытия меню в CalendarTab */}
+        {/* РџРµСЂРµРґР°РµРј С„СѓРЅРєС†РёСЋ СЃРєСЂС‹С‚РёСЏ РјРµРЅСЋ РІ CalendarTab */}
         {activeTab === 'diary' && <CalendarTab onSheetOpen={setIsNavHidden} />}
         {activeTab === 'reports' && <ReportsTab />}
         {activeTab === 'profile' && <ProfileTab />}
       </main>
 
-      {/* Отрисовываем меню только если isNavHidden === false */}
+      {/* РћС‚СЂРёСЃРѕРІС‹РІР°РµРј РјРµРЅСЋ С‚РѕР»СЊРєРѕ РµСЃР»Рё isNavHidden === false */}
       {!isNavHidden && (
         <nav className="fixed bottom-0 left-0 w-full bg-rose-900 flex justify-between p-2 pb-safe z-50">
           <button
@@ -45,7 +45,7 @@ export default function App() {
             }`}
           >
             <CalendarIcon size={24} />
-            <span className="text-xs mt-1">Дневник</span>
+            <span className="text-xs mt-1">Р”РЅРµРІРЅРёРє</span>
           </button>
           <button
             onClick={() => setActiveTab('reports')}
@@ -54,7 +54,7 @@ export default function App() {
             }`}
           >
             <Brain size={24} />
-            <span className="text-xs mt-1">Поведенческий код</span>
+            <span className="text-xs mt-1">РџРѕРІРµРґРµРЅС‡РµСЃРєРёР№ РєРѕРґ</span>
           </button>
           <button
             onClick={() => setActiveTab('profile')}
@@ -63,7 +63,7 @@ export default function App() {
             }`}
           >
             <User size={24} />
-            <span className="text-xs mt-1">Профиль</span>
+            <span className="text-xs mt-1">РџСЂРѕС„РёР»СЊ</span>
           </button>
         </nav>
       )}
