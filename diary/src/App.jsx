@@ -19,8 +19,8 @@ export default function App() {
     return (
       <div className="flex items-center justify-center h-screen bg-rose-950 text-center p-4">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Доступ запрещен</h2>
-          <p className="text-white">Дневник можно открыть только через нашего Telegram-бота.</p>
+          <h2 className="text-2xl font-bold text-[#F5E6D3] mb-2">Доступ запрещен</h2>
+          <p className="text-[#F5E6D3]">Дневник можно открыть только через нашего Telegram-бота.</p>
         </div>
       </div>
     );
@@ -41,7 +41,7 @@ export default function App() {
           <button
             onClick={() => setActiveTab('diary')}
             className={`flex-1 flex flex-col items-center justify-center py-2 transition-colors ${
-              activeTab === 'diary' ? 'text-white' : 'text-white hover:text-white'
+              activeTab === 'diary' ? 'text-[#F5E6D3]' : 'text-[#F5E6D3] hover:text-[#F5E6D3]'
             }`}
           >
             <CalendarIcon size={24} />
@@ -50,7 +50,7 @@ export default function App() {
           <button
             onClick={() => setActiveTab('reports')}
             className={`flex-1 flex flex-col items-center justify-center py-2 transition-colors ${
-              activeTab === 'reports' ? 'text-white' : 'text-white hover:text-white'
+              activeTab === 'reports' ? 'text-[#F5E6D3]' : 'text-[#F5E6D3] hover:text-[#F5E6D3]'
             }`}
           >
             <Brain size={24} />
@@ -59,7 +59,7 @@ export default function App() {
           <button
             onClick={() => setActiveTab('profile')}
             className={`flex-1 flex flex-col items-center justify-center py-2 transition-colors ${
-              activeTab === 'profile' ? 'text-white' : 'text-white hover:text-white'
+              activeTab === 'profile' ? 'text-[#F5E6D3]' : 'text-[#F5E6D3] hover:text-[#F5E6D3]'
             }`}
           >
             <User size={24} />
