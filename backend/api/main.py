@@ -799,3 +799,23 @@ async def get_admin_stats(
             f.write(traceback.format_exc())
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/admin/tests/{test_id}")
+async def delete_admin_test(
+    test_id: int,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from fastapi import HTTPException
+    username = user_data.get("username", "")
+    if username not in ['ingenfrid', 'key_crp', 'fondlife']:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    test = await session.get(Test, test_id)
+    if not test:
+        raise HTTPException(status_code=404, detail="Test not found")
+        
+    await session.delete(test)
+    await session.commit()
+    return {"status": "success"}
+
