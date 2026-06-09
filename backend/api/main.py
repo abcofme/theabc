@@ -815,6 +815,11 @@ async def delete_admin_test(
     if not test:
         raise HTTPException(status_code=404, detail="Test not found")
         
+    from sqlalchemy import delete
+    from backend.database.models import Progress, Result
+    await session.execute(delete(Progress).where(Progress.test_id == test_id))
+    await session.execute(delete(Result).where(Result.test_id == test_id))
+        
     await session.delete(test)
     await session.commit()
     return {"status": "success"}
