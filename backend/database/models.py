@@ -26,6 +26,7 @@ class User(BaseModel):
     tg_first_name: Mapped[str] = mapped_column(String(64), nullable=True)
     tg_last_name: Mapped[str] = mapped_column(String(64), nullable=True)
     username: Mapped[str] = mapped_column(String(32), nullable=True)
+    photo_url: Mapped[str] = mapped_column(Text(), nullable=True)
     registration_date: Mapped[date] = mapped_column(Date(), nullable=True)
     invited_id: Mapped[str] = mapped_column(String(64), nullable=True)
     discount_pct: Mapped[int] = mapped_column(Integer(), nullable=True, default=0)
@@ -236,3 +237,13 @@ class BehavioralReport(BaseModel):
     period_start: Mapped[date] = mapped_column(Date(), nullable=True)
     period_end: Mapped[date] = mapped_column(Date(), nullable=True)
     content: Mapped[str] = mapped_column(Text(), nullable=False)
+
+class Friendship(BaseModel):
+    __tablename__ = "friendships"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    friend_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    status: Mapped[str] = mapped_column(String(20), default="pending")  # 'pending', 'accepted'
+    
+    # We won't add bidirectional relationships to User for now to keep it simple, 
+    # we can query Friendship directly.

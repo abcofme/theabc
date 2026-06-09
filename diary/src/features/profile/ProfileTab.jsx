@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X, ChevronLeft, Lock, Wand2, Trash2, Brain, Activity, Star, ShieldAlert, Sparkles, Target, Heart, Flame, ClipboardList } from 'lucide-react';
+import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X, ChevronLeft, Lock, Wand2, Trash2, Brain, Activity, Star, ShieldAlert, Sparkles, Target, Heart, Flame, ClipboardList, Users } from 'lucide-react';
 import AdminPanel from '../admin/AdminPanel';
+import FriendsView from './FriendsView';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://friendly-various-near-across.trycloudflare.com";
@@ -292,6 +293,17 @@ export default function ProfileTab() {
                   </div>
                   <ClipboardList className="text-green-500" size={24} />
                 </button>
+                <button 
+                  onClick={() => setActiveSubTab('friends')}
+                  className="w-full bg-gradient-to-r from-blue-900/60 to-blue-800/30 rounded-2xl p-4 text-left hover:bg-blue-800/50 transition-all duration-700 active:scale-[0.98] flex items-center justify-between mt-3"
+                >
+                  <div>
+                    <h3 className="text-lg font-bold text-blue-400 mb-1">Друзья</h3>
+                    <p className="text-sm text-blue-200">Узнайте совместимость с вашим другом или партнером!</p>
+                  </div>
+                  <Users className="text-blue-400" size={24} />
+                </button>
+
               </>
             )}
           </div>
@@ -470,6 +482,10 @@ export default function ProfileTab() {
           </div>
         </div>
       )}
-    </div>
+    
+      {activeSubTab === 'friends' && (
+        <FriendsView onBack={() => setActiveSubTab('tests')} />
+      )}
+</div>
   );
 }
