@@ -15,22 +15,22 @@ branch_labels = None
 depends_on = None
 
 def upgrade() -> None:
-    # Add photo_url to users
-    op.add_column('users', sa.Column('photo_url', sa.Text(), nullable=True))
+    # Add photo_url to users safely
+    op.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_url TEXT')
     
-    # Create friendships table
-    op.create_table('friendships',
-        sa.Column('id', sa.BigInteger(), autoincrement=True, nullable=False),
-        sa.Column('user_id', sa.BigInteger(), nullable=False),
-        sa.Column('friend_id', sa.BigInteger(), nullable=False),
-        sa.Column('status', sa.String(length=20), nullable=False, server_default='pending'),
-        sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-        sa.ForeignKeyConstraint(['friend_id'], ['users.id'], ondelete='CASCADE'),
-        sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
-        sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('id')
-    )
+    # Create friendships table safely
+    op.execute('''
+        CREATE TABLE IF NOT EXISTS friendships (
+            id BIGSERIAL PRIMARY KEY,
+            user_id BIGINT NOT NULL,
+            friend_id BIGINT NOT NULL,
+            status VARCHAR(20) NOT NULL DEFAULT 'pending',
+            created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+            updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+            CONSTRAINT fk_friendships_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            CONSTRAINT fk_friendships_friend_id FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    ''')
 
 def downgrade() -> None:
     op.drop_table('friendships')
