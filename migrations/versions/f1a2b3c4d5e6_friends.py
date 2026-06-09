@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'f1a2b3c4d5e6'
-down_revision = '0af81bff4115'  # Replace with the actual last revision if needed, but I saw 0af81bff4115_payment_fix.py
+down_revision = ('0af81bff4115', '42a613ed7f5e')
 branch_labels = None
 depends_on = None
 
