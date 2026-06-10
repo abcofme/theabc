@@ -277,7 +277,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
         </div>
       </div>
 
-      <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-[calc(100vw-3rem)] sm:max-w-2xl mx-auto z-50">
+      <div className="mt-8 pt-4 border-t border-rose-800/50">
         <button 
           onClick={handleSave} 
           disabled={saving}
