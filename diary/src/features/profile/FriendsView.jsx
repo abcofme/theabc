@@ -153,7 +153,7 @@ export default function FriendsView({ onBack }) {
   );
 
   return (
-    <div className="px-4 sm:px-6 pt-6 pb-20 animate-in fade-in slide-in-from-right-8 duration-500 min-h-full flex flex-col">
+    <div className="px-4 sm:px-6 pt-6 pb-20 animate-in fade-in slide-in-from-right-8 duration-300 min-h-full flex flex-col">
       <div className="flex items-center mb-6">
         <button 
           onClick={onBack}

@@ -112,7 +112,7 @@ export default function ReportsTab() {
 
   if (viewReport) {
     return (
-      <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-right-8 duration-500 max-w-2xl mx-auto w-full pt-4 px-2 pb-safe">
+      <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-right-8 duration-300 max-w-2xl mx-auto w-full pt-4 px-2 pb-safe">
         <button 
           onClick={() => setViewReport(null)}
           className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-6 transition-colors self-start"
@@ -137,7 +137,7 @@ export default function ReportsTab() {
   if (activeForm) {
     const rType = reportTypes.find(r => r.id === activeForm);
     return (
-      <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-right-8 duration-500 max-w-2xl mx-auto w-full pt-4 px-2">
+      <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-right-8 duration-300 max-w-2xl mx-auto w-full pt-4 px-2">
         <button 
           onClick={() => setActiveForm(null)}
           className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-6 transition-colors self-start"
@@ -175,7 +175,7 @@ export default function ReportsTab() {
           </div>
           
           {selectedPeriod === 'custom' && (
-            <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-2">
+            <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
               <div>
                 <label className="text-xs text-[#F5E6D3] uppercase tracking-wider mb-1 block">От:</label>
                 <input 
@@ -214,7 +214,7 @@ export default function ReportsTab() {
   }
 
   return (
-    <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-2xl mx-auto w-full pt-4 pb-20 overflow-y-scroll">
+    <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-2xl mx-auto w-full pt-4 pb-20 overflow-y-scroll">
       <div className="flex justify-center mb-2">
         <img src={bookIcon} alt="Поведенческий код" className="w-24 h-24 object-contain" />
       </div>
@@ -257,7 +257,7 @@ export default function ReportsTab() {
                 </button>
                 
                 {isOpen && (
-                  <div className="p-5 bg-rose-950/50 flex flex-col gap-3 animate-in fade-in slide-in-from-top-2">
+                  <div className="p-5 bg-rose-950/50 flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
                     <button 
                       onClick={() => setActiveForm(rtype.id)}
                       className="w-full py-3 bg-rose-800 hover:bg-rose-700 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"

@@ -308,7 +308,7 @@ export default function CalendarTab({ onSheetOpen }) {
           <span className="capitalize">
             {format(currentMonth, 'LLLL yyyy', { locale: ru })}
           </span>
-          <ChevronDown size={20} className={`transition-transform duration-700 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown size={20} className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
         </button>
 
         {/* Измененное название дневника */}
@@ -317,7 +317,7 @@ export default function CalendarTab({ onSheetOpen }) {
         </div>
 
         {isDropdownOpen && (
-          <div className="absolute top-14 left-0 z-40 w-80 bg-rose-900 rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-700">
+          <div className="absolute top-14 left-0 z-40 w-80 bg-rose-900 rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-300">
             <div className="text-xs font-semibold text-[#F5E6D3] uppercase tracking-wider mb-2">Выберите месяц</div>
             <div className="grid grid-cols-3 gap-1.5 mb-4">
               {monthsRu.map((m, idx) => (
@@ -401,7 +401,7 @@ export default function CalendarTab({ onSheetOpen }) {
 
       {/* ПОЛНОЭКРАННОЕ ОКНО С ЗАПИСЯМИ */}
       {isSheetOpen && (
-        <div className="fixed inset-0 z-50 bg-rose-950 flex flex-col animate-in slide-in-from-bottom-8 duration-700">
+        <div className="fixed inset-0 z-50 bg-rose-950 flex flex-col animate-in slide-in-from-bottom-8 duration-300">
           <div className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-6 flex flex-col overflow-y-auto">
             <div className="flex justify-between items-start mb-8 pt-4">
               <div>

@@ -246,7 +246,7 @@ export default function ProfileTab() {
                   handleGeneratePortrait();
                 }}
                 disabled={isGeneratingPortrait}
-                className={`w-full rounded-2xl p-4 text-left transition-all duration-700 flex items-center justify-between ${
+                className={`w-full rounded-2xl p-4 text-left transition-all duration-300 flex items-center justify-between ${
                   (totalTests > 0 && passedTests === totalTests) 
                     ? "bg-green-600 hover:bg-green-500 text-white active:scale-[0.98]" 
                     : "bg-rose-900/10 text-rose-900 opacity-90"
@@ -270,7 +270,7 @@ export default function ProfileTab() {
                   <button 
                     onClick={handleGeneratePortrait}
                     disabled={isGeneratingPortrait}
-                    className="w-full bg-rose-900/10 rounded-2xl p-4 text-left hover:bg-rose-900/20 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
+                    className="w-full bg-rose-900/10 rounded-2xl p-4 text-left hover:bg-rose-900/20 transition-all duration-300 active:scale-[0.98] flex items-center justify-between"
                   >
                     <div>
                       <h3 className="text-base sm:text-lg font-bold text-rose-900 mb-1">Сформировать заново</h3>
@@ -285,7 +285,7 @@ export default function ProfileTab() {
                 )}
                 <button 
                   onClick={() => setActiveSubTab('portrait')}
-                  className="w-full bg-[#F5E6D3] border border-rose-900/20 rounded-2xl p-4 text-left hover:bg-[#EAE0D5] transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
+                  className="w-full bg-[#F5E6D3] border border-rose-900/20 rounded-2xl p-4 text-left hover:bg-[#EAE0D5] transition-all duration-300 active:scale-[0.98] flex items-center justify-between"
                 >
                   <div>
                     <h3 className="text-lg font-bold text-rose-900 mb-1">Мой портрет</h3>
@@ -295,7 +295,7 @@ export default function ProfileTab() {
                 </button>
                 <button 
                   onClick={() => setActiveSubTab('friends')}
-                  className="w-full bg-[#F5E6D3] rounded-2xl p-4 text-left hover:bg-[#EAE0D5] transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
+                  className="w-full bg-[#F5E6D3] rounded-2xl p-4 text-left hover:bg-[#EAE0D5] transition-all duration-300 active:scale-[0.98] flex items-center justify-between"
                 >
                   <div>
                     <h3 className="text-lg font-bold text-rose-900 mb-1">Друзья</h3>
@@ -309,7 +309,7 @@ export default function ProfileTab() {
           </div>
 
           {/* 3. КОНТЕНТ ВКЛАДОК (теперь только результаты) */}
-        <div className="px-2 pb-6 space-y-3 animate-in fade-in duration-700 flex flex-col">
+        <div className="px-2 pb-6 space-y-3 animate-in fade-in duration-300 flex flex-col">
           {loading ? (
             <div className="flex justify-center items-center py-12 flex-1">
               <div className="animate-spin rounded-full h-10 w-10"></div>
@@ -322,7 +322,7 @@ export default function ProfileTab() {
             <>
               <h2 className="text-xl font-bold text-[#F5E6D3] px-2 mt-2 mb-2">Результаты тестов</h2>
               {categories.map(cat => (
-              <div key={cat.id} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-700">
+              <div key={cat.id} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
                 {/* Кнопка категории (Аккордеон) */}
                 <button
                   onClick={() => toggleCategory(cat.id)}
@@ -340,7 +340,7 @@ export default function ProfileTab() {
 
                 {/* Содержимое категории (Список тестов) */}
                 {openCategory === cat.id && (
-                  <div className="bg-rose-950/40 px-4 py-2">
+                  <div className="bg-rose-950/40 px-4 py-2 animate-in fade-in slide-in-from-top-2 duration-300">
                     {cat.tests.length === 0 ? (
                       <div className="text-[#F5E6D3] text-sm py-3 italic">В этой категории пока нет тестов.</div>
                     ) : (
@@ -378,7 +378,7 @@ export default function ProfileTab() {
       )}
 
       {activeSubTab === 'portrait' && (
-        <div className="px-4 sm:px-6 pt-6 animate-in fade-in slide-in-from-right-8 duration-500 flex flex-col">
+        <div className="px-4 sm:px-6 pt-6 animate-in fade-in slide-in-from-right-8 duration-300 flex flex-col">
           <button 
             onClick={() => setActiveSubTab('tests')}
             className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-6 transition-colors self-start"
@@ -433,14 +433,22 @@ export default function ProfileTab() {
                 </div>
               )}
 
-              {totalTests > 0 && passedTests === totalTests && !portraitData && (
-                <div className="mt-auto">
-                  <button onClick={handleGeneratePortrait} className="w-full flex items-center justify-center gap-2 bg-green-800 hover:bg-green-700 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] shadow-lg shadow-green-900/40">
-                    <ClipboardList size={18} /> Мой портрет личности
-                  </button>
-                </div>
+                {totalTests > 0 && passedTests === totalTests && !portraitData && (
+                  <div className="mt-auto">
+                    <button onClick={handleGeneratePortrait} className="w-full flex items-center justify-center gap-2 bg-green-800 hover:bg-green-700 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] shadow-lg shadow-green-900/40">
+                      <ClipboardList size={18} /> Мой портрет личности
+                    </button>
+                  </div>
+                )}
+  
+              {portraitData && (
+                <button 
+                  onClick={handleClearPortrait}
+                  className="mt-4 flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-red-900/10 text-[#F5E6D3] hover:bg-red-900/30 transition-colors font-medium text-sm active:scale-[0.98]"
+                >
+                  <Trash2 size={18} /> Удалить портрет
+                </button>
               )}
-
               
             </div>
           )}
@@ -449,10 +457,10 @@ export default function ProfileTab() {
 
       {/* 4. ВСПЛЫВАЮЩЕЕ ОКНО С РЕЗУЛЬТАТОМ ТЕСТА */}
       {selectedResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-rose-950/80 backdrop-blur-sm animate-in fade-in duration-700">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-rose-950/80 backdrop-blur-sm animate-in fade-in duration-300">
           {/* Область клика вокруг окна для закрытия */}
           <div className="absolute inset-0" onClick={() => setSelectedResult(null)}></div>
-          <div className="relative bg-rose-900 rounded-[2rem] w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-700">
+          <div className="relative bg-rose-900 rounded-[2rem] w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-300">
             {/* Заголовок модального окна */}
             <div className="p-5 sm:p-6 flex justify-between items-start">
               <div className="pr-4">

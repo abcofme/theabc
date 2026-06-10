@@ -81,7 +81,7 @@ export default function AdminPanel({ onBack }) {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 pb-6 animate-in fade-in slide-in-from-right-8 duration-500 flex flex-col w-full">
+    <div className="flex-1 overflow-y-auto px-4 pb-6 animate-in fade-in slide-in-from-right-8 duration-300 flex flex-col w-full">
       <button 
         onClick={onBack}
         className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-6 transition-colors self-start"
@@ -173,7 +173,7 @@ export default function AdminPanel({ onBack }) {
 
           <h3 className="text-xl font-bold text-[#F5E6D3] mt-4 mb-2">Статистика по тестам</h3>
           {(stats.tests || []).map(cat => (
-            <div key={cat.id} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-700">
+            <div key={cat.id} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
               <button
                 onClick={() => toggleCategory(cat.id)}
                 className="w-full flex items-center justify-between p-4 hover:bg-rose-800/70 transition-colors active:bg-rose-800"
@@ -189,7 +189,7 @@ export default function AdminPanel({ onBack }) {
               </button>
 
               {openCategory === cat.id && (
-                <div className="bg-rose-950/40 px-4 py-2">
+                <div className="bg-rose-950/40 px-4 py-2 animate-in fade-in slide-in-from-top-2 duration-300">
                   {cat.tests.length === 0 ? (
                     <div className="text-[#F5E6D3] text-sm py-3 italic">В этой категории пока нет тестов.</div>
                   ) : (
@@ -212,7 +212,7 @@ export default function AdminPanel({ onBack }) {
           <div className="bg-rose-900/40 p-4 rounded-3xl border border-red-900/30">
             <p className="text-red-300 text-sm mb-4 font-medium px-2">ВНИМАНИЕ: Удаление теста необратимо. Будут удалены все прогрессы и результаты пользователей по этому тесту.</p>
             {(stats.tests || []).map(cat => (
-              <div key={`del-cat-${cat.id}`} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-700 mb-3 last:mb-0">
+              <div key={`del-cat-${cat.id}`} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300 mb-3 last:mb-0">
                 <button
                   onClick={() => setOpenDeleteCategory(openDeleteCategory === cat.id ? null : cat.id)}
                   className="w-full flex items-center justify-between p-4 hover:bg-rose-800/70 transition-colors active:bg-rose-800"
@@ -228,7 +228,7 @@ export default function AdminPanel({ onBack }) {
                 </button>
 
                 {openDeleteCategory === cat.id && (
-                  <div className="bg-rose-950/40 px-4 py-2">
+                  <div className="bg-rose-950/40 px-4 py-2 animate-in fade-in slide-in-from-top-2 duration-300">
                     {cat.tests.length === 0 ? (
                       <div className="text-[#F5E6D3] text-sm py-3 italic">В этой категории нет тестов.</div>
                     ) : (
