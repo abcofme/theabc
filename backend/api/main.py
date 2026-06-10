@@ -816,7 +816,7 @@ async def submit_test(
         )
         session.add(progress)
     else:
-        points = sum(a.value for a in answers)
+        points = sum((a.value or 0) for a in answers)
         result_query = select(Result).where(
             Result.test_id == test_id,
             Result.range_from <= points,
@@ -830,7 +830,7 @@ async def submit_test(
             value=points
         )
         session.add(progress)
-        result_text = result_obj.name.capitalize() if result_obj and result_obj.name else "Результат не найден"
+        result_text = result_obj.name if result_obj and result_obj.name else "Результат не найден"
         
     await session.commit()
     return {"result": result_text}
