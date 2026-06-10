@@ -17,6 +17,7 @@ export default function TestsTab() {
   const [testDetails, setTestDetails] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState([]); // array of answer_ids
+  const [isStarted, setIsStarted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [testResult, setTestResult] = useState(null);
 
@@ -58,6 +59,7 @@ export default function TestsTab() {
     setCurrentQuestionIndex(0);
     setSelectedAnswers([]);
     setTestResult(null);
+    setIsStarted(false);
     WebApp.HapticFeedback.impactOccurred('light');
     
     try {
@@ -118,6 +120,28 @@ export default function TestsTab() {
     setTakingTestId(null);
     setTestDetails(null);
     setTestResult(null);
+    setIsStarted(false);
+  };
+
+  const handleRetake = async () => {
+    try {
+      const resId = selectedResult.id;
+      const response = await fetch(`${API_URL}/api/tests/${resId}/progress`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${WebApp.initData}` }
+      });
+      if (response.ok) {
+        const testToRetake = { ...selectedResult, passed: false };
+        setSelectedResult(null);
+        fetchCategories();
+        openTest(testToRetake);
+      } else {
+        WebApp.showAlert("Ошибка при сбросе теста");
+      }
+    } catch (err) {
+      console.error(err);
+      WebApp.showAlert("Ошибка сети при сбросе теста");
+    }
   };
 
   return (
@@ -210,9 +234,12 @@ export default function TestsTab() {
                 {selectedResult.result_text || 'Нет детального описания результата.'}
               </div>
             </div>
-            <div className="p-4 sm:p-5 bg-rose-950/50 rounded-b-[2rem]">
-              <button onClick={() => setSelectedResult(null)} className="w-full bg-blue-600 hover:bg-blue-500 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all active:bg-blue-700 shadow-lg shadow-blue-900/20">
-                Отлично
+            <div className="p-4 sm:p-5 bg-rose-950/50 rounded-b-[2rem] flex flex-col gap-3">
+              <button onClick={() => setSelectedResult(null)} className="w-full bg-rose-800 hover:bg-rose-700 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all">
+                Закрыть
+              </button>
+              <button onClick={handleRetake} className="w-full bg-emerald-600 hover:bg-emerald-500 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all active:bg-emerald-700 shadow-lg shadow-emerald-900/20">
+                Пройти тест заново
               </button>
             </div>
           </div>

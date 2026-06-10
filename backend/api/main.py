@@ -925,6 +925,161 @@ async def get_admin_stats(
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail=str(e))
 
+from typing import Optional
+
+class AnswerCreate(BaseModel):
+    name: str
+    value: int
+
+class QuestionCreate(BaseModel):
+    name: str
+    answers: List[AnswerCreate]
+
+class ResultCreate(BaseModel):
+    name: str
+    range_from: int
+    range_to: Optional[int] = None
+
+class TestCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    category_id: int
+    questions: List[QuestionCreate]
+    results: List[ResultCreate]
+
+@app.get("/api/admin/tests/{test_id}")
+async def get_admin_test_details(
+    test_id: int,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from fastapi import HTTPException
+    username = user_data.get("username", "")
+    if username not in ['ingenfrid', 'key_crp', 'fondlife']:
+        raise HTTPException(status_code=403, detail="Access denied")
+        
+    query = select(Test).options(
+        selectinload(Test.questions).selectinload(Question.answers),
+        selectinload(Test.results)
+    ).where(Test.id == test_id)
+    test = (await session.execute(query)).scalar_one_or_none()
+    
+    if not test:
+        raise HTTPException(status_code=404, detail="Тест не найден")
+        
+    return {
+        "id": test.id,
+        "name": test.name,
+        "description": test.description,
+        "category_id": test.category_id,
+        "results": [
+            {
+                "id": r.id,
+                "name": r.name,
+                "range_from": r.range_from,
+                "range_to": r.range_to
+            } for r in test.results
+        ],
+        "questions": [
+            {
+                "id": q.id,
+                "name": q.name,
+                "answers": [
+                    {
+                        "id": a.id,
+                        "name": a.name,
+                        "value": a.value
+                    } for a in q.answers
+                ]
+            } for q in test.questions
+        ]
+    }
+
+@app.post("/api/admin/tests")
+async def create_admin_test(
+    payload: TestCreate,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from fastapi import HTTPException
+    username = user_data.get("username", "")
+    if username not in ['ingenfrid', 'key_crp', 'fondlife']:
+        raise HTTPException(status_code=403, detail="Access denied")
+        
+    new_test = Test(
+        name=payload.name,
+        description=payload.description,
+        category_id=payload.category_id,
+        free=True,
+    )
+    session.add(new_test)
+    await session.flush()
+    
+    for r in payload.results:
+        session.add(Result(test_id=new_test.id, name=r.name, range_from=r.range_from, range_to=r.range_to))
+        
+    for q in payload.questions:
+        new_q = Question(test_id=new_test.id, name=q.name)
+        session.add(new_q)
+        await session.flush()
+        for a in q.answers:
+            session.add(Answer(question_id=new_q.id, name=a.name, value=a.value))
+            
+    await session.commit()
+    return {"status": "ok", "test_id": new_test.id}
+
+@app.put("/api/admin/tests/{test_id}")
+async def update_admin_test(
+    test_id: int,
+    payload: TestCreate,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from fastapi import HTTPException
+    username = user_data.get("username", "")
+    if username not in ['ingenfrid', 'key_crp', 'fondlife']:
+        raise HTTPException(status_code=403, detail="Access denied")
+        
+    query = select(Test).where(Test.id == test_id)
+    test = (await session.execute(query)).scalar_one_or_none()
+    
+    if not test:
+        raise HTTPException(status_code=404, detail="Тест не найден")
+        
+    test.name = payload.name
+    test.description = payload.description
+    test.category_id = payload.category_id
+    
+    from sqlalchemy import delete
+    await session.execute(delete(Question).where(Question.test_id == test_id))
+    await session.execute(delete(Result).where(Result.test_id == test_id))
+    await session.flush()
+    
+    for r in payload.results:
+        session.add(Result(test_id=test_id, name=r.name, range_from=r.range_from, range_to=r.range_to))
+        
+    for q in payload.questions:
+        new_q = Question(test_id=test_id, name=q.name)
+        session.add(new_q)
+        await session.flush()
+        for a in q.answers:
+            session.add(Answer(question_id=new_q.id, name=a.name, value=a.value))
+            
+    await session.commit()
+    return {"status": "ok"}
+
+@app.delete("/api/tests/{test_id}/progress")
+async def delete_test_progress(
+    test_id: int,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    user_id = user_data.get("id")
+    from sqlalchemy import delete
+    await session.execute(delete(Progress).where(Progress.test_id == test_id, Progress.user_id == user_id))
+    await session.commit()
+    return {"status": "ok"}
+
 @app.delete("/api/admin/tests/{test_id}")
 async def delete_admin_test(
     test_id: int,

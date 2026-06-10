@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, CheckCircle, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, CheckCircle, Trash2, Edit, Plus } from 'lucide-react';
+import AdminTestEditor from './AdminTestEditor';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://friendly-various-near-across.trycloudflare.com";
@@ -13,6 +14,8 @@ export default function AdminPanel({ onBack }) {
   const [openCategory, setOpenCategory] = useState(null);
   const [openDeleteCategory, setOpenDeleteCategory] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [editingTestId, setEditingTestId] = useState(undefined); // null - create, number - edit, undefined - list
+
 
   useEffect(() => {
     fetchStats();
@@ -79,6 +82,16 @@ export default function AdminPanel({ onBack }) {
   const toggleCategory = (id) => {
     setOpenCategory(openCategory === id ? null : id);
   };
+
+  if (editingTestId !== undefined) {
+    return (
+      <AdminTestEditor 
+        testId={editingTestId} 
+        categories={stats?.tests ? stats.tests.map(c => ({ id: c.id, name: c.name })) : []} 
+        onClose={() => { setEditingTestId(undefined); fetchStats(); }} 
+      />
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto px-4 pb-6 animate-in fade-in slide-in-from-right-8 duration-300 flex flex-col w-full">
@@ -208,11 +221,18 @@ export default function AdminPanel({ onBack }) {
           ))}
 
 
-          <h3 className="text-xl font-bold text-[#F5E6D3] mt-8 mb-2">Удаление тестов</h3>
-          <div className="bg-rose-900/40 p-4 rounded-3xl border border-red-900/30">
-            <p className="text-red-300 text-sm mb-4 font-medium px-2">ВНИМАНИЕ: Удаление теста необратимо. Будут удалены все прогрессы и результаты пользователей по этому тесту.</p>
+          <div className="flex items-center justify-between mt-8 mb-4">
+            <h3 className="text-xl font-bold text-[#F5E6D3]">Управление тестами</h3>
+            <button 
+              onClick={() => setEditingTestId(null)}
+              className="p-2 px-3 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 rounded-xl transition-colors flex items-center gap-1 text-sm font-bold"
+            >
+              <Plus size={16} /> Создать тест
+            </button>
+          </div>
+          <div className="bg-rose-900/40 p-4 rounded-3xl border border-rose-900/30">
             {(stats.tests || []).map(cat => (
-              <div key={`del-cat-${cat.id}`} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300 mb-3 last:mb-0">
+              <div key={`edit-cat-${cat.id}`} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300 mb-3 last:mb-0">
                 <button
                   onClick={() => setOpenDeleteCategory(openDeleteCategory === cat.id ? null : cat.id)}
                   className="w-full flex items-center justify-between p-4 hover:bg-rose-800/70 transition-colors active:bg-rose-800"
@@ -233,17 +253,25 @@ export default function AdminPanel({ onBack }) {
                       <div className="text-[#F5E6D3] text-sm py-3 italic">В этой категории нет тестов.</div>
                     ) : (
                       cat.tests.map(test => (
-                        <div key={`del-test-${test.id}`} className="flex items-center justify-between py-3.5 border-b border-rose-800/30 last:border-0">
-                          <button 
-                            onClick={() => handleDeleteTest(test.id, test.name)}
-                            disabled={isDeleting}
-                            className="p-2 mr-3 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-lg transition-colors disabled:opacity-50"
-                          >
-                            <Trash2 size={20} />
-                          </button>
+                        <div key={`edit-test-${test.id}`} className="flex items-center justify-between py-3.5 border-b border-rose-800/30 last:border-0">
                           <span className="text-sm sm:text-base font-medium pr-3 text-[#F5E6D3] flex-1">
                             {test.name}
                           </span>
+                          <div className="flex items-center gap-1">
+                            <button 
+                              onClick={() => setEditingTestId(test.id)}
+                              className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 rounded-lg transition-colors"
+                            >
+                              <Edit size={20} />
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteTest(test.id, test.name)}
+                              disabled={isDeleting}
+                              className="p-2 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-lg transition-colors disabled:opacity-50"
+                            >
+                              <Trash2 size={20} />
+                            </button>
+                          </div>
                         </div>
                       ))
                     )}
