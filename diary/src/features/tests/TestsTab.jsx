@@ -173,9 +173,9 @@ export default function TestsTab({ onOverlayOpen }) {
             <div key={cat.id} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
               <button
                 onClick={() => toggleCategory(cat.id)}
-                className={`w-full relative flex items-center p-6 min-h-[120px] hover:bg-rose-800/70 transition-colors active:bg-rose-800 overflow-hidden isolate ${openCategory === cat.id ? 'rounded-t-2xl' : 'rounded-2xl'} justify-end`}
+                className={`w-full relative flex items-center p-6 min-h-[120px] hover:bg-rose-800/70 transition-colors active:bg-rose-800 overflow-hidden isolate ${openCategory === cat.id ? 'rounded-t-2xl' : 'rounded-2xl'} justify-between`}
               >
-                <div className="flex items-center gap-4 z-10 relative text-right">
+                <div className="flex items-center justify-between gap-4 z-10 relative text-left w-full">
                   <span className="font-semibold text-[#F5E6D3] text-xl sm:text-2xl leading-tight">
                     {cat.name}
                   </span>
