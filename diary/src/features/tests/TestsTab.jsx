@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, CheckCircle, XCircle, X, Brain, ClipboardList } from 'lucide-react';
+import oakTreeImg from '../../assets/oak-tree.png';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://friendly-various-near-across.trycloudflare.com";
@@ -166,15 +167,17 @@ export default function TestsTab() {
             <div key={cat.id} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
               <button
                 onClick={() => toggleCategory(cat.id)}
-                className="w-full flex items-center justify-between p-4 hover:bg-rose-800/70 transition-colors active:bg-rose-800"
+                className="w-full flex items-center justify-between p-6 min-h-[120px] hover:bg-rose-800/70 transition-colors active:bg-rose-800"
               >
-                <span className="font-semibold text-[#F5E6D3] text-left text-base sm:text-lg pr-4 leading-tight">
+                <span className="font-semibold text-[#F5E6D3] text-left text-xl sm:text-2xl pr-4 leading-tight">
                   {cat.name}
                 </span>
-                {openCategory === cat.id ? (
-                  <ChevronUp size={22} className="text-[#F5E6D3] shrink-0" />
+                {cat.name.toLowerCase().includes('темперамент') ? (
+                  <img src={oakTreeImg} alt="Темперамент" className="w-20 h-20 object-contain shrink-0 drop-shadow-md" />
+                ) : openCategory === cat.id ? (
+                  <ChevronUp size={28} className="text-[#F5E6D3] shrink-0" />
                 ) : (
-                  <ChevronDown size={22} className="text-[#F5E6D3] shrink-0" />
+                  <ChevronDown size={28} className="text-[#F5E6D3] shrink-0" />
                 )}
               </button>
 
