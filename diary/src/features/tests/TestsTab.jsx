@@ -167,13 +167,13 @@ export default function TestsTab() {
             <div key={cat.id} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
               <button
                 onClick={() => toggleCategory(cat.id)}
-                className="w-full flex items-center justify-between p-6 min-h-[120px] hover:bg-rose-800/70 transition-colors active:bg-rose-800"
+                className="w-full relative flex items-center justify-between p-6 min-h-[120px] hover:bg-rose-800/70 transition-colors active:bg-rose-800 overflow-hidden"
               >
-                <span className="font-semibold text-[#F5E6D3] text-left text-xl sm:text-2xl pr-4 leading-tight">
+                <span className="font-semibold text-[#F5E6D3] text-left text-xl sm:text-2xl pr-20 leading-tight z-10 relative">
                   {cat.name}
                 </span>
                 {cat.name.toLowerCase().includes('темперамент') ? (
-                  <img src={oakTreeImg} alt="Темперамент" className="w-20 h-20 object-contain shrink-0 drop-shadow-md" />
+                  <img src={oakTreeImg} alt="Темперамент" className="absolute right-0 bottom-0 h-[115%] w-auto object-cover object-right-bottom drop-shadow-md pointer-events-none" />
                 ) : openCategory === cat.id ? (
                   <ChevronUp size={28} className="text-[#F5E6D3] shrink-0" />
                 ) : (
