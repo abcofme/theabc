@@ -294,19 +294,21 @@ export default function ProfileTab() {
                   </div>
                   <ClipboardList className="text-rose-900" size={24} />
                 </button>
-                <button 
-                  onClick={() => setActiveSubTab('friends')}
-                  className="w-full bg-[#F5E6D3] rounded-2xl p-4 text-left hover:bg-[#EAE0D5] transition-all duration-300 active:scale-[0.98] flex items-center justify-between"
-                >
-                  <div>
-                    <h3 className="text-lg font-bold text-rose-900 mb-1">Друзья</h3>
-                    <p className="text-sm text-rose-800">Узнайте совместимость с вашим другом или партнером!</p>
-                  </div>
-                  <Users className="text-rose-900" size={24} />
-                </button>
 
               </>
             )}
+
+            {/* ВНЕ ЗАВИСИМОСТИ ОТ ПОРТРЕТА */}
+            <button 
+              onClick={() => setActiveSubTab('friends')}
+              className="w-full bg-[#F5E6D3] rounded-2xl p-4 text-left hover:bg-[#EAE0D5] transition-all duration-300 active:scale-[0.98] flex items-center justify-between"
+            >
+              <div>
+                <h3 className="text-lg font-bold text-rose-900 mb-1">Друзья</h3>
+                <p className="text-sm text-rose-800">Узнайте совместимость с вашим другом или партнером!</p>
+              </div>
+              <Users className="text-rose-900" size={24} />
+            </button>
 
             {/* QR CODE BLOCK */}
             <div className="bg-rose-900/40 rounded-3xl p-6 mt-2 flex flex-col items-center justify-center text-center border border-rose-900/20">
