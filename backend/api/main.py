@@ -696,10 +696,11 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
             portrait = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
             if not portrait:
                 return
-                
+            portrait_text = portrait.technical_summary if portrait.technical_summary else portrait.content
+            
             prompt = f"""Ты — ИИ-психолог.
 Ниже представлен психологический портрет пользователя:
-{portrait.content}
+{portrait_text}
 
 Пользователь описал ситуацию:
 "{entry.event}"
@@ -708,7 +709,13 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
 "{entry.reaction}"
 
 Оцени от 0 до 100, насколько эта реакция соответствует описанному портрету личности (где 0 - совершенно нетипично, 100 - полностью соответствует портрету).
-Выведи ТОЛЬКО одно целое число от 0 до 100, без дополнительных символов, текста или форматирования."""
+Также напиши короткое объяснение (до 3 предложений), почему ты поставил такую оценку.
+
+Верни ответ СТРОГО в формате JSON:
+{{
+  "score": <число от 0 до 100>,
+  "explanation": "<твое объяснение до 3 предложений>"
+}}"""
 
             async with httpx.AsyncClient(timeout=30.0) as client:
                 ai_response = await client.post(
@@ -721,7 +728,8 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                         "model": "deepseek-chat",
                         "messages": [
                             {"role": "user", "content": prompt}
-                        ]
+                        ],
+                        "response_format": {"type": "json_object"}
                     }
                 )
                 
@@ -736,7 +744,8 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                             "model": "gpt-3.5-turbo",
                             "messages": [
                                 {"role": "user", "content": prompt}
-                            ]
+                            ],
+                            "response_format": {"type": "json_object"}
                         }
                     )
                     
@@ -744,16 +753,26 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                 ai_data = ai_response.json()
                 generated_text = ai_data["choices"][0]["message"]["content"].strip()
                 
-                numbers = re.findall(r'\d+', generated_text)
-                if numbers:
-                    score = int(numbers[0])
-                    score = max(0, min(100, score))
-                else:
-                    score = 50
+                import json
+                try:
+                    clean_text = generated_text.replace('```json', '').replace('```', '').strip()
+                    parsed = json.loads(clean_text)
+                    score = int(parsed.get("score", 50))
+                    explanation = parsed.get("explanation", "")
+                except Exception:
+                    numbers = re.findall(r'\d+', generated_text)
+                    if numbers:
+                        score = int(numbers[0])
+                    else:
+                        score = 50
+                    explanation = generated_text
+                    
+                score = max(0, min(100, score))
                     
                 entry.portrait_match_score = score
+                entry.portrait_match_explanation = explanation
                 await db.commit()
-                return score
+                return {"score": score, "explanation": explanation}
                 
     except Exception as e:
         print("BG analyze reaction failed:", e)
