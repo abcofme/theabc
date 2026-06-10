@@ -156,21 +156,21 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
           </select>
         </div>
         <div>
-          <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Название теста:</label>
+          <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Название:</label>
           <input 
             type="text" 
             value={name} 
             onChange={(e) => setName(e.target.value)}
-            placeholder="Введите название..."
+            placeholder="Название"
             className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none placeholder:text-[#F5E6D3]/30"
           />
         </div>
         <div>
-          <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Описание (перед началом):</label>
+          <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Описание теста:</label>
           <textarea 
             value={description} 
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="О чем этот тест..."
+            placeholder="Описание"
             className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none placeholder:text-[#F5E6D3]/30 min-h-[80px]"
           />
         </div>
@@ -179,14 +179,11 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
       {/* Results / Interpretations */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xl font-bold text-[#F5E6D3]">Интерпретации (Результаты)</h3>
-          <button onClick={addResult} className="p-2 bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 rounded-xl transition-colors flex items-center gap-1">
-            <Plus size={18} /> Добавить
-          </button>
+          <h3 className="text-xl font-bold text-[#F5E6D3]">Результаты</h3>
         </div>
         
         <div className="space-y-4">
-          {results.length === 0 && <p className="text-[#F5E6D3]/60 text-sm">Добавьте хотя бы один результат.</p>}
+          {results.length === 0 && <p className="text-[#F5E6D3]/60 text-sm">Нет результатов</p>}
           {results.map((r, idx) => (
             <div key={idx} className="bg-rose-900 p-4 rounded-2xl relative">
               <button onClick={() => removeResult(idx)} className="absolute top-4 right-4 text-red-400 p-1 hover:bg-red-400/10 rounded-lg">
@@ -219,6 +216,9 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
               </div>
             </div>
           ))}
+          <button onClick={addResult} className="w-full mt-2 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
+            <Plus size={18} /> Результат
+          </button>
         </div>
       </div>
 
@@ -226,13 +226,10 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xl font-bold text-[#F5E6D3]">Вопросы</h3>
-          <button onClick={addQuestion} className="p-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 rounded-xl transition-colors flex items-center gap-1">
-            <Plus size={18} /> Вопрос
-          </button>
         </div>
         
         <div className="space-y-6">
-          {questions.length === 0 && <p className="text-[#F5E6D3]/60 text-sm">В тесте пока нет вопросов.</p>}
+          {questions.length === 0 && <p className="text-[#F5E6D3]/60 text-sm">Нет вопросов</p>}
           {questions.map((q, qIdx) => (
             <div key={qIdx} className="bg-rose-900 p-4 rounded-2xl border border-rose-800/50">
               <div className="flex gap-2 items-start mb-4">
@@ -274,6 +271,9 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
               </div>
             </div>
           ))}
+          <button onClick={addQuestion} className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
+            <Plus size={18} /> Вопрос
+          </button>
         </div>
       </div>
 

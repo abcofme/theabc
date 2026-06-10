@@ -10,8 +10,30 @@ const WebApp = window.Telegram.WebApp;
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('diary');
-  // Добавляем стейт для отслеживания открытого окна записей
   const [isNavHidden, setIsNavHidden] = useState(false);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
+  useEffect(() => {
+    const handleFocus = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        setIsKeyboardOpen(true);
+      }
+    };
+    const handleBlur = () => {
+      // Small timeout to prevent flickering if focus moves between inputs
+      setTimeout(() => {
+        if (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+          setIsKeyboardOpen(false);
+        }
+      }, 50);
+    };
+    document.addEventListener('focusin', handleFocus);
+    document.addEventListener('focusout', handleBlur);
+    return () => {
+      document.removeEventListener('focusin', handleFocus);
+      document.removeEventListener('focusout', handleBlur);
+    };
+  }, []);
 
   // Сообщаем Telegram, что приложение готово
   WebApp.ready();
@@ -47,8 +69,8 @@ export default function App() {
         {activeTab === 'profile' && <ProfileTab />}
       </main>
 
-      {/* Отрисовываем меню только если isNavHidden === false */}
-      {!isNavHidden && (
+      {/* Отрисовываем меню только если isNavHidden === false и клавиатура не открыта */}
+      {(!isNavHidden && !isKeyboardOpen) && (
         <nav className="fixed bottom-0 left-0 w-full bg-rose-900 flex justify-between p-2 pb-safe z-50">
           <button
             onClick={() => setActiveTab('diary')}
