@@ -59,7 +59,7 @@ export default function TestsTab() {
     setCurrentQuestionIndex(0);
     setSelectedAnswers([]);
     setTestResult(null);
-    setIsStarted(true);
+    setIsStarted(false);
     WebApp.HapticFeedback.impactOccurred('light');
     
     try {
