@@ -245,7 +245,7 @@ export default function ReportsTab() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-bold mb-2 leading-tight text-[#F5E6D3]">{rtype.title}</h3>
-                    <p className="text-sm text-[#F5E6D3] leading-relaxed line-clamp-2">{rtype.desc}</p>
+                    <p className="text-sm text-[#F5E6D3] leading-relaxed">{rtype.desc}</p>
                   </div>
                   <div className="mt-2 text-[#F5E6D3]">
                     {isOpen ? <ChevronUp size={24} /> : <ChevronDown size={24} />}

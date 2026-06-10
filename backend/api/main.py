@@ -35,12 +35,18 @@ async def get_profile(
 ):
     user_id = user_data.get("id")
 
-    # Update photo_url if present
+    # Update photo_url and has_opened_app
     photo_url = user_data.get("photo_url")
-    if photo_url:
-        db_user = await session.get(User, user_id)
-        if db_user and db_user.photo_url != photo_url:
+    db_user = await session.get(User, user_id)
+    if db_user:
+        changed = False
+        if photo_url and db_user.photo_url != photo_url:
             db_user.photo_url = photo_url
+            changed = True
+        if not db_user.has_opened_app:
+            db_user.has_opened_app = True
+            changed = True
+        if changed:
             await session.commit()
     
     # Получаем все категории и тесты
@@ -224,6 +230,7 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
     from backend.database import async_session
     from backend.database.models import PersonalityPortrait
     from sqlalchemy import select
+    prompt += '\n\nВАЖНО: В поле description напиши до 3 предложений пояснения, почему ты выбрал именно такое % соответствия на этой шкале.'
     try:
         async with httpx.AsyncClient(timeout=120.0) as client:
             ai_response = await client.post(
@@ -769,6 +776,15 @@ async def get_admin_stats(
         diary_q = apply_filters(diary_q, DiaryEntry)
         diary_count = (await session.execute(diary_q)).scalar() or 0
         
+        # New counters
+        users_count_q = select(get_count_expr(User))
+        users_count_q = apply_filters(users_count_q, User)
+        total_users = (await session.execute(users_count_q)).scalar() or 0
+        
+        active_users_q = select(get_count_expr(User)).where(User.has_opened_app == True)
+        active_users_q = apply_filters(active_users_q, User)
+        active_users = (await session.execute(active_users_q)).scalar() or 0
+        
         reports_q = select(get_count_expr(BehavioralReport))
         reports_q = apply_filters(reports_q, BehavioralReport)
         reports_count = (await session.execute(reports_q)).scalar() or 0
@@ -797,10 +813,12 @@ async def get_admin_stats(
             test_counts.append(cat_data)
             
         return {
-            "diary_count": diary_count,
-            "reports_count": reports_count,
-            "portraits_count": portraits_count,
-            "test_counts": test_counts
+            "total_users": total_users,
+            "active_users": active_users,
+            "diary_entries": diary_count,
+            "reports_generated": reports_count,
+            "portraits_generated": portraits_count,
+            "tests": test_counts
         }
     except Exception as e:
         with open("admin_error.txt", "w", encoding="utf-8") as f:
@@ -843,6 +861,7 @@ async def search_users(
     session: AsyncSession = Depends(get_session)
 ):
     user_id = user_data.get("id")
+    q = q.lstrip('@')
     if not q or len(q) < 2:
         return []
     

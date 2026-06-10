@@ -27,6 +27,7 @@ class User(BaseModel):
     tg_last_name: Mapped[str] = mapped_column(String(64), nullable=True)
     username: Mapped[str] = mapped_column(String(32), nullable=True)
     photo_url: Mapped[str] = mapped_column(Text(), nullable=True)
+    has_opened_app: Mapped[bool] = mapped_column(Boolean, default=False)
     registration_date: Mapped[date] = mapped_column(Date(), nullable=True)
     invited_id: Mapped[str] = mapped_column(String(64), nullable=True)
     discount_pct: Mapped[int] = mapped_column(Integer(), nullable=True, default=0)

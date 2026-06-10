@@ -235,7 +235,7 @@ export default function ProfileTab() {
       {activeSubTab === 'tests' && (
         <>
           {/* ПОРТРЕТ ЛИЧНОСТИ КНОПКИ */}
-          <div className="mx-4 mb-4 flex flex-col gap-3">
+          <div className="mx-4 mb-4 flex flex-col gap-4">
             {!portraitData ? (
               <button 
                 onClick={() => {
@@ -248,20 +248,20 @@ export default function ProfileTab() {
                 disabled={isGeneratingPortrait}
                 className={`w-full rounded-2xl p-4 text-left transition-all duration-700 flex items-center justify-between ${
                   (totalTests > 0 && passedTests === totalTests) 
-                    ? "bg-green-900/80 hover:bg-green-800/80 active:scale-[0.98]" 
-                    : "bg-rose-900/50 opacity-90"
+                    ? "bg-green-600 hover:bg-green-500 text-white active:scale-[0.98]" 
+                    : "bg-rose-900/10 text-rose-900 opacity-90"
                 }`}
               >
                 <div>
-                  <h3 className={`text-base sm:text-lg font-bold mb-1 ${(totalTests > 0 && passedTests === totalTests) ? "text-green-500" : "text-[#F5E6D3]"}`}>Сформировать портрет</h3>
-                  <p className={`text-xs sm:text-sm ${(totalTests > 0 && passedTests === totalTests) ? "text-green-200" : "text-[#F5E6D3]"}`}>
+                  <h3 className={`text-base sm:text-lg font-bold mb-1`}>Сформировать портрет</h3>
+                  <p className={`text-xs sm:text-sm`}>
                     {isGeneratingPortrait ? 'Генерация...' : (totalTests > 0 && passedTests === totalTests) ? 'Анализ ваших тестов' : `Пройдено ${passedTests} из ${totalTests} тестов`}
                   </p>
                 </div>
                 {isGeneratingPortrait ? (
                   <div className="w-6 h-6 rounded-full animate-spin"></div>
                 ) : (
-                  <Wand2 className={(totalTests > 0 && passedTests === totalTests) ? "text-green-500" : "text-[#F5E6D3]"} size={24} />
+                  <Wand2 size={24} />
                 )}
               </button>
             ) : (
@@ -270,38 +270,38 @@ export default function ProfileTab() {
                   <button 
                     onClick={handleGeneratePortrait}
                     disabled={isGeneratingPortrait}
-                    className="w-full bg-rose-900/80 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
+                    className="w-full bg-rose-900/10 rounded-2xl p-4 text-left hover:bg-rose-900/20 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
                   >
                     <div>
-                      <h3 className="text-base sm:text-lg font-bold text-[#F5E6D3] mb-1">Сформировать заново</h3>
-                      <p className="text-xs sm:text-sm text-[#F5E6D3]">{isGeneratingPortrait ? 'Генерация...' : 'Обновить на основе новых тестов'}</p>
+                      <h3 className="text-base sm:text-lg font-bold text-rose-900 mb-1">Сформировать заново</h3>
+                      <p className="text-xs sm:text-sm text-rose-800">{isGeneratingPortrait ? 'Генерация...' : 'Обновить на основе новых тестов'}</p>
                     </div>
                     {isGeneratingPortrait ? (
                       <div className="w-6 h-6 rounded-full animate-spin"></div>
                     ) : (
-                      <Wand2 className="text-[#F5E6D3]" size={24} />
+                      <Wand2 className="text-rose-900" size={24} />
                     )}
                   </button>
                 )}
                 <button 
                   onClick={() => setActiveSubTab('portrait')}
-                  className="w-full bg-gradient-to-r from-green-900/60 to-green-800/30 rounded-2xl p-4 text-left hover:bg-green-800/50 transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
+                  className="w-full bg-[#F5E6D3] border border-rose-900/20 rounded-2xl p-4 text-left hover:bg-[#EAE0D5] transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
                 >
                   <div>
-                    <h3 className="text-lg font-bold text-green-500 mb-1">Мой портрет личности</h3>
-                    <p className="text-sm text-green-200">Открыть сформированный портрет</p>
+                    <h3 className="text-lg font-bold text-rose-900 mb-1">Мой портрет</h3>
+                    <p className="text-sm text-rose-800">Посмотреть результат</p>
                   </div>
-                  <ClipboardList className="text-green-500" size={24} />
+                  <ClipboardList className="text-rose-900" size={24} />
                 </button>
                 <button 
                   onClick={() => setActiveSubTab('friends')}
-                  className="w-full bg-gradient-to-r from-blue-900/60 to-blue-800/30 rounded-2xl p-4 text-left hover:bg-blue-800/50 transition-all duration-700 active:scale-[0.98] flex items-center justify-between mt-3"
+                  className="w-full bg-[#F5E6D3] rounded-2xl p-4 text-left hover:bg-[#EAE0D5] transition-all duration-700 active:scale-[0.98] flex items-center justify-between"
                 >
                   <div>
-                    <h3 className="text-lg font-bold text-blue-400 mb-1">Друзья</h3>
-                    <p className="text-sm text-blue-200">Узнайте совместимость с вашим другом или партнером!</p>
+                    <h3 className="text-lg font-bold text-rose-900 mb-1">Друзья</h3>
+                    <p className="text-sm text-rose-800">Узнайте совместимость с вашим другом или партнером!</p>
                   </div>
-                  <Users className="text-blue-400" size={24} />
+                  <Users className="text-rose-900" size={24} />
                 </button>
 
               </>

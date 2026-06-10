@@ -133,10 +133,26 @@ export default function AdminPanel({ onBack }) {
           
           <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Calendar className="text-blue-500" size={24} />
-              <span className="text-[#F5E6D3] font-medium">Записи в дневник</span>
+              <Users className="text-purple-500" size={24} />
+              <span className="text-[#F5E6D3] font-medium">Всего пользователей</span>
             </div>
-            <span className="text-xl font-bold text-[#F5E6D3]">{stats.diary_count}</span>
+            <span className="text-xl font-bold text-[#F5E6D3]">{stats.total_users || 0}</span>
+          </div>
+
+          <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="text-green-500" size={24} />
+              <span className="text-[#F5E6D3] font-medium">Активных пользователей</span>
+            </div>
+            <span className="text-xl font-bold text-[#F5E6D3]">{stats.active_users || 0}</span>
+          </div>
+          
+          <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Calendar className="text-blue-500" size={24} />
+              <span className="text-[#F5E6D3] font-medium">Записи дневника</span>
+            </div>
+            <span className="text-xl font-bold text-[#F5E6D3]">{stats.diary_entries || 0}</span>
           </div>
 
           <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
@@ -144,7 +160,7 @@ export default function AdminPanel({ onBack }) {
               <Brain className="text-orange-500" size={24} />
               <span className="text-[#F5E6D3] font-medium">Отчеты</span>
             </div>
-            <span className="text-xl font-bold text-[#F5E6D3]">{stats.reports_count}</span>
+            <span className="text-xl font-bold text-[#F5E6D3]">{stats.reports_generated || 0}</span>
           </div>
 
           <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
@@ -152,11 +168,11 @@ export default function AdminPanel({ onBack }) {
               <FileText className="text-emerald-500" size={24} />
               <span className="text-[#F5E6D3] font-medium">Портреты личности</span>
             </div>
-            <span className="text-xl font-bold text-[#F5E6D3]">{stats.portraits_count}</span>
+            <span className="text-xl font-bold text-[#F5E6D3]">{stats.portraits_generated || 0}</span>
           </div>
 
-          <h3 className="text-xl font-bold text-[#F5E6D3] mt-4 mb-2">Количество прохождений тестов</h3>
-          {stats.test_counts.map(cat => (
+          <h3 className="text-xl font-bold text-[#F5E6D3] mt-4 mb-2">Статистика по тестам</h3>
+          {(stats.tests || []).map(cat => (
             <div key={cat.id} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-700">
               <button
                 onClick={() => toggleCategory(cat.id)}

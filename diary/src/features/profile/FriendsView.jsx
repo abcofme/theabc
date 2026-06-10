@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, Search, UserPlus, Check, X, Trash2, Clock } from 'lucide-react';
+import { ChevronLeft, Search, UserPlus, Check, X, Trash2, Clock, User } from 'lucide-react';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://friendly-various-near-across.trycloudflare.com";
@@ -128,9 +128,13 @@ export default function FriendsView({ onBack }) {
           <img src={user.photo_url} alt="" className="w-12 h-12 rounded-full object-cover shadow-sm" />
         ) : (
           <div className="w-12 h-12 rounded-full bg-rose-800 flex items-center justify-center shadow-sm">
-            <span className="text-lg font-bold text-[#F5E6D3]">
-              {user.first_name ? user.first_name[0] : (user.username ? user.username[0] : '?')}
-            </span>
+            {user.first_name ? (
+              <span className="text-lg font-bold text-[#F5E6D3]">{user.first_name[0]}</span>
+            ) : user.username ? (
+              <span className="text-lg font-bold text-[#F5E6D3]">{user.username[0].toUpperCase()}</span>
+            ) : (
+              <User className="text-[#F5E6D3]" size={24} />
+            )}
           </div>
         )}
         <div>
@@ -232,7 +236,7 @@ export default function FriendsView({ onBack }) {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Поиск по юзернейму..."
+                    placeholder="Введите @username"
                     className="w-full bg-rose-900/60 border border-rose-800 text-[#F5E6D3] placeholder-rose-300/50 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-rose-500/50"
                   />
                 </div>

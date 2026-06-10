@@ -84,7 +84,7 @@ async def TechSupport_callback(
     await state.set_state(TechStates.message)
     await edit_scheduled_message(
         user=user,
-        text="Отправьте ваш запрос в тех. поддержку",
+        text="Вставить текст. Отправьте сообщение:",
         kb=back_kb()
     )
 

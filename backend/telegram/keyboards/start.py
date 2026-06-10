@@ -35,7 +35,7 @@ psychologist_btn = InlineKeyboardButton(
 )
 
 tech_support_btn = InlineKeyboardButton(
-    text=gettext("buttons.tech_support"),
+    text="Связь",
     callback_data=TechSupport().pack()
 )
 
@@ -49,8 +49,6 @@ def start_kb(user: User) -> InlineKeyboardMarkup:
     buttons = [
         [diary_btn],
         [tests_btn],
-        [profile_btn],
-        [psychologist_btn],
         [tech_support_btn],
         [referal_btn]
     ]

@@ -50,30 +50,30 @@ export default function App() {
         <nav className="fixed bottom-0 left-0 w-full bg-rose-900 flex justify-between p-2 pb-safe z-50">
           <button
             onClick={() => setActiveTab('diary')}
-            className={`flex-1 flex flex-col items-center justify-center py-2 transition-colors ${
-              activeTab === 'diary' ? 'text-[#F5E6D3]' : 'text-[#F5E6D3] hover:text-[#F5E6D3]'
+            className={`flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
+              activeTab === 'diary' ? 'text-[#F5E6D3] scale-110 drop-shadow-md' : 'text-rose-300/60 hover:text-[#F5E6D3]/80'
             }`}
           >
             <CalendarIcon size={24} />
-            <span className="text-xs mt-1">Дневник</span>
+            <span className={`text-[10px] mt-1 ${activeTab === 'diary' ? 'font-bold' : ''}`}>Дневник</span>
           </button>
           <button
             onClick={() => setActiveTab('reports')}
-            className={`flex-1 flex flex-col items-center justify-center py-2 transition-colors ${
-              activeTab === 'reports' ? 'text-[#F5E6D3]' : 'text-[#F5E6D3] hover:text-[#F5E6D3]'
+            className={`flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
+              activeTab === 'reports' ? 'text-[#F5E6D3] scale-110 drop-shadow-md' : 'text-rose-300/60 hover:text-[#F5E6D3]/80'
             }`}
           >
             <Brain size={24} />
-            <span className="text-xs mt-1">Поведенческий код</span>
+            <span className={`text-[10px] mt-1 ${activeTab === 'reports' ? 'font-bold' : ''}`}>Отчеты</span>
           </button>
           <button
             onClick={() => setActiveTab('profile')}
-            className={`flex-1 flex flex-col items-center justify-center py-2 transition-colors ${
-              activeTab === 'profile' ? 'text-[#F5E6D3]' : 'text-[#F5E6D3] hover:text-[#F5E6D3]'
+            className={`flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
+              activeTab === 'profile' ? 'text-[#F5E6D3] scale-110 drop-shadow-md' : 'text-rose-300/60 hover:text-[#F5E6D3]/80'
             }`}
           >
             <User size={24} />
-            <span className="text-xs mt-1">Профиль</span>
+            <span className={`text-[10px] mt-1 ${activeTab === 'profile' ? 'font-bold' : ''}`}>Профиль</span>
           </button>
         </nav>
       )}

@@ -27,3 +27,4 @@ async def create_all_tables(engine: AsyncEngine, metadata: MetaData):
         await connection.run_sync(metadata.create_all)
         from sqlalchemy import text
         await connection.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_url TEXT"))
+        await connection.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS has_opened_app BOOLEAN DEFAULT FALSE"))
