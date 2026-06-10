@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X, ChevronLeft, Lock, Wand2, Trash2, Brain, Activity, Star, ShieldAlert, Sparkles, Target, Heart, Flame, ClipboardList, Users } from 'lucide-react';
 import AdminPanel from '../admin/AdminPanel';
 import FriendsView from './FriendsView';
+import qrCodeImg from '../../assets/qr-code.png';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://friendly-various-near-across.trycloudflare.com";
@@ -306,6 +307,16 @@ export default function ProfileTab() {
 
               </>
             )}
+
+            {/* QR CODE BLOCK */}
+            <div className="bg-rose-900/40 rounded-3xl p-6 mt-2 flex flex-col items-center justify-center text-center border border-rose-900/20">
+              <h3 className="text-[#F5E6D3] font-bold text-lg mb-2">Поделиться</h3>
+              <p className="text-[#F5E6D3]/70 text-sm mb-4">Отсканируйте QR-код, чтобы пригласить друзей или открыть приложение на другом устройстве</p>
+              <div className="p-2 rounded-2xl shadow-lg border-2 border-[#F5E6D3]/20" style={{backgroundColor: '#4A1D23'}}>
+                <img src={qrCodeImg} alt="QR Code" className="w-36 h-36 object-contain rounded-xl" />
+              </div>
+            </div>
+
           </div>
         </>
       )}
