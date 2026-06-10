@@ -52,17 +52,15 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-full font-sans bg-rose-950 relative">
-      {activeTab !== 'tests' && (
-        <div 
-          className="absolute top-0 left-0 right-0 bottom-[75px] pointer-events-none z-0"
-          style={{
-            backgroundImage: `url(${bgLeaves})`,
-            backgroundPosition: "bottom right",
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "60%"
-          }}
-        />
-      )}
+      <div 
+        className="absolute top-0 left-0 right-0 bottom-[75px] pointer-events-none z-0"
+        style={{
+          backgroundImage: `url(${bgLeaves})`,
+          backgroundPosition: "bottom right",
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "60%"
+        }}
+      />
       <main className={`flex-1 overflow-y-auto p-4 relative z-10 ${isNavHidden ? '' : 'pb-24'}`}>
         {/* Передаем функцию скрытия меню в CalendarTab */}
         {activeTab === 'diary' && <CalendarTab onSheetOpen={setIsNavHidden} />}
