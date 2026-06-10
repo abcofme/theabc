@@ -75,7 +75,7 @@ async def get_profile(
                 Result.range_to >= p.value
             )
             res_obj = (await session.execute(res_query)).scalars().first()
-            user_results[p.test_id] = res_obj.name.capitalize() if res_obj and res_obj.name else f"Баллы: {p.value}"
+            user_results[p.test_id] = res_obj.name if res_obj and res_obj.name else f"Балл: {p.value}"
 
     # Формируем ответ для React
     result_data = []
