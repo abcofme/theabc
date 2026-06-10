@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Repeat, Zap, ChevronLeft, ChevronDown, ChevronUp, Plus, Target, Sparkles, Calendar, FileText, Star } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import bookIcon from '../../assets/book_icon.png';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://friendly-various-near-across.trycloudflare.com";
@@ -215,7 +216,7 @@ export default function ReportsTab() {
   return (
     <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-2xl mx-auto w-full pt-4 pb-20 overflow-y-scroll">
       <div className="flex justify-center mb-2">
-        <img src="/book_icon.png" alt="Поведенческий код" className="w-24 h-24 object-contain" />
+        <img src={bookIcon} alt="Поведенческий код" className="w-24 h-24 object-contain" />
       </div>
       <h2 className="text-2xl font-bold text-[#F5E6D3] mb-2 px-4 text-center">Поведенческий код</h2>
       
