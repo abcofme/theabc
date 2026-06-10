@@ -25,6 +25,9 @@ export default function ProfileTab() {
   // Хранит данные теста, по которому кликнули, для показа в модальном окне
   const [selectedResult, setSelectedResult] = useState(null);
 
+  // Состояние для увеличения QR-кода
+  const [isQrExpanded, setIsQrExpanded] = useState(false);
+
   // Получаем данные пользователя из Telegram (если открыто в браузере - ставим заглушку)
   const tgUser = WebApp.initDataUnsafe?.user || {
     first_name: "Пользователь",
@@ -247,22 +250,22 @@ export default function ProfileTab() {
                   handleGeneratePortrait();
                 }}
                 disabled={isGeneratingPortrait}
-                className={`w-full rounded-2xl p-4 text-left transition-all duration-300 flex items-center justify-between ${
+                className={`w-full rounded-2xl p-4 text-left transition-all duration-300 flex items-center justify-between shadow-sm border border-rose-800/30 backdrop-blur-sm ${
                   (totalTests > 0 && passedTests === totalTests) 
-                    ? "bg-green-600 hover:bg-green-500 text-white active:scale-[0.98]" 
-                    : "bg-rose-900/10 text-rose-900 opacity-90"
+                    ? "bg-rose-900/80 hover:bg-rose-800/80 text-[#F5E6D3] active:scale-[0.98]" 
+                    : "bg-rose-900/80 hover:bg-rose-800/80 text-[#F5E6D3]"
                 }`}
               >
                 <div>
                   <h3 className={`text-base sm:text-lg font-bold mb-1`}>Сформировать портрет</h3>
-                  <p className={`text-xs sm:text-sm`}>
+                  <p className={`text-xs sm:text-sm text-[#F5E6D3]/80`}>
                     {isGeneratingPortrait ? 'Генерация...' : (totalTests > 0 && passedTests === totalTests) ? 'Анализ ваших тестов' : `Пройдено ${passedTests} из ${totalTests} тестов`}
                   </p>
                 </div>
                 {isGeneratingPortrait ? (
-                  <div className="w-6 h-6 rounded-full animate-spin"></div>
+                  <div className="w-6 h-6 rounded-full animate-spin border-2 border-[#F5E6D3] border-t-transparent"></div>
                 ) : (
-                  <Wand2 size={24} />
+                  <Wand2 size={24} className="text-[#F5E6D3]" />
                 )}
               </button>
             ) : (
@@ -271,28 +274,28 @@ export default function ProfileTab() {
                   <button 
                     onClick={handleGeneratePortrait}
                     disabled={isGeneratingPortrait}
-                    className="w-full bg-rose-900/10 rounded-2xl p-4 text-left hover:bg-rose-900/20 transition-all duration-300 active:scale-[0.98] flex items-center justify-between"
+                    className="w-full bg-rose-900/80 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm border border-rose-800/30 backdrop-blur-sm"
                   >
                     <div>
-                      <h3 className="text-base sm:text-lg font-bold text-rose-900 mb-1">Сформировать заново</h3>
-                      <p className="text-xs sm:text-sm text-rose-800">{isGeneratingPortrait ? 'Генерация...' : 'Обновить на основе новых тестов'}</p>
+                      <h3 className="text-base sm:text-lg font-bold text-[#F5E6D3] mb-1">Сформировать заново</h3>
+                      <p className="text-xs sm:text-sm text-[#F5E6D3]/80">{isGeneratingPortrait ? 'Генерация...' : 'Обновить на основе новых тестов'}</p>
                     </div>
                     {isGeneratingPortrait ? (
-                      <div className="w-6 h-6 rounded-full animate-spin"></div>
+                      <div className="w-6 h-6 rounded-full animate-spin border-2 border-[#F5E6D3] border-t-transparent"></div>
                     ) : (
-                      <Wand2 className="text-rose-900" size={24} />
+                      <Wand2 className="text-[#F5E6D3]" size={24} />
                     )}
                   </button>
                 )}
                 <button 
                   onClick={() => setActiveSubTab('portrait')}
-                  className="w-full bg-[#F5E6D3] border border-rose-900/20 rounded-2xl p-4 text-left hover:bg-[#EAE0D5] transition-all duration-300 active:scale-[0.98] flex items-center justify-between"
+                  className="w-full bg-rose-900/80 border border-rose-800/30 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
                 >
                   <div>
-                    <h3 className="text-lg font-bold text-rose-900 mb-1">Мой портрет</h3>
-                    <p className="text-sm text-rose-800">Посмотреть результат</p>
+                    <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Мой портрет</h3>
+                    <p className="text-sm text-[#F5E6D3]/80">Посмотреть результат</p>
                   </div>
-                  <ClipboardList className="text-rose-900" size={24} />
+                  <ClipboardList className="text-[#F5E6D3]" size={24} />
                 </button>
 
               </>
@@ -301,20 +304,24 @@ export default function ProfileTab() {
             {/* ВНЕ ЗАВИСИМОСТИ ОТ ПОРТРЕТА */}
             <button 
               onClick={() => setActiveSubTab('friends')}
-              className="w-full bg-[#F5E6D3] rounded-2xl p-4 text-left hover:bg-[#EAE0D5] transition-all duration-300 active:scale-[0.98] flex items-center justify-between"
+              className="w-full bg-rose-900/80 border border-rose-800/30 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
             >
               <div>
-                <h3 className="text-lg font-bold text-rose-900 mb-1">Друзья</h3>
-                <p className="text-sm text-rose-800">Узнайте совместимость с вашим другом или партнером!</p>
+                <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Друзья</h3>
+                <p className="text-sm text-[#F5E6D3]/80">Узнайте совместимость с вашим другом или партнером!</p>
               </div>
-              <Users className="text-rose-900" size={24} />
+              <Users className="text-[#F5E6D3]" size={24} />
             </button>
 
             {/* QR CODE BLOCK */}
             <div className="bg-rose-900/40 rounded-3xl p-6 mt-2 flex flex-col items-center justify-center text-center border border-rose-900/20">
               <h3 className="text-[#F5E6D3] font-bold text-lg mb-2">Поделиться</h3>
               <p className="text-[#F5E6D3]/70 text-sm mb-4">Отсканируйте QR-код, чтобы пригласить друзей или открыть приложение на другом устройстве</p>
-              <div className="p-2 rounded-2xl shadow-lg border-2 border-[#F5E6D3]/20" style={{backgroundColor: '#4A1D23'}}>
+              <div 
+                className="p-2 rounded-2xl shadow-lg border-2 border-[#F5E6D3]/20 cursor-pointer hover:scale-105 transition-transform" 
+                style={{backgroundColor: '#4A1D23'}}
+                onClick={() => setIsQrExpanded(true)}
+              >
                 <img src={qrCodeImg} alt="QR Code" className="w-36 h-36 object-contain rounded-xl" />
               </div>
             </div>
@@ -439,6 +446,22 @@ export default function ProfileTab() {
     
       {activeSubTab === 'friends' && (
         <FriendsView onBack={() => setActiveSubTab('main')} />
+      )}
+
+      {/* 5. ВСПЛЫВАЮЩЕЕ ОКНО С QR КОДОМ */}
+      {isQrExpanded && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-rose-950/90 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="absolute inset-0" onClick={() => setIsQrExpanded(false)}></div>
+          <div className="relative flex flex-col items-center animate-in zoom-in-95 duration-300 max-w-sm w-full">
+            <button onClick={() => setIsQrExpanded(false)} className="absolute -top-12 right-0 p-2 text-[#F5E6D3] hover:text-white transition-colors">
+              <X size={28} />
+            </button>
+            <div className="p-4 rounded-3xl shadow-2xl border-4 border-[#F5E6D3]/20 bg-[#4A1D23] w-full aspect-square">
+              <img src={qrCodeImg} alt="QR Code Expanded" className="w-full h-full object-contain rounded-2xl" />
+            </div>
+            <p className="text-[#F5E6D3] font-medium mt-6 text-center text-lg">Покажите этот код другу</p>
+          </div>
+        </div>
       )}
 </div>
   );

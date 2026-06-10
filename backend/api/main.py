@@ -226,11 +226,17 @@ async def clear_personality_portrait(
 
 async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str, ai_url: str, ai_token: str):
     import httpx
+    import json
+    import re
     from fastapi import HTTPException
     from backend.database import async_session
     from backend.database.models import PersonalityPortrait
     from sqlalchemy import select
+    
+    # Добавляем инструкции для JSON формата и технического саммари
     prompt += '\n\nВАЖНО: В поле description напиши до 3 предложений пояснения, почему ты выбрал именно такое % соответствия на этой шкале.'
+    prompt += '\n\nОЧЕНЬ ВАЖНО: Твой ответ должен быть СТРОГИМ JSON объектом. Никакого текста до или после JSON. Формат:\n{"content": "Здесь весь твой сгенерированный красивый Markdown текст (включая блок с ```json внутри для шкал)", "technical_summary": "Здесь напиши сжатое техническое резюме психологического портрета пользователя (в 1-2 абзаца). Это резюме будет использовано другими нейросетями в системных промптах как контекст личности. Опиши его паттерны поведения, барьеры, сильные стороны."}'
+
     try:
         async with httpx.AsyncClient(timeout=120.0) as client:
             ai_response = await client.post(
@@ -253,20 +259,45 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
                 )
             if ai_response.status_code != 200:
                 print(f"ERROR FROM TIMEWEB API PORTRAIT: {ai_response.text}")
-                return {"status": "error", "message": f"Ошибка AI сервиса: {ai_response.text}"}
+                return {"status": "error", "message": f"Ошибка AI провайдера: {ai_response.text}"}
                 
             ai_response.raise_for_status()
             ai_data = ai_response.json()
             generated_text = ai_data["choices"][0]["message"]["content"].strip()
             
+            # Попытка парсинга JSON, учитывая возможные артефакты от Claude
+            parsed_json = None
+            try:
+                parsed_json = json.loads(generated_text)
+            except json.JSONDecodeError:
+                # Если упало, попробуем вытащить через регулярку
+                match = re.search(r'\{[\s\S]*\}', generated_text)
+                if match:
+                    try:
+                        parsed_json = json.loads(match.group(0))
+                    except json.JSONDecodeError:
+                        pass
+            
+            if not parsed_json:
+                print("Failed to parse JSON from AI response:", generated_text)
+                # Фолбэк на случай если нейросеть совсем не справилась
+                parsed_json = {
+                    "content": generated_text,
+                    "technical_summary": ""
+                }
+            
+            content = parsed_json.get("content", "")
+            technical_summary = parsed_json.get("technical_summary", "")
+            
             async with async_session() as db:
                 existing = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
                 if existing:
-                    existing.content = generated_text
+                    existing.content = content
+                    existing.technical_summary = technical_summary
                     existing.tests_count = user_tests_count
                     new_portrait = existing
                 else:
-                    new_portrait = PersonalityPortrait(user_id=user_id, content=generated_text, tests_count=user_tests_count)
+                    new_portrait = PersonalityPortrait(user_id=user_id, content=content, technical_summary=technical_summary, tests_count=user_tests_count)
                     db.add(new_portrait)
                 await db.commit()
                 await db.refresh(new_portrait)
@@ -364,10 +395,10 @@ async def generate_personality_portrait(
 Вот результаты тестов пользователя:
 {test_results_text}"""
 
-    # 3. Делаем запрос к Timeweb Cloud API (Claude 3.5 Sonnet)
-    # Используем OpenAI совместимый эндпоинт от Timeweb
+    # 3. Запрос в Timeweb Cloud API (Claude 3.5 Sonnet)
+    # Используем TIMEWEB_AI_REPORTS_URL для генерации портрета как отчета
     ai_token = os.getenv("TIMEWEB_AI_TOKEN")
-    ai_url = os.getenv("TIMEWEB_AI_PORTRAIT_URL", os.getenv("TIMEWEB_AI_URL"))
+    ai_url = os.getenv("TIMEWEB_AI_REPORTS_URL", os.getenv("TIMEWEB_AI_URL"))
     
     if not ai_url:
         from fastapi import HTTPException

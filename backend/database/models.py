@@ -227,6 +227,7 @@ class PersonalityPortrait(BaseModel):
     
     content: Mapped[str] = mapped_column(Text(), nullable=False)
     tests_count: Mapped[int] = mapped_column(Integer(), default=0)
+    technical_summary: Mapped[str] = mapped_column(Text(), nullable=True)
 
 class BehavioralReport(BaseModel):
     __tablename__ = "behavioral_reports"
