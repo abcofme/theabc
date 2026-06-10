@@ -282,6 +282,28 @@ export default function TestsTab() {
                 <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#F5E6D3] border-t-transparent"></div>
                 <p className="text-[#F5E6D3] font-medium text-lg">Обработка результатов...</p>
               </div>
+            ) : !isStarted ? (
+              <div className="flex-1 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-300 max-w-md mx-auto w-full">
+                <div className="bg-rose-900 rounded-[2rem] p-6 sm:p-8 shadow-xl mb-6 w-full">
+                  <h4 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] leading-snug mb-4">
+                    {testDetails.name}
+                  </h4>
+                  {testDetails.description && (
+                    <p className="text-[#F5E6D3]/70 text-sm mb-4">
+                      {testDetails.description}
+                    </p>
+                  )}
+                  <p className="text-[#F5E6D3]/50 text-xs font-bold uppercase tracking-widest">
+                    Вопросов: {testDetails.questions?.length || 0}
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setIsStarted(true)} 
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl transition-colors shadow-lg flex justify-center items-center gap-2"
+                >
+                  Пройти тест
+                </button>
+              </div>
             ) : (
               <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
                 <div className="mb-6 flex items-center justify-between">
