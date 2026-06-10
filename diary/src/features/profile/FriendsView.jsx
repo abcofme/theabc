@@ -142,7 +142,7 @@ export default function FriendsView({ onBack }) {
             {user.first_name || 'Без имени'}
           </p>
           {user.username && (
-            <p className="text-rose-200 text-xs sm:text-sm">@{user.username}</p>
+            <p className="text-[#F5E6D3]/80 text-xs sm:text-sm">@{user.username}</p>
           )}
         </div>
       </div>
@@ -168,7 +168,7 @@ export default function FriendsView({ onBack }) {
         <button
           onClick={() => setActiveTab('friends')}
           className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
-            activeTab === 'friends' ? 'bg-rose-800 text-[#F5E6D3] shadow-sm' : 'text-rose-300 hover:text-rose-200'
+            activeTab === 'friends' ? 'bg-rose-800 text-[#F5E6D3] shadow-sm' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
           }`}
         >
           Мои друзья
@@ -176,7 +176,7 @@ export default function FriendsView({ onBack }) {
         <button
           onClick={() => setActiveTab('search')}
           className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
-            activeTab === 'search' ? 'bg-rose-800 text-[#F5E6D3] shadow-sm' : 'text-rose-300 hover:text-rose-200'
+            activeTab === 'search' ? 'bg-rose-800 text-[#F5E6D3] shadow-sm' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
           }`}
         >
           Найти
@@ -184,7 +184,7 @@ export default function FriendsView({ onBack }) {
         <button
           onClick={() => setActiveTab('requests')}
           className={`flex-1 relative py-2 text-sm font-medium rounded-lg transition-colors ${
-            activeTab === 'requests' ? 'bg-rose-800 text-[#F5E6D3] shadow-sm' : 'text-rose-300 hover:text-rose-200'
+            activeTab === 'requests' ? 'bg-rose-800 text-[#F5E6D3] shadow-sm' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
           }`}
         >
           Запросы
@@ -205,7 +205,7 @@ export default function FriendsView({ onBack }) {
               <div>
                 {friends.length === 0 ? (
                   <div className="text-center py-10">
-                    <p className="text-rose-200">У вас пока нет добавленных друзей.</p>
+                    <p className="text-[#F5E6D3]/80">У вас пока нет добавленных друзей.</p>
                     <button 
                       onClick={() => setActiveTab('search')}
                       className="mt-4 text-blue-400 font-medium hover:underline"
@@ -231,7 +231,7 @@ export default function FriendsView({ onBack }) {
             {activeTab === 'search' && (
               <div className="flex flex-col flex-1">
                 <div className="relative mb-4">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-rose-300" size={20} />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5E6D3]/60" size={20} />
                   <input 
                     type="text"
                     value={searchQuery}
@@ -242,7 +242,7 @@ export default function FriendsView({ onBack }) {
                 </div>
                 
                 {isSearching ? (
-                  <div className="text-center py-6 text-rose-300">Поиск...</div>
+                  <div className="text-center py-6 text-[#F5E6D3]/60">Поиск...</div>
                 ) : searchResults.length > 0 ? (
                   searchResults.map(u => {
                     const isFriend = friends.some(f => f.id === u.id);
@@ -276,7 +276,7 @@ export default function FriendsView({ onBack }) {
                     );
                   })
                 ) : searchQuery.length >= 2 ? (
-                  <div className="text-center py-6 text-rose-300">Пользователи не найдены</div>
+                  <div className="text-center py-6 text-[#F5E6D3]/60">Пользователи не найдены</div>
                 ) : null}
               </div>
             )}
@@ -284,7 +284,7 @@ export default function FriendsView({ onBack }) {
             {activeTab === 'requests' && (
               <div>
                 {incomingRequests.length === 0 && outgoingRequests.length === 0 && (
-                  <div className="text-center py-10 text-rose-200">
+                  <div className="text-center py-10 text-[#F5E6D3]/80">
                     Нет активных запросов.
                   </div>
                 )}
@@ -305,7 +305,7 @@ export default function FriendsView({ onBack }) {
                         </button>
                         <button 
                           onClick={() => rejectRequest(req.request_id)}
-                          className="p-2 text-rose-300 bg-rose-800 hover:bg-rose-700 rounded-lg transition-colors"
+                          className="p-2 text-[#F5E6D3]/60 bg-rose-800 hover:bg-rose-700 rounded-lg transition-colors"
                         >
                           <X size={20} />
                         </button>
@@ -316,12 +316,12 @@ export default function FriendsView({ onBack }) {
 
                 {outgoingRequests.length > 0 && (
                   <div>
-                    <h3 className="text-rose-200 font-bold mb-3">Исходящие запросы</h3>
+                    <h3 className="text-[#F5E6D3]/80 font-bold mb-3">Исходящие запросы</h3>
                     {outgoingRequests.map(req => (
                       <UserCard key={req.request_id} user={req}>
                         <button 
                           onClick={() => rejectRequest(req.request_id)}
-                          className="px-3 py-1.5 text-sm font-medium text-rose-300 bg-rose-800 hover:bg-rose-700 rounded-lg transition-colors"
+                          className="px-3 py-1.5 text-sm font-medium text-[#F5E6D3]/60 bg-rose-800 hover:bg-rose-700 rounded-lg transition-colors"
                         >
                           Отменить
                         </button>

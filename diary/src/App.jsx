@@ -53,7 +53,7 @@ export default function App() {
           <button
             onClick={() => setActiveTab('diary')}
             className={`flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
-              activeTab === 'diary' ? 'text-[#F5E6D3] scale-110 drop-shadow-md' : 'text-rose-300/60 hover:text-[#F5E6D3]/80'
+              activeTab === 'diary' ? 'text-[#F5E6D3] scale-110 drop-shadow-md' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
             }`}
           >
             <CalendarIcon size={24} />
@@ -62,7 +62,7 @@ export default function App() {
           <button
             onClick={() => setActiveTab('tests')}
             className={`flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
-              activeTab === 'tests' ? 'text-[#F5E6D3] scale-110 drop-shadow-md' : 'text-rose-300/60 hover:text-[#F5E6D3]/80'
+              activeTab === 'tests' ? 'text-[#F5E6D3] scale-110 drop-shadow-md' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
             }`}
           >
             <ClipboardList size={24} />
@@ -71,7 +71,7 @@ export default function App() {
           <button
             onClick={() => setActiveTab('reports')}
             className={`flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
-              activeTab === 'reports' ? 'text-[#F5E6D3] scale-110 drop-shadow-md' : 'text-rose-300/60 hover:text-[#F5E6D3]/80'
+              activeTab === 'reports' ? 'text-[#F5E6D3] scale-110 drop-shadow-md' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
             }`}
           >
             <Brain size={24} />
@@ -80,7 +80,7 @@ export default function App() {
           <button
             onClick={() => setActiveTab('profile')}
             className={`flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
-              activeTab === 'profile' ? 'text-[#F5E6D3] scale-110 drop-shadow-md' : 'text-rose-300/60 hover:text-[#F5E6D3]/80'
+              activeTab === 'profile' ? 'text-[#F5E6D3] scale-110 drop-shadow-md' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
             }`}
           >
             <User size={24} />
