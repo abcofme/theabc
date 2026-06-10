@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Repeat, Zap, ChevronLeft, ChevronDown, ChevronUp, Plus, Target, Sparkles, Calendar, FileText, Star } from 'lucide-react';
+import { Repeat, Zap, ChevronLeft, ChevronDown, ChevronUp, Plus, Target, Sparkles, Calendar, FileText, Star, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import bookIcon from '../../assets/book_icon.png';
 
@@ -38,6 +38,22 @@ export default function ReportsTab() {
       setLoading(false);
     }
   }, []);
+
+  const handleDeleteReport = async (e, reportId) => {
+    e.stopPropagation();
+    if (!window.confirm("Удалить этот отчет?")) return;
+    try {
+      const res = await fetch(`${API_URL}/api/reports/${reportId}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${WebApp.initData}` }
+      });
+      if (!res.ok) throw new Error("Failed to delete");
+      setReports(prev => prev.filter(r => r.id !== reportId));
+    } catch (err) {
+      console.error(err);
+      WebApp.showAlert("Ошибка при удалении отчета");
+    }
+  };
 
   const reportTypes = [
     {
@@ -281,7 +297,7 @@ export default function ReportsTab() {
                                 <div className="text-[#F5E6D3] font-medium mb-1">Отчет от {new Date(r.created_at).toLocaleDateString('ru-RU')}</div>
                                 <div className="text-xs text-[#F5E6D3]">
                                   {r.period_start ? `${new Date(r.period_start).toLocaleDateString('ru-RU')} - ` : ''} 
-                                  {r.period_end ? new Date(r.period_end).toLocaleDateString('ru-RU') : 'Всё время'}
+                                  {r.period_end ? new Date(r.period_end).toLocaleDateString('ru-RU') : 'Весь период'}
                                 </div>
                               </div>
                             </div>
