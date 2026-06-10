@@ -250,7 +250,7 @@ export default function ProfileTab() {
                   handleGeneratePortrait();
                 }}
                 disabled={isGeneratingPortrait}
-                className={`w-full rounded-2xl p-4 text-left transition-all duration-300 flex items-center justify-between shadow-sm border border-rose-800/30 backdrop-blur-sm ${
+                className={`w-full rounded-2xl p-4 text-left transition-all duration-300 flex items-center justify-between shadow-sm backdrop-blur-sm ${
                   (totalTests > 0 && passedTests === totalTests) 
                     ? "bg-rose-900/80 hover:bg-rose-800/80 text-[#F5E6D3] active:scale-[0.98]" 
                     : "bg-rose-900/80 hover:bg-rose-800/80 text-[#F5E6D3]"
@@ -274,7 +274,7 @@ export default function ProfileTab() {
                   <button 
                     onClick={handleGeneratePortrait}
                     disabled={isGeneratingPortrait}
-                    className="w-full bg-rose-900/80 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm border border-rose-800/30 backdrop-blur-sm"
+                    className="w-full bg-rose-900/80 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
                   >
                     <div>
                       <h3 className="text-base sm:text-lg font-bold text-[#F5E6D3] mb-1">Сформировать заново</h3>
@@ -289,7 +289,7 @@ export default function ProfileTab() {
                 )}
                 <button 
                   onClick={() => setActiveSubTab('portrait')}
-                  className="w-full bg-rose-900/80 border border-rose-800/30 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
+                  className="w-full bg-rose-900/80 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
                 >
                   <div>
                     <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Мой портрет</h3>
@@ -304,7 +304,7 @@ export default function ProfileTab() {
             {/* ВНЕ ЗАВИСИМОСТИ ОТ ПОРТРЕТА */}
             <button 
               onClick={() => setActiveSubTab('friends')}
-              className="w-full bg-rose-900/80 border border-rose-800/30 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
+              className="w-full bg-rose-900/80 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
             >
               <div>
                 <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Друзья</h3>
@@ -314,11 +314,11 @@ export default function ProfileTab() {
             </button>
 
             {/* QR CODE BLOCK */}
-            <div className="bg-rose-900/40 rounded-3xl p-6 mt-2 flex flex-col items-center justify-center text-center border border-rose-900/20">
+            <div className="bg-rose-900/40 rounded-3xl p-6 mt-2 flex flex-col items-center justify-center text-center">
               <h3 className="text-[#F5E6D3] font-bold text-lg mb-2">Поделиться</h3>
               <p className="text-[#F5E6D3]/70 text-sm mb-4">Отсканируйте QR-код, чтобы пригласить друзей или открыть приложение на другом устройстве</p>
               <div 
-                className="p-2 rounded-2xl shadow-lg border-2 border-[#F5E6D3]/20 cursor-pointer hover:scale-105 transition-transform" 
+                className="p-2 rounded-2xl shadow-lg cursor-pointer hover:scale-105 transition-transform" 
                 style={{backgroundColor: '#4A1D23'}}
                 onClick={() => setIsQrExpanded(true)}
               >
@@ -456,7 +456,7 @@ export default function ProfileTab() {
             <button onClick={() => setIsQrExpanded(false)} className="absolute -top-12 right-0 p-2 text-[#F5E6D3] hover:text-white transition-colors">
               <X size={28} />
             </button>
-            <div className="p-4 rounded-3xl shadow-2xl border-4 border-[#F5E6D3]/20 bg-[#4A1D23] w-full aspect-square">
+            <div className="p-4 rounded-3xl shadow-2xl bg-[#4A1D23] w-full aspect-square">
               <img src={qrCodeImg} alt="QR Code Expanded" className="w-full h-full object-contain rounded-2xl" />
             </div>
           </div>

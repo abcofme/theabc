@@ -231,7 +231,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
         <div className="space-y-6">
           {questions.length === 0 && <p className="text-[#F5E6D3]/60 text-sm">Нет вопросов</p>}
           {questions.map((q, qIdx) => (
-            <div key={qIdx} className="bg-rose-900 p-4 rounded-2xl border border-rose-800/50">
+            <div key={qIdx} className="bg-rose-900 p-4 rounded-2xl">
               <div className="flex gap-2 items-start mb-4">
                 <span className="bg-rose-950/80 text-[#F5E6D3]/60 px-2 py-1.5 rounded-lg text-sm font-bold mt-1">
                   {qIdx + 1}
@@ -277,7 +277,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
         </div>
       </div>
 
-      <div className="mt-8 pt-4 border-t border-rose-800/50">
+      <div className="mt-8 pt-4">
         <button 
           onClick={handleSave} 
           disabled={saving}

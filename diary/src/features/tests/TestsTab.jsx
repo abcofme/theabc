@@ -347,7 +347,7 @@ export default function TestsTab({ onOverlayOpen }) {
                     <button
                       key={ans.id}
                       onClick={() => handleAnswerClick(ans.id)}
-                      className="w-full bg-rose-800/40 hover:bg-rose-800 text-[#F5E6D3] font-medium text-left p-5 rounded-2xl transition-colors active:scale-[0.98] border border-rose-800/50"
+                      className="w-full bg-rose-800/40 hover:bg-rose-800 text-[#F5E6D3] font-medium text-left p-5 rounded-2xl transition-colors active:scale-[0.98]"
                     >
                       {ans.name}
                     </button>

@@ -230,7 +230,7 @@ export default function AdminPanel({ onBack }) {
               <Plus size={16} /> Создать тест
             </button>
           </div>
-          <div className="bg-rose-900/40 p-4 rounded-3xl border border-rose-900/30">
+          <div className="bg-rose-900/40 p-4 rounded-3xl">
             {(stats.tests || []).map(cat => (
               <div key={`edit-cat-${cat.id}`} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300 mb-3 last:mb-0">
                 <button
@@ -253,7 +253,7 @@ export default function AdminPanel({ onBack }) {
                       <div className="text-[#F5E6D3] text-sm py-3 italic">В этой категории нет тестов.</div>
                     ) : (
                       cat.tests.map(test => (
-                        <div key={`edit-test-${test.id}`} className="flex items-center justify-between py-3.5 border-b border-rose-800/30 last:border-0">
+                        <div key={`edit-test-${test.id}`} className="flex items-center justify-between py-3.5 last:">
                           <span className="text-sm sm:text-base font-medium pr-3 text-[#F5E6D3] flex-1">
                             {test.name}
                           </span>
