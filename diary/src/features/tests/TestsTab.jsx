@@ -5,7 +5,7 @@ import oakTreeImg from '../../assets/oak-tree.png';
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://friendly-various-near-across.trycloudflare.com";
 
-export default function TestsTab() {
+export default function TestsTab({ onOverlayOpen }) {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openCategory, setOpenCategory] = useState(null);
@@ -21,6 +21,12 @@ export default function TestsTab() {
   const [isStarted, setIsStarted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [testResult, setTestResult] = useState(null);
+
+  useEffect(() => {
+    if (onOverlayOpen) {
+      onOverlayOpen(!!takingTestId || !!selectedResult);
+    }
+  }, [takingTestId, selectedResult, onOverlayOpen]);
 
   const fetchCategories = () => {
     if (WebApp.initData) {

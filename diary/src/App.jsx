@@ -64,7 +64,7 @@ export default function App() {
       <main className={`flex-1 overflow-y-auto p-4 relative z-10 ${isNavHidden ? '' : 'pb-24'}`}>
         {/* Передаем функцию скрытия меню в CalendarTab */}
         {activeTab === 'diary' && <CalendarTab onSheetOpen={setIsNavHidden} />}
-        {activeTab === 'tests' && <TestsTab />}
+        {activeTab === 'tests' && <TestsTab onOverlayOpen={setIsNavHidden} />}
         {activeTab === 'reports' && <ReportsTab />}
         {activeTab === 'profile' && <ProfileTab />}
       </main>
