@@ -258,7 +258,16 @@ export default function TestsTab({ onOverlayOpen }) {
       {/* Полноэкранный интерфейс ПРОХОЖДЕНИЯ ТЕСТА */}
       {takingTestId && (
         <div className="fixed inset-0 z-50 flex flex-col bg-rose-950 animate-in fade-in slide-in-from-bottom-8 duration-300">
-          <div className="flex items-center justify-between p-4 bg-rose-900/80 backdrop-blur-md">
+          <div 
+            className="absolute inset-0 pointer-events-none z-0 opacity-15"
+            style={{
+              backgroundImage: `url(${oakTreeImg})`,
+              backgroundPosition: "bottom right",
+              backgroundRepeat: "no-repeat",
+              backgroundSize: "60%"
+            }}
+          />
+          <div className="flex items-center justify-between p-4 bg-rose-900/80 backdrop-blur-md relative z-10">
             <h3 className="text-lg font-bold text-[#F5E6D3] truncate max-w-[80%]">
               {testDetails ? testDetails.name : "Загрузка..."}
             </h3>
@@ -267,7 +276,7 @@ export default function TestsTab({ onOverlayOpen }) {
             </button>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col relative z-10">
             {!testDetails ? (
               <div className="flex-1 flex justify-center items-center">
                 <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#F5E6D3] border-t-transparent"></div>
