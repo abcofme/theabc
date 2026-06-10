@@ -851,7 +851,7 @@ async def submit_test(
         result_query = select(Result).where(
             Result.test_id == test_id,
             Result.range_from <= points,
-            (Result.range_to > points) | (Result.range_to.is_(None))
+            (Result.range_to >= points) | (Result.range_to.is_(None))
         )
         result_obj = (await session.execute(result_query)).scalar_one_or_none()
         
