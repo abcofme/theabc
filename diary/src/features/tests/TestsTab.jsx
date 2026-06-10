@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, CheckCircle, XCircle, X, Brain, ClipboardList } from 'lucide-react';
-import oakTreeImg from '../../assets/oak-tree.png';
+import bgLeaves from '../../assets/bg-leaves.png';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://friendly-various-near-across.trycloudflare.com";
@@ -259,9 +259,9 @@ export default function TestsTab({ onOverlayOpen }) {
       {takingTestId && (
         <div className="fixed inset-0 z-50 flex flex-col bg-rose-950 animate-in fade-in slide-in-from-bottom-8 duration-300">
           <div 
-            className="absolute inset-0 pointer-events-none z-0 opacity-15"
+            className="absolute inset-0 pointer-events-none z-0"
             style={{
-              backgroundImage: `url(${oakTreeImg})`,
+              backgroundImage: `url(${bgLeaves})`,
               backgroundPosition: "bottom right",
               backgroundRepeat: "no-repeat",
               backgroundSize: "60%"
