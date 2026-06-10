@@ -271,7 +271,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
               </div>
             </div>
           ))}
-          <button onClick={addQuestion} className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
+          <button onClick={addQuestion} className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
             <Plus size={18} /> Вопрос
           </button>
         </div>
