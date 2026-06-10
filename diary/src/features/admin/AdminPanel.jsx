@@ -210,8 +210,8 @@ export default function AdminPanel({ onBack }) {
 
           <h3 className="text-xl font-bold text-[#F5E6D3] mt-8 mb-2">Удаление тестов</h3>
           <div className="bg-rose-900/40 p-4 rounded-3xl border border-red-900/30">
-            <p className="text-red-300 text-sm mb-4 font-medium px-2">Внимание: Удаление теста навсегда сотрет его из базы данных вместе со всеми результатами пользователей.</p>
-            {stats.test_counts.map(cat => (
+            <p className="text-red-300 text-sm mb-4 font-medium px-2">ВНИМАНИЕ: Удаление теста необратимо. Будут удалены все прогрессы и результаты пользователей по этому тесту.</p>
+            {(stats.tests || []).map(cat => (
               <div key={`del-cat-${cat.id}`} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-700 mb-3 last:mb-0">
                 <button
                   onClick={() => setOpenDeleteCategory(openDeleteCategory === cat.id ? null : cat.id)}
