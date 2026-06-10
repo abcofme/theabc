@@ -161,7 +161,7 @@ export default function CalendarTab({ onSheetOpen }) {
             .then(res => res.json())
             .then(analysisData => {
               if (analysisData.status === "success") {
-                setDiaryEntries(prevEntries => prevEntries.map(e => e.id === data.id ? { ...e, portrait_match_score: analysisData.score } : e));
+                setDiaryEntries(prevEntries => prevEntries.map(e => e.id === data.id ? { ...e, portrait_match_score: analysisData.score, portrait_match_explanation: analysisData.explanation } : e));
               }
             })
             .catch(console.error)
@@ -234,7 +234,7 @@ export default function CalendarTab({ onSheetOpen }) {
       .then(res => res.json())
       .then(analysisData => {
         if (analysisData.status === "success") {
-          setDiaryEntries(prevEntries => prevEntries.map(e => e.id === entryId ? { ...e, portrait_match_score: analysisData.score } : e));
+          setDiaryEntries(prevEntries => prevEntries.map(e => e.id === entryId ? { ...e, portrait_match_score: analysisData.score, portrait_match_explanation: analysisData.explanation } : e));
         }
       })
       .catch(console.error)
@@ -291,6 +291,14 @@ export default function CalendarTab({ onSheetOpen }) {
           </div>
           <span className={`text-sm font-bold ${colorClass.replace('bg-', 'text-')}`}>{score}%</span>
         </div>
+        {entry.portrait_match_explanation && (
+          <div className="mt-4 p-3 bg-rose-900/50 rounded-xl relative overflow-hidden">
+            <div className={`absolute left-0 top-0 bottom-0 w-1 ${colorClass.replace('bg-', 'bg-').replace('400', '500')}`}></div>
+            <p className="text-sm text-[#F5E6D3]/90 italic leading-relaxed pl-2">
+              "{entry.portrait_match_explanation}"
+            </p>
+          </div>
+        )}
       </div>
     );
   };

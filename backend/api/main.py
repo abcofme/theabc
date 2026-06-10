@@ -133,7 +133,15 @@ async def get_diary_entries(
     filtered = [e for e in entries if e.date.year == year and e.date.month == month]
     
     return [
-        {"id": e.id, "date": e.date.isoformat(), "event": e.event, "reaction": e.reaction, "rating": getattr(e, "rating", None), "portrait_match_score": getattr(e, "portrait_match_score", None)}
+        {
+            "id": e.id, 
+            "date": e.date.isoformat(), 
+            "event": e.event, 
+            "reaction": e.reaction, 
+            "rating": getattr(e, "rating", None), 
+            "portrait_match_score": getattr(e, "portrait_match_score", None),
+            "portrait_match_explanation": getattr(e, "portrait_match_explanation", None)
+        }
         for e in filtered
     ]
 
@@ -760,9 +768,9 @@ async def analyze_reaction(
     user_id = user_data.get("id")
     
     # Just run it directly since it's triggered manually
-    score = await _analyze_reaction_bg(user_id, entry_id)
-    if score is not None:
-        return {"status": "success", "score": score}
+    result = await _analyze_reaction_bg(user_id, entry_id)
+    if result is not None:
+        return {"status": "success", "score": result["score"], "explanation": result["explanation"]}
     else:
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail="Failed to analyze reaction")

@@ -29,6 +29,12 @@ async def migrate():
                 ALTER TABLE personality_portraits ADD COLUMN IF NOT EXISTS technical_summary TEXT;
             """))
             print("Successfully updated personality_portraits.")
+            
+            print("Adding portrait_match_explanation to diary_entries...")
+            await conn.execute(text("""
+                ALTER TABLE diary_entries ADD COLUMN IF NOT EXISTS portrait_match_explanation TEXT;
+            """))
+            print("Successfully updated diary_entries.")
         except Exception as e:
             print(f"Migration failed: {e}")
 
