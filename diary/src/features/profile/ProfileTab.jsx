@@ -459,7 +459,6 @@ export default function ProfileTab() {
             <div className="p-4 rounded-3xl shadow-2xl border-4 border-[#F5E6D3]/20 bg-[#4A1D23] w-full aspect-square">
               <img src={qrCodeImg} alt="QR Code Expanded" className="w-full h-full object-contain rounded-2xl" />
             </div>
-            <p className="text-[#F5E6D3] font-medium mt-6 text-center text-lg">Покажите этот код другу</p>
           </div>
         </div>
       )}

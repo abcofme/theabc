@@ -173,13 +173,9 @@ export default function TestsTab({ onOverlayOpen }) {
             <div key={cat.id} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
               <button
                 onClick={() => toggleCategory(cat.id)}
-                className={`w-full relative flex items-center p-6 min-h-[120px] hover:bg-rose-800/70 transition-colors active:bg-rose-800 overflow-hidden isolate ${openCategory === cat.id ? 'rounded-t-2xl' : 'rounded-2xl'} ${cat.name.toLowerCase().includes('темперамент') ? 'justify-end' : 'justify-between'}`}
+                className={`w-full relative flex items-center p-6 min-h-[120px] hover:bg-rose-800/70 transition-colors active:bg-rose-800 overflow-hidden isolate ${openCategory === cat.id ? 'rounded-t-2xl' : 'rounded-2xl'} justify-end`}
               >
-                {cat.name.toLowerCase().includes('темперамент') && (
-                  <img src={oakTreeImg} alt="Темперамент" className={`absolute left-0 bottom-0 h-[115%] w-auto object-cover object-left-bottom drop-shadow-md pointer-events-none ${openCategory === cat.id ? 'rounded-tl-2xl' : 'rounded-l-2xl'}`} />
-                )}
-                
-                <div className={`flex items-center gap-4 z-10 relative ${cat.name.toLowerCase().includes('темперамент') ? 'pl-24 text-right' : 'pr-4 text-left w-full justify-between'}`}>
+                <div className="flex items-center gap-4 z-10 relative text-right">
                   <span className="font-semibold text-[#F5E6D3] text-xl sm:text-2xl leading-tight">
                     {cat.name}
                   </span>
