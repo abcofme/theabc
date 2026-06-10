@@ -736,6 +736,105 @@ async def analyze_reaction(
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail="Failed to analyze reaction")
 
+from pydantic import BaseModel
+from typing import List
+
+class SubmitTestRequest(BaseModel):
+    answer_ids: List[int]
+
+@app.get("/api/tests/{test_id}")
+async def get_test_details(
+    test_id: int,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    query = select(Test).options(
+        selectinload(Test.questions).selectinload(Question.answers)
+    ).where(Test.id == test_id)
+    test = (await session.execute(query)).scalar_one_or_none()
+    
+    if not test:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Тест не найден")
+    
+    user_id = user_data.get("id")
+    progress_query = select(Progress).where(Progress.test_id == test_id, Progress.user_id == user_id)
+    progress = (await session.execute(progress_query)).scalar_one_or_none()
+    
+    return {
+        "id": test.id,
+        "name": test.name,
+        "description": test.description,
+        "passed": bool(progress),
+        "questions": [
+            {
+                "id": q.id,
+                "name": q.name,
+                "answers": [
+                    {
+                        "id": a.id,
+                        "name": a.name,
+                    } for a in q.answers
+                ]
+            } for q in test.questions
+        ]
+    }
+
+@app.post("/api/tests/{test_id}/submit")
+async def submit_test(
+    test_id: int,
+    payload: SubmitTestRequest,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    user_id = user_data.get("id")
+    # check if already passed
+    progress_query = select(Progress).where(Progress.test_id == test_id, Progress.user_id == user_id)
+    progress = (await session.execute(progress_query)).scalar_one_or_none()
+    if progress:
+        return {"result": "Вы уже прошли этот тест."}
+    
+    # get test
+    query = select(Test).where(Test.id == test_id)
+    test = (await session.execute(query)).scalar_one_or_none()
+    
+    if not test:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Тест не найден")
+        
+    # get answers
+    answers_query = select(Answer).where(Answer.id.in_(payload.answer_ids))
+    answers = (await session.execute(answers_query)).scalars().all()
+    
+    if test.hardcode_test:
+        result_text = get_hardcoded_test_result(answers, test)
+        progress = Progress(
+            test_id=test_id,
+            user_id=user_id,
+            value=0,
+            hardcode_value=result_text
+        )
+        session.add(progress)
+    else:
+        points = sum(a.value for a in answers)
+        result_query = select(Result).where(
+            Result.test_id == test_id,
+            Result.range_from <= points,
+            (Result.range_to > points) | (Result.range_to.is_(None))
+        )
+        result_obj = (await session.execute(result_query)).scalar_one_or_none()
+        
+        progress = Progress(
+            test_id=test_id,
+            user_id=user_id,
+            value=points
+        )
+        session.add(progress)
+        result_text = result_obj.name.capitalize() if result_obj and result_obj.name else "Результат не найден"
+        
+    await session.commit()
+    return {"result": result_text}
+
 @app.get("/api/admin/stats")
 async def get_admin_stats(
     start_date: Optional[str] = None,

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Calendar as CalendarIcon, Sparkles, User, Brain } from 'lucide-react';
+import { Calendar as CalendarIcon, Sparkles, User, Brain, ClipboardList } from 'lucide-react';
 import CalendarTab from './features/calendar/CalendarTab';
 import ProfileTab from './features/profile/ProfileTab';
 import ReportsTab from './features/reports/ReportsTab';
+import TestsTab from './features/tests/TestsTab';
 import bgLeaves from './assets/bg-leaves.png';
 
 const WebApp = window.Telegram.WebApp;
@@ -41,6 +42,7 @@ export default function App() {
       <main className={`flex-1 overflow-y-auto p-4 relative z-10 ${isNavHidden ? '' : 'pb-24'}`}>
         {/* Передаем функцию скрытия меню в CalendarTab */}
         {activeTab === 'diary' && <CalendarTab onSheetOpen={setIsNavHidden} />}
+        {activeTab === 'tests' && <TestsTab />}
         {activeTab === 'reports' && <ReportsTab />}
         {activeTab === 'profile' && <ProfileTab />}
       </main>
@@ -56,6 +58,15 @@ export default function App() {
           >
             <CalendarIcon size={24} />
             <span className={`text-[10px] mt-1 ${activeTab === 'diary' ? 'font-bold' : ''}`}>Дневник</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('tests')}
+            className={`flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
+              activeTab === 'tests' ? 'text-[#F5E6D3] scale-110 drop-shadow-md' : 'text-rose-300/60 hover:text-[#F5E6D3]/80'
+            }`}
+          >
+            <ClipboardList size={24} />
+            <span className={`text-[10px] mt-1 ${activeTab === 'tests' ? 'font-bold' : ''}`}>Тесты</span>
           </button>
           <button
             onClick={() => setActiveTab('reports')}

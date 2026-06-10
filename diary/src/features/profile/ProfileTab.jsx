@@ -16,7 +16,7 @@ export default function ProfileTab() {
   const [loading, setLoading] = useState(true);
   
   // Новый стейт для вкладок
-  const [activeSubTab, setActiveSubTab] = useState('tests'); // 'tests' | 'analyses' | 'portrait'
+  const [activeSubTab, setActiveSubTab] = useState('main'); // 'main' | 'admin' | 'portrait' | 'friends'
 
   // Хранит ID открытой категории (аккордеон)
   const [openCategory, setOpenCategory] = useState(null);
@@ -229,10 +229,10 @@ export default function ProfileTab() {
       </div>
 
       {activeSubTab === 'admin' && (
-        <AdminPanel onBack={() => setActiveSubTab('tests')} />
+        <AdminPanel onBack={() => setActiveSubTab('main')} />
       )}
 
-      {activeSubTab === 'tests' && (
+      {activeSubTab === 'main' && (
         <>
           {/* ПОРТРЕТ ЛИЧНОСТИ КНОПКИ */}
           <div className="mx-4 mb-4 flex flex-col gap-4">
@@ -307,80 +307,13 @@ export default function ProfileTab() {
               </>
             )}
           </div>
-
-          {/* 3. КОНТЕНТ ВКЛАДОК (теперь только результаты) */}
-        <div className="px-2 pb-6 space-y-3 animate-in fade-in duration-300 flex flex-col">
-          {loading ? (
-            <div className="flex justify-center items-center py-12 flex-1">
-              <div className="animate-spin rounded-full h-10 w-10"></div>
-            </div>
-          ) : categories.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center text-[#F5E6D3] text-center py-12">
-              <p>Здесь будут ваши результаты тестов.</p>
-            </div>
-          ) : (
-            <>
-              <h2 className="text-xl font-bold text-[#F5E6D3] px-2 mt-2 mb-2">Результаты тестов</h2>
-              {categories.map(cat => (
-              <div key={cat.id} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
-                {/* Кнопка категории (Аккордеон) */}
-                <button
-                  onClick={() => toggleCategory(cat.id)}
-                  className="w-full flex items-center justify-between p-4 hover:bg-rose-800/70 transition-colors active:bg-rose-800"
-                >
-                  <span className="font-semibold text-[#F5E6D3] text-left text-base sm:text-lg pr-4 leading-tight">
-                    {cat.name}
-                  </span>
-                  {openCategory === cat.id ? (
-                    <ChevronUp size={22} className="text-[#F5E6D3] shrink-0" />
-                  ) : (
-                    <ChevronDown size={22} className="text-[#F5E6D3] shrink-0" />
-                  )}
-                </button>
-
-                {/* Содержимое категории (Список тестов) */}
-                {openCategory === cat.id && (
-                  <div className="bg-rose-950/40 px-4 py-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                    {cat.tests.length === 0 ? (
-                      <div className="text-[#F5E6D3] text-sm py-3 italic">В этой категории пока нет тестов.</div>
-                    ) : (
-                      cat.tests.map(test => (
-                        <div
-                          key={test.id}
-                          onClick={() => openResultModal(test)}
-                          className={`flex items-center justify-between py-3.5 last: 
-                          ${ test.passed ? 'cursor-pointer hover:bg-rose-800/40 -mx-4 px-4 transition-colors active:bg-rose-800' : 'opacity-60 cursor-default' }`}
-                        >
-                          <span className="text-sm sm:text-base font-medium pr-3 text-[#F5E6D3] flex-1 leading-snug">
-                            {test.name}
-                          </span>
-                          {/* Плашка Пройден / Не пройден */}
-                          {test.passed ? (
-                            <span className="flex items-center gap-1.5 text-green-500 text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-500/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">
-                              <CheckCircle size={14} /> Пройден
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-1.5 text-red-400 text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-red-400/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">
-                              <XCircle size={14} /> Не пройден
-                            </span>
-                          )}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-            </>
-          )}
-        </div>
         </>
       )}
 
       {activeSubTab === 'portrait' && (
         <div className="px-4 sm:px-6 pt-6 animate-in fade-in slide-in-from-right-8 duration-300 flex flex-col">
           <button 
-            onClick={() => setActiveSubTab('tests')}
+            onClick={() => setActiveSubTab('main')}
             className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-6 transition-colors self-start"
           >
             <ChevronLeft size={20} />
@@ -492,7 +425,7 @@ export default function ProfileTab() {
       )}
     
       {activeSubTab === 'friends' && (
-        <FriendsView onBack={() => setActiveSubTab('tests')} />
+        <FriendsView onBack={() => setActiveSubTab('main')} />
       )}
 </div>
   );
