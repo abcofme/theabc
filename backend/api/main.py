@@ -727,7 +727,7 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                         "Content-Type": "application/json"
                     },
                     json={
-                        "model": "deepseek-chat",
+                        "model": "gpt-4o-mini",
                         "messages": [
                             {"role": "user", "content": prompt}
                         ],
@@ -743,7 +743,7 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                             "Content-Type": "application/json"
                         },
                         json={
-                            "model": "gpt-3.5-turbo",
+                            "model": "gpt-4o-mini",
                             "messages": [
                                 {"role": "user", "content": prompt}
                             ],
