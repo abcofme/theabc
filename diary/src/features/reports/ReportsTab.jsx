@@ -289,9 +289,9 @@ export default function ReportsTab() {
                           <div key={r.id} className="relative group w-full">
                             <button
                               onClick={() => setViewReport(r)}
-                              className="w-full text-left bg-rose-900 p-4 rounded-xl hover:bg-rose-800/80 transition-colors flex items-center justify-between"
+                              className="w-full text-left bg-rose-900 py-4 pl-4 pr-12 rounded-xl hover:bg-rose-800/80 transition-colors flex items-center justify-between"
                             >
-                              <div className="flex items-center gap-3 pr-8">
+                              <div className="flex items-center gap-3">
                                 <FileText className="text-[#F5E6D3] transition-colors" size={20} />
                                 <div>
                                   <div className="text-[#F5E6D3] font-medium mb-1">Отчет от {new Date(r.created_at).toLocaleDateString('ru-RU')}</div>

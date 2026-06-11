@@ -539,7 +539,7 @@ async def delete_report(
     session: AsyncSession = Depends(get_session)
 ):
     user_id = user_data.get("id")
-    query = select(AIReport).where(AIReport.id == report_id, AIReport.user_id == user_id)
+    query = select(BehavioralReport).where(BehavioralReport.id == report_id, BehavioralReport.user_id == user_id)
     report = (await session.execute(query)).scalars().first()
     
     if not report:
@@ -957,6 +957,8 @@ async def get_admin_stats(
             
         def get_count_expr(model):
             if unique:
+                if getattr(model, "__name__", "") == "User":
+                    return func.count(func.distinct(model.id))
                 return func.count(func.distinct(model.user_id))
             return func.count(model.id)
 
