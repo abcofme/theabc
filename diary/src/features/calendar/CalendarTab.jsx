@@ -77,7 +77,8 @@ export default function CalendarTab({ onSheetOpen }) {
           event: entry.event,
           reaction: entry.reaction,
           rating: entry.rating,
-          portrait_match_score: entry.portrait_match_score
+          portrait_match_score: entry.portrait_match_score,
+          portrait_match_explanation: entry.portrait_match_explanation
         }));
         setDiaryEntries(loadedEntries);
       })
@@ -104,7 +105,7 @@ export default function CalendarTab({ onSheetOpen }) {
 
   const activeEntries = diaryEntries.filter(entry =>
     selectedDate && isSameDay(entry.date, selectedDate)
-  );
+  ).sort((a, b) => a.id - b.id);
 
   const hasDailyRating = activeEntries.some(e => e.rating);
 
@@ -513,14 +514,6 @@ export default function CalendarTab({ onSheetOpen }) {
                 ))}
               </div>
 
-              <button
-                type="button"
-                onClick={handleAddMore}
-                className="w-full bg-rose-800/80 hover:bg-rose-700 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2"
-              >
-                <Plus size={18} />
-                Добавить событие
-              </button>
 
               {!hasDailyRating && (
                 <div className="mt-4 pt-4">
