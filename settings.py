@@ -32,7 +32,9 @@ class Settings(BaseSettings):
     TIMEWEB_AI_URL: str | None = None
     TIMEWEB_AI_PORTRAIT_URL: str | None = None
     TIMEWEB_AI_REPORTS_URL: str | None = None
+    TIMEWEB_AI_REPORTS_TOKEN: str | None = None
     TIMEWEB_AI_SCALE_URL: str | None = None
+    TIMEWEB_AI_SCALE_TOKEN: str | None = None
 
     @property
     def url(self) -> str:
