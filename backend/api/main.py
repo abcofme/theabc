@@ -879,7 +879,7 @@ async def submit_test(
     user_id = user_data.get("id")
     # check if already passed
     progress_query = select(Progress).where(Progress.test_id == test_id, Progress.user_id == user_id)
-    progress = (await session.execute(progress_query)).scalar_one_or_none()
+    progress = (await session.execute(progress_query)).scalars().first()
     if progress:
         return {"result": "Вы уже прошли этот тест."}
     

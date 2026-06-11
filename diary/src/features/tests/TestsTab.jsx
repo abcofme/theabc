@@ -106,18 +106,20 @@ export default function TestsTab({ onOverlayOpen }) {
           },
           body: JSON.stringify({ answer_ids: newAnswers })
         });
-        const data = await response.json();
-        if (response.ok) {
+          if (!response.ok) {
+            let errText = await response.text();
+            WebApp.showAlert(`Ошибка сервера: ${response.status} ${errText.substring(0, 50)}`);
+            return;
+          }
+          
+          const data = await response.json();
           setTestResult(data.result);
           WebApp.HapticFeedback.notificationOccurred('success');
           // refresh categories
           fetchCategories();
-        } else {
-          WebApp.showAlert("Ошибка отправки теста");
-        }
-      } catch (err) {
-        WebApp.showAlert("Ошибка сети");
-      } finally {
+        } catch (err) {
+          WebApp.showAlert(`Ошибка сети или парсинга: ${err.message}`);
+        } finally {
         setIsSubmitting(false);
       }
     }
