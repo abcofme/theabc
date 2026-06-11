@@ -674,7 +674,7 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
     from sqlalchemy import select
     
     try:
-        ai_token = os.getenv("TIMEWEB_AI_TOKEN")
+        ai_token = os.getenv("TIMEWEB_AI_SCALE_TOKEN", os.getenv("TIMEWEB_AI_TOKEN"))
         ai_url = os.getenv("TIMEWEB_AI_SCALE_URL", os.getenv("TIMEWEB_AI_URL"))
         
         if not ai_url:
