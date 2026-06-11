@@ -243,7 +243,7 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
     
     # Добавляем инструкции для JSON формата и технического саммари
     prompt += '\n\nВАЖНО: В поле description напиши до 3 предложений пояснения, почему ты выбрал именно такое % соответствия на этой шкале.'
-    prompt += '\n\nОЧЕНЬ ВАЖНО: Твой ответ должен быть СТРОГИМ JSON объектом. Никакого текста до или после JSON. Формат:\n{"content": "Здесь весь твой сгенерированный красивый Markdown текст (включая блок с ```json внутри для шкал)", "technical_summary": "Здесь напиши техническую выжимку ВСЕХ интерпретаций результатов тестов. Дословно перенеси смыслы всех результатов, но в максимально сокращенном формате (используй сухие факты, списки, аббревиатуры). Никакая информация не должна быть утеряна, но она должна быть максимально сжата. Текст не обязательно должен быть легко читаемым для человека, но обязан быть 100% понятным для других ИИ, так как он будет использоваться как системный контекст личности."}'
+    prompt += '\n\nВыведи только красивый Markdown текст (включая блок с ```json внутри для шкал). Без дополнительных вступлений.'
 
     try:
         async with httpx.AsyncClient(timeout=120.0) as client:
@@ -273,29 +273,36 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
             ai_data = ai_response.json()
             generated_text = ai_data["choices"][0]["message"]["content"].strip()
             
-            # Попытка парсинга JSON, учитывая возможные артефакты от Claude
-            parsed_json = None
-            try:
-                parsed_json = json.loads(generated_text)
-            except json.JSONDecodeError:
-                # Если упало, попробуем вытащить через регулярку
-                match = re.search(r'\{[\s\S]*\}', generated_text)
-                if match:
-                    try:
-                        parsed_json = json.loads(match.group(0))
-                    except json.JSONDecodeError:
-                        pass
+            content = generated_text
+            technical_summary = ""
             
-            if not parsed_json:
-                print("Failed to parse JSON from AI response:", generated_text)
-                # Фолбэк на случай если нейросеть совсем не справилась
-                parsed_json = {
-                    "content": generated_text,
-                    "technical_summary": ""
-                }
-            
-            content = parsed_json.get("content", "")
-            technical_summary = parsed_json.get("technical_summary", "")
+            # Теперь делаем второй запрос к gpt-4o-mini для генерации выжимки
+            ai_scale_token = os.getenv("TIMEWEB_AI_SCALE_TOKEN", os.getenv("TIMEWEB_AI_TOKEN"))
+            ai_scale_url = os.getenv("TIMEWEB_AI_SCALE_URL", os.getenv("TIMEWEB_AI_URL"))
+            if ai_scale_url and not ai_scale_url.endswith("/chat/completions"):
+                ai_scale_url = ai_scale_url.rstrip("/") + "/chat/completions"
+                
+            if ai_scale_url and ai_scale_token:
+                summary_prompt = f"""Оригинальный текст психологического портрета:
+{generated_text}
+
+Задание:
+Напиши техническую выжимку ВСЕХ интерпретаций из портрета выше. Дословно перенеси смыслы всех результатов, но в максимально сокращенном формате (используй сухие факты, списки, аббревиатуры). Никакая информация не должна быть утеряна, но она должна быть максимально сжата. Текст не обязательно должен быть легко читаемым для человека, но обязан быть 100% понятным для ИИ, так как он будет использоваться как контекст личности.
+Выведи ТОЛЬКО текст выжимки, без вступлений."""
+                try:
+                    ai_summary_response = await client.post(
+                        ai_scale_url,
+                        headers={"Authorization": f"Bearer {ai_scale_token}", "Content-Type": "application/json"},
+                        json={
+                            "model": "gpt-4o-mini",
+                            "messages": [{"role": "user", "content": summary_prompt}]
+                        }
+                    )
+                    if ai_summary_response.status_code == 200:
+                        ai_summary_data = ai_summary_response.json()
+                        technical_summary = ai_summary_data["choices"][0]["message"]["content"].strip()
+                except Exception as sum_e:
+                    print("Failed to generate technical summary:", sum_e)
             
             async with async_session() as db:
                 existing = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
