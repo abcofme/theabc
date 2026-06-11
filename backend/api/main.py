@@ -405,7 +405,7 @@ async def generate_personality_portrait(
 
     # 3. Запрос в Timeweb Cloud API (Claude 3.5 Sonnet)
     # Используем TIMEWEB_AI_REPORTS_URL для генерации портрета как отчета
-    ai_token = os.getenv("TIMEWEB_AI_TOKEN")
+    ai_token = os.getenv("TIMEWEB_AI_REPORTS_TOKEN", os.getenv("TIMEWEB_AI_TOKEN"))
     ai_url = os.getenv("TIMEWEB_AI_REPORTS_URL", os.getenv("TIMEWEB_AI_URL"))
     
     if not ai_url:
@@ -628,7 +628,7 @@ async def generate_report(
         from fastapi import HTTPException
         raise HTTPException(status_code=400, detail="Неизвестный тип отчета.")
 
-    ai_token = os.getenv("TIMEWEB_AI_TOKEN")
+    ai_token = os.getenv("TIMEWEB_AI_REPORTS_TOKEN", os.getenv("TIMEWEB_AI_TOKEN"))
     ai_url = os.getenv("TIMEWEB_AI_REPORTS_URL", os.getenv("TIMEWEB_AI_URL"))
     
     if not ai_url:
