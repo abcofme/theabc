@@ -273,7 +273,7 @@ export default function ReportsTab() {
                 </button>
                 
                 {isOpen && (
-                  <div className="p-5 bg-rose-950/50 flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="p-5 bg-rose-950/50 flex flex-col gap-3 animate-slide-down">
                     <button 
                       onClick={() => setActiveForm(rtype.id)}
                       className="w-full py-3 bg-rose-800 hover:bg-rose-700 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
@@ -286,23 +286,31 @@ export default function ReportsTab() {
                       <div className="mt-4 flex flex-col gap-2">
                         <span className="text-xs font-bold text-[#F5E6D3] uppercase tracking-wider mb-2">История отчетов</span>
                         {typeReports.map(r => (
-                          <button
-                            key={r.id}
-                            onClick={() => setViewReport(r)}
-                            className="w-full text-left bg-rose-900 p-4 rounded-xl hover:bg-rose-800/80 transition-colors flex items-center justify-between group"
-                          >
-                            <div className="flex items-center gap-3">
-                              <FileText className="text-[#F5E6D3] group-hover:text-[#F5E6D3] transition-colors" size={20} />
-                              <div>
-                                <div className="text-[#F5E6D3] font-medium mb-1">Отчет от {new Date(r.created_at).toLocaleDateString('ru-RU')}</div>
-                                <div className="text-xs text-[#F5E6D3]">
-                                  {r.period_start ? `${new Date(r.period_start).toLocaleDateString('ru-RU')} - ` : ''} 
-                                  {r.period_end ? new Date(r.period_end).toLocaleDateString('ru-RU') : 'Весь период'}
+                          <div key={r.id} className="relative group w-full">
+                            <button
+                              onClick={() => setViewReport(r)}
+                              className="w-full text-left bg-rose-900 p-4 rounded-xl hover:bg-rose-800/80 transition-colors flex items-center justify-between"
+                            >
+                              <div className="flex items-center gap-3 pr-8">
+                                <FileText className="text-[#F5E6D3] transition-colors" size={20} />
+                                <div>
+                                  <div className="text-[#F5E6D3] font-medium mb-1">Отчет от {new Date(r.created_at).toLocaleDateString('ru-RU')}</div>
+                                  <div className="text-xs text-[#F5E6D3]">
+                                    {r.period_start ? `${new Date(r.period_start).toLocaleDateString('ru-RU')} - ` : ''} 
+                                    {r.period_end ? new Date(r.period_end).toLocaleDateString('ru-RU') : 'За все время'}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
                             <ChevronLeft className="text-[#F5E6D3] rotate-180" size={16} />
                           </button>
+                          <button
+                            onClick={(e) => handleDeleteReport(e, r.id)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-[#F5E6D3]/60 hover:text-[#F5E6D3] hover:bg-red-500/20 rounded-xl transition-colors active:scale-95"
+                            title="Удалить отчет"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                         ))}
                       </div>
                     ) : (

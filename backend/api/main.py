@@ -532,6 +532,24 @@ async def _generate_report_bg(user_id: int, report_title: str, report_prompt: st
         print("BG report failed:", repr(e))
         raise HTTPException(status_code=500, detail=f"Failed to generate report: {repr(e)}")
 
+@app.delete("/api/reports/{report_id}")
+async def delete_report(
+    report_id: int,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    user_id = user_data.get("id")
+    query = select(AIReport).where(AIReport.id == report_id, AIReport.user_id == user_id)
+    report = (await session.execute(query)).scalars().first()
+    
+    if not report:
+        raise HTTPException(status_code=404, detail="Отчет не найден")
+        
+    await session.delete(report)
+    await session.commit()
+    
+    return {"status": "success"}
+
 @app.post("/api/reports/generate")
 async def generate_report(
     req: ReportGenerateRequest,

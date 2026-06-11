@@ -37,5 +37,20 @@ html, body {
 
 /* Плавные анимации для всех интерактивных элементов */
 button, a, input, textarea, select, .transition-all {
-  @apply transition-all duration-700 ease-in-out;
+  @apply transition-all duration-300 ease-in-out;
+}
+
+@keyframes slideDown {
+  from { 
+    opacity: 0; 
+    transform: translateY(-10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+.animate-slide-down {
+  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

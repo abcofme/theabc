@@ -294,8 +294,8 @@ export default function CalendarTab({ onSheetOpen }) {
         </div>
         {entry.portrait_match_explanation && (
           <div className="mt-4 p-3 bg-rose-900/50 rounded-xl relative overflow-hidden">
-            <div className={`absolute left-0 top-0 bottom-0 w-1 ${colorClass.replace('bg-', 'bg-').replace('400', '500')}`}></div>
-            <p className="text-sm text-[#F5E6D3]/90 italic leading-relaxed pl-2">
+            <div className={`absolute left-0 top-0 bottom-0 w-2 ${colorClass}`}></div>
+            <p className="text-sm text-[#F5E6D3]/90 italic leading-relaxed pl-3">
               "{entry.portrait_match_explanation}"
             </p>
           </div>
@@ -326,7 +326,7 @@ export default function CalendarTab({ onSheetOpen }) {
         </div>
 
         {isDropdownOpen && (
-          <div className="absolute top-14 left-0 z-40 w-80 bg-rose-900 rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-300">
+          <div className="absolute top-14 left-0 z-40 w-80 bg-rose-900 rounded-2xl shadow-2xl p-4 animate-slide-down">
             <div className="text-xs font-semibold text-[#F5E6D3] uppercase tracking-wider mb-2">Выберите месяц</div>
             <div className="grid grid-cols-3 gap-1.5 mb-4">
               {monthsRu.map((m, idx) => (
@@ -498,7 +498,7 @@ export default function CalendarTab({ onSheetOpen }) {
                         placeholder="Что произошло? (Событие)"
                         value={entry.event}
                         onChange={(e) => updateEntry(index, 'event', e.target.value)}
-                        className="w-full bg-rose-900 rounded-xl px-4 py-3.5 text-[#F5E6D3] placeholder:text-[#F5E6D3] focus:outline-none focus: focus:ring-1 focus:ring-blue-500/50 transition-all"
+                        className="w-full bg-rose-900 rounded-xl px-4 py-3.5 text-[#F5E6D3] placeholder:text-[#F5E6D3] focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                       />
                     </div>
                     <div>
@@ -507,7 +507,7 @@ export default function CalendarTab({ onSheetOpen }) {
                         value={entry.reaction}
                         onChange={(e) => updateEntry(index, 'reaction', e.target.value)}
                         rows="3"
-                        className="w-full bg-rose-900 rounded-xl px-4 py-3.5 text-[#F5E6D3] placeholder:text-[#F5E6D3] focus:outline-none focus: focus:ring-1 focus:ring-blue-500/50 transition-all resize-none"
+                        className="w-full bg-rose-900 rounded-xl px-4 py-3.5 text-[#F5E6D3] placeholder:text-[#F5E6D3] focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
                       />
                     </div>
                   </div>
