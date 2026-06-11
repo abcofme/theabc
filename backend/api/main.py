@@ -311,8 +311,10 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
                 await db.refresh(new_portrait)
             return {"status": "success", "portrait": new_portrait}
     except Exception as e:
-        print("BG portrait failed:", e)
-        raise HTTPException(status_code=500, detail=f"Failed to generate portrait: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        print("BG portrait failed:", repr(e))
+        raise HTTPException(status_code=500, detail=f"Failed to generate portrait: {repr(e)}")
 
 @app.post("/api/portrait/generate")
 async def generate_personality_portrait(
@@ -518,8 +520,10 @@ async def _generate_report_bg(user_id: int, report_title: str, report_prompt: st
                 await db.refresh(new_report)
             return {"status": "success", "report": new_report}
     except Exception as e:
-        print("BG report failed:", e)
-        raise HTTPException(status_code=500, detail=f"Failed to generate report: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        print("BG report failed:", repr(e))
+        raise HTTPException(status_code=500, detail=f"Failed to generate report: {repr(e)}")
 
 @app.post("/api/reports/generate")
 async def generate_report(
