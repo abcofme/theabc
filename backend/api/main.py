@@ -251,7 +251,7 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
                 ai_url,
                 headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                 json={
-                    "model": "gpt-3.5-turbo",
+                    "model": "claude-3-opus",
                     "messages": [{"role": "user", "content": prompt}]
                 }
             )
@@ -261,7 +261,7 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
                     ai_url,
                     headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                     json={
-                        "model": "gpt-3.5-turbo",
+                        "model": "claude-3-opus",
                         "messages": [{"role": "user", "content": prompt}]
                     }
                 )
@@ -473,7 +473,7 @@ async def _generate_report_bg(user_id: int, report_title: str, report_prompt: st
     from backend.database.models import BehavioralReport
     try:
         payload = {
-            "model": "gpt-3.5-turbo",
+            "model": "claude-3-opus",
             "messages": [{"role": "user", "content": report_prompt}]
         }
         print(f"--- Отправка запроса к ИИ ({payload['model']}) ---")
@@ -489,7 +489,7 @@ async def _generate_report_bg(user_id: int, report_title: str, report_prompt: st
             )
             
             if ai_response.status_code == 404:
-                payload["model"] = "gpt-3.5-turbo"
+                payload["model"] = "claude-3-opus"
                 ai_response = await client.post(
                     ai_url,
                     headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
