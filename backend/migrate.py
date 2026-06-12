@@ -24,6 +24,15 @@ async def migrate():
             """))
             print("Successfully created behavioral_reports table.")
             
+            print("Adding referral columns to users...")
+            await conn.execute(text("""
+                ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_balance_pending INTEGER DEFAULT 0;
+            """))
+            await conn.execute(text("""
+                ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_balance_available INTEGER DEFAULT 0;
+            """))
+            print("Successfully updated users.")
+            
             print("Adding technical_summary to personality_portraits...")
             await conn.execute(text("""
                 ALTER TABLE personality_portraits ADD COLUMN IF NOT EXISTS technical_summary TEXT;

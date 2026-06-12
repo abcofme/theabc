@@ -64,6 +64,31 @@ def _create_payment(amount: Decimal, chat_id, description: str, email: str):
 def _check_payment(payment_id):
     payment = yookassa.Payment.find_one(payment_id)
     if payment.status == "succeeded":
-        return payment.metadata
+        return payment.metadata, float(payment.amount.value)
     else:
-        return False
+        return False, 0.0
+
+def _create_payout(amount: float, card_number: str, description: str):
+    import uuid
+    from yookassa import Payout
+    key = str(uuid.uuid4())
+    try:
+        payout = Payout.create(
+            {
+                "amount": {
+                    "value": str(amount),
+                    "currency": "RUB"
+                },
+                "payout_destination_data": {
+                    "type": "bank_card",
+                    "card": {
+                        "number": card_number
+                    }
+                },
+                "description": description
+            }, key
+        )
+        return payout.status, payout.id
+    except HTTPError as e:
+        logger.warning(f"PAYOUT_ERROR: {e.response.json()}")
+        raise e

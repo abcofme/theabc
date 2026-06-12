@@ -5,11 +5,29 @@ from backend.telegram.keyboards.tests import *
 
 
 async def check_payment(user: User, dao: DataAccessObject, payment_id: str):
-    check = _check_payment(payment_id)
-    if check:
+    result = _check_payment(payment_id)
+    if result and result[0]:
+        metadata, amount = result
         payments = await dao.filter(Payment, dict(uuid=payment_id, user_id=user.id))
+        
+        # Determine if we actually processed any new payments
+        newly_processed = False
         for payment in payments:
-            await dao.update_object(Payment, payment.id, dict(success=True))
+            if not payment.success:
+                newly_processed = True
+                await dao.update_object(Payment, payment.id, dict(success=True))
+            
+        # Add 50% to referrer if invited_id is present and we haven't processed this payment before
+        if newly_processed and user.invited_id:
+            try:
+                referrer_id = int(user.invited_id)
+                referrer = await dao.get_object(User, referrer_id)
+                if referrer:
+                    new_balance = (referrer.referral_balance_pending or 0) + int(amount * 0.5)
+                    await dao.update_object(User, referrer_id, dict(referral_balance_pending=new_balance))
+            except ValueError:
+                pass
+        
         return True
     else:
         return False

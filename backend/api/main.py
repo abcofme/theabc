@@ -1381,3 +1381,64 @@ async def delete_friend(
     await session.delete(f)
     await session.commit()
     return {"status": "success"}
+
+class WithdrawRequest(BaseModel):
+    card_number: str
+
+@app.get("/api/referral")
+async def get_referral_info(
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    user_id = user_data.get("id")
+    query = select(User).where(User.id == user_id)
+    user = (await session.execute(query)).scalars().first()
+    if not user:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    # Count referrals
+    ref_query = select(func.count(User.id)).where(User.invited_id == str(user_id))
+    ref_count = (await session.execute(ref_query)).scalar() or 0
+    
+    return {
+        "pending": user.referral_balance_pending or 0,
+        "available": user.referral_balance_available or 0,
+        "referral_count": ref_count,
+        "link": f"https://t.me/abcofmebot?start=invite_{user_id}"
+    }
+
+@app.post("/api/referral/withdraw")
+async def withdraw_referral_balance(
+    payload: WithdrawRequest,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from fastapi import HTTPException
+    user_id = user_data.get("id")
+    query = select(User).where(User.id == user_id)
+    user = (await session.execute(query)).scalars().first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    available = user.referral_balance_available or 0
+    if available < 100:  # Minimum 100 rub withdrawal
+        raise HTTPException(status_code=400, detail="Минимальная сумма вывода - 100 рублей")
+        
+    # Process payout via YooKassa
+    from backend.integrations.payment.yoo import _create_payout
+    try:
+        status, payout_id = _create_payout(
+            amount=available, 
+            card_number=payload.card_number,
+            description=f"Выплата по реферальной программе для {user_id}"
+        )
+        
+        # Deduct balance
+        user.referral_balance_available = 0
+        await session.commit()
+        
+        return {"status": "success", "payout_id": payout_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

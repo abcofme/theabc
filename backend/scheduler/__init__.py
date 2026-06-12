@@ -4,4 +4,5 @@ scheduler = AsyncIOScheduler()
 
 from . import (
     mailing,
+    referrals,
 )
