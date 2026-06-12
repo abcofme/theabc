@@ -71,7 +71,7 @@ export default function App() {
 
       {/* Отрисовываем меню только если isNavHidden === false и клавиатура не открыта */}
       {(!isNavHidden && !isKeyboardOpen) && (
-        <nav className="fixed bottom-0 left-0 w-full bg-rose-900 flex justify-between p-2 pb-safe z-50">
+        <nav className="fixed bottom-0 left-0 w-full bg-rose-900 flex justify-between p-2 pb-safe z-50 border-t-4 border-[#F5E6D3]">
           <button
             onClick={() => setActiveTab('diary')}
             className={`flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
