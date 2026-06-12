@@ -1,6 +1,6 @@
 from aiogram.filters import CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery, FSInputFile
+from aiogram.types import Message, CallbackQuery, FSInputFile, InputMediaPhoto
 from aiogram.utils.i18n import gettext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardButton
@@ -71,7 +71,8 @@ async def AboutDiary_callback(callback: CallbackQuery, user: User, state: FSMCon
     await edit_scheduled_message(
         user=user,
         text=text,
-        kb=about_diary_kb()
+        kb=about_diary_kb(),
+        media_group=[InputMediaPhoto(media=FSInputFile(IMAGES / "о_дневнике.jpg"))]
     )
 
 @dp.callback_query(AboutTests.filter())
