@@ -6,7 +6,6 @@ from backend.database.models import Category, User, Payment, Question, Answer
 from backend.database.patterns.dao import DataAccessObject
 from backend.telegram.callback_data.tests import *
 from backend.telegram.keyboards.base import back_btn
-from backend.telegram.utils.message import gettext
 from backend.utils.text import upcase_first_letter
 
 tests_btn = InlineKeyboardButton(
