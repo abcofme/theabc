@@ -394,7 +394,7 @@ export default function CalendarTab({ onSheetOpen }) {
                 } ${
                   isDayToday ? '! !text-[#F5E6D3] bg-blue-950/20' : ''
                 } ${
-                  hasEntries && isCurrentMonth ? '!bg-emerald-500/20 ! !text-[#F5E6D3] font-bold' : ''
+                  hasEntries && isCurrentMonth ? '!bg-blue-600/40 ! !text-[#F5E6D3] font-bold' : ''
                 } ${
                   isFutureDay ? 'opacity-40 cursor-default' : 'cursor-pointer'
                 }`}

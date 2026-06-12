@@ -4,7 +4,7 @@ from . import (
     admin,
 
     tests,
-    payment,
+
     profile,
 
     echo

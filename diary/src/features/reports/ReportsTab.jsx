@@ -220,7 +220,7 @@ export default function ReportsTab() {
           className="w-full bg-blue-600 disabled:bg-blue-900/50 hover:bg-blue-500 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
         >
           {isGenerating ? (
-            <><div className="w-5 h-5 rounded-full animate-spin"></div> Анализ ИИ...</>
+            <><div className="w-5 h-5 rounded-full animate-spin"></div> Отчёт формируется...</>
           ) : (
             'Проанализировать'
           )}

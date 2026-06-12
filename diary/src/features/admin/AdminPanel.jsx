@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, CheckCircle, Trash2, Edit, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, Check, Trash2, Edit, Plus } from 'lucide-react';
 import AdminTestEditor from './AdminTestEditor';
 
 const WebApp = window.Telegram.WebApp;
@@ -154,7 +154,7 @@ export default function AdminPanel({ onBack }) {
 
           <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <CheckCircle className="text-green-500" size={24} />
+              <Check className="text-green-500" size={24} />
               <span className="text-[#F5E6D3] font-medium">Активных пользователей</span>
             </div>
             <span className="text-xl font-bold text-[#F5E6D3]">{stats.active_users || 0}</span>

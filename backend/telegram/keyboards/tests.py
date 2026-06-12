@@ -4,9 +4,9 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from backend.database.models import Category, User, Payment, Question, Answer
 from backend.database.patterns.dao import DataAccessObject
-from backend.telegram.callback_data.payment import PaymentCallback
 from backend.telegram.callback_data.tests import *
 from backend.telegram.keyboards.base import back_btn
+from backend.telegram.utils.message import gettext
 from backend.utils.text import upcase_first_letter
 
 tests_btn = InlineKeyboardButton(
@@ -14,10 +14,6 @@ tests_btn = InlineKeyboardButton(
     callback_data=Tests().pack()
 )
 
-buy_all_tests_btn = InlineKeyboardButton(
-    text=gettext("buttons.buy_all_tests_btn"),
-    callback_data=BuyAllTests().pack()
-)
 
 back_question_btn = InlineKeyboardButton(
     text=gettext("buttons.previous_question"),
@@ -43,8 +39,6 @@ async def category_tests_kb(dao: DataAccessObject, user: User, profile: bool, is
             ]
         )
 
-    if flag and not is_profile:
-        buttons.append([buy_all_tests_btn])
     buttons.append([back_btn()])
     return InlineKeyboardBuilder(buttons).as_markup()
 
@@ -53,41 +47,27 @@ async def type_tests_kb(category: Category, user: User, dao: DataAccessObject) -
     payments = await dao.filter(
         Payment, dict(user_id=user.id, category_id=category.id, success=True)
     )
-    return InlineKeyboardBuilder([
+    buttons = [
         [
             InlineKeyboardButton(
                 text=gettext("buttons.free_tests"),
                 callback_data=FreeTests(category_id=category.id).pack()
             )
-        ],
-        [
+        ]
+    ]
+    if payments:
+        buttons.append([
             InlineKeyboardButton(
-                text=gettext("buttons.full_tests").format(
-                    price=category.price
-                ) if not payments else gettext("buttons.full_tests.opened"),
+                text=gettext("buttons.full_tests.opened"),
                 callback_data=FullTests(
-                    category_id=category.id, opened=True if payments else False
+                    category_id=category.id, opened=True
                 ).pack()
             )
-        ],
-        [
-            back_btn()
-        ]
-    ]).as_markup()
+        ])
+    buttons.append([back_btn()])
+    return InlineKeyboardBuilder(buttons).as_markup()
 
 
-def check_payment_kb(payment_id: str) -> InlineKeyboardMarkup:
-    return InlineKeyboardBuilder([
-        [
-            InlineKeyboardButton(
-                text=gettext("buttons.check_payment"),
-                callback_data=PaymentCallback(payment_id=payment_id).pack()
-            )
-        ],
-        [
-            back_btn()
-        ]
-    ]).as_markup()
 
 
 def test_accept_choose_kb(test_id: int) -> InlineKeyboardMarkup:

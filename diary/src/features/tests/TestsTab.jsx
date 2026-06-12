@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, CheckCircle, XCircle, X, Brain, ClipboardList } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check, XCircle, X, Brain, ClipboardList } from 'lucide-react';
 import bgLeaves from '../../assets/bg-leaves.png';
 
 const WebApp = window.Telegram.WebApp;
@@ -175,7 +175,7 @@ export default function TestsTab({ onOverlayOpen }) {
             <div key={cat.id} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
               <button
                 onClick={() => toggleCategory(cat.id)}
-                className={`w-full relative flex items-center p-6 min-h-[120px] hover:bg-rose-800/70 transition-colors active:bg-rose-800 overflow-hidden isolate ${openCategory === cat.id ? 'rounded-t-2xl' : 'rounded-2xl'} justify-between`}
+                className={`w-full relative flex items-center px-6 py-4 min-h-[80px] hover:bg-rose-800/70 transition-colors active:bg-rose-800 overflow-hidden isolate ${openCategory === cat.id ? 'rounded-t-2xl' : 'rounded-2xl'} justify-between`}
               >
                 <div className="flex items-center justify-between gap-4 z-10 relative text-left w-full">
                   <span className="font-semibold text-[#F5E6D3] text-xl sm:text-2xl leading-tight">
@@ -205,7 +205,7 @@ export default function TestsTab({ onOverlayOpen }) {
                         </span>
                         {test.passed ? (
                           <span className="flex items-center gap-1.5 text-green-500 text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-500/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">
-                            <CheckCircle size={14} /> Пройден
+                            <Check size={14} /> Пройден
                           </span>
                         ) : (
                           <span className="flex items-center gap-1.5 text-[#F5E6D3]/60 text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-rose-950/50 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">

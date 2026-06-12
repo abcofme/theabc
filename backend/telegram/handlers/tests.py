@@ -341,3 +341,31 @@ async def TestsStates_SliderPage_callback(
     )
 
     await edit_scheduled_message(user, kb=kb)
+
+@dp.callback_query(FullTests.filter())
+async def FullTests_callback(
+        callback: CallbackQuery, callback_data: FullTests,
+        user: User, state: FSMContext, dao: DataAccessObject
+):
+    await schedule_previous_message(user, callback.message, state)
+    category = await dao.get_object(Category, callback_data.category_id)
+    if callback_data.opened:
+        await state.set_state(TestsStates.slider)
+        await state.update_data(
+            dict(category_id=callback_data.category_id, free=False)
+        )
+        conditions = dict(category_id=callback_data.category_id, free=False)
+        tests = await dao.filter(Test, conditions)
+        text = f"{category.description}\n\n" + gettext("messages.test.choose_test")
+        for i, test in enumerate(tests, start=1):
+            text += f"{i}. {test.name}\n"
+        kb = await slider_kb(
+            db_model=Test, callback_data=TestChoose, dao=dao,
+            part=4, conditions=conditions
+        )
+        await edit_scheduled_message(
+            user=user,
+            text=text,
+            kb=kb
+        )
+

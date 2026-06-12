@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { User, ChevronDown, ChevronUp, CheckCircle, XCircle, X, ChevronLeft, Lock, Wand2, Trash2, Brain, Activity, Star, ShieldAlert, Sparkles, Target, Heart, Flame, ClipboardList, Users } from 'lucide-react';
+import { User, ChevronDown, ChevronUp, Check, XCircle, X, ChevronLeft, Lock, Wand2, Trash2, Brain, Activity, Star, ShieldAlert, Sparkles, Target, Heart, Flame, ClipboardList, Users } from 'lucide-react';
 import AdminPanel from '../admin/AdminPanel';
 import FriendsView from './FriendsView';
 import qrCodeImg from '../../assets/qr-code.png';
@@ -559,7 +559,7 @@ export default function ProfileTab() {
                   <div className="text-[#F5E6D3]/70 text-sm mb-1">Доступно к выводу</div>
                   <div className="text-[#F5E6D3] text-2xl font-bold">{referralInfo.available} ₽</div>
                 </div>
-                <CheckCircle className="text-blue-400" size={32} />
+                <Check className="text-blue-400" size={32} />
               </div>
             </div>
             <div className="mt-4 p-3 bg-rose-950/30 rounded-xl text-xs text-[#F5E6D3]/60 flex gap-2">
