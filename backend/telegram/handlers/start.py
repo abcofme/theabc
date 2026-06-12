@@ -110,9 +110,13 @@ async def TestCategoryDesc_callback(callback: CallbackQuery, callback_data: Test
     builder.button(text="Назад", callback_data=AboutTests().pack())
     builder.adjust(1)
     
-    image_name = f"{callback_data.name.lower()}.png"
+    image_name = f"{callback_data.name.lower()}.jpg"
     image_path = IMAGES / image_name
     
+    if not image_path.exists():
+        image_name = f"{callback_data.name.lower()}.png"
+        image_path = IMAGES / image_name
+        
     media_group = [InputMediaPhoto(media=FSInputFile(image_path))] if image_path.exists() else None
     
     await edit_scheduled_message(
