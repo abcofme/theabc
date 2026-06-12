@@ -546,16 +546,16 @@ export default function ProfileTab() {
             <p className="text-[#F5E6D3]/70">Приглашайте друзей и получайте 50% от их оплат на свой баланс.</p>
           </div>
           
-          <div className="bg-[#4A1D23] rounded-3xl p-5 mb-6 shadow-lg border border-white/5">
+          <div className="bg-[#4A1D23] rounded-3xl p-5 mb-6 shadow-lg">
             <div className="flex flex-col gap-4">
-              <div className="bg-rose-950/40 p-4 rounded-2xl flex justify-between items-center border border-white/5">
+              <div className="bg-rose-950/40 p-4 rounded-2xl flex justify-between items-center">
                 <div>
                   <div className="text-[#F5E6D3]/70 text-sm mb-1">Сумма в ожидании</div>
                   <div className="text-[#F5E6D3] text-2xl font-bold">{referralInfo.pending} ₽</div>
                 </div>
                 <Activity className="text-blue-400 opacity-50" size={32} />
               </div>
-              <div className="bg-blue-900/30 p-4 rounded-2xl flex justify-between items-center border border-blue-500/20">
+              <div className="bg-rose-950/40 p-4 rounded-2xl flex justify-between items-center">
                 <div>
                   <div className="text-[#F5E6D3]/70 text-sm mb-1">Доступно к выводу</div>
                   <div className="text-[#F5E6D3] text-2xl font-bold">{referralInfo.available} ₽</div>
@@ -569,7 +569,7 @@ export default function ProfileTab() {
             </div>
           </div>
           
-          <div className="bg-[#4A1D23] rounded-3xl p-5 mb-6 shadow-lg border border-white/5 flex flex-col items-center">
+          <div className="bg-[#4A1D23] rounded-3xl p-5 mb-6 shadow-lg flex flex-col items-center">
             <div className="text-[#F5E6D3] font-bold mb-4">Ваш уникальный QR-код</div>
             <div className="bg-white p-4 rounded-2xl mb-4">
               {referralInfo.link && (
@@ -583,7 +583,7 @@ export default function ProfileTab() {
                   type="text" 
                   readOnly 
                   value={referralInfo.link} 
-                  className="flex-1 bg-rose-950/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-[#F5E6D3] outline-none"
+                  className="flex-1 bg-rose-950/40 rounded-xl px-3 py-2 text-sm text-[#F5E6D3] outline-none"
                 />
                 <button 
                   onClick={() => {
@@ -598,7 +598,7 @@ export default function ProfileTab() {
             </div>
           </div>
           
-          <div className="bg-[#4A1D23] rounded-3xl p-5 mb-10 shadow-lg border border-white/5">
+          <div className="bg-[#4A1D23] rounded-3xl p-5 mb-10 shadow-lg">
             <div className="text-[#F5E6D3] font-bold mb-4">Вывод средств на дебетовую карту</div>
             <div className="flex flex-col gap-3">
               <input 
@@ -606,7 +606,7 @@ export default function ProfileTab() {
                 placeholder="Номер банковской карты (16 цифр)" 
                 value={withdrawCard}
                 onChange={(e) => setWithdrawCard(e.target.value.replace(/\D/g, '').slice(0, 16))}
-                className="w-full bg-rose-950/40 border border-white/10 rounded-xl px-4 py-3 text-[#F5E6D3] placeholder:text-[#F5E6D3]/30 outline-none focus:border-blue-500/50 transition-colors"
+                className="w-full bg-rose-950/40 rounded-xl px-4 py-3 text-[#F5E6D3] placeholder:text-[#F5E6D3]/30 outline-none transition-colors"
               />
               <button 
                 onClick={handleWithdraw}
