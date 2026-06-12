@@ -2,12 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Check, XCircle, X, Brain, ClipboardList } from 'lucide-react';
 import bgLeaves from '../../assets/bg-leaves.png';
 
+import iconPersonality from '../../assets/icons/personality.png';
+import iconSelfEsteem from '../../assets/icons/self_esteem.png';
+import iconTemperament from '../../assets/icons/temperament.png';
+import iconSociability from '../../assets/icons/sociability.png';
+import iconCareer from '../../assets/icons/career.png';
+
 const categoryIcons = {
-  "Личность": "personality",
-  "Самооценка": "self_esteem",
-  "Темперамент": "temperament",
-  "Общительность": "sociability",
-  "Профориентация": "career"
+  "Личность": iconPersonality,
+  "Самооценка": iconSelfEsteem,
+  "Темперамент": iconTemperament,
+  "Общительность": iconSociability,
+  "Профориентация": iconCareer
 };
 
 const WebApp = window.Telegram.WebApp;
@@ -188,7 +194,7 @@ export default function TestsTab({ onOverlayOpen }) {
                 <div className="flex items-center justify-between gap-4 z-10 relative text-left w-full">
                   <div className="flex items-center gap-3">
                     <img 
-                      src={`/icons/${categoryIcons[cat.name] || 'default'}.png`} 
+                      src={categoryIcons[cat.name]} 
                       alt="" 
                       className="w-10 h-10 object-contain drop-shadow-md"
                       onError={(e) => { e.target.style.display = 'none'; }}
