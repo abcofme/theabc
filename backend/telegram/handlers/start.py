@@ -143,7 +143,8 @@ async def TechSupport_callback(
     await edit_scheduled_message(
         user=user,
         text="Здесь ты можешь оставить обратную связь и получить техподдержку, а также мы поможем найти идеального лично для тебя психолога и качественное обучение по ближайшему по результатам всех тестов направлению",
-        kb=menu_kb()
+        kb=menu_kb(),
+        media_group=[InputMediaPhoto(media=FSInputFile(IMAGES / "связь.jpg"))]
     )
 
 
