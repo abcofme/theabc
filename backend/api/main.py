@@ -876,53 +876,56 @@ async def submit_test(
     user_data: dict = Depends(validate_twa_data),
     session: AsyncSession = Depends(get_session)
 ):
-    user_id = user_data.get("id")
-    # check if already passed
-    progress_query = select(Progress).where(Progress.test_id == test_id, Progress.user_id == user_id)
-    progress = (await session.execute(progress_query)).scalars().first()
-    if progress:
-        return {"result": "Вы уже прошли этот тест."}
-    
-    # get test
-    query = select(Test).where(Test.id == test_id)
-    test = (await session.execute(query)).scalar_one_or_none()
-    
-    if not test:
+    try:
+        user_id = user_data.get("id")
+        progress_query = select(Progress).where(Progress.test_id == test_id, Progress.user_id == user_id)
+        progress = (await session.execute(progress_query)).scalars().first()
+        if progress:
+            return {"result": "Вы уже прошли этот тест."}
+        
+        query = select(Test).where(Test.id == test_id)
+        test = (await session.execute(query)).scalar_one_or_none()
+        
+        if not test:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail="Тест не найден")
+            
+        answers_query = select(Answer).where(Answer.id.in_(payload.answer_ids))
+        answers = (await session.execute(answers_query)).scalars().all()
+        
+        if test.hardcode_test:
+            result_text = get_hardcoded_test_result(answers, test)
+            progress = Progress(
+                test_id=test_id,
+                user_id=user_id,
+                value=0,
+                hardcode_value=result_text
+            )
+            session.add(progress)
+        else:
+            points = sum((a.value or 0) for a in answers)
+            result_query = select(Result).where(
+                Result.test_id == test_id,
+                Result.range_from <= points,
+                (Result.range_to >= points) | (Result.range_to.is_(None))
+            )
+            result_obj = (await session.execute(result_query)).scalars().first()
+            
+            progress = Progress(
+                test_id=test_id,
+                user_id=user_id,
+                value=points
+            )
+            session.add(progress)
+            result_text = result_obj.name if result_obj and result_obj.name else "Результат не найден"
+            
+        await session.commit()
+        return {"result": result_text}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
         from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="Тест не найден")
-        
-    # get answers
-    answers_query = select(Answer).where(Answer.id.in_(payload.answer_ids))
-    answers = (await session.execute(answers_query)).scalars().all()
-    
-    if test.hardcode_test:
-        result_text = get_hardcoded_test_result(answers, test)
-        progress = Progress(
-            test_id=test_id,
-            user_id=user_id,
-            value=0,
-            hardcode_value=result_text
-        )
-        session.add(progress)
-    else:
-        points = sum((a.value or 0) for a in answers)
-        result_query = select(Result).where(
-            Result.test_id == test_id,
-            Result.range_from <= points,
-            (Result.range_to >= points) | (Result.range_to.is_(None))
-        )
-        result_obj = (await session.execute(result_query)).scalar_one_or_none()
-        
-        progress = Progress(
-            test_id=test_id,
-            user_id=user_id,
-            value=points
-        )
-        session.add(progress)
-        result_text = result_obj.name if result_obj and result_obj.name else "Результат не найден"
-        
-    await session.commit()
-    return {"result": result_text}
+        raise HTTPException(status_code=500, detail="Internal Error")
 
 @app.get("/api/admin/stats")
 async def get_admin_stats(
