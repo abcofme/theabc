@@ -19,3 +19,12 @@ class TechSupport(CallbackData, prefix="tech_support"):
 
 class Referal(CallbackData, prefix="referal"):
     pass
+
+class AboutDiary(CallbackData, prefix="about_diary"):
+    pass
+
+class AboutTests(CallbackData, prefix="about_tests"):
+    pass
+
+class TestCategoryDesc(CallbackData, prefix="test_cat_desc"):
+    name: str
