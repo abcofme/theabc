@@ -13,7 +13,7 @@ from backend.telegram.bot import dp, bot
 from backend.telegram.callback_data.profile import Psychologist, TechSupport, MainMenu, Referal, AboutDiary, AboutTests, TestCategoryDesc
 from backend.telegram.filters.invite import InvitedFilter
 from backend.telegram.keyboards.base import back_kb
-from backend.telegram.keyboards.start import start_kb, main_menu_btn, menu_kb, categories_kb
+from backend.telegram.keyboards.start import start_kb, main_menu_btn, menu_kb, categories_kb, about_diary_kb
 from backend.telegram.states.user import TechStates
 from backend.telegram.utils.message import (
     schedule_message_edition,
@@ -71,7 +71,7 @@ async def AboutDiary_callback(callback: CallbackQuery, user: User, state: FSMCon
     await edit_scheduled_message(
         user=user,
         text=text,
-        kb=menu_kb()
+        kb=about_diary_kb()
     )
 
 @dp.callback_query(AboutTests.filter())

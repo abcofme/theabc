@@ -56,17 +56,26 @@ def menu_kb() -> InlineKeyboardMarkup:
     ]
     return InlineKeyboardBuilder(buttons).as_markup()
 
+def about_diary_kb() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.row(InlineKeyboardButton(
+        text="Открыть личный дневник",
+        web_app=WebAppInfo(url=settings.WEB_APP_URL)
+    ))
+    builder.row(main_menu_btn)
+    return builder.as_markup()
+
 def categories_kb() -> InlineKeyboardMarkup:
     categories = ["Личность", "Самооценка", "Темперамент", "Общительность", "Профориентация"]
     builder = InlineKeyboardBuilder()
-    for cat in categories:
-        builder.button(text=cat, callback_data=TestCategoryDesc(name=cat).pack())
-    builder.adjust(1)
     
     builder.row(InlineKeyboardButton(
         text="Открыть тесты",
         web_app=WebAppInfo(url=settings.WEB_APP_URL + "?tab=tests")
     ))
+    
+    for cat in categories:
+        builder.row(InlineKeyboardButton(text=cat, callback_data=TestCategoryDesc(name=cat).pack()))
     
     builder.row(main_menu_btn)
     return builder.as_markup()
