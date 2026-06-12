@@ -178,9 +178,17 @@ export default function TestsTab({ onOverlayOpen }) {
                 className={`w-full relative flex items-center px-6 py-4 min-h-[80px] hover:bg-rose-800/70 transition-colors active:bg-rose-800 overflow-hidden isolate ${openCategory === cat.id ? 'rounded-t-2xl' : 'rounded-2xl'} justify-between`}
               >
                 <div className="flex items-center justify-between gap-4 z-10 relative text-left w-full">
-                  <span className="font-semibold text-[#F5E6D3] text-xl sm:text-2xl leading-tight">
-                    {cat.name}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <img 
+                      src={`/icons/${cat.name}.png`} 
+                      alt="" 
+                      className="w-10 h-10 object-contain drop-shadow-md"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                    <span className="font-semibold text-[#F5E6D3] text-xl sm:text-2xl leading-tight">
+                      {cat.name}
+                    </span>
+                  </div>
                   {openCategory === cat.id ? (
                     <ChevronUp size={28} className="text-[#F5E6D3] shrink-0" />
                   ) : (
