@@ -84,9 +84,12 @@ async def edit_scheduled_message(
                         media, = media_group
                         if text and hasattr(media, 'caption'):
                             media.caption = text
-                        msg = await bot.edit_message_media(
-                            chat_id=chat_id, message_id=message_id, media=media, reply_markup=kb
-                        )
+                        try:
+                            msg = await bot.edit_message_media(
+                                chat_id=chat_id, message_id=message_id, media=media, reply_markup=kb
+                            )
+                        except Exception as e:
+                            await bot.send_message(chat_id=chat_id, text=f"🔧 Техническая ошибка при загрузке картинки: {e}")
                 elif text:
                     try:
                         msg = await bot.edit_message_text(
