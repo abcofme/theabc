@@ -114,6 +114,36 @@ export default function ProfileTab() {
     }
   };
 
+  const handleWithdraw = async () => {
+    if (!withdrawCard || withdrawCard.length < 16) {
+      WebApp.showAlert("Введите корректный номер карты");
+      return;
+    }
+    setIsWithdrawing(true);
+    try {
+      const response = await fetch(`${API_URL}/api/referral/withdraw`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${WebApp.initData}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ card_number: withdrawCard })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        WebApp.showAlert("Средства успешно отправлены на вашу карту!");
+        setReferralInfo(prev => ({...prev, available: 0}));
+        setWithdrawCard('');
+      } else {
+        WebApp.showAlert(`Ошибка: ${data.detail || "Неизвестная ошибка"}`);
+      }
+    } catch (err) {
+      WebApp.showAlert(`Ошибка сети: ${err.message}`);
+    } finally {
+      setIsWithdrawing(false);
+    }
+  };
+
   let markdownContent = portraitData ? portraitData.content : "";
   if (portraitData && markdownContent) {
     if (!markdownContent.includes("```json")) {
@@ -403,36 +433,7 @@ export default function ProfileTab() {
                     if (!sectionText.trim()) return null;
                     const firstLine = sectionText.trim().split('\n')[0];
                     
-  const handleWithdraw = async () => {
-    if (!withdrawCard || withdrawCard.length < 16) {
-      WebApp.showAlert("Введите корректный номер карты");
-      return;
-    }
-    setIsWithdrawing(true);
-    try {
-      const response = await fetch(`${API_URL}/api/referral/withdraw`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${WebApp.initData}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ card_number: withdrawCard })
-      });
-      const data = await response.json();
-      if (response.ok) {
-        WebApp.showAlert("Средства успешно отправлены на вашу карту!");
-        setReferralInfo(prev => ({...prev, available: 0}));
-        setWithdrawCard('');
-      } else {
-        WebApp.showAlert(`Ошибка: ${data.detail || "Неизвестная ошибка"}`);
-      }
-    } catch (err) {
-      WebApp.showAlert(`Ошибка сети: ${err.message}`);
-    } finally {
-      setIsWithdrawing(false);
-    }
-  };
-return (
+                    return (
                       <ReactMarkdown key={i} components={getMarkdownComponents(firstLine)}>
                         {sectionText}
                       </ReactMarkdown>
