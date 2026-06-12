@@ -124,11 +124,23 @@ def upgrade() -> None:
     inspector = sa.inspect(conn)
     columns = [c['name'] for c in inspector.get_columns('users')]
     if 'invited_id' not in columns:
-        op.add_column('users', sa.Column('invited_id', sa.BigInteger(), nullable=True))
+        conn = op.get_bind()
+
+        inspector = sa.inspect(conn)
+
+        if 'invited_id' not in [c['name'] for c in inspector.get_columns('users')]:
+
+            op.add_column('users', sa.Column('invited_id', sa.BigInteger(), nullable=True))
         
     # Check constraints safely
     try:
-        op.create_unique_constraint('uq_users_id', 'users', ['id'])
+        conn = op.get_bind()
+
+        res = conn.execute(sa.text("SELECT constraint_name FROM information_schema.table_constraints WHERE table_name = 'users' AND constraint_type = 'UNIQUE'"))
+
+        if not res.fetchall():
+
+            op.create_unique_constraint('uq_users_id', 'users', ['id'])
     except Exception:
         pass
     # ### end Alembic commands ###

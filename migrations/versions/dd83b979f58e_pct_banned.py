@@ -38,8 +38,20 @@ def upgrade() -> None:
     # op.alter_column('categories', 'description',
     #                 existing_type=sa.TEXT(),
     #                 nullable=True)
-    op.add_column('users', sa.Column('discount_pct', sa.Integer(), nullable=True))
-    op.add_column('users', sa.Column('banned', sa.Boolean(), nullable=True))
+    conn = op.get_bind()
+
+    inspector = sa.inspect(conn)
+
+    if 'discount_pct' not in [c['name'] for c in inspector.get_columns('users')]:
+
+        op.add_column('users', sa.Column('discount_pct', sa.Integer(), nullable=True))
+    conn = op.get_bind()
+
+    inspector = sa.inspect(conn)
+
+    if 'banned' not in [c['name'] for c in inspector.get_columns('users')]:
+
+        op.add_column('users', sa.Column('banned', sa.Boolean(), nullable=True))
     # ### end Alembic commands ###
 
 

@@ -34,12 +34,30 @@ def column_exists(table_name, column_name):
 
 
 def upgrade() -> None:
-    op.add_column('answers', sa.Column('hardcode_value', sa.Integer(), nullable=True))
-    op.add_column('progresses', sa.Column('hardcode_value', sa.Text(), nullable=True))
+    conn = op.get_bind()
+
+    inspector = sa.inspect(conn)
+
+    if 'hardcode_value' not in [c['name'] for c in inspector.get_columns('answers')]:
+
+        op.add_column('answers', sa.Column('hardcode_value', sa.Integer(), nullable=True))
+    conn = op.get_bind()
+
+    inspector = sa.inspect(conn)
+
+    if 'hardcode_value' not in [c['name'] for c in inspector.get_columns('progresses')]:
+
+        op.add_column('progresses', sa.Column('hardcode_value', sa.Text(), nullable=True))
     op.alter_column('progresses', 'value',
                     existing_type=sa.INTEGER(),
                     nullable=True)
-    op.add_column('tests', sa.Column('hardcode_test', sa.Text(), nullable=True))
+    conn = op.get_bind()
+
+    inspector = sa.inspect(conn)
+
+    if 'hardcode_test' not in [c['name'] for c in inspector.get_columns('tests')]:
+
+        op.add_column('tests', sa.Column('hardcode_test', sa.Text(), nullable=True))
 
 
 def downgrade() -> None:
