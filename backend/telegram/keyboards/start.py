@@ -1,9 +1,10 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.types.web_app_info import WebAppInfo
+from aiogram.utils.i18n import gettext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from backend.database.models import User
-from backend.telegram.callback_data.profile import AboutDiary, AboutTests, TestCategoryDesc, TechSupport, MainMenu
+from backend.telegram.callback_data.profile import AboutDiary, AboutTests, TestCategoryDesc, TechSupport, MainMenu, Psychologist
 from backend.telegram.keyboards.admin.menu import admin_menu_btn
 from settings import settings
 
@@ -25,6 +26,11 @@ about_tests_btn = InlineKeyboardButton(
 tech_support_btn = InlineKeyboardButton(
     text="Связь",
     callback_data=TechSupport().pack()
+)
+
+psychologist_btn = InlineKeyboardButton(
+    text=gettext("buttons.psychologist"),
+    callback_data=Psychologist().pack()
 )
 
 main_menu_btn = InlineKeyboardButton(

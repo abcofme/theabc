@@ -108,6 +108,23 @@ async def TestCategoryDesc_callback(callback: CallbackQuery, callback_data: Test
         kb=builder.as_markup()
     )
 
+@dp.callback_query(Psychologist.filter())
+async def Psychologist_callback(
+        callback: CallbackQuery, user: User, state: FSMContext
+):
+    await bot.send_message(
+        chat_id=settings.REQUESTS_CHAT_ID,
+        text=gettext("messages.psychologist.request_success.for_chat").format(
+            user_id=user.id,
+            username=f"@{user.username}" if user.username else "Отсутствует",
+            name=user.tg_first_name or "Отсутствует"
+        )
+    )
+    await callback.answer(
+        show_alert=True,
+        text=gettext("messages.psychologist.request_success.for_user")
+    )
+
 
 @dp.callback_query(TechSupport.filter())
 async def TechSupport_callback(
