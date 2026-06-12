@@ -32,8 +32,8 @@ class User(BaseModel):
     invited_id: Mapped[str] = mapped_column(String(64), nullable=True)
     discount_pct: Mapped[int] = mapped_column(Integer(), nullable=True, default=0)
 
-    referral_balance_pending: Mapped[int] = mapped_column(Integer(), default=0)
-    referral_balance_available: Mapped[int] = mapped_column(Integer(), default=0)
+    referral_balance_pending: Mapped[int] = mapped_column(Integer(), default=0, server_default="0")
+    referral_balance_available: Mapped[int] = mapped_column(Integer(), default=0, server_default="0")
 
     admin: Mapped[bool] = mapped_column(Boolean, nullable=True, default=False)
     banned: Mapped[bool] = mapped_column(Boolean, nullable=True, default=False)
