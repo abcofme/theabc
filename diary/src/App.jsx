@@ -61,12 +61,7 @@ export default function App() {
           backgroundSize: "60%"
         }}
       />
-      <div 
-        className={`pointer-events-none fixed top-0 left-0 right-0 border-[#F5E6D3]/60 z-40 ${(!isNavHidden && !isKeyboardOpen) ? 'border-x-4 border-t-4 rounded-t-[2rem]' : 'border-4 rounded-[2rem]'}`}
-        style={{ 
-          bottom: (!isNavHidden && !isKeyboardOpen) ? 'calc(74px + env(safe-area-inset-bottom))' : '0'
-        }}
-      />
+
       <main className={`flex-1 overflow-y-auto p-4 relative z-10 ${isNavHidden ? '' : 'pb-24'}`}>
         {/* Передаем функцию скрытия меню в CalendarTab */}
         {activeTab === 'diary' && <CalendarTab onSheetOpen={setIsNavHidden} />}
@@ -77,7 +72,7 @@ export default function App() {
 
       {/* Отрисовываем меню только если isNavHidden === false и клавиатура не открыта */}
       {(!isNavHidden && !isKeyboardOpen) && (
-        <nav className="fixed bottom-0 left-0 w-full bg-rose-900 flex justify-between p-2 pb-safe z-50 border-t-4 border-[#F5E6D3]/60">
+        <nav className="fixed bottom-0 left-0 w-full bg-rose-900 flex justify-between p-2 pb-safe z-50">
           <button
             onClick={() => setActiveTab('diary')}
             className={`flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
