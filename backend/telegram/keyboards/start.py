@@ -62,5 +62,11 @@ def categories_kb() -> InlineKeyboardMarkup:
     for cat in categories:
         builder.button(text=cat, callback_data=TestCategoryDesc(name=cat).pack())
     builder.adjust(1)
+    
+    builder.row(InlineKeyboardButton(
+        text="Открыть тесты",
+        web_app=WebAppInfo(url=settings.WEB_APP_URL + "?tab=tests")
+    ))
+    
     builder.row(main_menu_btn)
     return builder.as_markup()

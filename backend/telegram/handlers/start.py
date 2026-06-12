@@ -4,6 +4,7 @@ from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.utils.i18n import gettext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardButton
+from aiogram.types.web_app_info import WebAppInfo
 
 from backend.database.models import User
 from backend.database.patterns.dao import DataAccessObject
@@ -100,7 +101,12 @@ async def TestCategoryDesc_callback(callback: CallbackQuery, callback_data: Test
     text = descriptions.get(callback_data.name, "Описание не найдено.")
     
     builder = InlineKeyboardBuilder()
+    builder.button(
+        text="Открыть тесты",
+        web_app=WebAppInfo(url=settings.WEB_APP_URL + "?tab=tests")
+    )
     builder.button(text="Назад", callback_data=AboutTests().pack())
+    builder.adjust(1)
     
     await edit_scheduled_message(
         user=user,

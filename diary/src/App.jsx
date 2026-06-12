@@ -9,7 +9,13 @@ import bgLeaves from './assets/bg-leaves.png';
 const WebApp = window.Telegram.WebApp;
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('diary');
+  const getInitialTab = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    return ['diary', 'tests', 'reports', 'profile'].includes(tab) ? tab : 'diary';
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab());
   const [isNavHidden, setIsNavHidden] = useState(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
