@@ -377,8 +377,7 @@ export default function ProfileTab() {
               className="w-full bg-rose-900/80 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
             >
               <div>
-                <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Реферальная программа</h3>
-                <p className="text-sm text-[#F5E6D3]/80">Приглашайте друзей и получайте 50% от их оплат на свой баланс</p>
+                <h3 className="text-lg font-bold text-[#F5E6D3]">Реферальная программа</h3>
               </div>
             </button>
 

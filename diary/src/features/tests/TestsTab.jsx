@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Check, XCircle, X, Brain, ClipboardList } from 'lucide-react';
 import bgLeaves from '../../assets/bg-leaves.png';
 
+const categoryIcons = {
+  "Личность": "personality",
+  "Самооценка": "self_esteem",
+  "Темперамент": "temperament",
+  "Общительность": "sociability",
+  "Профориентация": "career"
+};
+
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://friendly-various-near-across.trycloudflare.com";
 
@@ -180,7 +188,7 @@ export default function TestsTab({ onOverlayOpen }) {
                 <div className="flex items-center justify-between gap-4 z-10 relative text-left w-full">
                   <div className="flex items-center gap-3">
                     <img 
-                      src={`/icons/${cat.name}.png`} 
+                      src={`/icons/${categoryIcons[cat.name] || 'default'}.png`} 
                       alt="" 
                       className="w-10 h-10 object-contain drop-shadow-md"
                       onError={(e) => { e.target.style.display = 'none'; }}
