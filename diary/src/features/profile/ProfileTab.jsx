@@ -255,7 +255,7 @@ export default function ProfileTab() {
   return (
     <div className="flex flex-col relative select-none bg-transparent max-w-2xl mx-auto w-full">
       {/* 1. ШАПКА ПРОФИЛЯ (Аватар и Юзернейм) */}
-      <div className="flex items-center gap-4 p-4 sm:p-6 bg-rose-900/80 rounded-3xl mx-2 mt-2 mb-4 backdrop-blur-sm shadow-sm">
+      <div className="flex items-center gap-4 p-4 sm:p-6 bg-rose-900/80 rounded-3xl mx-2 mt-2 mb-4 backdrop-blur-sm shadow-sm border-4 border-[#F5E6D3]">
         {tgUser.photo_url ? (
           <img src={tgUser.photo_url} alt="Avatar" className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg" />
         ) : (
@@ -336,8 +336,9 @@ export default function ProfileTab() {
                   onClick={() => setActiveSubTab('portrait')}
                   className="w-full bg-rose-900/80 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
                 >
-                  <div>
-                    <h3 className="text-lg font-bold text-[#F5E6D3]">Мой портрет личности</h3>
+                  <div className="text-left">
+                    <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Мой портрет личности</h3>
+                    <p className="text-sm text-[#F5E6D3]/80">Подробный анализ ваших черт характера</p>
                   </div>
                   <ClipboardList className="text-[#F5E6D3]" size={24} />
                 </button>
@@ -476,20 +477,7 @@ export default function ProfileTab() {
           {/* Область клика вокруг окна для закрытия */}
           <div className="absolute inset-0" onClick={() => setSelectedResult(null)}></div>
           <div className="relative bg-rose-900 rounded-[2rem] w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-300">
-            {/* Заголовок модального окна */}
-            <div className="p-5 sm:p-6 flex justify-between items-start">
-              <div className="pr-4">
-                <span className="text-[#F5E6D3] text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1.5 block">
-                  Результат тестирования
-                </span>
-                <h3 className="text-lg sm:text-xl font-bold text-[#F5E6D3] leading-tight">
-                  {selectedResult.name}
-                </h3>
-              </div>
-              <button onClick={() => setSelectedResult(null)} className="p-2 bg-rose-800/50 hover:bg-rose-800 rounded-xl text-[#F5E6D3] hover:text-[#F5E6D3] transition-colors hover: shrink-0">
-                <X size={20} />
-              </button>
-            </div>
+
             {/* Текст результата */}
             <div className="p-5 sm:p-6 overflow-y-auto">
               <div className="text-[#F5E6D3] text-sm sm:text-base leading-relaxed whitespace-pre-wrap">

@@ -227,19 +227,7 @@ export default function TestsTab({ onOverlayOpen }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-rose-950/80 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="absolute inset-0" onClick={() => setSelectedResult(null)}></div>
           <div className="relative bg-rose-900 rounded-[2rem] w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-300">
-            <div className="p-5 sm:p-6 flex justify-between items-start">
-              <div className="pr-4">
-                <span className="text-[#F5E6D3] text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1.5 block">
-                  Результат тестирования
-                </span>
-                <h3 className="text-lg sm:text-xl font-bold text-[#F5E6D3] leading-tight">
-                  {selectedResult.name}
-                </h3>
-              </div>
-              <button onClick={() => setSelectedResult(null)} className="p-2 bg-rose-800/50 hover:bg-rose-800 rounded-xl text-[#F5E6D3] transition-colors shrink-0">
-                <X size={20} />
-              </button>
-            </div>
+
             <div className="p-5 sm:p-6 overflow-y-auto">
               <div className="text-[#F5E6D3] text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
                 {selectedResult.result_text || 'Нет детального описания результата.'}
@@ -269,14 +257,7 @@ export default function TestsTab({ onOverlayOpen }) {
               backgroundSize: "60%"
             }}
           />
-          <div className="flex items-center justify-between p-4 bg-rose-900/80 backdrop-blur-md relative z-10">
-            <h3 className="text-lg font-bold text-[#F5E6D3] truncate max-w-[80%]">
-              {testDetails ? testDetails.name : "Загрузка..."}
-            </h3>
-            <button onClick={closeTest} className="p-2 bg-rose-800/50 hover:bg-rose-800 rounded-xl text-[#F5E6D3] transition-colors shrink-0">
-              <X size={20} />
-            </button>
-          </div>
+
           
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col relative z-10">
             {!testDetails ? (
