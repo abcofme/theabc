@@ -82,12 +82,10 @@ async def edit_scheduled_message(
                             await bot.delete_message(chat_id=chat_id, message_id=message_id)
                             continue
                         media, = media_group
+                        if text and hasattr(media, 'caption'):
+                            media.caption = text
                         msg = await bot.edit_message_media(
                             chat_id=chat_id, message_id=message_id, media=media, reply_markup=kb
-                        )
-                    if text:
-                        msg = await bot.edit_message_caption(
-                            chat_id=chat_id, message_id=message_id, caption=text, reply_markup=kb
                         )
                 elif text:
                     try:
