@@ -75,6 +75,7 @@ async def edit_scheduled_message(
     async with MessageManager(user, EDIT_KEY) as edit:
         edit: list[int, int]
         for _index, (chat_id, message_id) in enumerate(edit):
+            msg = None
             with contextlib.suppress(TelegramBadRequest):
                 if media_group:
                     if isinstance(media_group, list):
