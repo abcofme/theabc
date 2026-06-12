@@ -383,7 +383,6 @@ export default function ProfileTab() {
                   </div>
                   <div className="text-left">
                     <div className="text-[#F5E6D3] font-bold text-lg">Реферальная программа</div>
-                    <div className="text-[#F5E6D3]/70 text-sm">Приглашай друзей и зарабатывай</div>
                   </div>
                 </div>
                 <ChevronLeft className="text-[#F5E6D3] rotate-180" size={20} />
@@ -599,7 +598,7 @@ export default function ProfileTab() {
           </div>
           
           <div className="bg-[#541515] rounded-3xl p-5 mb-10 shadow-lg">
-            <div className="text-[#F5E6D3] font-bold mb-4">Вывод средств на дебетовую карту</div>
+            <div className="text-[#F5E6D3] font-bold mb-4">Вывод средств (от 100 рублей)</div>
             <div className="flex flex-col gap-3">
               <input 
                 type="text" 
@@ -613,7 +612,7 @@ export default function ProfileTab() {
                 disabled={isWithdrawing || referralInfo.available < 100}
                 className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-900/20"
               >
-                {isWithdrawing ? "Обработка..." : "Вывести средства (минимум 100 ₽)"}
+                {isWithdrawing ? "Обработка..." : "Вывод"}
               </button>
             </div>
           </div>
