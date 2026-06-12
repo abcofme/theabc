@@ -85,7 +85,8 @@ async def AboutTests_callback(callback: CallbackQuery, user: User, state: FSMCon
     await edit_scheduled_message(
         user=user,
         text=text,
-        kb=categories_kb()
+        kb=categories_kb(),
+        media_group=[InputMediaPhoto(media=FSInputFile(IMAGES / "о_тестах.jpg"))]
     )
 
 @dp.callback_query(TestCategoryDesc.filter())
