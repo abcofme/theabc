@@ -52,6 +52,7 @@ async def get_profile(
     # Получаем все категории и тесты
     cats_query = select(Category).options(joinedload(Category.tests))
     categories = (await session.execute(cats_query)).scalars().unique().all()
+    categories = sorted(categories, key=lambda c: 1 if c.name.lower() == "профориентация" else 0)
     
     # Получаем прогресс пользователя
     prog_query = select(Progress).where(Progress.user_id == user_id).options(joinedload(Progress.test))

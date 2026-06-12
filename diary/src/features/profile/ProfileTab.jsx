@@ -374,18 +374,12 @@ export default function ProfileTab() {
             {/* Referral Program Button */}
             <button
               onClick={() => setActiveSubTab('referral')}
-              className="w-full flex items-center justify-between p-4 rounded-2xl shadow-lg hover:scale-[1.02] transition-transform"
-              style={{backgroundColor: '#541515'}}
+              className="w-full bg-rose-900/80 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-rose-950/50 flex items-center justify-center">
-                  <Users className="text-[#F5E6D3]" size={24} />
-                </div>
-                <div className="text-left">
-                  <div className="text-[#F5E6D3] font-bold text-lg">Реферальная программа</div>
-                </div>
+              <div>
+                <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Реферальная программа</h3>
+                <p className="text-sm text-[#F5E6D3]/80">Приглашайте друзей и получайте 50% от их оплат на свой баланс</p>
               </div>
-              <ChevronLeft className="text-[#F5E6D3] rotate-180" size={20} />
             </button>
 
           </div>
