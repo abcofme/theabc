@@ -153,8 +153,8 @@ export default function FriendsView({ onBack }) {
   );
 
   return (
-    <div className="px-4 sm:px-6 pt-6 pb-20 animate-in fade-in slide-in-from-right-8 duration-300 min-h-full flex flex-col">
-      <div className="flex items-center mb-6">
+    <div className="px-2 sm:px-4 pt-0 pb-20 animate-in fade-in slide-in-from-right-8 duration-300 min-h-full flex flex-col">
+      <div className="flex items-center mb-4 mx-2">
         <button 
           onClick={onBack}
           className="p-2 -ml-2 text-[#F5E6D3] hover:bg-rose-800/50 rounded-xl transition-colors"
@@ -164,7 +164,7 @@ export default function FriendsView({ onBack }) {
         <h2 className="text-2xl font-black text-[#F5E6D3] ml-2">Друзья</h2>
       </div>
 
-      <div className="flex bg-rose-900/40 rounded-xl p-1 mb-6">
+      <div className="flex bg-rose-900/40 rounded-xl p-1 mb-4 mx-2">
         <button
           onClick={() => setActiveTab('friends')}
           className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
@@ -237,7 +237,7 @@ export default function FriendsView({ onBack }) {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Введите @username"
-                    className="w-full bg-rose-900/60 text-[#F5E6D3] placeholder-rose-300/50 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-rose-500/50"
+                    className="w-full bg-rose-900/60 text-[#F5E6D3] placeholder:text-[#F5E6D3] rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-rose-500/50"
                   />
                 </div>
                 

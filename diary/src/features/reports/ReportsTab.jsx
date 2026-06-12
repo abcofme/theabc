@@ -128,7 +128,7 @@ export default function ReportsTab() {
 
   if (viewReport) {
     return (
-      <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-right-8 duration-300 max-w-2xl mx-auto w-full pt-4 px-2 pb-safe">
+      <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-right-8 duration-300 max-w-2xl mx-auto w-full pt-4 pb-safe">
         <button 
           onClick={() => setViewReport(null)}
           className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-6 transition-colors self-start"
@@ -137,7 +137,7 @@ export default function ReportsTab() {
           <span className="font-medium">Назад</span>
         </button>
         
-        <div className="bg-rose-900/80 rounded-3xl p-5 sm:p-8 mb-6 shadow-xl backdrop-blur-sm">
+        <div className="bg-rose-900/80 rounded-3xl p-5 sm:p-8 mb-6 mx-2 shadow-xl backdrop-blur-sm">
           <div className="flex items-center gap-2 text-[#F5E6D3] mb-6 pb-4">
             <Calendar size={16} />
             <span className="text-sm font-medium">Отчет от {new Date(viewReport.created_at).toLocaleDateString('ru-RU')}</span>
@@ -153,7 +153,7 @@ export default function ReportsTab() {
   if (activeForm) {
     const rType = reportTypes.find(r => r.id === activeForm);
     return (
-      <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-right-8 duration-300 max-w-2xl mx-auto w-full pt-4 px-2">
+      <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-right-8 duration-300 max-w-2xl mx-auto w-full pt-4">
         <button 
           onClick={() => setActiveForm(null)}
           className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-6 transition-colors self-start"
@@ -162,7 +162,7 @@ export default function ReportsTab() {
           <span className="font-medium">Назад</span>
         </button>
         
-        <div className="flex items-start gap-4 mb-6">
+        <div className="flex items-start gap-4 mb-6 px-4">
           <div className={`p-3 rounded-xl shrink-0 mt-1 ${rType.bg}`}>
             <rType.icon className={rType.color} size={24} />
           </div>
@@ -172,7 +172,7 @@ export default function ReportsTab() {
           </div>
         </div>
 
-        <div className="bg-rose-900 rounded-2xl p-5 mb-6">
+        <div className="bg-rose-900 rounded-2xl p-5 mb-6 mx-2">
           <h3 className="text-sm font-bold text-[#F5E6D3] uppercase tracking-wider mb-4">Выбрать период</h3>
           <div className="relative mb-4">
             <select 
@@ -217,7 +217,7 @@ export default function ReportsTab() {
         <button 
           onClick={() => handleGenerate(activeForm)}
           disabled={isGenerating}
-          className="w-full bg-blue-600 disabled:bg-blue-900/50 hover:bg-blue-500 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
+          className="w-[calc(100%-1rem)] mx-2 bg-blue-600 disabled:bg-blue-900/50 hover:bg-blue-500 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
         >
           {isGenerating ? (
             <><div className="w-5 h-5 rounded-full animate-spin"></div> Отчёт формируется...</>
@@ -273,7 +273,7 @@ export default function ReportsTab() {
                 </button>
                 
                 {isOpen && (
-                  <div className="p-5 bg-rose-950/50 flex flex-col gap-3 animate-slide-down">
+                  <div className="p-5 bg-rose-950/50 flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
                     <button 
                       onClick={() => setActiveForm(rtype.id)}
                       className="w-full py-3 bg-rose-800 hover:bg-rose-700 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"

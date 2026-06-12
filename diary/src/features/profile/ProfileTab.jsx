@@ -284,7 +284,7 @@ export default function ProfileTab() {
       {activeSubTab === 'main' && (
         <>
           {/* ПОРТРЕТ ЛИЧНОСТИ КНОПКИ */}
-          <div className="mx-4 mb-4 flex flex-col gap-4">
+          <div className="mx-2 mb-4 flex flex-col gap-4">
             {!portraitData ? (
               <button 
                 onClick={() => {
@@ -358,7 +358,7 @@ export default function ProfileTab() {
             </button>
 
             {/* QR CODE BLOCK */}
-            <div className="bg-rose-900/40 rounded-3xl p-6 mt-2 flex flex-col items-center justify-center text-center">
+            <div className="bg-rose-900/40 rounded-3xl p-6 flex flex-col items-center justify-center text-center">
               <h3 className="text-[#F5E6D3] font-bold text-lg mb-2">Поделиться</h3>
               <p className="text-[#F5E6D3]/70 text-sm mb-4">Отсканируйте QR-код, чтобы пригласить друзей или открыть приложение на другом устройстве</p>
               <div 
@@ -371,33 +371,31 @@ export default function ProfileTab() {
             </div>
 
             {/* Referral Program Button */}
-            <div className="mt-8 mb-6">
-              <button
-                onClick={() => setActiveSubTab('referral')}
-                className="w-full flex items-center justify-between p-4 rounded-2xl shadow-lg hover:scale-[1.02] transition-transform"
-                style={{backgroundColor: '#541515'}}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-rose-950/50 flex items-center justify-center">
-                    <Users className="text-[#F5E6D3]" size={24} />
-                  </div>
-                  <div className="text-left">
-                    <div className="text-[#F5E6D3] font-bold text-lg">Реферальная программа</div>
-                  </div>
+            <button
+              onClick={() => setActiveSubTab('referral')}
+              className="w-full flex items-center justify-between p-4 rounded-2xl shadow-lg hover:scale-[1.02] transition-transform"
+              style={{backgroundColor: '#541515'}}
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-rose-950/50 flex items-center justify-center">
+                  <Users className="text-[#F5E6D3]" size={24} />
                 </div>
-                <ChevronLeft className="text-[#F5E6D3] rotate-180" size={20} />
-              </button>
-            </div>
+                <div className="text-left">
+                  <div className="text-[#F5E6D3] font-bold text-lg">Реферальная программа</div>
+                </div>
+              </div>
+              <ChevronLeft className="text-[#F5E6D3] rotate-180" size={20} />
+            </button>
 
           </div>
         </>
       )}
 
       {activeSubTab === 'portrait' && (
-        <div className="px-4 sm:px-6 pt-6 animate-in fade-in slide-in-from-right-8 duration-300 flex flex-col">
+        <div className="px-2 sm:px-4 pt-0 animate-in fade-in slide-in-from-right-8 duration-300 flex flex-col">
           <button 
             onClick={() => setActiveSubTab('main')}
-            className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-6 transition-colors self-start"
+            className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-4 mx-2 transition-colors self-start"
           >
             <ChevronLeft size={20} />
             <span className="font-medium">Назад</span>
@@ -412,7 +410,7 @@ export default function ProfileTab() {
           ) : (
             <div className="flex flex-col">
               {portraitData && portraitData.tests_count < totalTests && (
-                <div className="mb-6 bg-rose-900/80 p-6 rounded-3xl text-center">
+                <div className="mb-4 mx-2 bg-rose-900/80 p-6 rounded-3xl text-center">
                   <p className="text-[#F5E6D3] text-sm mb-4 font-medium">Добавлены новые тесты! После прохождения вы можете сформировать новый портрет личности</p>
                   {passedTests < totalTests ? (
                     <button disabled className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-rose-800 text-[#F5E6D3] font-bold cursor-not-allowed">
@@ -427,7 +425,7 @@ export default function ProfileTab() {
               )}
 
               {portraitData && (
-                <div className="bg-rose-900/80 rounded-3xl p-5 sm:p-8 mb-6 shadow-xl backdrop-blur-sm overflow-x-hidden">
+                <div className="bg-rose-900/80 rounded-3xl p-5 sm:p-8 mb-4 mx-2 shadow-xl backdrop-blur-sm overflow-x-hidden">
                   {markdownContent.split(/(?=^#\s)/m).map((sectionText, i) => {
                     if (!sectionText.trim()) return null;
                     const firstLine = sectionText.trim().split('\n')[0];
@@ -517,7 +515,8 @@ export default function ProfileTab() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-rose-950/90 backdrop-blur-md animate-in fade-in duration-300">
           <div className="absolute inset-0" onClick={() => setIsQrExpanded(false)}></div>
           <div className="relative flex flex-col items-center animate-in zoom-in-95 duration-300 max-w-sm w-full">
-            <button onClick={() => setIsQrExpanded(false)} className="absolute -top-12 right-0 p-2 text-[#F5E6D3] hover:text-white transition-colors">
+            <button onClick={() => setIsQrExpanded(false)} className="absolute -top-12 right-0 flex items-center gap-2 p-2 text-[#F5E6D3] hover:text-white transition-colors">
+              <span className="font-medium text-lg">Закрыть</span>
               <X size={28} />
             </button>
             <div className="p-4 rounded-3xl shadow-2xl bg-[#541515] w-full aspect-square">

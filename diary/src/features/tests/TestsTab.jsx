@@ -154,8 +154,8 @@ export default function TestsTab({ onOverlayOpen }) {
   };
 
   return (
-    <div className="flex flex-col relative select-none bg-transparent max-w-2xl mx-auto w-full pt-4 h-full overflow-y-scroll pb-24">
-      <h2 className="text-2xl font-bold text-[#F5E6D3] px-4 mb-4 text-center flex items-center justify-center gap-2">
+    <div className="flex flex-col relative select-none bg-transparent max-w-2xl mx-auto w-full pt-4 h-full overflow-y-scroll pb-16">
+      <h2 className="text-2xl font-bold text-[#F5E6D3] px-4 mb-8 text-center flex items-center justify-center gap-2">
         <ClipboardList size={28} />
         Тесты
       </h2>
@@ -190,7 +190,7 @@ export default function TestsTab({ onOverlayOpen }) {
               </button>
 
               {openCategory === cat.id && (
-                <div className="bg-rose-950/40 px-4 py-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="bg-rose-950/40 px-4 py-2 animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
                   {cat.tests.length === 0 ? (
                     <div className="text-[#F5E6D3] text-sm py-3 italic">В этой категории пока нет тестов.</div>
                   ) : (
