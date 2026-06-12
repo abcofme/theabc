@@ -61,6 +61,12 @@ export default function App() {
           backgroundSize: "60%"
         }}
       />
+      <div 
+        className={`pointer-events-none fixed top-2 left-2 right-2 border-[#F5E6D3]/60 z-40 transition-all duration-300 ${(!isNavHidden && !isKeyboardOpen) ? 'border-x-4 border-t-4 rounded-t-[1.5rem]' : 'border-4 rounded-[1.5rem]'}`}
+        style={{ 
+          bottom: (!isNavHidden && !isKeyboardOpen) ? 'calc(74px + env(safe-area-inset-bottom))' : '8px'
+        }}
+      />
       <main className={`flex-1 overflow-y-auto p-4 relative z-10 ${isNavHidden ? '' : 'pb-24'}`}>
         {/* Передаем функцию скрытия меню в CalendarTab */}
         {activeTab === 'diary' && <CalendarTab onSheetOpen={setIsNavHidden} />}
