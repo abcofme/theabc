@@ -193,12 +193,14 @@ export default function TestsTab({ onOverlayOpen }) {
               >
                 <div className="flex items-center justify-between gap-4 z-10 relative text-left w-full">
                   <div className="flex items-center gap-3">
-                    <img 
-                      src={categoryIcons[cat.name]} 
-                      alt="" 
-                      className="w-10 h-10 object-contain drop-shadow-md"
-                      onError={(e) => { e.target.style.display = 'none'; }}
-                    />
+                    {categoryIcons[cat.name.trim()] && (
+                      <img 
+                        src={categoryIcons[cat.name.trim()]} 
+                        alt="" 
+                        className="w-10 h-10 object-contain drop-shadow-md"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    )}
                     <span className="font-semibold text-[#F5E6D3] text-xl sm:text-2xl leading-tight">
                       {cat.name}
                     </span>

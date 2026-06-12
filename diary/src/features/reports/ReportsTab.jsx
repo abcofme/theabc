@@ -59,7 +59,7 @@ export default function ReportsTab() {
     {
       id: 'repeating_events',
       title: 'Какие события чаще всего повторяются в моей жизни?',
-      desc: 'Узнайте, какие ситуации в вашей жизни имеют свойство повторяться, и проанализируйте реакции на них.',
+      desc: 'Любовь или зависимость, мудрость или глупость. Что чаще, такие и мы. Наша жизнь в привычках, а контроль над ними в анализе.',
       icon: Repeat,
       color: 'text-blue-500',
       bg: 'bg-blue-600/20'
@@ -67,7 +67,7 @@ export default function ReportsTab() {
     {
       id: 'effective_reactions',
       title: 'На какие ситуации я реагирую эффективно, а на какие нет?',
-      desc: 'Узнайте, насколько ваша реакция на событие эффективна.',
+      desc: 'Эффективность в предсказуемости, а во внезапности не решение проблемы, а усугубление. Важно понимать что мы строим и почему ломаем.',
       icon: Zap,
       color: 'text-blue-500',
       bg: 'bg-blue-600/20'
@@ -237,7 +237,7 @@ export default function ReportsTab() {
       <h2 className="text-2xl font-bold text-[#F5E6D3] mb-2 px-4 text-center">Поведенческий код</h2>
       
       <p className="text-sm text-[#F5E6D3] text-center px-4 mb-8 leading-relaxed">
-        Здесь собраны отчеты, которые позволяют вам исследовать себя на основании ваших результатов тестирований, портрета личности, ежедневных записях о событиях и реакциях в дневнике, составить полную Азбуку Я.
+        Деструктивные сценарии, частые события, являющиеся основой жизни, успехи, провалы и их причины. Видеть это и многое другое в своей жизни - функция отчетов. Ведите активно дневник, отчитывайтесь перед собой, чтобы понимать, как можно жить лучше
       </p>
 
       {loading ? (
@@ -264,8 +264,7 @@ export default function ReportsTab() {
                     <rtype.icon className={rtype.color} size={24} />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold mb-2 leading-tight text-[#F5E6D3]">{rtype.title}</h3>
-                    <p className="text-sm text-[#F5E6D3] leading-relaxed">{rtype.desc}</p>
+                    <h3 className="text-lg font-bold leading-tight text-[#F5E6D3]">{rtype.title}</h3>
                   </div>
                   <div className="mt-2 text-[#F5E6D3]">
                     {isOpen ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
