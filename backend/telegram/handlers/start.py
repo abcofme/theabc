@@ -129,6 +129,12 @@ async def TestCategoryDesc_callback(callback: CallbackQuery, callback_data: Test
     image_name = f"{callback_data.name.lower()}.png"
     image_path = IMAGES / image_name
     
+    import pathlib
+    real_path = pathlib.Path(image_path)
+    if not real_path.exists():
+        image_name = f"{callback_data.name.lower()}.jpg"
+        image_path = IMAGES / image_name
+    
     msg = await bot.send_photo(
         chat_id=user.id,
         photo=FSInputFile(image_path),
