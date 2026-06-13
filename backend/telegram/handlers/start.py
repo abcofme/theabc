@@ -131,16 +131,26 @@ async def TestCategoryDesc_callback(callback: CallbackQuery, callback_data: Test
         image_path = IMAGES / image_name
         
     try:
-        msg = await bot.send_message(
-            chat_id=user.id,
-            text=f"Отладочное сообщение:\n{text}",
-            reply_markup=builder.as_markup()
-        )
+        if image_path.exists():
+            msg = await bot.send_photo(
+                chat_id=user.id,
+                photo=FSInputFile(image_path),
+                caption=text,
+                reply_markup=builder.as_markup()
+            )
+        else:
+            msg = await bot.send_message(
+                chat_id=user.id,
+                text=text,
+                reply_markup=builder.as_markup()
+            )
+            
         await schedule_message_edition(user, msg)
     except Exception as e:
+        import traceback
         await bot.send_message(
             chat_id=user.id,
-            text="Ошибка при отправке сообщения"
+            text=f"🔧 Ошибка в TestCategoryDesc_callback:\n{str(e)}\n\nPath: {image_path}\nExists: {image_path.exists()}"
         )
 
 @dp.callback_query(Psychologist.filter())
