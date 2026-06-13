@@ -48,6 +48,7 @@ async def start_handler(
 async def start_callback(
         callback: CallbackQuery, user: User, state: FSMContext
 ):
+    await callback.answer()
     await callback.message.delete()
     await delete_pending_messages(user)
     await delete_editing_message(user)
@@ -83,6 +84,7 @@ async def AboutDiary_callback(callback: CallbackQuery, user: User, state: FSMCon
 
 @dp.callback_query(AboutTests.filter())
 async def AboutTests_callback(callback: CallbackQuery, user: User, state: FSMContext):
+    await callback.answer()
     await callback.message.delete()
     await delete_pending_messages(user)
     await delete_editing_message(user)
@@ -101,6 +103,7 @@ async def AboutTests_callback(callback: CallbackQuery, user: User, state: FSMCon
 
 @dp.callback_query(TestCategoryDesc.filter())
 async def TestCategoryDesc_callback(callback: CallbackQuery, callback_data: TestCategoryDesc, user: User, state: FSMContext):
+    await callback.answer()
     await callback.message.delete()
     await delete_pending_messages(user)
     await delete_editing_message(user)
@@ -123,35 +126,17 @@ async def TestCategoryDesc_callback(callback: CallbackQuery, callback_data: Test
     builder.button(text="Назад", callback_data=AboutTests().pack())
     builder.adjust(1)
     
-    image_name = f"{callback_data.name.lower()}.jpg"
+    image_name = f"{callback_data.name.lower()}.png"
     image_path = IMAGES / image_name
     
-    if not image_path.exists():
-        image_name = f"{callback_data.name.lower()}.png"
-        image_path = IMAGES / image_name
+    msg = await bot.send_photo(
+        chat_id=user.id,
+        photo=FSInputFile(image_path),
+        caption=text,
+        reply_markup=builder.as_markup()
+    )
         
-    try:
-        if image_path.exists():
-            msg = await bot.send_photo(
-                chat_id=user.id,
-                photo=FSInputFile(image_path),
-                caption=text,
-                reply_markup=builder.as_markup()
-            )
-        else:
-            msg = await bot.send_message(
-                chat_id=user.id,
-                text=text,
-                reply_markup=builder.as_markup()
-            )
-            
-        await schedule_message_edition(user, msg)
-    except Exception as e:
-        import traceback
-        await bot.send_message(
-            chat_id=user.id,
-            text=f"🔧 Ошибка в TestCategoryDesc_callback:\n{str(e)}\n\nPath: {image_path}\nExists: {image_path.exists()}"
-        )
+    await schedule_message_edition(user, msg)
 
 @dp.callback_query(Psychologist.filter())
 async def Psychologist_callback(
