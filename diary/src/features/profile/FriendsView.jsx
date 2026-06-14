@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, Search, UserPlus, Check, X, Trash2, Clock, User } from 'lucide-react';
+import { ChevronLeft, Search, UserPlus, Check, X, Trash2, Clock, User, Lock, Sparkles, Target, Heart, Flame, Activity, Brain, ShieldAlert } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://friendly-various-near-across.trycloudflare.com";
@@ -15,6 +17,14 @@ export default function FriendsView({ onBack }) {
   const [isSearching, setIsSearching] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [currentUserHasPortrait, setCurrentUserHasPortrait] = useState(false);
+  const [activeCompatFriend, setActiveCompatFriend] = useState(null);
+  const [compatType, setCompatType] = useState('friendly');
+  const [myGender, setMyGender] = useState('');
+  const [friendGender, setFriendGender] = useState('');
+  const [isGeneratingCompat, setIsGeneratingCompat] = useState(false);
+  const [compatResult, setCompatResult] = useState(null);
+
   const fetchFriends = async () => {
     try {
       const res = await fetch(`${API_URL}/api/friends`, {
@@ -25,6 +35,7 @@ export default function FriendsView({ onBack }) {
         setFriends(data.friends || []);
         setIncomingRequests(data.incoming_requests || []);
         setOutgoingRequests(data.outgoing_requests || []);
+        setCurrentUserHasPortrait(data.current_user_has_portrait || false);
       }
     } catch (e) {
       console.error(e);
@@ -121,6 +132,84 @@ export default function FriendsView({ onBack }) {
     }
   };
 
+  const fetchCompatibility = async (friendId) => {
+    setActiveTab('compatibility_result');
+    setIsGeneratingCompat(true);
+    try {
+      const res = await fetch(`${API_URL}/api/friends/compatibility/${friendId}`, {
+        headers: { "Authorization": `Bearer ${WebApp.initData}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCompatResult(data.content);
+      } else {
+        WebApp.showAlert("Ошибка загрузки совместимости");
+        setActiveTab('friends');
+      }
+    } catch (e) {
+      console.error(e);
+      setActiveTab('friends');
+    } finally {
+      setIsGeneratingCompat(false);
+    }
+  };
+
+  const handleGenerateCompatibility = async () => {
+    if (!myGender || !friendGender) {
+      WebApp.showAlert('Пожалуйста, укажите пол обоих пользователей');
+      return;
+    }
+    setActiveTab('compatibility_result');
+    setIsGeneratingCompat(true);
+    setCompatResult(null);
+    try {
+      const res = await fetch(`${API_URL}/api/friends/compatibility`, {
+        method: 'POST',
+        headers: {
+          "Authorization": `Bearer ${WebApp.initData}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          friend_id: activeCompatFriend.id,
+          type: compatType,
+          my_gender: myGender,
+          friend_gender: friendGender
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCompatResult(data.content);
+        fetchFriends(); // update has_compatibility status
+      } else {
+        const err = await res.json();
+        WebApp.showAlert(err.detail || 'Произошла ошибка при генерации');
+        setActiveTab('compatibility_form');
+      }
+    } catch (e) {
+      console.error(e);
+      setActiveTab('compatibility_form');
+    } finally {
+      setIsGeneratingCompat(false);
+    }
+  };
+
+  const getMarkdownComponents = () => {
+    return {
+      h1: ({node, ...props}) => <h1 className="text-3xl sm:text-4xl font-black text-[#F5E6D3] text-center mb-10 mt-6 uppercase drop-shadow-sm break-words" {...props} />,
+      h2: ({node, ...props}) => <h2 className="text-2xl sm:text-3xl font-bold text-[#F5E6D3] mt-14 mb-8 flex items-center justify-center pb-4 break-words text-center"><Sparkles className="text-[#F5E6D3] inline mb-1 mr-3" size={28} /> {props.children}</h2>,
+      h3: ({node, ...props}) => <h3 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] mt-10 mb-6 flex items-center pb-2 break-words text-left" {...props} />,
+      p: ({node, ...props}) => <p className="text-[#F5E6D3] leading-loose mb-8 text-base sm:text-lg font-semibold text-left break-words" {...props} />,
+      strong: ({node, ...props}) => <strong className="text-[#F5E6D3] font-black text-lg sm:text-xl break-words" {...props} />,
+      ul: ({node, ...props}) => <ul className="space-y-6 mb-10 mt-6 pl-1 w-full" {...props} />,
+      li: ({node, ...props}) => (
+        <li className="flex items-start text-base sm:text-lg font-semibold text-[#F5E6D3] break-words w-full">
+          <Heart className="shrink-0 text-[#F5E6D3] mr-3 mt-1" size={22} />
+          <span className="flex-1 block">{props.children}</span>
+        </li>
+      ),
+    };
+  };
+
   const UserCard = ({ user, children }) => (
     <div className="flex items-center justify-between bg-rose-900/60 p-4 rounded-2xl mb-3">
       <div className="flex items-center gap-3">
@@ -156,15 +245,25 @@ export default function FriendsView({ onBack }) {
     <div className="px-2 sm:px-4 pt-0 pb-20 animate-in fade-in slide-in-from-right-8 duration-300 min-h-full flex flex-col">
       <div className="flex items-center mb-4 mx-2">
         <button 
-          onClick={onBack}
+          onClick={() => {
+            if (activeTab === 'compatibility_form' || activeTab === 'compatibility_result') {
+              setActiveTab('friends');
+              setCompatResult(null);
+            } else {
+              onBack();
+            }
+          }}
           className="p-2 -ml-2 text-[#F5E6D3] hover:bg-rose-800/50 rounded-xl transition-colors"
         >
           <ChevronLeft size={24} />
         </button>
-        <h2 className="text-2xl font-black text-[#F5E6D3] ml-2">Друзья</h2>
+        <h2 className="text-2xl font-black text-[#F5E6D3] ml-2">
+          {(activeTab === 'compatibility_form' || activeTab === 'compatibility_result') ? 'Совместимость' : 'Друзья'}
+        </h2>
       </div>
 
-      <div className="flex bg-rose-900/40 rounded-xl p-1 mb-4 mx-2">
+      {(activeTab !== 'compatibility_form' && activeTab !== 'compatibility_result') && (
+        <div className="flex bg-rose-900/40 rounded-xl p-1 mb-4 mx-2">
         <button
           onClick={() => setActiveTab('friends')}
           className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
@@ -215,14 +314,48 @@ export default function FriendsView({ onBack }) {
                   </div>
                 ) : (
                   friends.map(f => (
-                    <UserCard key={f.id} user={f}>
-                      <button 
-                        onClick={() => removeFriend(f.id)}
-                        className="p-2 text-red-400 hover:bg-red-400/20 rounded-lg transition-colors"
-                      >
-                        <Trash2 size={20} />
-                      </button>
-                    </UserCard>
+                    <div key={f.id} className="mb-4">
+                      <UserCard user={f}>
+                        {!f.has_compatibility && (
+                          <button 
+                            onClick={() => {
+                              if (f.has_portrait && currentUserHasPortrait) {
+                                setActiveCompatFriend(f);
+                                setActiveTab('compatibility_form');
+                              }
+                            }}
+                            disabled={!(f.has_portrait && currentUserHasPortrait)}
+                            className={`px-3 py-2 text-sm font-bold rounded-xl transition-colors ${
+                              f.has_portrait && currentUserHasPortrait 
+                                ? 'bg-green-600 hover:bg-green-500 text-white shadow-md shadow-green-900/40' 
+                                : 'bg-rose-800 text-white/50 cursor-not-allowed'
+                            }`}
+                          >
+                            Узнать совместимость
+                          </button>
+                        )}
+                      </UserCard>
+                      {!f.has_compatibility && !(f.has_portrait && currentUserHasPortrait) && (
+                        <p className="text-[11px] sm:text-xs text-[#F5E6D3]/70 px-2 mt-[-4px] flex items-start gap-1 leading-tight">
+                          <Lock size={12} className="shrink-0 mt-0.5" /> 
+                          Для анализа совместимости, необходимы портреты личности обоих пользователей!
+                        </p>
+                      )}
+                      {f.has_compatibility && (
+                        <button
+                          onClick={() => {
+                            setActiveCompatFriend(f);
+                            fetchCompatibility(f.id);
+                          }}
+                          className="w-full bg-rose-900/80 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 flex items-center justify-between shadow-sm mt-[-4px]"
+                        >
+                          <div>
+                            <h3 className="text-base font-bold text-[#F5E6D3]">Совместимость</h3>
+                          </div>
+                          <ChevronLeft className="text-[#F5E6D3] rotate-180" size={20} />
+                        </button>
+                      )}
+                    </div>
                   ))
                 )}
               </div>
@@ -327,6 +460,108 @@ export default function FriendsView({ onBack }) {
                         </button>
                       </UserCard>
                     ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'compatibility_form' && activeCompatFriend && (
+              <div className="flex flex-col gap-6 mx-2 animate-in fade-in duration-300 pb-10">
+                <div className="bg-rose-900/80 rounded-3xl p-6 text-center">
+                  <h3 className="text-[#F5E6D3] text-lg font-bold mb-1">
+                    Совместимость с @{activeCompatFriend.username}
+                  </h3>
+                  <p className="text-[#F5E6D3]/70 text-sm">
+                    Настройте параметры анализа
+                  </p>
+                </div>
+
+                <div className="bg-rose-900/40 p-5 rounded-3xl flex flex-col gap-5">
+                  <div>
+                    <p className="text-[#F5E6D3] font-bold mb-3">1. Тип совместимости:</p>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setCompatType('friendly')}
+                        className={`flex-1 py-3 rounded-xl font-medium transition-colors ${compatType === 'friendly' ? 'bg-blue-600 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                      >
+                        Дружеская
+                      </button>
+                      <button 
+                        onClick={() => setCompatType('partner')}
+                        className={`flex-1 py-3 rounded-xl font-medium transition-colors ${compatType === 'partner' ? 'bg-blue-600 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                      >
+                        Партнерская
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-[#F5E6D3] font-bold mb-3">2. Укажите пол:</p>
+                    <div className="flex flex-col gap-4">
+                      <div>
+                        <p className="text-[#F5E6D3]/80 text-sm mb-2">Ваш пол:</p>
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={() => setMyGender('Мужской')}
+                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${myGender === 'Мужской' ? 'bg-blue-600 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                          >
+                            Мужской
+                          </button>
+                          <button 
+                            onClick={() => setMyGender('Женский')}
+                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${myGender === 'Женский' ? 'bg-blue-600 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                          >
+                            Женский
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <p className="text-[#F5E6D3]/80 text-sm mb-2">Пол @{activeCompatFriend.username}:</p>
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={() => setFriendGender('Мужской')}
+                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${friendGender === 'Мужской' ? 'bg-blue-600 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                          >
+                            Мужской
+                          </button>
+                          <button 
+                            onClick={() => setFriendGender('Женский')}
+                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${friendGender === 'Женский' ? 'bg-blue-600 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                          >
+                            Женский
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={handleGenerateCompatibility}
+                  className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] mt-4 shadow-lg shadow-green-900/40"
+                >
+                  Узнать совместимость
+                </button>
+              </div>
+            )}
+
+            {activeTab === 'compatibility_result' && (
+              <div className="flex flex-col mx-2 animate-in fade-in duration-300 h-full">
+                {isGeneratingCompat ? (
+                  <div className="flex flex-col items-center justify-center flex-1 py-20">
+                    <div className="animate-spin rounded-full h-12 w-12 mb-4 border-b-2 border-green-500"></div>
+                    <p className="text-[#F5E6D3] font-medium text-center px-4">Анализируем совместимость портретов...<br/><span className="text-xs text-[#F5E6D3]/70">Это может занять 15-30 секунд</span></p>
+                  </div>
+                ) : compatResult ? (
+                  <div className="bg-rose-900/80 rounded-3xl p-5 sm:p-8 shadow-xl backdrop-blur-sm overflow-x-hidden mb-10">
+                    <ReactMarkdown components={getMarkdownComponents()}>
+                      {compatResult}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center flex-1">
+                    <p className="text-red-400">Ошибка загрузки результата.</p>
                   </div>
                 )}
               </div>

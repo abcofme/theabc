@@ -256,3 +256,13 @@ class Friendship(BaseModel):
     
     # We won't add bidirectional relationships to User for now to keep it simple, 
     # we can query Friendship directly.
+
+class CompatibilityReport(BaseModel):
+    __tablename__ = "compatibility_reports"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    friend_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    compat_type: Mapped[str] = mapped_column(String(50))
+    my_gender: Mapped[str] = mapped_column(String(20), nullable=True)
+    friend_gender: Mapped[str] = mapped_column(String(20), nullable=True)
+    content: Mapped[str] = mapped_column(Text(), nullable=False)

@@ -1524,3 +1524,117 @@ async def withdraw_referral_balance(
         return {"status": "success", "payout_id": payout_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+class CompatibilityRequest(BaseModel):
+    friend_id: int
+    type: str
+    my_gender: str
+    friend_gender: str
+
+@app.post("/api/friends/compatibility")
+async def generate_compatibility(
+    req: CompatibilityRequest,
+    user_data: dict = Depends(validate_twa_data),
+    db: AsyncSession = Depends(get_session)
+):
+    import httpx
+    import os
+    from backend.database.models import PersonalityPortrait, CompatibilityReport
+    
+    user_id = user_data.get("id")
+    friend_id = req.friend_id
+    
+    # Get portraits
+    my_portrait = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
+    friend_portrait = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == friend_id))).scalars().first()
+    
+    if not my_portrait or not friend_portrait:
+        raise HTTPException(status_code=400, detail="Both users must have personality portraits")
+        
+    prompt = f"""Сравни два психологических портрета и напиши анализ совместимости.
+Тип отношений: {'Дружеская' if req.type == 'friendly' else 'Партнерская'}
+Пол пользователя 1 (я): {req.my_gender}
+Пол пользователя 2 (друг): {req.friend_gender}
+
+Портрет пользователя 1:
+{my_portrait.content}
+
+Портрет пользователя 2:
+{friend_portrait.content}
+
+Напиши подробный анализ совместимости. Опиши сильные стороны союза, возможные конфликты и дай рекомендации. Пиши так, как будто ты обращаешься к пользователю 1. Используй красивое форматирование Markdown (заголовки, списки). Не используй никаких вступлений, сразу выдавай результат анализа."""
+
+    ai_token = os.getenv("TIMEWEB_AI_TOKEN")
+    ai_url = os.getenv("TIMEWEB_AI_URL")
+    
+    if not ai_token or not ai_url:
+        raise HTTPException(status_code=500, detail="AI service not configured")
+
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        ai_response = await client.post(
+            ai_url,
+            headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
+            json={
+                "model": "claude-3-opus",
+                "messages": [{"role": "user", "content": prompt}]
+            }
+        )
+        if ai_response.status_code == 404:
+            ai_response = await client.post(
+                ai_url,
+                headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
+                json={
+                    "model": "claude-3-opus",
+                    "messages": [{"role": "user", "content": prompt}]
+                }
+            )
+            
+        if ai_response.status_code != 200:
+            raise HTTPException(status_code=500, detail="AI service error")
+            
+        ai_data = ai_response.json()
+        content = ai_data["choices"][0]["message"]["content"].strip()
+        
+    # Check if exists
+    existing = (await db.execute(select(CompatibilityReport).where(
+        CompatibilityReport.user_id == user_id,
+        CompatibilityReport.friend_id == friend_id
+    ))).scalars().first()
+    
+    if existing:
+        existing.content = content
+        existing.compat_type = req.type
+        existing.my_gender = req.my_gender
+        existing.friend_gender = req.friend_gender
+        await db.commit()
+    else:
+        new_report = CompatibilityReport(
+            user_id=user_id,
+            friend_id=friend_id,
+            compat_type=req.type,
+            my_gender=req.my_gender,
+            friend_gender=req.friend_gender,
+            content=content
+        )
+        db.add(new_report)
+        await db.commit()
+        
+    return {"status": "success", "content": content}
+
+@app.get("/api/friends/compatibility/{friend_id}")
+async def get_compatibility(
+    friend_id: int,
+    user_data: dict = Depends(validate_twa_data),
+    db: AsyncSession = Depends(get_session)
+):
+    from backend.database.models import CompatibilityReport
+    user_id = user_data.get("id")
+    report = (await db.execute(select(CompatibilityReport).where(
+        CompatibilityReport.user_id == user_id,
+        CompatibilityReport.friend_id == friend_id
+    ))).scalars().first()
+    
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+        
+    return {"status": "success", "content": report.content}
