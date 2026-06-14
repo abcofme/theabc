@@ -353,14 +353,14 @@ export default function ReportsTab({ onSwitchTab }) {
                               </div>
                               <h3 className="text-[#F5E6D3] font-bold text-lg mb-2">Блок Профориентация</h3>
                               <p className="text-[#F5E6D3]/70 text-sm mb-4">
-                                Для генерации отчетов по профориентации необходимо приобрести этот блок за 1500 ₽ (единоразово). Доступно только для Premium-пользователей.
+                                Для генерации отчетов по профориентации необходимо приобрести этот блок за 1499 ₽ (единоразово). Доступно только для Premium-пользователей.
                               </p>
                               <button
                                 onClick={buyCareerGuidance}
                                 disabled={isBuyingCareer}
-                                className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-rose-950 font-bold rounded-xl shadow-md transition-all flex justify-center items-center gap-2"
+                                className="w-full py-3.5 bg-green-600 hover:bg-green-500 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
                               >
-                                {isBuyingCareer ? <span className="animate-spin text-xl">⏳</span> : "Купить за 1500 ₽"}
+                                {isBuyingCareer ? <span className="animate-spin text-xl">⏳</span> : "Купить за 1499 ₽"}
                               </button>
                             </div>
                           ) : accessLevel === 'Free' ? (
@@ -371,10 +371,10 @@ export default function ReportsTab({ onSwitchTab }) {
                               <h3 className="text-[#F5E6D3] font-bold text-lg mb-2">Генерация отчета доступна только с Premium</h3>
                               <button
                                 onClick={() => onSwitchTab('profile')}
-                                className="mt-2 w-full py-2.5 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-[#F5E6D3] font-bold rounded-xl shadow-md transition-all flex justify-center items-center gap-2"
+                                className="mt-2 w-full py-3.5 bg-green-600 hover:bg-green-500 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
                               >
                                 <Sparkles size={18} />
-                                Оформить подписку
+                                Оформить Premium (149 ₽ / мес)
                               </button>
                             </div>
                           ) : (

@@ -352,7 +352,7 @@ export default function ProfileTab({ onOverlayOpen }) {
         <div className="mx-2 mb-4">
           <button 
             onClick={() => setActiveSubTab('admin')}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-[#F5E6D3] text-sm font-bold rounded-2xl transition-colors shadow-sm flex items-center justify-center gap-2"
+            className="w-full py-3 bg-green-600 hover:bg-green-500 text-[#F5E6D3] text-sm font-bold rounded-2xl transition-colors shadow-sm flex items-center justify-center gap-2"
           >
             Админ-панель
           </button>
@@ -371,7 +371,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <button
                 onClick={() => setIsPremiumModalOpen(true)}
                 disabled={isBuying}
-                className="w-full py-3.5 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-[#F5E6D3] font-bold rounded-2xl shadow-lg transition-all flex justify-center items-center gap-2"
+                className="w-full py-3.5 bg-green-600 hover:bg-green-500 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
               >
                 {isBuying ? <span className="animate-spin text-xl">⏳</span> : <Sparkles size={18} />}
                 Оформить Premium (149 ₽ / мес)
