@@ -17,6 +17,10 @@ export default function ProfileTab() {
   const [isGeneratingPortrait, setIsGeneratingPortrait] = useState(false);
   const [loading, setLoading] = useState(true);
   
+  const [accessLevel, setAccessLevel] = useState('');
+  const [accessExpiresAt, setAccessExpiresAt] = useState(null);
+  const [isBuying, setIsBuying] = useState(false);
+  
   // Новый стейт для вкладок
   const [activeSubTab, setActiveSubTab] = useState('main'); // 'main' | 'admin' | 'portrait' | 'friends' | 'referral'
 
@@ -54,6 +58,8 @@ export default function ProfileTab() {
           setTotalTests(data.total_tests || 0);
           setPassedTests(data.passed_tests || 0);
           setPortraitData(data.portrait || null);
+          setAccessLevel(data.access_level);
+          setAccessExpiresAt(data.access_expires_at);
           setLoading(false);
         })
         .catch(err => {
@@ -140,6 +146,29 @@ export default function ProfileTab() {
       console.error(err);
     } finally {
       setIsVerifyingInn(false);
+    }
+  };
+
+  const buyPremium = async () => {
+    setIsBuying(true);
+    try {
+      const response = await fetch(`${API_URL}/api/subscription/buy`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${WebApp.initData}`,
+          "Content-Type": "application/json"
+        }
+      });
+      const data = await response.json();
+      if (response.ok) {
+        WebApp.openLink(data.url);
+      } else {
+        WebApp.showAlert(`Ошибка: ${data.detail || "Не удалось создать платеж"}`);
+      }
+    } catch (err) {
+      WebApp.showAlert(`Ошибка сети: ${err.message}`);
+    } finally {
+      setIsBuying(false);
     }
   };
 
@@ -312,6 +341,33 @@ export default function ProfileTab() {
 
       {activeSubTab === 'main' && (
         <>
+          {/* 2. СТАТУС ПОДПИСКИ */}
+          <div className="mx-2 mb-4 p-4 bg-rose-900/80 rounded-3xl backdrop-blur-sm shadow-sm flex flex-col gap-2">
+            <div className="flex justify-between items-center">
+              <span className="text-[#F5E6D3] font-semibold text-sm sm:text-base">Ваш доступ:</span>
+              <span className={`font-bold px-3 py-1 rounded-xl text-xs sm:text-sm ${
+                accessLevel === 'Premium' ? 'bg-amber-500 text-rose-950' : 
+                accessLevel === 'Демо-доступ' ? 'bg-green-500/20 text-green-300' : 'bg-rose-950 text-[#F5E6D3]/60'
+              }`}>
+                {accessLevel || 'Загрузка...'}
+              </span>
+            </div>
+            {accessExpiresAt && (
+              <p className="text-xs text-[#F5E6D3]/60 text-right">
+                До: {new Date(accessExpiresAt).toLocaleDateString()}
+              </p>
+            )}
+            {accessLevel !== 'Premium' && (
+              <button
+                onClick={buyPremium}
+                disabled={isBuying}
+                className="mt-3 w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-rose-950 font-bold rounded-xl shadow-md transition-all flex justify-center items-center gap-2"
+              >
+                {isBuying ? <span className="animate-spin text-xl">⏳</span> : <Sparkles size={18} />}
+                Оформить Premium (149 ₽ / мес)
+              </button>
+            )}
+          </div>
           {/* ПОРТРЕТ ЛИЧНОСТИ КНОПКИ */}
           <div className="mx-2 mb-4 flex flex-col gap-4">
             {!portraitData ? (

@@ -6,3 +6,4 @@ from . import (
     mailing,
     referrals,
 )
+from .subscriptions import *

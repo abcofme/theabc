@@ -38,6 +38,10 @@ class User(BaseModel):
     admin: Mapped[bool] = mapped_column(Boolean, nullable=True, default=False)
     banned: Mapped[bool] = mapped_column(Boolean, nullable=True, default=False)
     
+    first_opened_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    premium_until: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    yookassa_payment_method_id: Mapped[str] = mapped_column(String(100), nullable=True)
+    
     inn: Mapped[str] = mapped_column(String(12), nullable=True)
     inn_verified: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
 
@@ -181,6 +185,9 @@ class Payment(BaseModel):
     success: Mapped[bool] = mapped_column(Boolean, default=False)
     url: Mapped[str] = mapped_column(Text(), nullable=True)
     uuid: Mapped[str] = mapped_column(Text(), nullable=True)
+    
+    is_premium_subscription: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_recurring: Mapped[bool] = mapped_column(Boolean, default=False)
 
     category_id: Mapped[Optional[int]] = mapped_column(ForeignKey("categories.id"))
     category: Mapped[Optional["Category"]] = relationship(

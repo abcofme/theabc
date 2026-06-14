@@ -23,13 +23,8 @@ back_question_btn = InlineKeyboardButton(
 async def category_tests_kb(dao: DataAccessObject, user: User, profile: bool, is_profile: bool = False) -> InlineKeyboardMarkup:
     categories = await dao.get_all(Category)
     categories = sorted(categories, key=lambda c: 1 if c.name.lower() == "профориентация" else 0)
-    payments = await dao.filter(Payment, dict(user_id=user.id, success=True))
-    payment_categories_ids = [payment.category_id for payment in payments]
     buttons = list()
-    flag = False
     for category in categories:
-        if category.id not in payment_categories_ids:
-            flag = True
         buttons.append(
             [
                 InlineKeyboardButton(

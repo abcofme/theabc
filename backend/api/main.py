@@ -45,9 +45,22 @@ async def get_profile(
             changed = True
         if not db_user.has_opened_app:
             db_user.has_opened_app = True
+            db_user.first_opened_at = datetime.utcnow()
             changed = True
         if changed:
             await session.commit()
+            
+    access_level = "Free"
+    access_expires_at = None
+    
+    now = datetime.utcnow()
+    if db_user:
+        if db_user.premium_until and db_user.premium_until > now:
+            access_level = "Premium"
+            access_expires_at = db_user.premium_until.isoformat()
+        elif db_user.first_opened_at and db_user.first_opened_at + timedelta(days=14) > now:
+            access_level = "Демо-доступ"
+            access_expires_at = (db_user.first_opened_at + timedelta(days=14)).isoformat()
     
     # Получаем все категории и тесты
     cats_query = select(Category).options(joinedload(Category.tests))
@@ -111,8 +124,23 @@ async def get_profile(
         "categories": result_data,
         "total_tests": total_tests,
         "passed_tests": passed_tests,
-        "portrait": portrait_data
+        "portrait": portrait_data,
+        "access_level": access_level,
+        "access_expires_at": access_expires_at
     }
+
+async def check_access(user_id: int, session: AsyncSession):
+    from datetime import datetime, timedelta
+    from fastapi import HTTPException
+    user = await session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=403, detail="User not found")
+    now = datetime.utcnow()
+    if user.premium_until and user.premium_until > now:
+        return
+    if user.first_opened_at and user.first_opened_at + timedelta(days=14) > now:
+        return
+    raise HTTPException(status_code=403, detail="Для доступа к этой функции необходим Демо-доступ или Premium подписка.")
 
 # Эндпоинт 2: Получение записей дневника за месяц
 @app.get("/api/diary")
@@ -133,6 +161,12 @@ async def get_diary_entries(
     # Фильтруем на питоне для простоты
     filtered = [e for e in entries if e.date.year == year and e.date.month == month]
     
+    has_premium_access = True
+    try:
+        await check_access(user_id, session)
+    except:
+        has_premium_access = False
+    
     return [
         {
             "id": e.id, 
@@ -140,8 +174,8 @@ async def get_diary_entries(
             "event": e.event, 
             "reaction": e.reaction, 
             "rating": getattr(e, "rating", None), 
-            "portrait_match_score": getattr(e, "portrait_match_score", None),
-            "portrait_match_explanation": getattr(e, "portrait_match_explanation", None)
+            "portrait_match_score": getattr(e, "portrait_match_score", None) if has_premium_access else None,
+            "portrait_match_explanation": getattr(e, "portrait_match_explanation", None) if has_premium_access else None
         }
         for e in filtered
     ]
@@ -333,6 +367,7 @@ async def generate_personality_portrait(
     import httpx
     
     user_id = user_data.get("id")
+    await check_access(user_id, session)
     
     # 1. Получаем результаты всех тестов
     prog_query = select(Progress).where(Progress.user_id == user_id).options(joinedload(Progress.test))
@@ -563,6 +598,7 @@ async def generate_report(
     from datetime import datetime, timedelta
     
     user_id = user_data.get("id")
+    await check_access(user_id, session)
     
     # 1. Получаем контекст (портрет или тесты) в зависимости от типа отчета
     portrait = None
@@ -1613,9 +1649,10 @@ async def generate_compatibility(
 ):
     import httpx
     import os
-    from backend.database.models import PersonalityPortrait, CompatibilityReport
-    
     user_id = user_data.get("id")
+    await check_access(user_id, db)
+    
+    from backend.database.models import PersonalityPortrait, CompatibilityReport
     friend_id = req.friend_id
     
     # Get portraits
@@ -1712,3 +1749,78 @@ async def get_compatibility(
         raise HTTPException(status_code=404, detail="Report not found")
         
     return {"status": "success", "content": report.content}
+
+@app.post("/api/subscription/buy")
+async def buy_subscription(
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from backend.integrations.payment.yoo import _create_payment
+    from backend.database.models import Payment
+    user_id = user_data.get("id")
+    
+    # 149 RUB for 1 month Premium
+    url, payment_id = _create_payment(amount=149, chat_id=str(user_id), description="Premium подписка (1 месяц)", email="", save_payment_method=True)
+    
+    payment = Payment(
+        user_id=user_id,
+        uuid=payment_id,
+        url=url,
+        is_premium_subscription=True,
+        is_recurring=False
+    )
+    session.add(payment)
+    await session.commit()
+    
+    return {"url": url, "payment_id": payment_id}
+
+@app.get("/api/subscription/status/{payment_uuid}")
+async def check_subscription_status(
+    payment_uuid: str,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from backend.integrations.payment.yoo import _check_payment
+    from backend.database.models import Payment, User
+    from datetime import datetime, timedelta
+    
+    user_id = user_data.get("id")
+    
+    payment = (await session.execute(select(Payment).where(Payment.uuid == payment_uuid, Payment.user_id == user_id))).scalars().first()
+    if not payment:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Payment not found")
+        
+    if payment.success:
+        return {"status": "success"}
+        
+    meta, amount, payment_method_id = _check_payment(payment_uuid)
+    if meta is not False: # succeeded
+        payment.success = True
+        
+        user = await session.get(User, user_id)
+        
+        # Extend premium_until
+        now = datetime.utcnow()
+        if user.premium_until and user.premium_until > now:
+            user.premium_until += timedelta(days=30)
+        else:
+            user.premium_until = now + timedelta(days=30)
+            
+        if payment_method_id:
+            user.yookassa_payment_method_id = payment_method_id
+            
+        # Referral logic
+        if user.invited_id:
+            try:
+                inviter_id = int(user.invited_id)
+                inviter = await session.get(User, inviter_id)
+                if inviter:
+                    inviter.referral_balance_pending += int(amount / 2)
+            except ValueError:
+                pass
+                
+        await session.commit()
+        return {"status": "success"}
+        
+    return {"status": "pending"}

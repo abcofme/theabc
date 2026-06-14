@@ -45,41 +45,29 @@ async def CategoryChoose_callback(
     await schedule_previous_message(user, callback.message, state)
 
     category = await dao.get_object(Category, callback_data.category_id)
-    await delete_pending_messages(user)
-    payments = await dao.filter(
-        Payment, dict(user_id=user.id, category_id=category.id, success=True)
-    )
-
     if callback_data.profile:
         await state.update_data(dict(is_profile=True))
         text = f"{category.name.capitalize()}\n📋 Выберите результат теста из списка\n"
     else:
         await state.update_data(dict(is_profile=False))
-        if payments:
-            text = f"{category.description}\n\n" + gettext("messages.test.choose_test")
-        else:
-            text = gettext("message.tests.choose_type")
+        text = f"{category.description}\n\n" + gettext("messages.test.choose_test")
 
-    if payments or callback_data.profile:
-        await state.set_state(TestsStates.slider)
-        await state.update_data(
-            dict(category_id=callback_data.category_id)
-        )
-        conditions = dict(category_id=callback_data.category_id)
-        tests = await dao.filter(Test, conditions)
-        try:
-            tests = sorted(tests, key=lambda x: (x.order_number is None, x.order_number))
-        except:
-            pass
-        for i, test in enumerate(tests, start=1):
-            text += f"{i}. {test.name}\n"
-        kb = await slider_kb(
-            db_model=Test, callback_data=TestChoose, dao=dao,
-            part=4, conditions=dict(category_id=callback_data.category_id)
-        )
-    else:
-        await state.clear()
-        kb = await type_tests_kb(category, user, dao)
+    await state.set_state(TestsStates.slider)
+    await state.update_data(
+        dict(category_id=callback_data.category_id)
+    )
+    conditions = dict(category_id=callback_data.category_id)
+    tests = await dao.filter(Test, conditions)
+    try:
+        tests = sorted(tests, key=lambda x: (x.order_number is None, x.order_number))
+    except:
+        pass
+    for i, test in enumerate(tests, start=1):
+        text += f"{i}. {test.name}\n"
+    kb = await slider_kb(
+        db_model=Test, callback_data=TestChoose, dao=dao,
+        part=4, conditions=dict(category_id=callback_data.category_id)
+    )
 
     await delete_editing_message(user)
     if category.name.lower() in [
