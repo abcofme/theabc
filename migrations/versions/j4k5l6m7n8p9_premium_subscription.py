@@ -24,8 +24,8 @@ def upgrade() -> None:
     op.add_column('users', sa.Column('premium_until', sa.DateTime(), nullable=True))
     op.add_column('users', sa.Column('yookassa_payment_method_id', sa.String(length=100), nullable=True))
     
-    op.add_column('payments', sa.Column('is_premium_subscription', sa.Boolean(), server_default='0', nullable=False))
-    op.add_column('payments', sa.Column('is_recurring', sa.Boolean(), server_default='0', nullable=False))
+    op.add_column('payments', sa.Column('is_premium_subscription', sa.Boolean(), server_default='false', nullable=False))
+    op.add_column('payments', sa.Column('is_recurring', sa.Boolean(), server_default='false', nullable=False))
     # ### end Alembic commands ###
 
 
