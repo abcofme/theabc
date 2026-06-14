@@ -358,7 +358,7 @@ export default function ReportsTab({ onSwitchTab }) {
                               <button
                                 onClick={buyCareerGuidance}
                                 disabled={isBuyingCareer}
-                                className="w-full py-3.5 bg-green-600 hover:bg-green-500 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
+                                className="w-full py-3.5 bg-green-800 hover:bg-green-700 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
                               >
                                 {isBuyingCareer ? <span className="animate-spin text-xl">⏳</span> : "Купить за 1499 ₽"}
                               </button>
@@ -371,7 +371,7 @@ export default function ReportsTab({ onSwitchTab }) {
                               <h3 className="text-[#F5E6D3] font-bold text-lg mb-2">Генерация отчета доступна только с Premium</h3>
                               <button
                                 onClick={() => onSwitchTab('profile')}
-                                className="mt-2 w-full py-3.5 bg-green-600 hover:bg-green-500 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
+                                className="mt-2 w-full py-3.5 bg-green-800 hover:bg-green-700 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
                               >
                                 <Sparkles size={18} />
                                 Оформить Premium (149 ₽ / мес)

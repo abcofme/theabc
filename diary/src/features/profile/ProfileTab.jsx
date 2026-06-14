@@ -352,7 +352,7 @@ export default function ProfileTab({ onOverlayOpen }) {
         <div className="mx-2 mb-4">
           <button 
             onClick={() => setActiveSubTab('admin')}
-            className="w-full py-3 bg-green-600 hover:bg-green-500 text-[#F5E6D3] text-sm font-bold rounded-2xl transition-colors shadow-sm flex items-center justify-center gap-2"
+            className="w-full py-3 bg-green-800 hover:bg-green-700 text-[#F5E6D3] text-sm font-bold rounded-2xl transition-colors shadow-sm flex items-center justify-center gap-2"
           >
             Админ-панель
           </button>
@@ -371,7 +371,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <button
                 onClick={() => setIsPremiumModalOpen(true)}
                 disabled={isBuying}
-                className="w-full py-3.5 bg-green-600 hover:bg-green-500 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
+                className="w-full py-3.5 bg-green-800 hover:bg-green-700 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
               >
                 {isBuying ? <span className="animate-spin text-xl">⏳</span> : <Sparkles size={18} />}
                 Оформить Premium (149 ₽ / мес)
@@ -745,7 +745,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                 <div className="relative flex items-center justify-center mt-0.5">
                   <input 
                     type="checkbox" 
-                    className="peer appearance-none w-5 h-5 border-2 border-rose-800 rounded-md checked:bg-green-600 checked:border-green-600 transition-colors"
+                    className="peer appearance-none w-5 h-5 border-2 border-rose-800 rounded-md checked:bg-green-800 checked:border-green-800 transition-colors"
                     checked={isOfferAccepted}
                     onChange={(e) => setIsOfferAccepted(e.target.checked)}
                   />
@@ -768,7 +768,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               disabled={isBuying}
               className={`w-full py-4 text-[#F5E6D3] font-bold rounded-xl shadow-lg transition-all flex justify-center items-center gap-2 ${
                 isOfferAccepted 
-                  ? "bg-green-600 hover:bg-green-500 shadow-green-900/30" 
+                  ? "bg-green-800 hover:bg-green-700 shadow-green-900/30" 
                   : "bg-green-900/40 text-[#F5E6D3]/40 cursor-not-allowed"
               }`}
             >

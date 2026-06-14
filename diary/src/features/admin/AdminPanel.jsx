@@ -319,7 +319,7 @@ export default function AdminPanel({ onBack }) {
             <button 
               onClick={handleGrantAccess}
               disabled={isGranting}
-              className="w-full bg-green-600 hover:bg-green-500 disabled:opacity-50 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-sm"
+              className="w-full bg-green-800 hover:bg-green-700 disabled:opacity-50 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-sm"
             >
               {isGranting ? "Обработка..." : "Выдать права"}
             </button>
