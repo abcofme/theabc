@@ -39,6 +39,11 @@ export default function ProfileTab() {
   const [isVerifyingInn, setIsVerifyingInn] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
 
+  // Premium modal states
+  const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
+  const [isOfferAccepted, setIsOfferAccepted] = useState(false);
+  const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+
   // Получаем данные пользователя из Telegram (если открыто в браузере - ставим заглушку)
   const tgUser = WebApp.initDataUnsafe?.user || {
     first_name: "Пользователь",
@@ -109,7 +114,7 @@ export default function ProfileTab() {
   const handleClearPortrait = async () => {
     try {
       const response = await fetch(`${API_URL}/api/portrait/clear`, {
-        method: "POST",
+        method: "DELETE",
         headers: { "Authorization": `Bearer ${WebApp.initData}` }
       });
       if (response.ok) {
@@ -325,15 +330,29 @@ export default function ProfileTab() {
           <h2 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] truncate">{tgUser.first_name}</h2>
           <p className="text-sm sm:text-base text-[#F5E6D3] font-medium truncate">@{tgUser.username}</p>
         </div>
-        {['ingenfrid', 'key_crp', 'fondlife'].includes(tgUser.username) && (
+        <div className="flex flex-col items-end gap-1">
+          <span className={`font-bold px-2 py-1 rounded-xl text-xs sm:text-sm text-center ${
+            accessLevel === 'Premium' ? 'bg-amber-500 text-rose-950' : 
+            accessLevel === 'Демо-доступ' ? 'bg-green-500/20 text-green-300' : 'bg-rose-950 text-[#F5E6D3]/60'
+          }`}>
+            {accessLevel || 'Загрузка...'}
+          </span>
+          {accessExpiresAt && (
+             <span className="text-[10px] text-[#F5E6D3]/60">До {new Date(accessExpiresAt).toLocaleDateString()}</span>
+          )}
+        </div>
+      </div>
+
+      {['ingenfrid', 'key_crp', 'fondlife'].includes(tgUser.username) && activeSubTab === 'main' && (
+        <div className="mx-2 mb-4">
           <button 
             onClick={() => setActiveSubTab('admin')}
-            className="p-2 sm:px-4 sm:py-2 bg-blue-600 hover:bg-blue-500 text-[#F5E6D3] text-xs sm:text-sm font-bold rounded-xl transition-colors shadow-sm"
+            className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-[#F5E6D3] text-sm font-bold rounded-2xl transition-colors shadow-sm flex items-center justify-center gap-2"
           >
             Админ-панель
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {activeSubTab === 'admin' && (
         <AdminPanel onBack={() => setActiveSubTab('main')} />
@@ -341,33 +360,19 @@ export default function ProfileTab() {
 
       {activeSubTab === 'main' && (
         <>
-          {/* 2. СТАТУС ПОДПИСКИ */}
-          <div className="mx-2 mb-4 p-4 bg-rose-900/80 rounded-3xl backdrop-blur-sm shadow-sm flex flex-col gap-2">
-            <div className="flex justify-between items-center">
-              <span className="text-[#F5E6D3] font-semibold text-sm sm:text-base">Ваш доступ:</span>
-              <span className={`font-bold px-3 py-1 rounded-xl text-xs sm:text-sm ${
-                accessLevel === 'Premium' ? 'bg-amber-500 text-rose-950' : 
-                accessLevel === 'Демо-доступ' ? 'bg-green-500/20 text-green-300' : 'bg-rose-950 text-[#F5E6D3]/60'
-              }`}>
-                {accessLevel || 'Загрузка...'}
-              </span>
-            </div>
-            {accessExpiresAt && (
-              <p className="text-xs text-[#F5E6D3]/60 text-right">
-                До: {new Date(accessExpiresAt).toLocaleDateString()}
-              </p>
-            )}
-            {accessLevel !== 'Premium' && (
+          {/* КНОПКА ОФОРМЛЕНИЯ ПРЕМИУМ */}
+          {accessLevel !== 'Premium' && (
+            <div className="mx-2 mb-4">
               <button
-                onClick={buyPremium}
+                onClick={() => setIsPremiumModalOpen(true)}
                 disabled={isBuying}
-                className="mt-3 w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-rose-950 font-bold rounded-xl shadow-md transition-all flex justify-center items-center gap-2"
+                className="w-full py-3.5 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-[#F5E6D3] font-bold rounded-2xl shadow-lg transition-all flex justify-center items-center gap-2"
               >
                 {isBuying ? <span className="animate-spin text-xl">⏳</span> : <Sparkles size={18} />}
                 Оформить Premium (149 ₽ / мес)
               </button>
-            )}
-          </div>
+            </div>
+          )}
           {/* ПОРТРЕТ ЛИЧНОСТИ КНОПКИ */}
           <div className="mx-2 mb-4 flex flex-col gap-4">
             {!portraitData ? (
@@ -697,14 +702,96 @@ export default function ProfileTab() {
                     disabled={isWithdrawing || referralInfo.available < 100}
                     className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-900/20"
                   >
-                    {isWithdrawing ? "Обработка..." : "Запросить вывод"}
-                  </button>
-                </div>
-              </div>
             </>
           )}
         </div>
       )}
-</div>
+
+      {/* 6. ПРЕМИУМ МОДАЛКА */}
+      {isPremiumModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-rose-950/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="absolute inset-0" onClick={() => setIsPremiumModalOpen(false)}></div>
+          <div className="relative bg-rose-900 w-full max-w-2xl rounded-t-[2rem] p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-full duration-300">
+            <button onClick={() => setIsPremiumModalOpen(false)} className="absolute top-4 right-4 p-2 text-[#F5E6D3]/60 hover:text-[#F5E6D3] bg-rose-950/50 rounded-full transition-colors">
+              <X size={20} />
+            </button>
+            <div className="text-center mb-6 mt-2">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-500/20 text-amber-400 rounded-full mb-4 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                <Sparkles size={32} />
+              </div>
+              <h2 className="text-2xl font-bold text-[#F5E6D3]">Оформить Premium</h2>
+              <p className="text-amber-500/90 font-medium text-sm mt-1">149 ₽ в месяц</p>
+            </div>
+            
+            <div className="bg-rose-950/50 rounded-2xl p-5 mb-6">
+              <p className="text-[#F5E6D3] text-sm leading-relaxed mb-4">
+                С подпиской Premium вы получите:
+                <br />✨ Доступ ко всем тестам
+                <br />✨ Генерацию детализированных отчетов
+                <br />✨ Шкалу соответствия ваших реакций портрету личности
+                <br />✨ И многое другое!
+              </p>
+              
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <div className="relative flex items-center justify-center mt-0.5">
+                  <input 
+                    type="checkbox" 
+                    className="peer appearance-none w-5 h-5 border-2 border-rose-800 rounded-md checked:bg-green-600 checked:border-green-600 transition-colors"
+                    checked={isOfferAccepted}
+                    onChange={(e) => setIsOfferAccepted(e.target.checked)}
+                  />
+                  <Check size={14} className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
+                </div>
+                <span className="text-[#F5E6D3]/80 text-sm select-none">
+                  Я согласен с <button onClick={(e) => {e.preventDefault(); setIsOfferModalOpen(true);}} className="text-blue-400 hover:text-blue-300 underline underline-offset-2">публичной офертой</button> и правилами предоставления услуг.
+                </span>
+              </label>
+            </div>
+            
+            <button
+              onClick={() => {
+                if (!isOfferAccepted) {
+                  WebApp.showAlert("Пожалуйста, примите условия публичной оферты");
+                  return;
+                }
+                buyPremium();
+              }}
+              disabled={isBuying}
+              className={`w-full py-4 text-[#F5E6D3] font-bold rounded-xl shadow-lg transition-all flex justify-center items-center gap-2 ${
+                isOfferAccepted 
+                  ? "bg-green-600 hover:bg-green-500 shadow-green-900/30" 
+                  : "bg-green-900/40 text-[#F5E6D3]/40 cursor-not-allowed"
+              }`}
+            >
+              {isBuying ? <span className="animate-spin text-xl">⏳</span> : <Sparkles size={18} />}
+              {isBuying ? "Обработка..." : "Перейти к оплате"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 7. МОДАЛКА ПУБЛИЧНОЙ ОФЕРТЫ */}
+      {isOfferModalOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-rose-950/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="absolute inset-0" onClick={() => setIsOfferModalOpen(false)}></div>
+          <div className="relative bg-rose-900 w-full max-w-lg h-[80vh] flex flex-col rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="flex items-center justify-between p-5 border-b border-rose-800/50">
+              <h3 className="text-lg font-bold text-[#F5E6D3]">Публичная оферта</h3>
+              <button onClick={() => setIsOfferModalOpen(false)} className="p-2 text-[#F5E6D3]/60 hover:text-[#F5E6D3] bg-rose-950/50 rounded-full transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-5 overflow-y-auto flex-1 text-[#F5E6D3]/80 text-sm whitespace-pre-wrap">
+              {"Текст публичной оферты...\n\nЗдесь будет располагаться подробный текст пользовательского соглашения, условия подписки и списания средств.\n\nЗаглушка."}
+            </div>
+            <div className="p-5 border-t border-rose-800/50 bg-rose-950/30 rounded-b-[2rem]">
+              <button onClick={() => {setIsOfferAccepted(true); setIsOfferModalOpen(false);}} className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors">
+                Принять и закрыть
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

@@ -72,7 +72,7 @@ export default function App() {
         {/* Передаем функцию скрытия меню в CalendarTab */}
         {activeTab === 'diary' && <CalendarTab onSheetOpen={setIsNavHidden} />}
         {activeTab === 'tests' && <TestsTab onOverlayOpen={setIsNavHidden} />}
-        {activeTab === 'reports' && <ReportsTab />}
+        {activeTab === 'reports' && <ReportsTab onSwitchTab={setActiveTab} />}
         {activeTab === 'profile' && <ProfileTab />}
       </main>
 

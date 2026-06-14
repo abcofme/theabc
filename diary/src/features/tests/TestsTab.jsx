@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, Check, XCircle, X, Brain, ClipboardList } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check, XCircle, X, Brain, ClipboardList, Lock, Sparkles } from 'lucide-react';
 import bgLeaves from '../../assets/bg-leaves.png';
 
 import iconPersonality from '../../assets/icons/personality.png';
@@ -250,7 +250,7 @@ export default function TestsTab({ onOverlayOpen }) {
                   {cat.name === 'Профориентация' && !hasCareerAccess ? (
                     <div className="py-6 flex flex-col items-center justify-center text-center px-2">
                       <div className="w-12 h-12 rounded-full bg-rose-900/50 flex items-center justify-center mb-3">
-                        <span className="text-2xl">🔒</span>
+                        <span className="text-2xl"><Lock size={24} fill="currentColor" /></span>
                       </div>
                       <h3 className="text-[#F5E6D3] font-bold text-lg mb-2">Блок Профориентация</h3>
                       <p className="text-[#F5E6D3]/70 text-sm mb-4">

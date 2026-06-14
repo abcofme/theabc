@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Repeat, Zap, ChevronLeft, ChevronDown, ChevronUp, Plus, Target, Sparkles, Calendar, FileText, Star, Trash2 } from 'lucide-react';
+import { Repeat, Zap, ChevronLeft, ChevronDown, ChevronUp, Plus, Target, Sparkles, Calendar, FileText, Star, Trash2, Lock } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import bookIcon from '../../assets/book_icon.png';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://friendly-various-near-across.trycloudflare.com";
 
-export default function ReportsTab() {
+export default function ReportsTab({ onSwitchTab }) {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -349,7 +349,7 @@ export default function ReportsTab() {
                           {group.id === 'career' && !hasCareerAccess ? (
                             <div className="py-6 flex flex-col items-center justify-center text-center px-2">
                               <div className="w-12 h-12 rounded-full bg-rose-900/50 flex items-center justify-center mb-3">
-                                <span className="text-2xl">🔒</span>
+                                <span className="text-2xl"><Lock size={24} fill="currentColor" /></span>
                               </div>
                               <h3 className="text-[#F5E6D3] font-bold text-lg mb-2">Блок Профориентация</h3>
                               <p className="text-[#F5E6D3]/70 text-sm mb-4">
@@ -361,6 +361,20 @@ export default function ReportsTab() {
                                 className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-rose-950 font-bold rounded-xl shadow-md transition-all flex justify-center items-center gap-2"
                               >
                                 {isBuyingCareer ? <span className="animate-spin text-xl">⏳</span> : "Купить за 1500 ₽"}
+                              </button>
+                            </div>
+                          ) : accessLevel === 'Free' ? (
+                            <div className="py-6 flex flex-col items-center justify-center text-center px-2">
+                              <div className="w-12 h-12 rounded-full bg-rose-900/50 flex items-center justify-center mb-3">
+                                <span className="text-2xl"><Lock size={24} fill="currentColor" /></span>
+                              </div>
+                              <h3 className="text-[#F5E6D3] font-bold text-lg mb-2">Генерация отчета доступна только с Premium</h3>
+                              <button
+                                onClick={() => onSwitchTab('profile')}
+                                className="mt-2 w-full py-2.5 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-[#F5E6D3] font-bold rounded-xl shadow-md transition-all flex justify-center items-center gap-2"
+                              >
+                                <Sparkles size={18} />
+                                Оформить подписку
                               </button>
                             </div>
                           ) : (

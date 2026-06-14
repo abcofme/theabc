@@ -1061,6 +1061,46 @@ async def submit_test(
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail="Internal Error")
 
+class AdminGrantRequest(BaseModel):
+    target_telegram_id: int
+    grant_type: str  # "premium" or "career"
+
+@app.post("/api/admin/grant")
+async def admin_grant_access(
+    req: AdminGrantRequest,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    user_id = user_data.get("id")
+    # Verify caller is admin
+    caller_query = select(User).where(User.telegram_id == user_id)
+    caller = (await session.execute(caller_query)).scalars().first()
+    
+    if not caller or caller.username not in ['ingenfrid', 'key_crp', 'fondlife']:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=403, detail="Forbidden")
+        
+    # Find target user
+    target_query = select(User).where(User.telegram_id == req.target_telegram_id)
+    target_user = (await session.execute(target_query)).scalars().first()
+    
+    if not target_user:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    if req.grant_type == "premium":
+        target_user.access_level = "Premium"
+        target_user.access_expires_at = datetime(2099, 1, 1)
+    elif req.grant_type == "career":
+        target_user.has_career_access = True
+    else:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Invalid grant type")
+        
+    await session.commit()
+    return {"status": "success", "message": f"Granted {req.grant_type} to user {target_user.telegram_id}"}
+
+
 @app.get("/api/admin/stats")
 async def get_admin_stats(
     start_date: Optional[str] = None,

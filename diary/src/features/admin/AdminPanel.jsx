@@ -16,8 +16,10 @@ export default function AdminPanel({ onBack }) {
   const [openDeleteCategory, setOpenDeleteCategory] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editingTestId, setEditingTestId] = useState(undefined); // null - create, number - edit, undefined - list
-
-
+  
+  const [grantTargetId, setGrantTargetId] = useState('');
+  const [grantType, setGrantType] = useState('premium');
+  const [isGranting, setIsGranting] = useState(false);
   useEffect(() => {
     fetchStats();
   }, [startDate, endDate, isUnique]);
@@ -53,6 +55,40 @@ export default function AdminPanel({ onBack }) {
     }
   };
 
+  const handleGrantAccess = async () => {
+    if (!grantTargetId) {
+      WebApp.showAlert("Введите Telegram ID пользователя");
+      return;
+    }
+    
+    setIsGranting(true);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/grant`, {
+        method: 'POST',
+        headers: {
+          "Authorization": `Bearer ${WebApp.initData}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          target_telegram_id: parseInt(grantTargetId, 10),
+          grant_type: grantType
+        })
+      });
+      
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || "Ошибка при выдаче прав");
+      }
+      
+      WebApp.showAlert(`Успешно выдано!`);
+      setGrantTargetId('');
+    } catch (err) {
+      console.error(err);
+      WebApp.showAlert(err.message);
+    } finally {
+      setIsGranting(false);
+    }
+  };
 
   const handleDeleteTest = async (testId, testName) => {
     if (!window.confirm(`Вы уверены, что хотите удалить тест "${testName}"? Это навсегда удалит тест и все результаты пользователей.`)) {
@@ -219,7 +255,39 @@ export default function AdminPanel({ onBack }) {
             <span className="text-xl font-bold text-[#F5E6D3]">{stats.referral_users || 0}</span>
           </div>
 
-          <h3 className="text-xl font-bold text-[#F5E6D3] mt-4 mb-2">Статистика по тестам</h3>
+          <h3 className="text-xl font-bold text-[#F5E6D3] mt-8 mb-4">Управление доступом</h3>
+          <div className="bg-rose-900 p-5 rounded-2xl flex flex-col gap-4 shadow-sm">
+            <div>
+              <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Telegram ID пользователя:</label>
+              <input 
+                type="number" 
+                value={grantTargetId} 
+                onChange={(e) => setGrantTargetId(e.target.value)}
+                placeholder="Например, 12345678"
+                className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Что выдать:</label>
+              <select 
+                value={grantType}
+                onChange={(e) => setGrantType(e.target.value)}
+                className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
+              >
+                <option value="premium">Вечный Premium</option>
+                <option value="career">Блок Профориентация</option>
+              </select>
+            </div>
+            <button 
+              onClick={handleGrantAccess}
+              disabled={isGranting}
+              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-sm"
+            >
+              {isGranting ? "Обработка..." : "Выдать права"}
+            </button>
+          </div>
+
+          <h3 className="text-xl font-bold text-[#F5E6D3] mt-8 mb-2">Статистика по тестам</h3>
           {(stats.tests || []).map(cat => (
             <div key={cat.id} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
               <button
