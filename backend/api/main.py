@@ -1897,8 +1897,8 @@ async def buy_career_guidance(
     
     await check_access(user_id, session) # Must have premium to buy
     
-    # 1500 RUB for one-time
-    url, payment_id = _create_payment(amount=1500, chat_id=str(user_id), description="Блок Профориентация", email="", save_payment_method=False)
+    # 1499 RUB for one-time
+    url, payment_id = _create_payment(amount=1499, chat_id=str(user_id), description="Блок Профориентация", email="", save_payment_method=False)
     
     cat_query = select(Category).where(Category.name == "Профориентация")
     cat = (await session.execute(cat_query)).scalars().first()
