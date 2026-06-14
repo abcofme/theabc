@@ -292,6 +292,7 @@ export default function FriendsView({ onBack }) {
           )}
         </button>
       </div>
+      )}
 
       <div className="flex-1 flex flex-col">
         {isLoading ? (
