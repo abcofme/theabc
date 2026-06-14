@@ -55,24 +55,54 @@ export default function ReportsTab() {
     }
   };
 
-  const reportTypes = [
+  const reportGroups = [
     {
-      id: 'repeating_events',
-      title: 'Какие события чаще всего повторяются в моей жизни?',
-      desc: 'Любовь или зависимость, мудрость или глупость. Что чаще, такие и мы. Наша жизнь в привычках, а контроль над ними в анализе.',
-      icon: Repeat,
-      color: 'text-blue-500',
-      bg: 'bg-blue-600/20'
+      id: 'general',
+      items: [
+        {
+          id: 'repeating_events',
+          title: 'Какие события чаще всего повторяются в моей жизни?',
+          desc: 'Любовь или зависимость, мудрость или глупость. Что чаще, такие и мы. Наша жизнь в привычках, а контроль над ними в анализе.',
+          icon: Repeat,
+          color: 'text-blue-500',
+          bg: 'bg-blue-600/20'
+        },
+        {
+          id: 'effective_reactions',
+          title: 'На какие ситуации я реагирую эффективно, а на какие нет?',
+          desc: 'Эффективность в предсказуемости, а во внезапности не решение проблемы, а усугубление. Важно понимать что мы строим и почему ломаем.',
+          icon: Zap,
+          color: 'text-blue-500',
+          bg: 'bg-blue-600/20'
+        }
+      ]
     },
     {
-      id: 'effective_reactions',
-      title: 'На какие ситуации я реагирую эффективно, а на какие нет?',
-      desc: 'Эффективность в предсказуемости, а во внезапности не решение проблемы, а усугубление. Важно понимать что мы строим и почему ломаем.',
-      icon: Zap,
-      color: 'text-blue-500',
-      bg: 'bg-blue-600/20'
+      id: 'career',
+      title: 'Профориентация',
+      desc: 'С результатами тестов по профориентации, активным ведением дневника и этих отчетов ты сможешь с полной точностью определить настоящую любовь к какой-либо деятельности.',
+      items: [
+        {
+          id: 'energy',
+          title: 'Энергия',
+          desc: 'От каких задач я забываю про время, какие действия дают мне энергию, а какие забирают. Ты не ленивый, просто не знаешь точно где твоя энергия умножается.',
+          icon: Sparkles,
+          color: 'text-yellow-500',
+          bg: 'bg-yellow-600/20'
+        },
+        {
+          id: 'competence',
+          title: 'Чувство компетентности',
+          desc: 'Понимание в чем твоя стезя подавляет страх, тревогу, неготовность к ответственности. Это есть у всех, состоит из побед, даже маленьких, похвалы от людей и результатов, которые замечают. В этом твоя сила.',
+          icon: Target,
+          color: 'text-purple-500',
+          bg: 'bg-purple-600/20'
+        }
+      ]
     }
   ];
+
+  const reportTypes = reportGroups.flatMap(g => g.items);
 
   const handleGenerate = async (type) => {
     if (selectedPeriod === 'custom' && !customStart) {
@@ -245,81 +275,95 @@ export default function ReportsTab() {
           <div className="w-8 h-8 rounded-full animate-spin"></div>
         </div>
       ) : (
-        <div className="flex flex-col gap-4 px-2">
-          {reportTypes.map(rtype => {
-            const typeReports = reports.filter(r => 
-              r.title === rtype.title || 
-              (rtype.id === 'repeating_events' && r.title.includes('Повторяющиеся')) || 
-              (rtype.id === 'effective_reactions' && r.title.includes('эффективно'))
-            );
-            const isOpen = openCategory === rtype.id;
-            
-            return (
-              <div key={rtype.id} className="bg-rose-900/80 rounded-2xl overflow-hidden transition-all duration-300">
-                <button 
-                  onClick={() => setOpenCategory(isOpen ? null : rtype.id)}
-                  className="w-full p-5 text-left hover:bg-rose-800/80 transition-all flex items-start gap-4"
-                >
-                  <div className={`p-3 rounded-xl shrink-0 mt-1 ${rtype.bg}`}>
-                    <rtype.icon className={rtype.color} size={24} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold leading-tight text-[#F5E6D3]">{rtype.title}</h3>
-                  </div>
-                  <div className="mt-2 text-[#F5E6D3]">
-                    {isOpen ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
-                  </div>
-                </button>
-                
-                {isOpen && (
-                  <div className="p-5 bg-rose-950/50 flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
-                    <button 
-                      onClick={() => setActiveForm(rtype.id)}
-                      className="w-full py-3 bg-rose-800 hover:bg-rose-700 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
-                    >
-                      <Plus size={18} />
-                      Сформировать новый отчет
-                    </button>
-                    
-                    {typeReports.length > 0 ? (
-                      <div className="mt-4 flex flex-col gap-2">
-                        <span className="text-xs font-bold text-[#F5E6D3] uppercase tracking-wider mb-2">История отчетов</span>
-                        {typeReports.map(r => (
-                          <div key={r.id} className="relative group w-full">
-                            <button
-                              onClick={() => setViewReport(r)}
-                              className="w-full text-left bg-rose-900 py-4 pl-4 pr-12 rounded-xl hover:bg-rose-800/80 transition-colors flex items-center justify-between"
-                            >
-                              <div className="flex items-center gap-3">
-                                <FileText className="text-[#F5E6D3] transition-colors" size={20} />
-                                <div>
-                                  <div className="text-[#F5E6D3] font-medium mb-1">Отчет от {new Date(r.created_at).toLocaleDateString('ru-RU')}</div>
-                                  <div className="text-xs text-[#F5E6D3]">
-                                    {r.period_start ? `${new Date(r.period_start).toLocaleDateString('ru-RU')} - ` : ''} 
-                                    {r.period_end ? new Date(r.period_end).toLocaleDateString('ru-RU') : 'За все время'}
-                                  </div>
-                                </div>
-                              </div>
-                            <ChevronLeft className="text-[#F5E6D3] rotate-180" size={16} />
-                          </button>
-                          <button
-                            onClick={(e) => handleDeleteReport(e, r.id)}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-[#F5E6D3]/60 hover:text-[#F5E6D3] hover:bg-red-500/20 rounded-xl transition-colors active:scale-95"
-                            title="Удалить отчет"
-                          >
-                            <Trash2 size={18} />
-                          </button>
+        <div className="flex flex-col gap-8 px-2">
+          {reportGroups.map((group, gIdx) => (
+            <div key={group.id || gIdx} className="flex flex-col gap-4">
+              {group.title && (
+                <div className="px-2 mt-2">
+                  <h3 className="text-xl font-bold text-[#F5E6D3] mb-2">{group.title}</h3>
+                  {group.desc && <p className="text-sm text-[#F5E6D3]/80 leading-relaxed">{group.desc}</p>}
+                </div>
+              )}
+              <div className="flex flex-col gap-4">
+                {group.items.map(rtype => {
+                  const typeReports = reports.filter(r => 
+                    r.title === rtype.title || 
+                    (rtype.id === 'repeating_events' && r.title.includes('Повторяющиеся')) || 
+                    (rtype.id === 'effective_reactions' && r.title.includes('эффективно')) ||
+                    (rtype.id === 'energy' && r.title.includes('Энергия')) ||
+                    (rtype.id === 'competence' && r.title.includes('компетентност'))
+                  );
+                  const isOpen = openCategory === rtype.id;
+                  
+                  return (
+                    <div key={rtype.id} className="bg-rose-900/80 rounded-2xl overflow-hidden transition-all duration-300">
+                      <button 
+                        onClick={() => setOpenCategory(isOpen ? null : rtype.id)}
+                        className="w-full p-5 text-left hover:bg-rose-800/80 transition-all flex items-start gap-4"
+                      >
+                        <div className={`p-3 rounded-xl shrink-0 mt-1 ${rtype.bg}`}>
+                          <rtype.icon className={rtype.color} size={24} />
                         </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-[#F5E6D3] text-center mt-4">Вы еще не формировали этот тип отчета.</p>
-                    )}
-                  </div>
-                )}
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold leading-tight text-[#F5E6D3]">{rtype.title}</h3>
+                        </div>
+                        <div className="mt-2 text-[#F5E6D3]">
+                          {isOpen ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+                        </div>
+                      </button>
+                      
+                      {isOpen && (
+                        <div className="p-5 bg-rose-950/50 flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
+                          <button 
+                            onClick={() => setActiveForm(rtype.id)}
+                            className="w-full py-3 bg-rose-800 hover:bg-rose-700 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
+                          >
+                            <Plus size={18} />
+                            Сформировать новый отчет
+                          </button>
+                          
+                          {typeReports.length > 0 ? (
+                            <div className="mt-4 flex flex-col gap-2">
+                              <span className="text-xs font-bold text-[#F5E6D3] uppercase tracking-wider mb-2">История отчетов</span>
+                              {typeReports.map(r => (
+                                <div key={r.id} className="relative group w-full">
+                                  <button
+                                    onClick={() => setViewReport(r)}
+                                    className="w-full text-left bg-rose-900 py-4 pl-4 pr-12 rounded-xl hover:bg-rose-800/80 transition-colors flex items-center justify-between"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <FileText className="text-[#F5E6D3] transition-colors" size={20} />
+                                      <div>
+                                        <div className="text-[#F5E6D3] font-medium mb-1">Отчет от {new Date(r.created_at).toLocaleDateString('ru-RU')}</div>
+                                        <div className="text-xs text-[#F5E6D3]">
+                                          {r.period_start ? `${new Date(r.period_start).toLocaleDateString('ru-RU')} - ` : ''} 
+                                          {r.period_end ? new Date(r.period_end).toLocaleDateString('ru-RU') : 'За все время'}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  <ChevronLeft className="text-[#F5E6D3] rotate-180" size={16} />
+                                </button>
+                                <button
+                                  onClick={(e) => handleDeleteReport(e, r.id)}
+                                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-[#F5E6D3]/60 hover:text-[#F5E6D3] hover:bg-red-500/20 rounded-xl transition-colors active:scale-95"
+                                  title="Удалить отчет"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-[#F5E6D3] text-center mt-4">Вы еще не формировали этот тип отчета.</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       )}
 
