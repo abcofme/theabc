@@ -30,8 +30,9 @@ export default function ProfileTab() {
   const [isQrExpanded, setIsQrExpanded] = useState(false);
   
   // Состояния для реферальной программы
-  const [referralInfo, setReferralInfo] = useState({ pending: 0, available: 0, referral_count: 0, link: '' });
-  const [withdrawCard, setWithdrawCard] = useState('');
+  const [referralInfo, setReferralInfo] = useState({ pending: 0, available: 0, referral_count: 0, link: '', inn_verified: false, inn: '' });
+  const [innInput, setInnInput] = useState('');
+  const [isVerifyingInn, setIsVerifyingInn] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   // Получаем данные пользователя из Telegram (если открыто в браузере - ставим заглушку)
@@ -99,26 +100,36 @@ export default function ProfileTab() {
     }
   };
 
-  const handleClearPortrait = async () => {
+  const handleVerifyInn = async () => {
+    if (!innInput || (innInput.length !== 10 && innInput.length !== 12)) {
+      WebApp.showAlert("ИНН должен состоять из 10 или 12 цифр");
+      return;
+    }
+    setIsVerifyingInn(true);
     try {
-      const response = await fetch(`${API_URL}/api/portrait/clear`, {
-        method: "DELETE",
-        headers: { "Authorization": `Bearer ${WebApp.initData}` }
+      const response = await fetch(`${API_URL}/api/referral/verify_inn`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${WebApp.initData}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ inn: innInput })
       });
+      const data = await response.json();
       if (response.ok) {
-        setPortraitData(null);
-        WebApp.HapticFeedback.notificationOccurred('success');
+        WebApp.showAlert("ИНН успешно подтвержден!");
+        setReferralInfo(prev => ({...prev, inn_verified: true, inn: innInput}));
+      } else {
+        WebApp.showAlert(`Ошибка: ${data.detail || "Неизвестная ошибка"}`);
       }
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsVerifyingInn(false);
     }
   };
 
   const handleWithdraw = async () => {
-    if (!withdrawCard || withdrawCard.length < 16) {
-      WebApp.showAlert("Введите корректный номер карты");
-      return;
-    }
     setIsWithdrawing(true);
     try {
       const response = await fetch(`${API_URL}/api/referral/withdraw`, {
@@ -126,15 +137,12 @@ export default function ProfileTab() {
         headers: {
           "Authorization": `Bearer ${WebApp.initData}`,
           "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ card_number: withdrawCard })
+        }
       });
       const data = await response.json();
       if (response.ok) {
-        WebApp.showAlert("Средства успешно отправлены на вашу карту!");
+        WebApp.showAlert("Средства успешно отправлены!");
         setReferralInfo(prev => ({...prev, available: 0}));
-        setWithdrawCard('');
-      } else {
         WebApp.showAlert(`Ошибка: ${data.detail || "Неизвестная ошибка"}`);
       }
     } catch (err) {
@@ -525,77 +533,98 @@ export default function ProfileTab() {
             <p className="text-[#F5E6D3]/70">Приглашайте друзей и получайте 50% от их оплат на свой баланс.</p>
           </div>
           
-          <div className="bg-[#541515] rounded-3xl p-5 mb-6 shadow-lg">
-            <div className="flex flex-col gap-4">
-              <div className="bg-[#2B0A0A] p-4 rounded-2xl flex justify-between items-center">
-                <div>
-                  <div className="text-[#F5E6D3]/70 text-sm mb-1">Сумма в ожидании</div>
-                  <div className="text-[#F5E6D3] text-2xl font-bold">{referralInfo.pending} ₽</div>
-                </div>
-                <Activity className="text-blue-400 opacity-50" size={32} />
-              </div>
-              <div className="bg-[#2B0A0A] p-4 rounded-2xl flex justify-between items-center">
-                <div>
-                  <div className="text-[#F5E6D3]/70 text-sm mb-1">Доступно к выводу</div>
-                  <div className="text-[#F5E6D3] text-2xl font-bold">{referralInfo.available} ₽</div>
-                </div>
-                <Check className="text-blue-400" size={32} />
-              </div>
-            </div>
-            <div className="mt-4 p-3 bg-rose-950/30 rounded-xl text-xs text-[#F5E6D3]/60 flex gap-2">
-              <ShieldAlert className="shrink-0 text-yellow-500/80" size={16} />
-              <span>Внимание! Баланс переходит в статус «Доступно к выводу» 1 числа каждого месяца.</span>
-            </div>
-          </div>
-          
-          <div className="bg-[#541515] rounded-3xl p-5 mb-6 shadow-lg flex flex-col items-center">
-            <div className="text-[#F5E6D3] font-bold mb-4">Ваш уникальный QR-код</div>
-            <div className="bg-white p-4 rounded-2xl mb-4">
-              {referralInfo.link && (
-                <QRCode value={referralInfo.link} size={150} level="M" />
-              )}
-            </div>
-            <div className="w-full">
-              <div className="text-[#F5E6D3]/70 text-xs mb-1 ml-1">Ваша ссылка:</div>
-              <div className="flex gap-2">
+          {!referralInfo.inn_verified ? (
+            <div className="bg-[#541515] rounded-3xl p-5 mb-10 shadow-lg">
+              <div className="text-[#F5E6D3] font-bold mb-4">Для доступа требуется статус самозанятого</div>
+              <p className="text-[#F5E6D3]/70 text-sm mb-4">
+                По закону РФ мы осуществляем выплаты только плательщикам НПД (самозанятым).
+                Введите ваш ИНН для автоматической проверки в ФНС.
+              </p>
+              <div className="flex flex-col gap-3">
                 <input 
                   type="text" 
-                  readOnly 
-                  value={referralInfo.link} 
-                  className="flex-1 bg-[#2B0A0A] rounded-xl px-3 py-2 text-sm text-[#F5E6D3] outline-none"
+                  placeholder="Ваш ИНН (10 или 12 цифр)" 
+                  value={innInput}
+                  onChange={(e) => setInnInput(e.target.value.replace(/\D/g, '').slice(0, 12))}
+                  className="w-full bg-[#2B0A0A] rounded-xl px-4 py-3 text-[#F5E6D3] placeholder:text-[#F5E6D3]/30 outline-none transition-colors"
                 />
                 <button 
-                  onClick={() => {
-                    navigator.clipboard.writeText(referralInfo.link);
-                    WebApp.showAlert("Ссылка скопирована!");
-                  }}
-                  className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
+                  onClick={handleVerifyInn}
+                  disabled={isVerifyingInn || innInput.length < 10}
+                  className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-900/20"
                 >
-                  Копировать
+                  {isVerifyingInn ? "Проверка..." : "Проверить ИНН"}
                 </button>
               </div>
             </div>
-          </div>
-          
-          <div className="bg-[#541515] rounded-3xl p-5 mb-10 shadow-lg">
-            <div className="text-[#F5E6D3] font-bold mb-4">Вывод средств (от 100 рублей)</div>
-            <div className="flex flex-col gap-3">
-              <input 
-                type="text" 
-                placeholder="Номер банковской карты (16 цифр)" 
-                value={withdrawCard}
-                onChange={(e) => setWithdrawCard(e.target.value.replace(/\D/g, '').slice(0, 16))}
-                className="w-full bg-[#2B0A0A] rounded-xl px-4 py-3 text-[#F5E6D3] placeholder:text-[#F5E6D3]/30 outline-none transition-colors"
-              />
-              <button 
-                onClick={handleWithdraw}
-                disabled={isWithdrawing || referralInfo.available < 100}
-                className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-900/20"
-              >
-                {isWithdrawing ? "Обработка..." : "Вывод"}
-              </button>
-            </div>
-          </div>
+          ) : (
+            <>
+              <div className="bg-[#541515] rounded-3xl p-5 mb-6 shadow-lg">
+                <div className="flex flex-col gap-4">
+                  <div className="bg-[#2B0A0A] p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                      <div className="text-[#F5E6D3]/70 text-sm mb-1">Сумма в ожидании</div>
+                      <div className="text-[#F5E6D3] text-2xl font-bold">{referralInfo.pending} ₽</div>
+                    </div>
+                    <Activity className="text-blue-400 opacity-50" size={32} />
+                  </div>
+                  <div className="bg-[#2B0A0A] p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                      <div className="text-[#F5E6D3]/70 text-sm mb-1">Доступно к выводу</div>
+                      <div className="text-[#F5E6D3] text-2xl font-bold">{referralInfo.available} ₽</div>
+                    </div>
+                    <Check className="text-blue-400" size={32} />
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-rose-950/30 rounded-xl text-xs text-[#F5E6D3]/60 flex gap-2">
+                  <ShieldAlert className="shrink-0 text-yellow-500/80" size={16} />
+                  <span>Внимание! Баланс переходит в статус «Доступно к выводу» 1 числа каждого месяца. Выплаты осуществляются как самозанятому (ИНН: {referralInfo.inn}).</span>
+                </div>
+              </div>
+              
+              <div className="bg-[#541515] rounded-3xl p-5 mb-6 shadow-lg flex flex-col items-center">
+                <div className="text-[#F5E6D3] font-bold mb-4">Ваш уникальный QR-код</div>
+                <div className="bg-white p-4 rounded-2xl mb-4">
+                  {referralInfo.link && (
+                    <QRCode value={referralInfo.link} size={150} level="M" />
+                  )}
+                </div>
+                <div className="w-full">
+                  <div className="text-[#F5E6D3]/70 text-xs mb-1 ml-1">Ваша ссылка:</div>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      readOnly 
+                      value={referralInfo.link} 
+                      className="flex-1 bg-[#2B0A0A] rounded-xl px-3 py-2 text-sm text-[#F5E6D3] outline-none"
+                    />
+                    <button 
+                      onClick={() => {
+                        navigator.clipboard.writeText(referralInfo.link);
+                        WebApp.showAlert("Ссылка скопирована!");
+                      }}
+                      className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
+                    >
+                      Копировать
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-[#541515] rounded-3xl p-5 mb-10 shadow-lg">
+                <div className="text-[#F5E6D3] font-bold mb-4">Вывод средств (от 100 рублей)</div>
+                <div className="flex flex-col gap-3">
+                  <button 
+                    onClick={handleWithdraw}
+                    disabled={isWithdrawing || referralInfo.available < 100}
+                    className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-900/20"
+                  >
+                    {isWithdrawing ? "Обработка..." : "Запросить вывод"}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
 </div>
