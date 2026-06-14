@@ -17,7 +17,7 @@ export default function AdminPanel({ onBack }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [editingTestId, setEditingTestId] = useState(undefined); // null - create, number - edit, undefined - list
   
-  const [grantTargetId, setGrantTargetId] = useState('');
+  const [grantTargetUsername, setGrantTargetUsername] = useState('');
   const [grantType, setGrantType] = useState('premium');
   const [isGranting, setIsGranting] = useState(false);
   useEffect(() => {
@@ -56,8 +56,8 @@ export default function AdminPanel({ onBack }) {
   };
 
   const handleGrantAccess = async () => {
-    if (!grantTargetId) {
-      WebApp.showAlert("Введите Telegram ID пользователя");
+    if (!grantTargetUsername) {
+      WebApp.showAlert("Введите @username пользователя");
       return;
     }
     
@@ -70,7 +70,7 @@ export default function AdminPanel({ onBack }) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          target_telegram_id: parseInt(grantTargetId, 10),
+          target_username: grantTargetUsername,
           grant_type: grantType
         })
       });
@@ -81,7 +81,7 @@ export default function AdminPanel({ onBack }) {
       }
       
       WebApp.showAlert(`Успешно выдано!`);
-      setGrantTargetId('');
+      setGrantTargetUsername('');
     } catch (err) {
       console.error(err);
       WebApp.showAlert(err.message);
@@ -258,12 +258,12 @@ export default function AdminPanel({ onBack }) {
           <h3 className="text-xl font-bold text-[#F5E6D3] mt-8 mb-4">Управление доступом</h3>
           <div className="bg-rose-900 p-5 rounded-2xl flex flex-col gap-4 shadow-sm">
             <div>
-              <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Telegram ID пользователя:</label>
+              <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Telegram @username пользователя:</label>
               <input 
-                type="number" 
-                value={grantTargetId} 
-                onChange={(e) => setGrantTargetId(e.target.value)}
-                placeholder="Например, 12345678"
+                type="text" 
+                value={grantTargetUsername} 
+                onChange={(e) => setGrantTargetUsername(e.target.value)}
+                placeholder="Например, @username"
                 className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
               />
             </div>

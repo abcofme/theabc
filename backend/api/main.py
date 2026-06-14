@@ -1062,7 +1062,7 @@ async def submit_test(
         raise HTTPException(status_code=500, detail="Internal Error")
 
 class AdminGrantRequest(BaseModel):
-    target_telegram_id: int
+    target_username: str
     grant_type: str  # "premium" or "career"
 
 @app.post("/api/admin/grant")
@@ -1081,7 +1081,8 @@ async def admin_grant_access(
         raise HTTPException(status_code=403, detail="Forbidden")
         
     # Find target user
-    target_query = select(User).where(User.telegram_id == req.target_telegram_id)
+    clean_username = req.target_username.strip("@")
+    target_query = select(User).where(User.username.ilike(clean_username))
     target_user = (await session.execute(target_query)).scalars().first()
     
     if not target_user:
@@ -1098,7 +1099,7 @@ async def admin_grant_access(
         raise HTTPException(status_code=400, detail="Invalid grant type")
         
     await session.commit()
-    return {"status": "success", "message": f"Granted {req.grant_type} to user {target_user.telegram_id}"}
+    return {"status": "success", "message": f"Granted {req.grant_type} to user @{target_user.username}"}
 
 
 @app.get("/api/admin/stats")
