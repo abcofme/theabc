@@ -1079,15 +1079,24 @@ async def get_admin_stats(
         reports_types = ['repeating_events', 'effective_reactions', 'energy', 'competence']
         reports_by_type_list = []
         for r_type in reports_types:
-            r_type_q = select(get_count_expr(BehavioralReport)).where(BehavioralReport.report_type == r_type)
+            r_title = ""
+            r_name = ""
+            if r_type == 'repeating_events': 
+                r_title = 'Какие события чаще всего повторяются в моей жизни?'
+                r_name = 'Повторяющиеся события'
+            elif r_type == 'effective_reactions': 
+                r_title = 'На какие ситуации я реагирую эффективно, а на какие нет?'
+                r_name = 'Эффективные реакции'
+            elif r_type == 'energy': 
+                r_title = 'Энергия'
+                r_name = 'Энергия'
+            elif r_type == 'competence': 
+                r_title = 'Чувство компетентности'
+                r_name = 'Чувство компетентности'
+
+            r_type_q = select(get_count_expr(BehavioralReport)).where(BehavioralReport.title == r_title)
             r_type_q = apply_filters(r_type_q, BehavioralReport)
             count = (await session.execute(r_type_q)).scalar() or 0
-            
-            r_name = r_type
-            if r_type == 'repeating_events': r_name = 'Повторяющиеся события'
-            elif r_type == 'effective_reactions': r_name = 'Эффективные реакции'
-            elif r_type == 'energy': r_name = 'Энергия'
-            elif r_type == 'competence': r_name = 'Чувство компетентности'
             
             reports_by_type_list.append({"type": r_type, "name": r_name, "count": count})
         
