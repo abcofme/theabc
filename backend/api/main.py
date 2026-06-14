@@ -937,6 +937,7 @@ async def analyze_reaction(
 ):
     import asyncio
     user_id = user_data.get("id")
+    await check_access(user_id, session)
     
     # Just run it directly since it's triggered manually
     result = await _analyze_reaction_bg(user_id, entry_id)

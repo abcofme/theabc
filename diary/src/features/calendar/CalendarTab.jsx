@@ -12,6 +12,7 @@ export default function CalendarTab({ onSheetOpen }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [hasPortrait, setHasPortrait] = useState(false);
+  const [accessLevel, setAccessLevel] = useState('Free');
   const [analyzingIds, setAnalyzingIds] = useState([]);
 
   // Загружаем наличие портрета
@@ -25,6 +26,9 @@ export default function CalendarTab({ onSheetOpen }) {
       .then(data => {
         if (data && data.portrait) {
           setHasPortrait(true);
+        }
+        if (data && data.access_level) {
+          setAccessLevel(data.access_level);
         }
       })
       .catch(console.error);
@@ -245,6 +249,16 @@ export default function CalendarTab({ onSheetOpen }) {
   };
 
   const renderMatchScale = (entry) => {
+    if (accessLevel === 'Free') {
+      return (
+        <div className="mt-5 pt-5">
+          <p className="text-xs font-bold text-[#F5E6D3] uppercase tracking-wider mb-3">Соответствие портрету личности:</p>
+          <div className="h-2 w-full bg-rose-800 rounded-full overflow-hidden mb-2"></div>
+          <p className="text-xs font-medium text-[#F5E6D3] flex items-center gap-1.5 leading-tight"><Lock size={12}/> Недоступно на бесплатном тарифе</p>
+        </div>
+      );
+    }
+
     if (!hasPortrait) {
       return (
         <div className="mt-5 pt-5">
