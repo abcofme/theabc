@@ -69,16 +69,16 @@ export default function ReportsTab({ onSwitchTab }) {
           title: 'Какие события чаще всего повторяются в моей жизни?',
           desc: 'Любовь или зависимость, мудрость или глупость. Что чаще, такие и мы. Наша жизнь в привычках, а контроль над ними в анализе.',
           icon: Repeat,
-          color: 'text-emerald-500',
-          bg: 'bg-emerald-600/20'
+          color: 'text-green-500',
+          bg: 'bg-green-600/20'
         },
         {
           id: 'effective_reactions',
           title: 'На какие ситуации я реагирую эффективно, а на какие нет?',
           desc: 'Эффективность в предсказуемости, а во внезапности не решение проблемы, а усугубление. Важно понимать что мы строим и почему ломаем.',
           icon: Zap,
-          color: 'text-emerald-500',
-          bg: 'bg-emerald-600/20'
+          color: 'text-green-500',
+          bg: 'bg-green-600/20'
         }
       ]
     },
@@ -92,16 +92,16 @@ export default function ReportsTab({ onSwitchTab }) {
           title: 'Энергия',
           desc: 'От каких задач я забываю про время, какие действия дают мне энергию, а какие забирают. Ты не ленивый, просто не знаешь точно где твоя энергия умножается.',
           icon: Sparkles,
-          color: 'text-emerald-500',
-          bg: 'bg-emerald-600/20'
+          color: 'text-green-500',
+          bg: 'bg-green-600/20'
         },
         {
           id: 'competence',
           title: 'Чувство компетентности',
           desc: 'Понимание в чем твоя стезя подавляет страх, тревогу, неготовность к ответственности. Это есть у всех, состоит из побед, даже маленьких, похвалы от людей и результатов, которые замечают. В этом твоя сила.',
           icon: Target,
-          color: 'text-emerald-500',
-          bg: 'bg-emerald-600/20'
+          color: 'text-green-500',
+          bg: 'bg-green-600/20'
         }
       ]
     }
@@ -312,8 +312,8 @@ export default function ReportsTab({ onSwitchTab }) {
             <div key={group.id || gIdx} className="flex flex-col gap-4">
               {group.title && (
                 <div className="px-2 mt-2 text-center">
-                  <h3 className="text-xl font-bold text-[#F5E6D3] mb-2">{group.title}</h3>
-                  {group.desc && <p className="text-sm text-[#F5E6D3]/80 leading-relaxed">{group.desc}</p>}
+                  <h2 className="text-2xl font-bold text-[#F5E6D3] mb-2 px-4 text-center">{group.title}</h2>
+                  {group.desc && <p className="text-sm text-[#F5E6D3] text-center px-4 mb-8 leading-relaxed">{group.desc}</p>}
                 </div>
               )}
               <div className="flex flex-col gap-4">
@@ -369,13 +369,6 @@ export default function ReportsTab({ onSwitchTab }) {
                                 <span className="text-2xl"><Lock size={24} /></span>
                               </div>
                               <h3 className="text-[#F5E6D3] font-bold text-lg mb-2">Генерация отчета доступна только с Premium</h3>
-                              <button
-                                onClick={() => onSwitchTab('profile')}
-                                className="mt-2 w-full py-3.5 bg-green-800 hover:bg-green-700 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
-                              >
-                                <Sparkles size={18} />
-                                Оформить Premium (149 ₽ / мес)
-                              </button>
                             </div>
                           ) : (
                             <>

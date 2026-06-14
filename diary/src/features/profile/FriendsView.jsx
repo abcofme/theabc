@@ -371,7 +371,7 @@ export default function FriendsView({ onBack }) {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Введите @username"
-                    className="w-full bg-rose-900/60 text-[#F5E6D3] placeholder:text-[#F5E6D3] rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-600"
+                    className="w-full bg-rose-900/60 text-[#F5E6D3] placeholder:text-[#F5E6D3] rounded-xl py-3 pl-10 pr-4 focus:outline-none"
                   />
                 </div>
                 

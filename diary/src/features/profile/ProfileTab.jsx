@@ -390,15 +390,15 @@ export default function ProfileTab({ onOverlayOpen }) {
                   handleGeneratePortrait();
                 }}
                 disabled={isGeneratingPortrait}
-                className={`w-full rounded-2xl p-4 text-left transition-all duration-300 flex items-center justify-between shadow-sm backdrop-blur-sm ${
+                className={`w-full rounded-2xl p-4 min-h-[88px] text-left transition-all duration-300 flex items-center justify-between shadow-sm backdrop-blur-sm ${
                   (totalTests > 0 && passedTests === totalTests) 
                     ? "bg-rose-900/80 hover:bg-rose-800/80 text-[#F5E6D3] active:scale-[0.98]" 
                     : "bg-rose-900/80 hover:bg-rose-800/80 text-[#F5E6D3]"
                 }`}
               >
                 <div>
-                  <h3 className={`text-base sm:text-lg font-bold mb-1`}>Сформировать портрет</h3>
-                  <p className={`text-xs sm:text-sm text-[#F5E6D3]/80`}>
+                  <h3 className="text-lg font-bold mb-1">Сформировать портрет</h3>
+                  <p className="text-sm text-[#F5E6D3]/80">
                     {isGeneratingPortrait ? 'Генерация...' : (totalTests > 0 && passedTests === totalTests) ? 'Анализ ваших тестов' : `Пройдено ${passedTests} из ${totalTests} тестов`}
                   </p>
                 </div>
@@ -414,11 +414,11 @@ export default function ProfileTab({ onOverlayOpen }) {
                   <button 
                     onClick={handleGeneratePortrait}
                     disabled={isGeneratingPortrait}
-                    className="w-full bg-rose-900/80 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
+                    className="w-full bg-rose-900/80 rounded-2xl p-4 min-h-[88px] text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
                   >
                     <div>
-                      <h3 className="text-base sm:text-lg font-bold text-[#F5E6D3] mb-1">Сформировать заново</h3>
-                      <p className="text-xs sm:text-sm text-[#F5E6D3]/80">{isGeneratingPortrait ? 'Генерация...' : 'Обновить на основе новых тестов'}</p>
+                      <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Сформировать заново</h3>
+                      <p className="text-sm text-[#F5E6D3]/80">{isGeneratingPortrait ? 'Генерация...' : 'Обновить на основе новых тестов'}</p>
                     </div>
                     {isGeneratingPortrait ? (
                       <div className="w-6 h-6 rounded-full animate-spin border-2 border-[#F5E6D3] border-t-transparent"></div>
@@ -429,7 +429,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                 )}
                 <button 
                   onClick={() => setActiveSubTab('portrait')}
-                  className="w-full bg-rose-900/80 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
+                  className="w-full bg-rose-900/80 rounded-2xl p-4 min-h-[88px] text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
                 >
                   <div className="text-left">
                     <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Мой портрет личности</h3>
@@ -444,7 +444,7 @@ export default function ProfileTab({ onOverlayOpen }) {
             {/* ВНЕ ЗАВИСИМОСТИ ОТ ПОРТРЕТА */}
             <button 
               onClick={() => setActiveSubTab('friends')}
-              className="w-full bg-rose-900/80 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
+              className="w-full bg-rose-900/80 rounded-2xl p-4 min-h-[88px] text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
             >
               <div>
                 <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Друзья</h3>
@@ -665,7 +665,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                   </div>
                 </div>
                 <div className="mt-4 p-3 bg-rose-950/30 rounded-xl text-xs text-[#F5E6D3]/60 flex gap-2">
-                  <ShieldAlert className="shrink-0 text-yellow-500/80" size={16} />
+                  <ShieldAlert className="shrink-0 text-green-500/80" size={16} />
                   <span>Внимание! Баланс переходит в статус «Доступно к выводу» 1 числа каждого месяца. Выплаты осуществляются как самозанятому (ИНН: {referralInfo.inn}).</span>
                 </div>
               </div>
@@ -725,11 +725,11 @@ export default function ProfileTab({ onOverlayOpen }) {
               <X size={20} />
             </button>
             <div className="text-center mb-6 mt-2">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-500/20 text-amber-400 rounded-full mb-4 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500/20 text-green-400 rounded-full mb-4 shadow-[0_0_20px_rgba(34,197,94,0.2)]">
                 <Sparkles size={32} />
               </div>
               <h2 className="text-2xl font-bold text-[#F5E6D3]">Оформить Premium</h2>
-              <p className="text-amber-500/90 font-medium text-sm mt-1">149 ₽ в месяц</p>
+              <p className="text-green-500/90 font-medium text-sm mt-1">149 ₽ в месяц</p>
             </div>
             
             <div className="bg-rose-950/50 rounded-2xl p-5 mb-6">
@@ -790,7 +790,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                 <X size={20} />
               </button>
             </div>
-            <div className="p-5 overflow-y-auto flex-1 text-[#F5E6D3]/80 text-sm whitespace-pre-wrap">
+            <div className="p-5 overflow-y-auto flex-1 text-[#F5E6D3] text-sm whitespace-pre-wrap">
               {"Текст публичной оферты...\n\nЗдесь будет располагаться подробный текст пользовательского соглашения, условия подписки и списания средств.\n\nЗаглушка."}
             </div>
             <div className="p-5 border-t border-rose-800/50 bg-rose-950/30 rounded-b-[2rem]">

@@ -59,7 +59,7 @@ export default function App() {
   return (
     <div className="flex flex-col h-full font-sans bg-rose-950 relative">
       <div 
-        className="absolute top-0 left-0 right-0 bottom-[75px] pointer-events-none z-0"
+        className="fixed top-0 left-0 w-screen h-screen pointer-events-none z-0"
         style={{
           backgroundImage: `url(${bgLeaves})`,
           backgroundPosition: "bottom right",
