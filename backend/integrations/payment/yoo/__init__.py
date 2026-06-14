@@ -51,6 +51,7 @@ def _create_payment(amount: Decimal, chat_id, description: str, email: str, save
                             "payment_subject": "commodity"
                         }
                     ]
+                }
         }
         payment = Payment.create(payment_payload, key)
     except HTTPError as e:
