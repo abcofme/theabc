@@ -564,13 +564,39 @@ async def generate_report(
     
     user_id = user_data.get("id")
     
-    # 1. Получаем портрет личности
-    portrait_query = select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id)
-    portrait = (await session.execute(portrait_query)).scalars().first()
+    # 1. Получаем контекст (портрет или тесты) в зависимости от типа отчета
+    portrait = None
+    test_results_text = ""
     
-    if not portrait:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=400, detail="Для формирования отчета сначала необходимо сформировать портрет личности.")
+    if req.report_type in ['repeating_events', 'effective_reactions']:
+        portrait_query = select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id)
+        portrait = (await session.execute(portrait_query)).scalars().first()
+        
+        if not portrait:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=400, detail="Для формирования отчета сначала необходимо сформировать портрет личности.")
+    elif req.report_type in ['energy', 'competence']:
+        from backend.database.models import Progress, Result
+        prog_query = select(Progress).where(Progress.user_id == user_id).options(joinedload(Progress.test))
+        progresses = (await session.execute(prog_query)).scalars().all()
+        
+        for p in progresses:
+            if not p.test: continue
+            res_text = ""
+            if p.hardcode_value:
+                res_text = p.hardcode_value
+            elif p.value is not None:
+                res_query = select(Result).where(
+                    Result.test_id == p.test_id,
+                    Result.range_from <= p.value,
+                    Result.range_to >= p.value
+                )
+                res_obj = (await session.execute(res_query)).scalars().first()
+                if res_obj and res_obj.name:
+                    res_text = res_obj.name
+                    
+            if res_text:
+                test_results_text += f"- Тест «{p.test.name}»: {res_text}\n"
 
     # 2. Определяем даты
     today = datetime.now().date()
@@ -657,9 +683,9 @@ async def generate_report(
     elif req.report_type == 'energy':
         report_title = "Энергия"
         report_prompt = f"""Ты выступаешь в роли профессионального психолога-аналитика.
-Твоя задача: проанализировать дневник пользователя и его портрет личности, чтобы понять, какие действия и задачи дают ему энергию, а какие забирают. Пользователь не ленивый, он просто может не знать, где его энергия умножается, а где теряется. От каких задач он забывает про время?
-Портрет личности пользователя:
-{portrait.content}
+Твоя задача: проанализировать записи дневника и результаты тестов профориентации пользователя, чтобы понять, какие действия и задачи дают ему энергию, а какие забирают. Пользователь не ленивый, он просто может не знать, где его энергия умножается, а где теряется. От каких задач он забывает про время?
+Результаты тестов:
+{test_results_text}
 
 Записи дневника:
 {entries_text}
@@ -669,7 +695,7 @@ async def generate_report(
 
 Структура отчета (используй Markdown-разметку, как в портрете личности, с заголовками h2, жирным текстом и маркированными списками):
 1. **Источники энергии**: Действия, задачи или ситуации, от которых вы забываете про время и получаете приток сил.
-2. **Пожиратели энергии**: Что именно забирает ваши силы и почему (с опорой на Портрет личности).
+2. **Пожиратели энергии**: Что именно забирает ваши силы и почему (с опорой на ваши результаты тестов).
 3. **Краткий вывод**: Один-два предложения анализа (без списков рекомендаций).
 
 СТРОГОЕ ПРАВИЛО ФОРМАТИРОВАНИЯ:
@@ -678,9 +704,9 @@ async def generate_report(
     elif req.report_type == 'competence':
         report_title = "Чувство компетентности"
         report_prompt = f"""Ты выступаешь в роли профессионального психолога-аналитика.
-Твоя задача: на основе дневника и портрета личности показать пользователю его сильные стороны, маленькие и большие победы, а также ситуации, в которых он проявляет компетентность. Понимание своей стези подавляет страх, тревогу и неготовность к ответственности. Чувство компетентности есть у всех, оно состоит из побед, похвалы от людей и результатов, которые замечают. В этом сила пользователя.
-Портрет личности пользователя:
-{portrait.content}
+Твоя задача: на основе дневника и результатов тестов показать пользователю его сильные стороны, маленькие и большие победы, а также ситуации, в которых он проявляет компетентность. Понимание своей стези подавляет страх, тревогу и неготовность к ответственности. Чувство компетентности есть у всех, оно состоит из побед, похвалы от людей и результатов, которые замечают. В этом сила пользователя.
+Результаты тестов:
+{test_results_text}
 
 Записи дневника:
 {entries_text}
@@ -690,7 +716,7 @@ async def generate_report(
 
 Структура отчета (используй Markdown-разметку, как в портрете личности, с заголовками h2, жирным текстом и маркированными списками):
 1. **Ваши победы и достижения**: В каких ситуациях вы проявили себя максимально компетентно (даже в мелочах).
-2. **Ваша настоящая сила**: В чем заключается ваша уникальная компетентность, опираясь на ваш Портрет личности.
+2. **Ваша настоящая сила**: В чем заключается ваша уникальная компетентность, опираясь на ваши результаты тестов.
 3. **Краткий вывод**: Один-два предложения анализа (без списков рекомендаций).
 
 СТРОГОЕ ПРАВИЛО ФОРМАТИРОВАНИЯ:
