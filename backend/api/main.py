@@ -576,8 +576,17 @@ async def generate_report(
             from fastapi import HTTPException
             raise HTTPException(status_code=400, detail="Для формирования отчета сначала необходимо сформировать портрет личности.")
     elif req.report_type in ['energy', 'competence']:
-        from backend.database.models import Progress, Result
-        prog_query = select(Progress).where(Progress.user_id == user_id).options(joinedload(Progress.test))
+        from backend.database.models import Progress, Result, Test, Category
+        prog_query = (
+            select(Progress)
+            .join(Test, Progress.test_id == Test.id)
+            .join(Category, Test.category_id == Category.id)
+            .where(
+                Progress.user_id == user_id,
+                Category.name == "Профориентация"
+            )
+            .options(joinedload(Progress.test))
+        )
         progresses = (await session.execute(prog_query)).scalars().all()
         
         for p in progresses:
