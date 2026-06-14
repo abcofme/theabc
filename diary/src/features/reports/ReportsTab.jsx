@@ -279,7 +279,7 @@ export default function ReportsTab({ onSwitchTab }) {
         <button 
           onClick={() => handleGenerate(activeForm)}
           disabled={isGenerating}
-          className="w-[calc(100%-1rem)] mx-2 bg-blue-600 disabled:bg-blue-900/50 hover:bg-blue-500 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
+          className="w-[calc(100%-1rem)] mx-2 bg-green-800 disabled:bg-green-950/50 hover:bg-green-700 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
         >
           {isGenerating ? (
             <><div className="w-5 h-5 rounded-full animate-spin"></div> Отчёт формируется...</>
@@ -434,7 +434,7 @@ export default function ReportsTab({ onSwitchTab }) {
         </div>
       )}
 
-      <div className="mt-10 mb-8 mx-4 p-5 bg-blue-600 rounded-2xl text-center shadow-md">
+      <div className="mt-10 mb-8 mx-4 p-5 bg-green-800 rounded-2xl text-center shadow-md">
         <p className="text-sm font-medium text-[#F5E6D3] leading-relaxed">
           Команда проекта «Азбука Я» регулярно добавляет новые отчеты.<br/>Следите за обновлениями!
         </p>

@@ -346,7 +346,7 @@ export default function TestsTab({ onOverlayOpen }) {
                   <div className="text-[#F5E6D3] text-base leading-relaxed whitespace-pre-wrap flex-1 overflow-y-auto pb-4">
                     {testResult}
                   </div>
-                  <button onClick={closeTest} className="w-full mt-4 bg-blue-600 hover:bg-blue-500 text-[#F5E6D3] font-bold py-4 rounded-xl transition-all active:bg-blue-700 shadow-lg shadow-blue-900/20">
+                  <button onClick={closeTest} className="w-full mt-4 bg-green-800 hover:bg-green-700 text-[#F5E6D3] font-bold py-4 rounded-xl transition-all active:bg-green-900 shadow-lg shadow-green-950/20">
                     Вернуться к тестам
                   </button>
                 </div>
@@ -386,7 +386,7 @@ export default function TestsTab({ onOverlayOpen }) {
                   </span>
                   <div className="flex-1 ml-4 h-2 bg-rose-900/50 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-blue-500 transition-all duration-500 ease-out"
+                      className="h-full bg-green-700 transition-all duration-500 ease-out"
                       style={{ width: `${((currentQuestionIndex + 1) / testDetails.questions.length) * 100}%` }}
                     ></div>
                   </div>

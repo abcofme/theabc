@@ -265,7 +265,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
                     </button>
                   </div>
                 ))}
-                <button onClick={() => addAnswer(qIdx)} className="text-blue-400 text-sm flex items-center gap-1 hover:text-blue-300 mt-2 px-2 py-1">
+                <button onClick={() => addAnswer(qIdx)} className="text-green-600 text-sm flex items-center gap-1 hover:text-green-500 mt-2 px-2 py-1">
                   <Plus size={14} /> Добавить ответ
                 </button>
               </div>
@@ -281,7 +281,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
         <button 
           onClick={handleSave} 
           disabled={saving}
-          className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-all active:scale-[0.98] shadow-lg flex justify-center items-center gap-2"
+          className="w-full bg-green-800 hover:bg-green-700 disabled:opacity-50 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-all active:scale-[0.98] shadow-lg flex justify-center items-center gap-2"
         >
           {saving ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div> : <Save size={20} />}
           {saving ? 'Сохранение...' : 'Сохранить тест'}

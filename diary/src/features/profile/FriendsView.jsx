@@ -308,7 +308,7 @@ export default function FriendsView({ onBack }) {
                     <p className="text-[#F5E6D3]/80">У вас пока нет добавленных друзей.</p>
                     <button 
                       onClick={() => setActiveTab('search')}
-                      className="mt-4 text-blue-400 font-medium hover:underline"
+                      className="mt-4 text-green-600 font-medium hover:underline"
                     >
                       Найти друзей
                     </button>
@@ -388,20 +388,20 @@ export default function FriendsView({ onBack }) {
                         {isFriend ? (
                           <span className="text-green-400 text-sm font-medium pr-2">В друзьях</span>
                         ) : isOutgoing ? (
-                          <span className="text-blue-300 text-sm font-medium pr-2 flex items-center gap-1">
+                          <span className="text-green-500 text-sm font-medium pr-2 flex items-center gap-1">
                             <Clock size={16} /> Запрос отправлен
                           </span>
                         ) : isIncoming ? (
                           <button 
                             onClick={() => setActiveTab('requests')}
-                            className="bg-blue-600/30 text-blue-300 px-3 py-1.5 rounded-lg text-sm font-medium"
+                            className="bg-green-800/30 text-green-500 px-3 py-1.5 rounded-lg text-sm font-medium"
                           >
                             Ответить
                           </button>
                         ) : (
                           <button 
                             onClick={() => sendRequest(u.id)}
-                            className="bg-blue-600 hover:bg-blue-500 text-white p-2 rounded-lg transition-colors shadow-lg shadow-blue-900/50"
+                            className="bg-green-800 hover:bg-green-700 text-white p-2 rounded-lg transition-colors shadow-lg shadow-green-950/50"
                           >
                             <UserPlus size={20} />
                           </button>
@@ -426,7 +426,7 @@ export default function FriendsView({ onBack }) {
                 {incomingRequests.length > 0 && (
                   <div className="mb-8">
                     <h3 className="text-[#F5E6D3] font-bold mb-3 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                      <span className="w-2 h-2 rounded-full bg-green-700"></span>
                       Входящие запросы
                     </h3>
                     {incomingRequests.map(req => (
@@ -483,13 +483,13 @@ export default function FriendsView({ onBack }) {
                     <div className="flex gap-2">
                       <button 
                         onClick={() => setCompatType('friendly')}
-                        className={`flex-1 py-3 rounded-xl font-medium transition-colors ${compatType === 'friendly' ? 'bg-blue-600 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                        className={`flex-1 py-3 rounded-xl font-medium transition-colors ${compatType === 'friendly' ? 'bg-green-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
                       >
                         Дружеская
                       </button>
                       <button 
                         onClick={() => setCompatType('partner')}
-                        className={`flex-1 py-3 rounded-xl font-medium transition-colors ${compatType === 'partner' ? 'bg-blue-600 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                        className={`flex-1 py-3 rounded-xl font-medium transition-colors ${compatType === 'partner' ? 'bg-green-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
                       >
                         Партнерская
                       </button>
@@ -504,13 +504,13 @@ export default function FriendsView({ onBack }) {
                         <div className="flex gap-2">
                           <button 
                             onClick={() => setMyGender('Мужской')}
-                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${myGender === 'Мужской' ? 'bg-blue-600 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${myGender === 'Мужской' ? 'bg-green-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
                           >
                             Мужской
                           </button>
                           <button 
                             onClick={() => setMyGender('Женский')}
-                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${myGender === 'Женский' ? 'bg-blue-600 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${myGender === 'Женский' ? 'bg-green-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
                           >
                             Женский
                           </button>
@@ -522,13 +522,13 @@ export default function FriendsView({ onBack }) {
                         <div className="flex gap-2">
                           <button 
                             onClick={() => setFriendGender('Мужской')}
-                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${friendGender === 'Мужской' ? 'bg-blue-600 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${friendGender === 'Мужской' ? 'bg-green-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
                           >
                             Мужской
                           </button>
                           <button 
                             onClick={() => setFriendGender('Женский')}
-                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${friendGender === 'Женский' ? 'bg-blue-600 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${friendGender === 'Женский' ? 'bg-green-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
                           >
                             Женский
                           </button>

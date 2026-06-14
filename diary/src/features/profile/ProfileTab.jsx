@@ -221,7 +221,7 @@ export default function ProfileTab({ onOverlayOpen }) {
         <span>{right}</span>
       </div>
       <div className="h-4 w-full bg-rose-800 rounded-full overflow-hidden flex shadow-inner mb-4">
-        <div className="h-full bg-blue-500 transition-all duration-1000 ease-out" style={{ width: `${leftValue}%` }}></div>
+        <div className="h-full bg-green-700 transition-all duration-1000 ease-out" style={{ width: `${leftValue}%` }}></div>
         <div className="h-full bg-orange-500 transition-all duration-1000 ease-out" style={{ width: `${rightValue}%` }}></div>
       </div>
       {description && <div className="mt-4"><p className="text-sm sm:text-base text-[#F5E6D3] font-medium leading-relaxed block break-words whitespace-pre-wrap">{description}</p></div>}
@@ -327,7 +327,7 @@ export default function ProfileTab({ onOverlayOpen }) {
         {tgUser.photo_url ? (
           <img src={tgUser.photo_url} alt="Avatar" className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg" />
         ) : (
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-900/40 text-[#F5E6D3] rounded-full flex items-center justify-center font-bold text-2xl shadow-inner">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-950/40 text-[#F5E6D3] rounded-full flex items-center justify-center font-bold text-2xl shadow-inner">
             {tgUser.first_name?.[0] || <User size={32} />}
           </div>
         )}
@@ -575,7 +575,7 @@ export default function ProfileTab({ onOverlayOpen }) {
             </div>
             {/* Нижняя кнопка */}
             <div className="p-4 sm:p-5 bg-rose-950/50 rounded-b-[2rem]">
-              <button onClick={() => setSelectedResult(null)} className="w-full bg-blue-600 hover:bg-blue-500 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all active:bg-blue-700 shadow-lg shadow-blue-900/20">
+              <button onClick={() => setSelectedResult(null)} className="w-full bg-green-800 hover:bg-green-700 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all active:bg-green-900 shadow-lg shadow-green-950/20">
                 Отлично
               </button>
             </div>
@@ -615,7 +615,7 @@ export default function ProfileTab({ onOverlayOpen }) {
           
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-[#F5E6D3] mb-2 flex items-center gap-2">
-              <Users className="text-blue-400" />
+              <Users className="text-green-600" />
               Реферальная программа
             </h2>
             <p className="text-[#F5E6D3]/70">Приглашайте друзей и получайте 50% от их оплат на свой баланс.</p>
@@ -639,7 +639,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                 <button 
                   onClick={handleVerifyInn}
                   disabled={isVerifyingInn || innInput.length < 10}
-                  className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-900/20"
+                  className="w-full bg-green-800 hover:bg-green-700 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-green-950/20"
                 >
                   {isVerifyingInn ? "Проверка..." : "Проверить ИНН"}
                 </button>
@@ -654,14 +654,14 @@ export default function ProfileTab({ onOverlayOpen }) {
                       <div className="text-[#F5E6D3]/70 text-sm mb-1">Сумма в ожидании</div>
                       <div className="text-[#F5E6D3] text-2xl font-bold">{referralInfo.pending} ₽</div>
                     </div>
-                    <Activity className="text-blue-400 opacity-50" size={32} />
+                    <Activity className="text-green-600 opacity-50" size={32} />
                   </div>
                   <div className="bg-[#2B0A0A] p-4 rounded-2xl flex justify-between items-center">
                     <div>
                       <div className="text-[#F5E6D3]/70 text-sm mb-1">Доступно к выводу</div>
                       <div className="text-[#F5E6D3] text-2xl font-bold">{referralInfo.available} ₽</div>
                     </div>
-                    <Check className="text-blue-400" size={32} />
+                    <Check className="text-green-600" size={32} />
                   </div>
                 </div>
                 <div className="mt-4 p-3 bg-rose-950/30 rounded-xl text-xs text-[#F5E6D3]/60 flex gap-2">
@@ -691,7 +691,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                         navigator.clipboard.writeText(referralInfo.link);
                         WebApp.showAlert("Ссылка скопирована!");
                       }}
-                      className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
+                      className="bg-green-800 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
                     >
                       Копировать
                     </button>
@@ -705,7 +705,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                   <button 
                     onClick={handleWithdraw}
                     disabled={isWithdrawing || referralInfo.available < 100}
-                    className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-900/20"
+                    className="w-full bg-green-800 hover:bg-green-700 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-green-950/20"
                   >
                     {isWithdrawing ? "Обработка..." : "Запросить вывод"}
                   </button>
@@ -752,7 +752,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                   <Check size={14} className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
                 </div>
                 <span className="text-[#F5E6D3]/80 text-sm select-none">
-                  Я согласен с <button onClick={(e) => {e.preventDefault(); setIsOfferModalOpen(true);}} className="text-blue-400 hover:text-blue-300 underline underline-offset-2">публичной офертой</button> и правилами предоставления услуг.
+                  Я согласен с <button onClick={(e) => {e.preventDefault(); setIsOfferModalOpen(true);}} className="text-green-600 hover:text-green-500 underline underline-offset-2">публичной офертой</button> и правилами предоставления услуг.
                 </span>
               </label>
             </div>
@@ -794,7 +794,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               {"Текст публичной оферты...\n\nЗдесь будет располагаться подробный текст пользовательского соглашения, условия подписки и списания средств.\n\nЗаглушка."}
             </div>
             <div className="p-5 border-t border-rose-800/50 bg-rose-950/30 rounded-b-[2rem]">
-              <button onClick={() => {setIsOfferAccepted(true); setIsOfferModalOpen(false);}} className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors">
+              <button onClick={() => {setIsOfferAccepted(true); setIsOfferModalOpen(false);}} className="w-full py-3.5 bg-green-800 hover:bg-green-700 text-white font-bold rounded-xl transition-colors">
                 Принять и закрыть
               </button>
             </div>

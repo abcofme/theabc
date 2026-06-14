@@ -237,7 +237,7 @@ export default function AdminPanel({ onBack }) {
           
           <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Calendar className="text-blue-500" size={24} />
+              <Calendar className="text-green-700" size={24} />
               <span className="text-[#F5E6D3] font-medium">Записи дневника</span>
             </div>
             <span className="text-xl font-bold text-[#F5E6D3]">{stats.diary_entries || 0}</span>
@@ -432,7 +432,7 @@ export default function AdminPanel({ onBack }) {
                           <div className="flex items-center gap-1">
                             <button 
                               onClick={() => setEditingTestId(test.id)}
-                              className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 rounded-lg transition-colors"
+                              className="p-2 text-green-600 hover:text-green-500 hover:bg-green-600/10 rounded-lg transition-colors"
                             >
                               <Edit size={20} />
                             </button>
