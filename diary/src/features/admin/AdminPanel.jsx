@@ -20,6 +20,9 @@ export default function AdminPanel({ onBack }) {
   const [grantTargetUsername, setGrantTargetUsername] = useState('');
   const [grantType, setGrantType] = useState('premium');
   const [isGranting, setIsGranting] = useState(false);
+  const [revokeTargetUsername, setRevokeTargetUsername] = useState('');
+  const [revokeType, setRevokeType] = useState('premium');
+  const [isRevoking, setIsRevoking] = useState(false);
   useEffect(() => {
     fetchStats();
   }, [startDate, endDate, isUnique]);
@@ -87,6 +90,41 @@ export default function AdminPanel({ onBack }) {
       WebApp.showAlert(err.message);
     } finally {
       setIsGranting(false);
+    }
+  };
+
+  const handleRevokeAccess = async () => {
+    if (!revokeTargetUsername) {
+      WebApp.showAlert("Введите @username пользователя");
+      return;
+    }
+    
+    setIsRevoking(true);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/revoke`, {
+        method: 'POST',
+        headers: {
+          "Authorization": `Bearer ${WebApp.initData}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          target_username: revokeTargetUsername,
+          revoke_type: revokeType
+        })
+      });
+      
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || "Ошибка при заборе прав");
+      }
+      
+      WebApp.showAlert(`Права успешно забраны!`);
+      setRevokeTargetUsername('');
+    } catch (err) {
+      console.error(err);
+      WebApp.showAlert(err.message);
+    } finally {
+      setIsRevoking(false);
     }
   };
 
@@ -281,9 +319,40 @@ export default function AdminPanel({ onBack }) {
             <button 
               onClick={handleGrantAccess}
               disabled={isGranting}
-              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-sm"
+              className="w-full bg-green-600 hover:bg-green-500 disabled:opacity-50 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-sm"
             >
               {isGranting ? "Обработка..." : "Выдать права"}
+            </button>
+          </div>
+
+          <div className="bg-rose-900 p-5 rounded-2xl flex flex-col gap-4 shadow-sm mt-4">
+            <div>
+              <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Забрать права у @username:</label>
+              <input 
+                type="text" 
+                value={revokeTargetUsername} 
+                onChange={(e) => setRevokeTargetUsername(e.target.value)}
+                placeholder="Например, @username"
+                className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Что забрать:</label>
+              <select 
+                value={revokeType}
+                onChange={(e) => setRevokeType(e.target.value)}
+                className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
+              >
+                <option value="premium">Premium</option>
+                <option value="career">Блок Профориентация</option>
+              </select>
+            </div>
+            <button 
+              onClick={handleRevokeAccess}
+              disabled={isRevoking}
+              className="w-full bg-rose-800 hover:bg-rose-700 disabled:opacity-50 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-sm"
+            >
+              {isRevoking ? "Обработка..." : "Забрать права"}
             </button>
           </div>
 

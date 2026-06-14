@@ -1090,8 +1090,7 @@ async def admin_grant_access(
         raise HTTPException(status_code=404, detail="User not found")
         
     if req.grant_type == "premium":
-        target_user.access_level = "Premium"
-        target_user.access_expires_at = datetime(2099, 1, 1)
+        target_user.premium_until = datetime(2099, 1, 1)
     elif req.grant_type == "career":
         target_user.has_career_access = True
     else:
@@ -1101,6 +1100,44 @@ async def admin_grant_access(
     await session.commit()
     return {"status": "success", "message": f"Granted {req.grant_type} to user @{target_user.username}"}
 
+class AdminRevokeRequest(BaseModel):
+    target_username: str
+    revoke_type: str  # "premium" or "career"
+
+@app.post("/api/admin/revoke")
+async def admin_revoke_access(
+    req: AdminRevokeRequest,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    user_id = user_data.get("id")
+    # Verify caller is admin
+    caller_query = select(User).where(User.telegram_id == user_id)
+    caller = (await session.execute(caller_query)).scalars().first()
+    
+    if not caller or caller.username not in ['ingenfrid', 'key_crp', 'fondlife']:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=403, detail="Forbidden")
+        
+    # Find target user
+    clean_username = req.target_username.strip("@")
+    target_query = select(User).where(User.username.ilike(clean_username))
+    target_user = (await session.execute(target_query)).scalars().first()
+    
+    if not target_user:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    if req.revoke_type == "premium":
+        target_user.premium_until = None
+    elif req.revoke_type == "career":
+        target_user.has_career_access = False
+    else:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Invalid revoke type")
+        
+    await session.commit()
+    return {"status": "success", "message": f"Revoked {req.revoke_type} from user @{target_user.username}"}
 
 @app.get("/api/admin/stats")
 async def get_admin_stats(
