@@ -349,7 +349,7 @@ export default function ReportsTab({ onSwitchTab }) {
                           {group.id === 'career' && !hasCareerAccess ? (
                             <div className="py-6 flex flex-col items-center justify-center text-center px-2">
                               <div className="w-12 h-12 rounded-full bg-rose-900/50 flex items-center justify-center mb-3">
-                                <span className="text-2xl"><Lock size={24} fill="currentColor" /></span>
+                                <span className="text-2xl"><Lock size={24} /></span>
                               </div>
                               <h3 className="text-[#F5E6D3] font-bold text-lg mb-2">Блок Профориентация</h3>
                               <p className="text-[#F5E6D3]/70 text-sm mb-4">
@@ -366,7 +366,7 @@ export default function ReportsTab({ onSwitchTab }) {
                           ) : accessLevel === 'Free' ? (
                             <div className="py-6 flex flex-col items-center justify-center text-center px-2">
                               <div className="w-12 h-12 rounded-full bg-rose-900/50 flex items-center justify-center mb-3">
-                                <span className="text-2xl"><Lock size={24} fill="currentColor" /></span>
+                                <span className="text-2xl"><Lock size={24} /></span>
                               </div>
                               <h3 className="text-[#F5E6D3] font-bold text-lg mb-2">Генерация отчета доступна только с Premium</h3>
                               <button

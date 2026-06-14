@@ -9,7 +9,7 @@ import QRCode from 'react-qr-code';
 const WebApp = window.Telegram.WebApp;
 const API_URL = "https://friendly-various-near-across.trycloudflare.com";
 
-export default function ProfileTab() {
+export default function ProfileTab({ onOverlayOpen }) {
   const [categories, setCategories] = useState([]);
   const [totalTests, setTotalTests] = useState(0);
   const [passedTests, setPassedTests] = useState(0);
@@ -43,6 +43,11 @@ export default function ProfileTab() {
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [isOfferAccepted, setIsOfferAccepted] = useState(false);
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+
+  // Скрываем нижнее меню при открытии модалок
+  useEffect(() => {
+    onOverlayOpen?.(isPremiumModalOpen || isOfferModalOpen || !!selectedResult || isQrExpanded);
+  }, [isPremiumModalOpen, isOfferModalOpen, selectedResult, isQrExpanded, onOverlayOpen]);
 
   // Получаем данные пользователя из Telegram (если открыто в браузере - ставим заглушку)
   const tgUser = WebApp.initDataUnsafe?.user || {

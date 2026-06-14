@@ -73,7 +73,7 @@ export default function App() {
         {activeTab === 'diary' && <CalendarTab onSheetOpen={setIsNavHidden} />}
         {activeTab === 'tests' && <TestsTab onOverlayOpen={setIsNavHidden} />}
         {activeTab === 'reports' && <ReportsTab onSwitchTab={setActiveTab} />}
-        {activeTab === 'profile' && <ProfileTab />}
+        {activeTab === 'profile' && <ProfileTab onOverlayOpen={setIsNavHidden} />}
       </main>
 
       {/* Отрисовываем меню только если isNavHidden === false и клавиатура не открыта */}
