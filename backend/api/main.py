@@ -1383,8 +1383,8 @@ async def delete_friend(
     await session.commit()
     return {"status": "success"}
 
-class WithdrawRequest(BaseModel):
-    card_number: str
+class VerifyInnRequest(BaseModel):
+    inn: str
 
 @app.get("/api/referral")
 async def get_referral_info(
@@ -1403,19 +1403,48 @@ async def get_referral_info(
     ref_count = (await session.execute(ref_query)).scalar() or 0
     
     return {
+        "inn_verified": user.inn_verified,
+        "inn": user.inn,
         "pending": user.referral_balance_pending or 0,
         "available": user.referral_balance_available or 0,
         "referral_count": ref_count,
         "link": f"https://t.me/abcofmebot?start=invite_{user_id}"
     }
 
-@app.post("/api/referral/withdraw")
-async def withdraw_referral_balance(
-    payload: WithdrawRequest,
+@app.post("/api/referral/verify_inn")
+async def verify_user_inn(
+    payload: VerifyInnRequest,
     user_data: dict = Depends(validate_twa_data),
     session: AsyncSession = Depends(get_session)
 ):
     from fastapi import HTTPException
+    from backend.integrations.fns.client import FNSClient
+    
+    user_id = user_data.get("id")
+    
+    is_self_employed = await FNSClient.check_self_employed(payload.inn)
+    if not is_self_employed:
+        raise HTTPException(status_code=400, detail="ИНН не принадлежит действующему самозанятому (НПД).")
+        
+    query = select(User).where(User.id == user_id)
+    user = (await session.execute(query)).scalars().first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    user.inn = payload.inn
+    user.inn_verified = True
+    await session.commit()
+    
+    return {"status": "success", "message": "ИНН подтвержден"}
+
+@app.post("/api/referral/withdraw")
+async def withdraw_referral_balance(
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from fastapi import HTTPException
+    from backend.integrations.fns.client import FNSClient
+    
     user_id = user_data.get("id")
     query = select(User).where(User.id == user_id)
     user = (await session.execute(query)).scalars().first()
@@ -1423,16 +1452,26 @@ async def withdraw_referral_balance(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
         
+    if not user.inn_verified or not user.inn:
+        raise HTTPException(status_code=403, detail="Требуется подтверждение статуса самозанятого")
+        
+    # Перепроверка статуса перед выводом
+    is_self_employed = await FNSClient.check_self_employed(user.inn)
+    if not is_self_employed:
+        user.inn_verified = False
+        await session.commit()
+        raise HTTPException(status_code=400, detail="Статус самозанятого аннулирован. Вывод невозможен.")
+        
     available = user.referral_balance_available or 0
     if available < 100:  # Minimum 100 rub withdrawal
         raise HTTPException(status_code=400, detail="Минимальная сумма вывода - 100 рублей")
         
-    # Process payout via YooKassa
-    from backend.integrations.payment.yoo import _create_payout
+    # Process payout via YooKassa for Self-Employed
+    from backend.integrations.payment.yoo import _create_payout_self_employed
     try:
-        status, payout_id = _create_payout(
+        status, payout_id = _create_payout_self_employed(
             amount=available, 
-            card_number=payload.card_number,
+            inn=user.inn,
             description=f"Выплата по реферальной программе для {user_id}"
         )
         

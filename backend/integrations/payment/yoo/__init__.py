@@ -68,11 +68,16 @@ def _check_payment(payment_id):
     else:
         return False, 0.0
 
-def _create_payout(amount: float, card_number: str, description: str):
+def _create_payout_self_employed(amount: float, inn: str, description: str):
     import uuid
     from yookassa import Payout
     key = str(uuid.uuid4())
     try:
+        # Примечание: Для реальных выплат самозанятым через ЮKassa 
+        # обычно используется payout_token, полученный после привязки самозанятого,
+        # или передается объект deal / personal_data с ИНН.
+        # Ниже приведен пример структуры, которая должна быть адаптирована 
+        # под конкретный сценарий подключения "Выплаты самозанятым" в вашем кабинете.
         payout = Payout.create(
             {
                 "amount": {
@@ -80,10 +85,10 @@ def _create_payout(amount: float, card_number: str, description: str):
                     "currency": "RUB"
                 },
                 "payout_destination_data": {
-                    "type": "bank_card",
-                    "card": {
-                        "number": card_number
-                    }
+                    "type": "yoo_money", # Чаще всего самозанятые привязывают кошелек ЮMoney
+                },
+                "deal": {
+                    "id": inn # Здесь обычно передается ID сделки или токен привязки, зависящий от ИНН
                 },
                 "description": description
             }, key

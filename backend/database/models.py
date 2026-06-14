@@ -37,6 +37,9 @@ class User(BaseModel):
 
     admin: Mapped[bool] = mapped_column(Boolean, nullable=True, default=False)
     banned: Mapped[bool] = mapped_column(Boolean, nullable=True, default=False)
+    
+    inn: Mapped[str] = mapped_column(String(12), nullable=True)
+    inn_verified: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
 
     progresses: Mapped[List["Progress"]] = relationship(
         "Progress", back_populates="user",
