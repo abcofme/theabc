@@ -232,14 +232,31 @@ export default function ProfileTab() {
           const jsonString = String(children).replace(/\n$/, '');
           let scalesData = [];
           try {
-            scalesData = JSON.parse(jsonString);
+            const parsed = JSON.parse(jsonString);
+            if (Array.isArray(parsed)) {
+              scalesData = parsed;
+            } else if (parsed && typeof parsed === 'object') {
+              if (Array.isArray(parsed.scales)) {
+                scalesData = parsed.scales;
+              } else if (Array.isArray(parsed.data)) {
+                scalesData = parsed.data;
+              } else {
+                const arr = Object.values(parsed).find(v => Array.isArray(v));
+                if (arr) scalesData = arr;
+              }
+            }
           } catch (e) {
             return <code className={className} {...props}>{children}</code>;
           }
+          
+          if (!Array.isArray(scalesData)) {
+            scalesData = [];
+          }
+          
           return (
             <div className="my-10 px-2 sm:px-4">
               {scalesData.map((s, idx) => (
-                <PortraitScale key={idx} left={s.left} right={s.right} leftValue={s.leftValue} rightValue={s.rightValue} description={s.description} />
+                <PortraitScale key={idx} left={s.left || ''} right={s.right || ''} leftValue={s.leftValue || 50} rightValue={s.rightValue || 50} description={s.description || ''} />
               ))}
             </div>
           )
