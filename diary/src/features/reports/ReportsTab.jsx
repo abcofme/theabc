@@ -19,15 +19,20 @@ export default function ReportsTab() {
   const [customEnd, setCustomEnd] = useState('');
   
   const [isGenerating, setIsGenerating] = useState(false);
+  const [hasCareerAccess, setHasCareerAccess] = useState(false);
+  const [accessLevel, setAccessLevel] = useState('');
+  const [isBuyingCareer, setIsBuyingCareer] = useState(false);
 
   useEffect(() => {
     if (WebApp.initData) {
-      fetch(`${API_URL}/api/reports`, {
-        headers: { "Authorization": `Bearer ${WebApp.initData}` }
-      })
-      .then(res => res.json())
-      .then(data => {
-        setReports(data || []);
+      Promise.all([
+        fetch(`${API_URL}/api/reports`, { headers: { "Authorization": `Bearer ${WebApp.initData}` } }).then(res => res.json()),
+        fetch(`${API_URL}/api/profile`, { headers: { "Authorization": `Bearer ${WebApp.initData}` } }).then(res => res.json())
+      ])
+      .then(([reportsData, profileData]) => {
+        setReports(reportsData || []);
+        setHasCareerAccess(profileData.has_career_access || false);
+        setAccessLevel(profileData.access_level || '');
         setLoading(false);
       })
       .catch(err => {
@@ -139,6 +144,33 @@ export default function ReportsTab() {
       WebApp.showAlert(e.message);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const buyCareerGuidance = async () => {
+    if (accessLevel !== 'Premium') {
+      WebApp.showAlert("Для покупки блока 'Профориентация' необходимо сначала оформить Premium подписку в Профиле.");
+      return;
+    }
+    setIsBuyingCareer(true);
+    try {
+      const response = await fetch(`${API_URL}/api/career/buy`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${WebApp.initData}`,
+          "Content-Type": "application/json"
+        }
+      });
+      const data = await response.json();
+      if (response.ok) {
+        WebApp.openLink(data.url);
+      } else {
+        WebApp.showAlert(`Ошибка: ${data.detail || "Не удалось создать платеж"}`);
+      }
+    } catch (err) {
+      WebApp.showAlert(`Ошибка сети: ${err.message}`);
+    } finally {
+      setIsBuyingCareer(false);
     }
   };
 
@@ -314,13 +346,32 @@ export default function ReportsTab() {
                       
                       {isOpen && (
                         <div className="p-5 bg-rose-950/50 flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
-                          <button 
-                            onClick={() => setActiveForm(rtype.id)}
-                            className="w-full py-3 bg-rose-800 hover:bg-rose-700 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
-                          >
-                            <Plus size={18} />
-                            Сформировать новый отчет
-                          </button>
+                          {group.id === 'career' && !hasCareerAccess ? (
+                            <div className="py-6 flex flex-col items-center justify-center text-center px-2">
+                              <div className="w-12 h-12 rounded-full bg-rose-900/50 flex items-center justify-center mb-3">
+                                <span className="text-2xl">🔒</span>
+                              </div>
+                              <h3 className="text-[#F5E6D3] font-bold text-lg mb-2">Блок Профориентация</h3>
+                              <p className="text-[#F5E6D3]/70 text-sm mb-4">
+                                Для генерации отчетов по профориентации необходимо приобрести этот блок за 1500 ₽ (единоразово). Доступно только для Premium-пользователей.
+                              </p>
+                              <button
+                                onClick={buyCareerGuidance}
+                                disabled={isBuyingCareer}
+                                className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-rose-950 font-bold rounded-xl shadow-md transition-all flex justify-center items-center gap-2"
+                              >
+                                {isBuyingCareer ? <span className="animate-spin text-xl">⏳</span> : "Купить за 1500 ₽"}
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <button 
+                                onClick={() => setActiveForm(rtype.id)}
+                                className="w-full py-3 bg-rose-800 hover:bg-rose-700 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
+                              >
+                                <Plus size={18} />
+                                Сформировать новый отчет
+                              </button>
                           
                           {typeReports.length > 0 ? (
                             <div className="mt-4 flex flex-col gap-2">
@@ -355,6 +406,8 @@ export default function ReportsTab() {
                             </div>
                           ) : (
                             <p className="text-sm text-[#F5E6D3] text-center mt-4">Вы еще не формировали этот тип отчета.</p>
+                          )}
+                            </>
                           )}
                         </div>
                       )}

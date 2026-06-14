@@ -41,6 +41,7 @@ class User(BaseModel):
     first_opened_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     premium_until: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     yookassa_payment_method_id: Mapped[str] = mapped_column(String(100), nullable=True)
+    has_career_access: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     
     inn: Mapped[str] = mapped_column(String(12), nullable=True)
     inn_verified: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")

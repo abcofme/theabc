@@ -23,6 +23,9 @@ export default function TestsTab({ onOverlayOpen }) {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openCategory, setOpenCategory] = useState(null);
+  const [hasCareerAccess, setHasCareerAccess] = useState(false);
+  const [accessLevel, setAccessLevel] = useState('');
+  const [isBuyingCareer, setIsBuyingCareer] = useState(false);
   
   // States for viewing a past result
   const [selectedResult, setSelectedResult] = useState(null);
@@ -50,6 +53,8 @@ export default function TestsTab({ onOverlayOpen }) {
       .then(res => res.json())
       .then(data => {
         setCategories(data.categories || []);
+        setHasCareerAccess(data.has_career_access || false);
+        setAccessLevel(data.access_level || '');
         setLoading(false);
       })
       .catch(err => {
@@ -167,6 +172,33 @@ export default function TestsTab({ onOverlayOpen }) {
     }
   };
 
+  const buyCareerGuidance = async () => {
+    if (accessLevel !== 'Premium') {
+      WebApp.showAlert("Для покупки блока 'Профориентация' необходимо сначала оформить Premium подписку в Профиле.");
+      return;
+    }
+    setIsBuyingCareer(true);
+    try {
+      const response = await fetch(`${API_URL}/api/career/buy`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${WebApp.initData}`,
+          "Content-Type": "application/json"
+        }
+      });
+      const data = await response.json();
+      if (response.ok) {
+        WebApp.openLink(data.url);
+      } else {
+        WebApp.showAlert(`Ошибка: ${data.detail || "Не удалось создать платеж"}`);
+      }
+    } catch (err) {
+      WebApp.showAlert(`Ошибка сети: ${err.message}`);
+    } finally {
+      setIsBuyingCareer(false);
+    }
+  };
+
   return (
     <div className="flex flex-col relative select-none bg-transparent max-w-2xl mx-auto w-full pt-4 h-full overflow-y-scroll pb-16">
       <h2 className="text-2xl font-bold text-[#F5E6D3] px-4 mb-8 text-center flex items-center justify-center gap-2">
@@ -215,7 +247,24 @@ export default function TestsTab({ onOverlayOpen }) {
 
               {openCategory === cat.id && (
                 <div className="bg-rose-950/40 px-4 py-2 animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
-                  {cat.tests.length === 0 ? (
+                  {cat.name === 'Профориентация' && !hasCareerAccess ? (
+                    <div className="py-6 flex flex-col items-center justify-center text-center px-2">
+                      <div className="w-12 h-12 rounded-full bg-rose-900/50 flex items-center justify-center mb-3">
+                        <span className="text-2xl">🔒</span>
+                      </div>
+                      <h3 className="text-[#F5E6D3] font-bold text-lg mb-2">Блок Профориентация</h3>
+                      <p className="text-[#F5E6D3]/70 text-sm mb-4">
+                        Для прохождения тестов по профориентации необходимо приобрести этот блок за 1500 ₽ (единоразово). Доступно только для Premium-пользователей.
+                      </p>
+                      <button
+                        onClick={buyCareerGuidance}
+                        disabled={isBuyingCareer}
+                        className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-rose-950 font-bold rounded-xl shadow-md transition-all flex justify-center items-center gap-2"
+                      >
+                        {isBuyingCareer ? <span className="animate-spin text-xl">⏳</span> : "Купить за 1500 ₽"}
+                      </button>
+                    </div>
+                  ) : cat.tests.length === 0 ? (
                     <div className="text-[#F5E6D3] text-sm py-3 italic">В этой категории пока нет тестов.</div>
                   ) : (
                     cat.tests.map(test => (

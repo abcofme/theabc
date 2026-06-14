@@ -126,7 +126,8 @@ async def get_profile(
         "passed_tests": passed_tests,
         "portrait": portrait_data,
         "access_level": access_level,
-        "access_expires_at": access_expires_at
+        "access_expires_at": access_expires_at,
+        "has_career_access": db_user.has_career_access if db_user else False
     }
 
 async def check_access(user_id: int, session: AsyncSession):
@@ -600,6 +601,12 @@ async def generate_report(
     user_id = user_data.get("id")
     await check_access(user_id, session)
     
+    if req.report_type in ["energy", "competence"]:
+        user = await session.get(User, user_id)
+        if not user or not user.has_career_access:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=403, detail="Для генерации этого отчета необходимо купить блок 'Профориентация'")
+    
     # 1. Получаем контекст (портрет или тесты) в зависимости от типа отчета
     portrait = None
     test_results_text = ""
@@ -952,7 +959,8 @@ async def get_test_details(
     session: AsyncSession = Depends(get_session)
 ):
     query = select(Test).options(
-        selectinload(Test.questions).selectinload(Question.answers)
+        selectinload(Test.questions).selectinload(Question.answers),
+        selectinload(Test.category)
     ).where(Test.id == test_id)
     test = (await session.execute(query)).scalar_one_or_none()
     
@@ -961,6 +969,12 @@ async def get_test_details(
         raise HTTPException(status_code=404, detail="Тест не найден")
     
     user_id = user_data.get("id")
+    
+    if test.category and test.category.name == "Профориентация":
+        user = await session.get(User, user_id)
+        if not user or not user.has_career_access:
+            raise HTTPException(status_code=403, detail="Для доступа к этому тесту необходимо купить блок 'Профориентация'")
+            
     progress_query = select(Progress).where(Progress.test_id == test_id, Progress.user_id == user_id)
     progress = (await session.execute(progress_query)).scalar_one_or_none()
     
@@ -997,13 +1011,18 @@ async def submit_test(
         if progress:
             return {"result": "Вы уже прошли этот тест."}
         
-        query = select(Test).where(Test.id == test_id)
+        query = select(Test).options(selectinload(Test.category)).where(Test.id == test_id)
         test = (await session.execute(query)).scalar_one_or_none()
         
         if not test:
             from fastapi import HTTPException
             raise HTTPException(status_code=404, detail="Тест не найден")
             
+        if test.category and test.category.name == "Профориентация":
+            user = await session.get(User, user_id)
+            if not user or not user.has_career_access:
+                from fastapi import HTTPException
+                raise HTTPException(status_code=403, detail="Для отправки этого теста необходимо купить блок 'Профориентация'")
         answers_query = select(Answer).where(Answer.id.in_(payload.answer_ids))
         answers = (await session.execute(answers_query)).scalars().all()
         
@@ -1809,6 +1828,77 @@ async def check_subscription_status(
             
         if payment_method_id:
             user.yookassa_payment_method_id = payment_method_id
+            
+        # Referral logic
+        if user.invited_id:
+            try:
+                inviter_id = int(user.invited_id)
+                inviter = await session.get(User, inviter_id)
+                if inviter:
+                    inviter.referral_balance_pending += int(amount / 2)
+            except ValueError:
+                pass
+                
+        await session.commit()
+        return {"status": "success"}
+        
+    return {"status": "pending"}
+
+@app.post("/api/career/buy")
+async def buy_career_guidance(
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from backend.integrations.payment.yoo import _create_payment
+    from backend.database.models import Payment, Category
+    user_id = user_data.get("id")
+    
+    await check_access(user_id, session) # Must have premium to buy
+    
+    # 1500 RUB for one-time
+    url, payment_id = _create_payment(amount=1500, chat_id=str(user_id), description="Блок Профориентация", email="", save_payment_method=False)
+    
+    cat_query = select(Category).where(Category.name == "Профориентация")
+    cat = (await session.execute(cat_query)).scalars().first()
+    
+    payment = Payment(
+        user_id=user_id,
+        uuid=payment_id,
+        url=url,
+        is_premium_subscription=False,
+        is_recurring=False,
+        category_id=cat.id if cat else None
+    )
+    session.add(payment)
+    await session.commit()
+    
+    return {"url": url, "payment_id": payment_id}
+
+@app.get("/api/career/status/{payment_uuid}")
+async def check_career_status(
+    payment_uuid: str,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from backend.integrations.payment.yoo import _check_payment
+    from backend.database.models import Payment, User
+    
+    user_id = user_data.get("id")
+    
+    payment = (await session.execute(select(Payment).where(Payment.uuid == payment_uuid, Payment.user_id == user_id))).scalars().first()
+    if not payment:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Payment not found")
+        
+    if payment.success:
+        return {"status": "success"}
+        
+    meta, amount, _ = _check_payment(payment_uuid)
+    if meta is not False: # succeeded
+        payment.success = True
+        
+        user = await session.get(User, user_id)
+        user.has_career_access = True
             
         # Referral logic
         if user.invited_id:
