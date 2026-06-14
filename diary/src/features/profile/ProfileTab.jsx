@@ -702,6 +702,10 @@ export default function ProfileTab() {
                     disabled={isWithdrawing || referralInfo.available < 100}
                     className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-900/20"
                   >
+                    {isWithdrawing ? "Обработка..." : "Запросить вывод"}
+                  </button>
+                </div>
+              </div>
             </>
           )}
         </div>
