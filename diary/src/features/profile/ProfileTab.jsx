@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { User, ChevronDown, ChevronUp, Check, XCircle, X, ChevronLeft, Lock, Wand2, Trash2, Brain, Activity, Star, ShieldAlert, Sparkles, Target, Heart, Flame, ClipboardList, Users } from 'lucide-react';
+import { User, ChevronDown, ChevronUp, Check, XCircle, X, ChevronLeft, Lock, Wand2, Trash2, Brain, Activity, Star, ShieldAlert, Sparkles, Target, Heart, Flame, ClipboardList, Users, ChevronRight } from 'lucide-react';
 import AdminPanel from '../admin/AdminPanel';
 import FriendsView from './FriendsView';
 import qrCodeImg from '../../assets/qr-code.png';
@@ -100,6 +100,20 @@ export default function ProfileTab() {
     }
   };
 
+  const handleClearPortrait = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/portrait/clear`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${WebApp.initData}` }
+      });
+      if (response.ok) {
+        setPortraitData(null);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   const handleVerifyInn = async () => {
     if (!innInput || (innInput.length !== 10 && innInput.length !== 12)) {
       WebApp.showAlert("ИНН должен состоять из 10 или 12 цифр");
@@ -143,6 +157,7 @@ export default function ProfileTab() {
       if (response.ok) {
         WebApp.showAlert("Средства успешно отправлены!");
         setReferralInfo(prev => ({...prev, available: 0}));
+      } else {
         WebApp.showAlert(`Ошибка: ${data.detail || "Неизвестная ошибка"}`);
       }
     } catch (err) {
@@ -264,17 +279,6 @@ export default function ProfileTab() {
         return <code className="bg-rose-800 text-[#F5E6D3] px-1.5 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>
       }
     };
-  };
-
-  const toggleCategory = (id) => {
-    setOpenCategory(openCategory === id ? null : id);
-  };
-
-  const openResultModal = (test) => {
-    if (test.passed) {
-      setSelectedResult(test);
-      WebApp.HapticFeedback.selectionChanged(); // Легкая вибрация при открытии
-    }
   };
 
   return (
@@ -399,11 +403,13 @@ export default function ProfileTab() {
             {/* Referral Program Button */}
             <button
               onClick={() => setActiveSubTab('referral')}
-              className="w-full bg-rose-900/80 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
+              className="w-full bg-rose-900/80 rounded-2xl p-4 text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm mt-4"
             >
-              <div>
+              <div className="flex items-center gap-3">
+                <Users className="text-[#F5E6D3]" size={24} />
                 <h3 className="text-lg font-bold text-[#F5E6D3]">Реферальная программа</h3>
               </div>
+              <ChevronRight className="text-[#F5E6D3]" size={20} />
             </button>
 
           </div>
@@ -419,7 +425,6 @@ export default function ProfileTab() {
             <ChevronLeft size={20} />
             <span className="font-medium">Назад</span>
           </button>
-          {/* Header block removed as requested */}
 
           {isGeneratingPortrait ? (
             <div className="flex-1 flex flex-col items-center justify-center py-12">
@@ -551,7 +556,7 @@ export default function ProfileTab() {
           </div>
           
           {!referralInfo.inn_verified ? (
-            <div className="bg-[#541515] rounded-3xl p-5 mb-10 shadow-lg">
+            <div className="bg-rose-900/80 backdrop-blur-sm rounded-3xl p-5 mb-10 shadow-lg">
               <div className="text-[#F5E6D3] font-bold mb-4">Для доступа требуется статус самозанятого</div>
               <p className="text-[#F5E6D3]/70 text-sm mb-4">
                 По закону РФ мы осуществляем выплаты только плательщикам НПД (самозанятым).
@@ -576,7 +581,7 @@ export default function ProfileTab() {
             </div>
           ) : (
             <>
-              <div className="bg-[#541515] rounded-3xl p-5 mb-6 shadow-lg">
+              <div className="bg-rose-900/80 backdrop-blur-sm rounded-3xl p-5 mb-6 shadow-lg">
                 <div className="flex flex-col gap-4">
                   <div className="bg-[#2B0A0A] p-4 rounded-2xl flex justify-between items-center">
                     <div>
@@ -599,7 +604,7 @@ export default function ProfileTab() {
                 </div>
               </div>
               
-              <div className="bg-[#541515] rounded-3xl p-5 mb-6 shadow-lg flex flex-col items-center">
+              <div className="bg-rose-900/80 backdrop-blur-sm rounded-3xl p-5 mb-6 shadow-lg flex flex-col items-center">
                 <div className="text-[#F5E6D3] font-bold mb-4">Ваш уникальный QR-код</div>
                 <div className="bg-white p-4 rounded-2xl mb-4">
                   {referralInfo.link && (
@@ -628,7 +633,7 @@ export default function ProfileTab() {
                 </div>
               </div>
               
-              <div className="bg-[#541515] rounded-3xl p-5 mb-10 shadow-lg">
+              <div className="bg-rose-900/80 backdrop-blur-sm rounded-3xl p-5 mb-10 shadow-lg">
                 <div className="text-[#F5E6D3] font-bold mb-4">Вывод средств (от 100 рублей)</div>
                 <div className="flex flex-col gap-3">
                   <button 

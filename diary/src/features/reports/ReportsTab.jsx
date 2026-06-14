@@ -64,39 +64,39 @@ export default function ReportsTab() {
           title: 'Какие события чаще всего повторяются в моей жизни?',
           desc: 'Любовь или зависимость, мудрость или глупость. Что чаще, такие и мы. Наша жизнь в привычках, а контроль над ними в анализе.',
           icon: Repeat,
-          color: 'text-blue-500',
-          bg: 'bg-blue-600/20'
+          color: 'text-emerald-500',
+          bg: 'bg-emerald-600/20'
         },
         {
           id: 'effective_reactions',
           title: 'На какие ситуации я реагирую эффективно, а на какие нет?',
           desc: 'Эффективность в предсказуемости, а во внезапности не решение проблемы, а усугубление. Важно понимать что мы строим и почему ломаем.',
           icon: Zap,
-          color: 'text-blue-500',
-          bg: 'bg-blue-600/20'
+          color: 'text-emerald-500',
+          bg: 'bg-emerald-600/20'
         }
       ]
     },
     {
       id: 'career',
       title: 'Профориентация',
-      desc: 'С результатами тестов по профориентации, активным ведением дневника и этих отчетов ты сможешь с полной точностью определить настоящую любовь к какой-либо деятельности.',
+      desc: 'С результатами тестов по профориентации, активным ведением дневника и этих отчетов ты сможешь с полной точностью определить настоящую любовь к какой-либо деятельности',
       items: [
         {
           id: 'energy',
           title: 'Энергия',
           desc: 'От каких задач я забываю про время, какие действия дают мне энергию, а какие забирают. Ты не ленивый, просто не знаешь точно где твоя энергия умножается.',
           icon: Sparkles,
-          color: 'text-yellow-500',
-          bg: 'bg-yellow-600/20'
+          color: 'text-emerald-500',
+          bg: 'bg-emerald-600/20'
         },
         {
           id: 'competence',
           title: 'Чувство компетентности',
           desc: 'Понимание в чем твоя стезя подавляет страх, тревогу, неготовность к ответственности. Это есть у всех, состоит из побед, даже маленьких, похвалы от людей и результатов, которые замечают. В этом твоя сила.',
           icon: Target,
-          color: 'text-purple-500',
-          bg: 'bg-purple-600/20'
+          color: 'text-emerald-500',
+          bg: 'bg-emerald-600/20'
         }
       ]
     }
@@ -279,7 +279,7 @@ export default function ReportsTab() {
           {reportGroups.map((group, gIdx) => (
             <div key={group.id || gIdx} className="flex flex-col gap-4">
               {group.title && (
-                <div className="px-2 mt-2">
+                <div className="px-2 mt-2 text-center">
                   <h3 className="text-xl font-bold text-[#F5E6D3] mb-2">{group.title}</h3>
                   {group.desc && <p className="text-sm text-[#F5E6D3]/80 leading-relaxed">{group.desc}</p>}
                 </div>
@@ -299,9 +299,9 @@ export default function ReportsTab() {
                     <div key={rtype.id} className="bg-rose-900/80 rounded-2xl overflow-hidden transition-all duration-300">
                       <button 
                         onClick={() => setOpenCategory(isOpen ? null : rtype.id)}
-                        className="w-full p-5 text-left hover:bg-rose-800/80 transition-all flex items-start gap-4"
+                        className="w-full p-5 text-left hover:bg-rose-800/80 transition-all flex items-center gap-4"
                       >
-                        <div className={`p-3 rounded-xl shrink-0 mt-1 ${rtype.bg}`}>
+                        <div className={`p-3 rounded-xl shrink-0 ${rtype.bg}`}>
                           <rtype.icon className={rtype.color} size={24} />
                         </div>
                         <div className="flex-1">

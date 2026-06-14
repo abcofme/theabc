@@ -1055,6 +1055,33 @@ async def get_admin_stats(
         portraits_q = apply_filters(portraits_q, PersonalityPortrait)
         portraits_count = (await session.execute(portraits_q)).scalar() or 0
         
+        # Referral users
+        ref_q = select(get_count_expr(User)).where(User.inn_verified == True)
+        ref_q = apply_filters(ref_q, User)
+        referral_users = (await session.execute(ref_q)).scalar() or 0
+        
+        # Compatibility Reports
+        from backend.database.models import CompatibilityReport
+        compat_q = select(get_count_expr(CompatibilityReport))
+        compat_q = apply_filters(compat_q, CompatibilityReport)
+        compat_reports = (await session.execute(compat_q)).scalar() or 0
+
+        # Reports by type
+        reports_types = ['repeating_events', 'effective_reactions', 'energy', 'competence']
+        reports_by_type_list = []
+        for r_type in reports_types:
+            r_type_q = select(get_count_expr(BehavioralReport)).where(BehavioralReport.report_type == r_type)
+            r_type_q = apply_filters(r_type_q, BehavioralReport)
+            count = (await session.execute(r_type_q)).scalar() or 0
+            
+            r_name = r_type
+            if r_type == 'repeating_events': r_name = 'Повторяющиеся события'
+            elif r_type == 'effective_reactions': r_name = 'Эффективные реакции'
+            elif r_type == 'energy': r_name = 'Энергия'
+            elif r_type == 'competence': r_name = 'Чувство компетентности'
+            
+            reports_by_type_list.append({"type": r_type, "name": r_name, "count": count})
+        
         cats_query = select(Category).options(joinedload(Category.tests))
         categories = (await session.execute(cats_query)).scalars().unique().all()
         
@@ -1079,7 +1106,10 @@ async def get_admin_stats(
             "active_users": active_users,
             "diary_entries": diary_count,
             "reports_generated": reports_count,
+            "reports_by_type": reports_by_type_list,
             "portraits_generated": portraits_count,
+            "compat_reports_generated": compat_reports,
+            "referral_users": referral_users,
             "tests": test_counts
         }
     except Exception as e:

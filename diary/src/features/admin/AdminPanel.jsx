@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, Check, Trash2, Edit, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, Check, Trash2, Edit, Plus, Heart, Gift } from 'lucide-react';
 import AdminTestEditor from './AdminTestEditor';
 
 const WebApp = window.Telegram.WebApp;
@@ -12,6 +12,7 @@ export default function AdminPanel({ onBack }) {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [openCategory, setOpenCategory] = useState(null);
+  const [openReports, setOpenReports] = useState(false);
   const [openDeleteCategory, setOpenDeleteCategory] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editingTestId, setEditingTestId] = useState(undefined); // null - create, number - edit, undefined - list
@@ -168,12 +169,30 @@ export default function AdminPanel({ onBack }) {
             <span className="text-xl font-bold text-[#F5E6D3]">{stats.diary_entries || 0}</span>
           </div>
 
-          <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Brain className="text-orange-500" size={24} />
-              <span className="text-[#F5E6D3] font-medium">Отчеты</span>
-            </div>
-            <span className="text-xl font-bold text-[#F5E6D3]">{stats.reports_generated || 0}</span>
+          <div className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
+            <button
+              onClick={() => setOpenReports(!openReports)}
+              className="w-full flex items-center justify-between p-5 hover:bg-rose-800/70 transition-colors active:bg-rose-800"
+            >
+              <div className="flex items-center gap-3">
+                <Brain className="text-orange-500" size={24} />
+                <span className="text-[#F5E6D3] font-medium">Отчеты</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xl font-bold text-[#F5E6D3]">{stats.reports_generated || 0}</span>
+                {openReports ? <ChevronUp size={22} className="text-[#F5E6D3]" /> : <ChevronDown size={22} className="text-[#F5E6D3]" />}
+              </div>
+            </button>
+            {openReports && stats.reports_by_type && stats.reports_by_type.length > 0 && (
+              <div className="bg-rose-950/30 px-5 py-3 flex flex-col gap-3 border-t border-rose-800/50">
+                {stats.reports_by_type.map(rt => (
+                  <div key={rt.type} className="flex justify-between items-center text-sm">
+                    <span className="text-[#F5E6D3]/80">{rt.name}</span>
+                    <span className="font-bold text-[#F5E6D3]">{rt.count}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
@@ -182,6 +201,22 @@ export default function AdminPanel({ onBack }) {
               <span className="text-[#F5E6D3] font-medium">Портреты личности</span>
             </div>
             <span className="text-xl font-bold text-[#F5E6D3]">{stats.portraits_generated || 0}</span>
+          </div>
+
+          <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Heart className="text-rose-500" size={24} />
+              <span className="text-[#F5E6D3] font-medium">Отчеты совместимости</span>
+            </div>
+            <span className="text-xl font-bold text-[#F5E6D3]">{stats.compat_reports_generated || 0}</span>
+          </div>
+
+          <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Gift className="text-yellow-500" size={24} />
+              <span className="text-[#F5E6D3] font-medium">Реферальная программа</span>
+            </div>
+            <span className="text-xl font-bold text-[#F5E6D3]">{stats.referral_users || 0}</span>
           </div>
 
           <h3 className="text-xl font-bold text-[#F5E6D3] mt-4 mb-2">Статистика по тестам</h3>
