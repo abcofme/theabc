@@ -56,27 +56,23 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
     
     setSaving(true);
     
+    let flatResults = [];
+    results.forEach(r => {
+      r.intervals.forEach(inv => {
+        flatResults.push({
+          name: r.name,
+          range_from: parseInt(inv.range_from || 0),
+          range_to: inv.range_to !== "" && inv.range_to !== null && inv.range_to !== undefined ? parseInt(inv.range_to) : null
+        });
+      });
+    });
+
     const payload = {
       name,
       description,
       category_id: parseInt(categoryId),
-      let flatResults = [];
-      results.forEach(r => {
-        r.intervals.forEach(inv => {
-          flatResults.push({
-            name: r.name,
-            range_from: parseInt(inv.range_from || 0),
-            range_to: inv.range_to !== "" && inv.range_to !== null && inv.range_to !== undefined ? parseInt(inv.range_to) : null
-          });
-        });
-      });
-
-      const payload = {
-        name,
-        description,
-        category_id: parseInt(categoryId),
-        results: flatResults,
-        questions: questions.map(q => ({
+      results: flatResults,
+      questions: questions.map(q => ({
         name: q.name,
         answers: q.answers.map(a => ({ 
           name: a.name, 
