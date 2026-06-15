@@ -1073,7 +1073,7 @@ async def admin_grant_access(
 ):
     user_id = user_data.get("id")
     # Verify caller is admin
-    caller_query = select(User).where(User.telegram_id == user_id)
+    caller_query = select(User).where(User.id == user_id)
     caller = (await session.execute(caller_query)).scalars().first()
     
     if not caller or caller.username not in ['ingenfrid', 'key_crp', 'fondlife']:
@@ -1112,7 +1112,7 @@ async def admin_revoke_access(
 ):
     user_id = user_data.get("id")
     # Verify caller is admin
-    caller_query = select(User).where(User.telegram_id == user_id)
+    caller_query = select(User).where(User.id == user_id)
     caller = (await session.execute(caller_query)).scalars().first()
     
     if not caller or caller.username not in ['ingenfrid', 'key_crp', 'fondlife']:
