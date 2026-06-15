@@ -25,7 +25,19 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
         setName(data.name || '');
         setDescription(data.description || '');
         setCategoryId(data.category_id || (categories.length > 0 ? categories[0].id : ''));
-        setResults(data.results || []);
+        let groupedResults = [];
+        (data.results || []).forEach(r => {
+          let g = groupedResults.find(g => g.name === r.name);
+          if (!g) {
+            g = { name: r.name, intervals: [] };
+            groupedResults.push(g);
+          }
+          g.intervals.push({
+            range_from: r.range_from,
+            range_to: r.range_to
+          });
+        });
+        setResults(groupedResults);
         setQuestions(data.questions || []);
       })
       .catch(err => {
@@ -48,12 +60,23 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
       name,
       description,
       category_id: parseInt(categoryId),
-      results: results.map(r => ({ 
-        name: r.name, 
-        range_from: parseInt(r.range_from || 0), 
-        range_to: r.range_to ? parseInt(r.range_to) : null 
-      })),
-      questions: questions.map(q => ({
+      let flatResults = [];
+      results.forEach(r => {
+        r.intervals.forEach(inv => {
+          flatResults.push({
+            name: r.name,
+            range_from: parseInt(inv.range_from || 0),
+            range_to: inv.range_to !== "" && inv.range_to !== null && inv.range_to !== undefined ? parseInt(inv.range_to) : null
+          });
+        });
+      });
+
+      const payload = {
+        name,
+        description,
+        category_id: parseInt(categoryId),
+        results: flatResults,
+        questions: questions.map(q => ({
         name: q.name,
         answers: q.answers.map(a => ({ 
           name: a.name, 
@@ -88,13 +111,29 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
     }
   };
 
-  const addResult = () => setResults([...results, { name: '', range_from: 0, range_to: '' }]);
+  const addResult = () => setResults([...results, { name: '', intervals: [{ range_from: 0, range_to: '' }] }]);
   const updateResult = (idx, field, val) => {
     const newR = [...results];
     newR[idx][field] = val;
     setResults(newR);
   };
   const removeResult = (idx) => setResults(results.filter((_, i) => i !== idx));
+
+  const addInterval = (resIdx) => {
+    const newR = [...results];
+    newR[resIdx].intervals.push({ range_from: 0, range_to: '' });
+    setResults(newR);
+  };
+  const updateInterval = (resIdx, intIdx, field, val) => {
+    const newR = [...results];
+    newR[resIdx].intervals[intIdx][field] = val;
+    setResults(newR);
+  };
+  const removeInterval = (resIdx, intIdx) => {
+    const newR = [...results];
+    newR[resIdx].intervals = newR[resIdx].intervals.filter((_, i) => i !== intIdx);
+    setResults(newR);
+  };
 
   const addQuestion = () => setQuestions([...questions, { name: '', answers: [] }]);
   const updateQuestion = (idx, val) => {
@@ -190,25 +229,39 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
                 <Trash2 size={18} />
               </button>
               
-              <div className="flex gap-3 mb-3 pr-8">
-                <div className="flex-1">
-                  <label className="text-[#F5E6D3]/70 text-xs mb-1 block">От (включительно):</label>
-                  <input 
-                    type="number" value={r.range_from} onChange={(e) => updateResult(idx, 'range_from', e.target.value)}
-                    className="w-full bg-rose-950/50 text-[#F5E6D3] p-2 rounded-lg focus:outline-none"
-                  />
+              <div className="mb-3 pr-8">
+                <label className="text-[#F5E6D3]/70 text-xs mb-2 block font-medium">Интервалы баллов:</label>
+                <div className="space-y-2">
+                  {r.intervals.map((inv, intIdx) => (
+                    <div key={intIdx} className="flex gap-2 items-center bg-rose-950/30 p-2 rounded-lg">
+                      <div className="flex-1">
+                        <label className="text-[#F5E6D3]/60 text-[10px] mb-1 block">От (включительно):</label>
+                        <input 
+                          type="number" value={inv.range_from} onChange={(e) => updateInterval(idx, intIdx, 'range_from', e.target.value)}
+                          className="w-full bg-rose-950/50 text-[#F5E6D3] p-1.5 text-sm rounded focus:outline-none"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <label className="text-[#F5E6D3]/60 text-[10px] mb-1 block">До (не включительно):</label>
+                        <input 
+                          type="number" value={inv.range_to ?? ''} onChange={(e) => updateInterval(idx, intIdx, 'range_to', e.target.value)}
+                          placeholder="бескон."
+                          className="w-full bg-rose-950/50 text-[#F5E6D3] p-1.5 text-sm rounded focus:outline-none placeholder:text-[#F5E6D3]/20"
+                        />
+                      </div>
+                      <button onClick={() => removeInterval(idx, intIdx)} disabled={r.intervals.length === 1} className="mt-4 text-red-400/70 hover:text-red-400 p-1 disabled:opacity-30">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex-1">
-                  <label className="text-[#F5E6D3]/70 text-xs mb-1 block">До (не включительно):</label>
-                  <input 
-                    type="number" value={r.range_to} onChange={(e) => updateResult(idx, 'range_to', e.target.value)}
-                    placeholder="пусто = до бескон."
-                    className="w-full bg-rose-950/50 text-[#F5E6D3] p-2 rounded-lg focus:outline-none placeholder:text-[#F5E6D3]/20"
-                  />
-                </div>
+                <button onClick={() => addInterval(idx)} className="mt-2 text-green-400 text-xs flex items-center gap-1 hover:text-green-300">
+                  <Plus size={14} /> Добавить интервал
+                </button>
               </div>
+
               <div>
-                <label className="text-[#F5E6D3]/70 text-xs mb-1 block">Текст результата:</label>
+                <label className="text-[#F5E6D3]/70 text-xs mb-1 block">Текст результата (общий для всех интервалов):</label>
                 <textarea 
                   value={r.name} onChange={(e) => updateResult(idx, 'name', e.target.value)}
                   className="w-full bg-rose-950/50 text-[#F5E6D3] p-2 rounded-lg focus:outline-none min-h-[60px]"
