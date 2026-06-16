@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import bookIcon from '../../assets/book_icon.png';
 
 const WebApp = window.Telegram.WebApp;
-const API_URL = "https://theabc.twc1.net";
+const API_URL = window.location.origin;
 
 export default function ReportsTab({ onSwitchTab }) {
   const [reports, setReports] = useState([]);

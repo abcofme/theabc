@@ -7,7 +7,7 @@ import qrCodeImg from '../../assets/qr-code.png';
 import QRCode from 'react-qr-code';
 
 const WebApp = window.Telegram.WebApp;
-const API_URL = "https://theabc.twc1.net";
+const API_URL = window.location.origin;
 
 export default function ProfileTab({ onOverlayOpen }) {
   const [categories, setCategories] = useState([]);
