@@ -4,8 +4,8 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  // Указываем базовый путь для корректного поиска ассетов на GitHub Pages
-  base: '/theabc/', 
+  // Указываем базовый путь
+  base: '/', 
   plugins: [
     react(),
     tailwindcss(),
