@@ -17,7 +17,7 @@ const categoryIcons = {
 };
 
 const WebApp = window.Telegram.WebApp;
-const API_URL = "https://friendly-various-near-across.trycloudflare.com";
+const API_URL = "https://theabc.twc1.net";
 
 export default function TestsTab({ onOverlayOpen }) {
   const [categories, setCategories] = useState([]);

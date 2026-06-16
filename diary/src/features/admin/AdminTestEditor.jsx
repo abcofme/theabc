@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Plus, Trash2, Save, GripVertical } from 'lucide-react';
 
 const WebApp = window.Telegram.WebApp;
-const API_URL = "https://friendly-various-near-across.trycloudflare.com";
+const API_URL = "https://theabc.twc1.net";
 
 export default function AdminTestEditor({ testId, categories, onClose }) {
   const [loading, setLoading] = useState(!!testId);

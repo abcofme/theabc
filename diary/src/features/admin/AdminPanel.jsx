@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, 
 import AdminTestEditor from './AdminTestEditor';
 
 const WebApp = window.Telegram.WebApp;
-const API_URL = "https://friendly-various-near-across.trycloudflare.com";
+const API_URL = "https://theabc.twc1.net";
 
 export default function AdminPanel({ onBack }) {
   const [startDate, setStartDate] = useState('');

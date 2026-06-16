@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 
 
 const WebApp = window.Telegram.WebApp;
-const API_URL = "https://friendly-various-near-across.trycloudflare.com";
+const API_URL = "https://theabc.twc1.net";
 
 export default function FriendsView({ onBack }) {
   const [activeTab, setActiveTab] = useState('friends'); // friends, search, requests
