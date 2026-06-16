@@ -36,6 +36,12 @@ services:
     ports:
       - "5432:5432"
 
+  frontend:
+    build: ./diary
+    restart: always
+    ports:
+      - "3000:80"
+
 volumes:
   redis-data:
   postgres-data: # Добавили том для данных БД
