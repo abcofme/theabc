@@ -37,7 +37,7 @@ async def start_handler(
 
     msg = await bot.send_photo(
         chat_id=user.id,
-        photo=FSInputFile(IMAGES / f"приветствие.png"),
+        photo=FSInputFile(IMAGES / f"приветствие.jpg"),
         caption=START_TEXT,
         reply_markup=start_kb(user)
     )
@@ -56,7 +56,7 @@ async def start_callback(
 
     msg = await bot.send_photo(
         chat_id=user.id,
-        photo=FSInputFile(IMAGES / f"приветствие.png"),
+        photo=FSInputFile(IMAGES / f"приветствие.jpg"),
         caption=START_TEXT,
         reply_markup=start_kb(user)
     )
