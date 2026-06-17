@@ -357,7 +357,7 @@ export default function ProfileTab({ onOverlayOpen }) {
       {activeSubTab === 'main' && (
         <>
           {/* КНОПКА ОФОРМЛЕНИЯ ПРЕМИУМ */}
-          {accessLevel !== 'Premium' && (
+          {!loading && accessLevel !== 'Premium' && (
             <div className="mx-2 mb-4">
               <button
                 onClick={() => setIsPremiumModalOpen(true)}
