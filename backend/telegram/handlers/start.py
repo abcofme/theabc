@@ -6,7 +6,8 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardButton
 from aiogram.types.web_app_info import WebAppInfo
 
-from backend.database.models import User
+from backend.database.models import User, TrackingLink
+from sqlalchemy import select
 from backend.database.patterns.dao import DataAccessObject
 from backend.database.patterns.user import UserDAO
 from backend.telegram.bot import dp, bot
@@ -29,8 +30,16 @@ START_TEXT = "«Азбука Я» — ваш личный инструмент �
 
 @dp.message(CommandStart(), InvitedFilter())
 async def start_handler(
-        _: Message, user: User, state: FSMContext
+        message: Message, user: User, state: FSMContext, dao: DataAccessObject
 ):
+    if user.tracking_link_id is None and message.text and message.text.startswith("/start "):
+        payload = message.text.split(" ")[-1]
+        if payload.startswith("tr_"):
+            code = payload[3:]
+            link = await dao.session.scalar(select(TrackingLink).where(TrackingLink.code == code))
+            if link:
+                await dao.update_object(User, user.id, dict(tracking_link_id=link.id))
+
     await delete_pending_messages(user)
     await delete_editing_message(user)
     await state.clear()

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, Check, Trash2, Edit, Plus, Heart, Gift } from 'lucide-react';
+import { ChevronLeft, ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, Check, Trash2, Edit, Plus, Heart, Gift, Link2 } from 'lucide-react';
 import AdminTestEditor from './AdminTestEditor';
 
 const WebApp = window.Telegram.WebApp;
@@ -23,9 +23,77 @@ export default function AdminPanel({ onBack }) {
   const [revokeTargetUsername, setRevokeTargetUsername] = useState('');
   const [revokeType, setRevokeType] = useState('premium');
   const [isRevoking, setIsRevoking] = useState(false);
+  const [trackingLinks, setTrackingLinks] = useState([]);
+  const [newLinkName, setNewLinkName] = useState('');
+  const [isLoadingLinks, setIsLoadingLinks] = useState(false);
+  const [isCreatingLink, setIsCreatingLink] = useState(false);
   useEffect(() => {
     fetchStats();
   }, [startDate, endDate, isUnique]);
+
+  useEffect(() => {
+    fetchTrackingLinks();
+  }, []);
+
+  const fetchTrackingLinks = async () => {
+    if (!WebApp.initData) return;
+    setIsLoadingLinks(true);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/tracking_links`, {
+        headers: { "Authorization": `Bearer ${WebApp.initData}` }
+      });
+      if (response.ok) {
+        setTrackingLinks(await response.json());
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoadingLinks(false);
+    }
+  };
+
+  const handleCreateLink = async () => {
+    if (!newLinkName) return;
+    setIsCreatingLink(true);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/tracking_links`, {
+        method: 'POST',
+        headers: {
+          "Authorization": `Bearer ${WebApp.initData}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name: newLinkName })
+      });
+      if (response.ok) {
+        setNewLinkName('');
+        fetchTrackingLinks();
+      } else {
+        WebApp.showAlert("Ошибка при создании ссылки");
+      }
+    } catch (e) {
+      console.error(e);
+      WebApp.showAlert("Ошибка при создании ссылки");
+    } finally {
+      setIsCreatingLink(false);
+    }
+  };
+
+  const handleDeleteLink = async (id) => {
+    WebApp.showConfirm("Удалить эту ссылку?", async (confirmed) => {
+      if (!confirmed) return;
+      try {
+        const response = await fetch(`${API_URL}/api/admin/tracking_links/${id}`, {
+          method: 'DELETE',
+          headers: { "Authorization": `Bearer ${WebApp.initData}` }
+        });
+        if (response.ok) {
+          fetchTrackingLinks();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    });
+  };
 
   const fetchStats = async () => {
     if (!WebApp.initData) {
@@ -210,6 +278,75 @@ export default function AdminPanel({ onBack }) {
             <option value="unique">Уникальное</option>
           </select>
         </div>
+      </div>
+
+      {/* НОВЫЙ БЛОК: ССЫЛКИ */}
+      <div className="bg-rose-900 p-5 rounded-3xl mb-6">
+        <h3 className="text-xl font-bold text-[#F5E6D3] mb-4 flex items-center gap-2">
+          <Link2 size={24} className="text-blue-400" />
+          Ссылки
+        </h3>
+        
+        <div className="flex gap-2 mb-4">
+          <input 
+            type="text" 
+            placeholder="Название ссылки"
+            value={newLinkName}
+            onChange={(e) => setNewLinkName(e.target.value)}
+            className="flex-1 bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
+          />
+          <button 
+            onClick={handleCreateLink}
+            disabled={!newLinkName || isCreatingLink}
+            className="bg-green-800 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-3 rounded-xl font-medium transition-colors"
+          >
+            {isCreatingLink ? "..." : "Создать"}
+          </button>
+        </div>
+
+        {isLoadingLinks ? (
+          <div className="text-[#F5E6D3]/60 text-center py-4">Загрузка ссылок...</div>
+        ) : trackingLinks.length > 0 ? (
+          <div className="flex flex-col gap-3">
+            {trackingLinks.map(link => (
+              <div key={link.id} className="bg-rose-950/40 p-4 rounded-xl flex flex-col gap-2 relative">
+                <div className="flex justify-between items-start pr-8">
+                  <div className="font-medium text-[#F5E6D3]">{link.name}</div>
+                  <div className="flex items-center gap-1 text-green-400 bg-green-900/30 px-2 py-1 rounded-lg text-sm font-bold">
+                    <Users size={14} /> {link.clicks_count}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    readOnly 
+                    value={`https://t.me/abcofmebot?start=tr_${link.code}`}
+                    className="flex-1 bg-black/20 text-[#F5E6D3]/70 text-xs p-2 rounded-lg outline-none"
+                  />
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(`https://t.me/abcofmebot?start=tr_${link.code}`);
+                      WebApp.showAlert("Ссылка скопирована!");
+                    }}
+                    className="bg-blue-900/50 hover:bg-blue-800/50 text-blue-200 px-3 rounded-lg text-xs font-medium transition-colors"
+                  >
+                    Копировать
+                  </button>
+                </div>
+                <button 
+                  onClick={() => handleDeleteLink(link.id)}
+                  className="absolute top-3 right-3 text-red-400 hover:text-red-300 transition-colors p-1"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-[#F5E6D3]/50 text-sm text-center py-4 bg-rose-950/20 rounded-xl">
+            Нет созданных ссылок
+          </div>
+        )}
       </div>
 
       {loading && !stats ? (

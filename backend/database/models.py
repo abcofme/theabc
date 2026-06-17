@@ -46,6 +46,9 @@ class User(BaseModel):
     inn: Mapped[str] = mapped_column(String(12), nullable=True)
     inn_verified: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
 
+    tracking_link_id: Mapped[Optional[int]] = mapped_column(ForeignKey("tracking_links.id", ondelete="SET NULL"), nullable=True)
+    tracking_link: Mapped[Optional["TrackingLink"]] = relationship("TrackingLink")
+
     progresses: Mapped[List["Progress"]] = relationship(
         "Progress", back_populates="user",
         # lazy="selectin"
@@ -274,3 +277,10 @@ class CompatibilityReport(BaseModel):
     my_gender: Mapped[str] = mapped_column(String(20), nullable=True)
     friend_gender: Mapped[str] = mapped_column(String(20), nullable=True)
     content: Mapped[str] = mapped_column(Text(), nullable=False)
+
+
+class TrackingLink(BaseModel):
+    __tablename__ = "tracking_links"
+    
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    code: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)

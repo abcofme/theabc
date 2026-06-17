@@ -1451,6 +1451,82 @@ async def delete_admin_test(
     return {"status": "success"}
 
 
+from backend.database.models import TrackingLink
+
+@app.get("/api/admin/tracking_links")
+async def get_tracking_links(
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from fastapi import HTTPException
+    from sqlalchemy import select, func
+    username = user_data.get("username", "")
+    if username not in ['ingenfrid', 'key_crp', 'fondlife']:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    links_query = select(TrackingLink)
+    links_result = await session.execute(links_query)
+    links = links_result.scalars().all()
+    
+    result = []
+    for link in links:
+        count_query = select(func.count(User.id)).where(User.tracking_link_id == link.id)
+        count_result = await session.execute(count_query)
+        clicks_count = count_result.scalar() or 0
+        
+        result.append({
+            "id": link.id,
+            "name": link.name,
+            "code": link.code,
+            "clicks_count": clicks_count
+        })
+    return result
+
+@app.post("/api/admin/tracking_links")
+async def create_tracking_link(
+    data: dict,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from fastapi import HTTPException
+    import random
+    import string
+    username = user_data.get("username", "")
+    if username not in ['ingenfrid', 'key_crp', 'fondlife']:
+        raise HTTPException(status_code=403, detail="Access denied")
+        
+    name = data.get("name")
+    if not name:
+        raise HTTPException(status_code=400, detail="Name is required")
+        
+    code = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+    
+    new_link = TrackingLink(name=name, code=code)
+    session.add(new_link)
+    await session.commit()
+    await session.refresh(new_link)
+    
+    return {"id": new_link.id, "name": new_link.name, "code": new_link.code, "clicks_count": 0}
+
+@app.delete("/api/admin/tracking_links/{link_id}")
+async def delete_tracking_link(
+    link_id: int,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from fastapi import HTTPException
+    username = user_data.get("username", "")
+    if username not in ['ingenfrid', 'key_crp', 'fondlife']:
+        raise HTTPException(status_code=403, detail="Access denied")
+        
+    link = await session.get(TrackingLink, link_id)
+    if not link:
+        raise HTTPException(status_code=404, detail="Link not found")
+        
+    await session.delete(link)
+    await session.commit()
+    return {"status": "success"}
+
 
 from sqlalchemy import or_, and_
 
