@@ -74,6 +74,21 @@ async def get_profile(
     
     # Собираем словарь прогресса: test_id -> результат
     user_results = {}
+    
+    # Сначала соберем все test_id, по которым есть валидные value
+    valid_progresses = [p for p in progresses if not p.hardcode_value and p.value is not None]
+    test_ids = [p.test_id for p in valid_progresses]
+    
+    # Загружаем все результаты для этих тестов за один запрос
+    test_results_map = {}
+    if test_ids:
+        res_query = select(Result).where(Result.test_id.in_(test_ids))
+        all_results = (await session.execute(res_query)).scalars().all()
+        for r in all_results:
+            if r.test_id not in test_results_map:
+                test_results_map[r.test_id] = []
+            test_results_map[r.test_id].append(r)
+            
     for p in progresses:
         if p.hardcode_value:
             user_results[p.test_id] = p.hardcode_value
@@ -82,15 +97,15 @@ async def get_profile(
                 user_results[p.test_id] = "Баллы: 0"
                 continue
                 
-            # Ищем текстовый результат по баллам
-            # ИСПРАВЛЕНИЕ: строгое (>) на нестрогое (>=) неравенство
-            res_query = select(Result).where(
-                Result.test_id == p.test_id,
-                Result.range_from <= p.value,
-                Result.range_to >= p.value
-            )
-            res_obj = (await session.execute(res_query)).scalars().first()
-            user_results[p.test_id] = res_obj.name if res_obj and res_obj.name else f"Балл: {p.value}"
+            # Ищем текстовый результат по баллам в памяти
+            results_for_test = test_results_map.get(p.test_id, [])
+            matched_name = None
+            for r in results_for_test:
+                if r.range_from <= p.value and r.range_to >= p.value:
+                    matched_name = r.name
+                    break
+                    
+            user_results[p.test_id] = matched_name if matched_name else f"Балл: {p.value}"
 
     # Формируем ответ для React
     result_data = []
@@ -154,14 +169,13 @@ async def get_diary_entries(
 ):
     user_id = user_data.get("id")
     
+    from sqlalchemy import extract
     query = select(DiaryEntry).where(
         DiaryEntry.user_id == user_id,
-        # Простая фильтрация по дате (в реальности лучше использовать between)
+        extract('year', DiaryEntry.date) == year,
+        extract('month', DiaryEntry.date) == month
     )
-    entries = (await session.execute(query)).scalars().all()
-    
-    # Фильтруем на питоне для простоты
-    filtered = [e for e in entries if e.date.year == year and e.date.month == month]
+    filtered = (await session.execute(query)).scalars().all()
     
     has_premium_access = True
     try:
@@ -1935,7 +1949,7 @@ async def buy_subscription(
     user_id = user_data.get("id")
     
     # 149 RUB for 1 month Premium
-    url, payment_id = _create_payment(amount=149, chat_id=str(user_id), description="Premium подписка (1 месяц)", email="", save_payment_method=True)
+    url, payment_id = await _create_payment(amount=149, chat_id=str(user_id), description="Premium подписка (1 месяц)", email="", save_payment_method=True)
     
     payment = Payment(
         user_id=user_id,
@@ -1969,7 +1983,7 @@ async def check_subscription_status(
     if payment.success:
         return {"status": "success"}
         
-    meta, amount, payment_method_id = _check_payment(payment_uuid)
+    meta, amount, payment_method_id = await _check_payment(payment_uuid)
     if meta is not False: # succeeded
         payment.success = True
         
@@ -2012,7 +2026,7 @@ async def buy_career_guidance(
     await check_access(user_id, session) # Must have premium to buy
     
     # 1499 RUB for one-time
-    url, payment_id = _create_payment(amount=1499, chat_id=str(user_id), description="Блок Профориентация", email="", save_payment_method=False)
+    url, payment_id = await _create_payment(amount=1499, chat_id=str(user_id), description="Блок Профориентация", email="", save_payment_method=False)
     
     cat_query = select(Category).where(Category.name == "Профориентация")
     cat = (await session.execute(cat_query)).scalars().first()
@@ -2049,7 +2063,7 @@ async def check_career_status(
     if payment.success:
         return {"status": "success"}
         
-    meta, amount, _ = _check_payment(payment_uuid)
+    meta, amount, _ = await _check_payment(payment_uuid)
     if meta is not False: # succeeded
         payment.success = True
         
@@ -2070,3 +2084,54 @@ async def check_career_status(
         return {"status": "success"}
         
     return {"status": "pending"}
+
+from fastapi import Request
+@app.post("/api/webhook/yookassa")
+async def yookassa_webhook(request: Request, session: AsyncSession = Depends(get_session)):
+    try:
+        body = await request.json()
+    except Exception:
+        return {"status": "error"}
+        
+    event = body.get("event")
+    if event == "payment.succeeded":
+        payment_obj = body.get("object", {})
+        payment_uuid = payment_obj.get("id")
+        payment_method = payment_obj.get("payment_method", {})
+        payment_method_id = payment_method.get("id") if payment_method.get("saved") else None
+        
+        from backend.database.models import Payment, User
+        from sqlalchemy import select
+        from datetime import datetime, timedelta
+        
+        payment = (await session.execute(select(Payment).where(Payment.uuid == payment_uuid))).scalars().first()
+        if payment and not payment.success:
+            payment.success = True
+            user_id = payment.user_id
+            user = await session.get(User, user_id)
+            if user:
+                if payment.is_premium_subscription:
+                    now = datetime.utcnow()
+                    if user.premium_until and user.premium_until > now:
+                        user.premium_until += timedelta(days=30)
+                    else:
+                        user.premium_until = now + timedelta(days=30)
+                        
+                    if payment_method_id:
+                        user.yookassa_payment_method_id = payment_method_id
+                else: 
+                    user.has_career_access = True
+                    
+                amount_val = float(payment_obj.get("amount", {}).get("value", 0))
+                if user.invited_id and amount_val > 0:
+                    try:
+                        inviter_id = int(user.invited_id)
+                        inviter = await session.get(User, inviter_id)
+                        if inviter:
+                            inviter.referral_balance_pending += int(amount_val / 2)
+                    except ValueError:
+                        pass
+                        
+            await session.commit()
+    
+    return {"status": "ok"}

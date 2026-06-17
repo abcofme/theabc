@@ -45,7 +45,7 @@ async def process_recurring_subscriptions():
             
             if pending:
                 # Check status
-                meta, amount, _ = _check_payment(pending.uuid)
+                meta, amount, _ = await _check_payment(pending.uuid)
                 if meta is not False: # succeeded
                     pending.success = True
                     user.premium_until += timedelta(days=30)
@@ -70,7 +70,7 @@ async def process_recurring_subscriptions():
                 
             # Create a new recurring payment
             try:
-                status, payment_id = _create_recurring_payment(
+                status, payment_id = await _create_recurring_payment(
                     amount=149,
                     chat_id=str(user.id),
                     description="Продление Premium подписки",
