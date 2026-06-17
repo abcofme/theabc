@@ -482,22 +482,36 @@ async def generate_personality_portrait(
         raise HTTPException(status_code=500, detail="TIMEWEB_AI_TOKEN is not set on the server")
         
     task = asyncio.create_task(_generate_portrait_bg(user_id, total_tests, prompt, ai_url, ai_token))
-    try:
-        result = await asyncio.shield(task)
-        if result["status"] == "success":
-            p = result["portrait"]
-            return {
-                "status": "success",
-                "portrait": {
-                    "id": p.id,
-                    "content": p.content,
-                    "tests_count": p.tests_count,
-                    "created_at": p.created_at
+    
+    async def stream_generator():
+        try:
+            while not task.done():
+                yield b" "
+                await asyncio.sleep(5)
+                
+            result = task.result()
+            if result.get("status") == "success":
+                p = result["portrait"]
+                output = {
+                    "status": "success",
+                    "portrait": {
+                        "id": p.id,
+                        "content": p.content,
+                        "tests_count": p.tests_count,
+                        "created_at": p.created_at.isoformat() if p.created_at else None
+                    }
                 }
-            }
-        return result
-    except asyncio.CancelledError:
-        raise
+                import json
+                yield json.dumps(output).encode("utf-8")
+            else:
+                import json
+                yield json.dumps(result).encode("utf-8")
+        except Exception as e:
+            import json
+            yield json.dumps({"detail": f"Ошибка генерации портрета: {repr(e)}"}).encode("utf-8")
+
+    from fastapi.responses import StreamingResponse
+    return StreamingResponse(stream_generator(), media_type="application/json")
 
 from pydantic import BaseModel
 from typing import Optional
@@ -809,26 +823,36 @@ async def generate_report(
         raise HTTPException(status_code=500, detail="AI token not configured")
 
     task = asyncio.create_task(_generate_report_bg(user_id, report_title, report_prompt, start_d, end_d, ai_url, ai_token, len(entries)))
-    try:
-        result = await asyncio.shield(task)
-        # Wait, the BG task returns a dict with "status": "success", "report": <BehavioralReport>
-        # but the BehavioralReport model might not be serializable if the session is closed!
-        # Ah! `new_report` is returned from a closed session!
-        # This will raise DetachedInstanceError when FastAPI tries to serialize it!
-        # Let's return the dictionary directly from the shield or parse it.
-        if result["status"] == "success":
-            r = result["report"]
-            return {
-                "id": r.id,
-                "title": r.title,
-                "period_start": r.period_start,
-                "period_end": r.period_end,
-                "content": r.content,
-                "created_at": r.created_at
-            }
-        return result
-    except asyncio.CancelledError:
-        raise
+    
+    async def stream_generator():
+        try:
+            # Yield space every 5 seconds to keep connection alive and bypass Cloudflare timeout
+            while not task.done():
+                yield b" "
+                await asyncio.sleep(5)
+                
+            result = task.result()
+            if result.get("status") == "success":
+                r = result["report"]
+                output = {
+                    "id": r.id,
+                    "title": r.title,
+                    "period_start": r.period_start.isoformat() if r.period_start else None,
+                    "period_end": r.period_end.isoformat() if r.period_end else None,
+                    "content": r.content,
+                    "created_at": r.created_at.isoformat() if r.created_at else None
+                }
+                import json
+                yield json.dumps(output).encode("utf-8")
+            else:
+                import json
+                yield json.dumps(result).encode("utf-8")
+        except Exception as e:
+            import json
+            yield json.dumps({"detail": f"Ошибка генерации отчета: {repr(e)}"}).encode("utf-8")
+
+    from fastapi.responses import StreamingResponse
+    return StreamingResponse(stream_generator(), media_type="application/json")
 
 async def _analyze_reaction_bg(user_id: int, entry_id: int):
     import os
@@ -875,14 +899,14 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
 "{entry.reaction}"
 
 Оцени от 0 до 100, насколько эта реакция соответствует описанному портрету личности (где 0 - совершенно нетипично, 100 - полностью соответствует портрету).
-Также напиши короткое объяснение (до 3 предложений), почему ты поставил такую оценку.
-ВАЖНО: Пиши объяснение от первого лица, обращаясь к пользователю напрямую (на "ты"), как если бы ты вел с ним диалог. Например: "Твоя реакция очень показательна..." или "В этой ситуации ты повел себя...". НЕ используй третье лицо ("пользователь", "он").
+Также напиши короткое объяснение (до 4 предложений), почему ты поставил такую оценку, И обязательно дай рекомендацию о том, как пользователю стоило бы поступить в этой ситуации в соответствии с его портретом личности.
+ВАЖНО: Пиши объяснение от первого лица, обращаясь к пользователю напрямую (на "ты"), как если бы ты вел с ним диалог. Например: "Твоя реакция очень показательна..." или "В этой ситуации ты повел себя...". НЕ используй третье лицо ("пользователь", "он"). Обязательно дай рекомендацию.
 ЕСЛИ ситуация или реакция содержит бред, спам, бессмысленный набор букв, что-то абсолютно нереалистичное, неадекватное или странное, то верни в поле explanation строго строку "..." (без кавычек), а score сделай 0.
 
 Верни ответ СТРОГО в формате JSON:
 {{
   "score": <число от 0 до 100>,
-  "explanation": "<твое объяснение до 3 предложений, либо '...' если текст неадекватный>"
+  "explanation": "<твое объяснение и рекомендация (до 4-5 предложений в сумме), либо '...' если текст неадекватный>"
 }}"""
 
             async with httpx.AsyncClient(timeout=30.0) as client:

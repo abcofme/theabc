@@ -135,6 +135,7 @@ export default function ReportsTab({ onSwitchTab }) {
       
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Ошибка генерации");
+      if (data.detail) throw new Error(data.detail);
       
       setReports(prev => [data, ...prev]);
       setActiveForm(null);

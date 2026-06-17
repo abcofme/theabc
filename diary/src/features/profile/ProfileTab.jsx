@@ -173,6 +173,9 @@ export default function ProfileTab({ onOverlayOpen }) {
       if (!response.ok) {
         throw new Error(data.detail || "Неизвестная ошибка сервера");
       }
+      if (data.detail) {
+        throw new Error(data.detail);
+      }
       setPortraitData(data.portrait);
       WebApp.HapticFeedback.notificationOccurred('success');
     } catch (error) {
