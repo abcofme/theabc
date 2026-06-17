@@ -348,16 +348,7 @@ export default function ProfileTab({ onOverlayOpen }) {
         </div>
       </div>
 
-      {['ingenfrid', 'key_crp', 'fondlife'].includes(tgUser.username) && activeSubTab === 'main' && (
-        <div className="mx-2 mb-4">
-          <button 
-            onClick={() => setActiveSubTab('admin')}
-            className="w-full py-3 bg-green-800 hover:bg-green-700 text-[#F5E6D3] text-sm font-bold rounded-2xl transition-colors shadow-sm flex items-center justify-center gap-2"
-          >
-            Админ-панель
-          </button>
-        </div>
-      )}
+
 
       {activeSubTab === 'admin' && (
         <AdminPanel onBack={() => setActiveSubTab('main')} />
@@ -477,6 +468,15 @@ export default function ProfileTab({ onOverlayOpen }) {
               </div>
               <ChevronRight className="text-[#F5E6D3]" size={20} />
             </button>
+
+            {['ingenfrid', 'key_crp', 'fondlife'].includes(tgUser.username) && (
+              <button 
+                onClick={() => setActiveSubTab('admin')}
+                className="w-full py-3 bg-green-800 hover:bg-green-700 text-[#F5E6D3] text-sm font-bold rounded-2xl transition-colors shadow-sm flex items-center justify-center gap-2 mt-4"
+              >
+                Админ-панель
+              </button>
+            )}
 
           </div>
         </>
