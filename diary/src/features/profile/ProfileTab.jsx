@@ -20,6 +20,8 @@ export default function ProfileTab({ onOverlayOpen }) {
   const [accessLevel, setAccessLevel] = useState('');
   const [accessExpiresAt, setAccessExpiresAt] = useState(null);
   const [isBuying, setIsBuying] = useState(false);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   
   // Новый стейт для вкладок
   const [activeSubTab, setActiveSubTab] = useState('main'); // 'main' | 'admin' | 'portrait' | 'friends' | 'referral'
@@ -70,6 +72,7 @@ export default function ProfileTab({ onOverlayOpen }) {
           setPortraitData(data.portrait || null);
           setAccessLevel(data.access_level);
           setAccessExpiresAt(data.access_expires_at);
+          setHasActiveSubscription(data.has_active_subscription || false);
           setLoading(false);
         })
         .catch(err => {
@@ -123,12 +126,41 @@ export default function ProfileTab({ onOverlayOpen }) {
         headers: { "Authorization": `Bearer ${WebApp.initData}` }
       });
       if (response.ok) {
-        setPortraitData(null);
+        setTimeout(checkStatus, 3000);
       }
     } catch (err) {
       console.error(err);
+      setIsBuying(false);
     }
   }
+
+  const handleCancelSubscription = async () => {
+    if (!WebApp.initData) return;
+    
+    WebApp.showConfirm("Вы уверены, что хотите отменить автопродление Premium подписки? Текущая подписка будет действовать до конца оплаченного периода.", async (confirmed) => {
+      if (!confirmed) return;
+      
+      setIsCancelling(true);
+      try {
+        const res = await fetch(`${API_URL}/api/subscription/cancel`, {
+          method: 'POST',
+          headers: { "Authorization": `Bearer ${WebApp.initData}` }
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
+          setHasActiveSubscription(false);
+          WebApp.showAlert("Автопродление подписки успешно отменено.");
+        } else {
+          WebApp.showAlert("Ошибка при отмене подписки.");
+        }
+      } catch (err) {
+        console.error(err);
+        WebApp.showAlert("Произошла ошибка.");
+      } finally {
+        setIsCancelling(false);
+      }
+    });
+  };
 
   const handleVerifyInn = async () => {
     if (!innInput || (innInput.length !== 10 && innInput.length !== 12)) {
@@ -475,6 +507,17 @@ export default function ProfileTab({ onOverlayOpen }) {
                 className="w-full py-3 bg-green-800 hover:bg-green-700 text-[#F5E6D3] text-sm font-bold rounded-2xl transition-colors shadow-sm flex items-center justify-center gap-2 mt-4"
               >
                 Админ-панель
+              </button>
+            )}
+
+            {hasActiveSubscription && (
+              <button
+                onClick={handleCancelSubscription}
+                disabled={isCancelling}
+                className="w-full py-3 bg-transparent border border-rose-500/30 text-rose-300 hover:bg-rose-500/10 hover:border-rose-500/50 text-sm font-medium rounded-2xl transition-colors flex items-center justify-center gap-2 mt-4"
+              >
+                {isCancelling ? <span className="animate-spin text-xl">⏳</span> : <XCircle size={16} />}
+                Отменить подписку
               </button>
             )}
 

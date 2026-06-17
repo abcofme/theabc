@@ -143,7 +143,8 @@ async def get_profile(
         "portrait": portrait_data,
         "access_level": access_level,
         "access_expires_at": access_expires_at,
-        "has_career_access": db_user.has_career_access if db_user else False
+        "has_career_access": db_user.has_career_access if db_user else False,
+        "has_active_subscription": bool(db_user and db_user.yookassa_payment_method_id)
     }
 
 async def check_access(user_id: int, session: AsyncSession):
@@ -2135,3 +2136,19 @@ async def yookassa_webhook(request: Request, session: AsyncSession = Depends(get
             await session.commit()
     
     return {"status": "ok"}
+
+@app.post("/api/subscription/cancel")
+async def cancel_subscription(
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from backend.database.models import User
+    user_id = user_data.get("id")
+    user = await session.get(User, user_id)
+    if not user:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    user.yookassa_payment_method_id = None
+    await session.commit()
+    return {"status": "success"}
