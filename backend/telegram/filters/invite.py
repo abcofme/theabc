@@ -18,9 +18,7 @@ class InvitedFilter(BaseFilter):
         if message.text.startswith("/start ") and len(message.text) > 7:
             text = message.text.split(' ')[-1]
             if text.startswith("invite_") and len(text) > 7:
-                if user.invited_id is not None:
-                    return False
-                else:
+                if user.invited_id is None:
                     try:
                         invited_id = int(text.split("_")[-1])
                         # invite_user = await dao.get_object(User, invited_id)

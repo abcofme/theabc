@@ -70,10 +70,18 @@ export default function App() {
 
       <main className={`flex-1 overflow-y-auto p-4 relative z-10 ${isNavHidden ? '' : 'pb-24'}`}>
         {/* Передаем функцию скрытия меню в CalendarTab */}
-        {activeTab === 'diary' && <CalendarTab onSheetOpen={setIsNavHidden} />}
-        {activeTab === 'tests' && <TestsTab onOverlayOpen={setIsNavHidden} />}
-        {activeTab === 'reports' && <ReportsTab onSwitchTab={setActiveTab} />}
-        {activeTab === 'profile' && <ProfileTab onOverlayOpen={setIsNavHidden} />}
+        <div style={{ display: activeTab === 'diary' ? 'block' : 'none' }}>
+          <CalendarTab onSheetOpen={setIsNavHidden} />
+        </div>
+        <div style={{ display: activeTab === 'tests' ? 'block' : 'none' }}>
+          <TestsTab onOverlayOpen={setIsNavHidden} />
+        </div>
+        <div style={{ display: activeTab === 'reports' ? 'block' : 'none' }}>
+          <ReportsTab onSwitchTab={setActiveTab} />
+        </div>
+        <div style={{ display: activeTab === 'profile' ? 'block' : 'none' }}>
+          <ProfileTab onOverlayOpen={setIsNavHidden} />
+        </div>
       </main>
 
       {/* Отрисовываем меню только если isNavHidden === false и клавиатура не открыта */}

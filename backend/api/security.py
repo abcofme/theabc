@@ -32,4 +32,6 @@ def validate_twa_data(auth_header: str = Security(header_scheme)) -> dict:
     
     # Возвращаем данные пользователя (id, username и т.д.)
     user_data = json.loads(parsed_data.get("user", "{}"))
+    if "start_param" in parsed_data:
+        user_data["start_param"] = parsed_data["start_param"]
     return user_data

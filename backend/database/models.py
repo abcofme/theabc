@@ -257,6 +257,7 @@ class BehavioralReport(BaseModel):
     period_start: Mapped[date] = mapped_column(Date(), nullable=True)
     period_end: Mapped[date] = mapped_column(Date(), nullable=True)
     content: Mapped[str] = mapped_column(Text(), nullable=False)
+    is_read: Mapped[bool] = mapped_column(Boolean(), default=False, server_default="false")
 
 class Friendship(BaseModel):
     __tablename__ = "friendships"

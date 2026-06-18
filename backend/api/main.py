@@ -48,6 +48,14 @@ async def get_profile(
             db_user.has_opened_app = True
             db_user.first_opened_at = datetime.utcnow()
             changed = True
+            
+        start_param = user_data.get("start_param")
+        if start_param and start_param.startswith("invite_"):
+            invited_id = start_param.replace("invite_", "")
+            if not db_user.invited_id and str(db_user.id) != invited_id:
+                db_user.invited_id = invited_id
+                changed = True
+
         if changed:
             await session.commit()
             
@@ -538,8 +546,26 @@ async def get_reports(
         "period_start": r.period_start,
         "period_end": r.period_end,
         "content": r.content,
-        "created_at": r.created_at
+        "created_at": r.created_at,
+        "is_read": r.is_read
     } for r in reports]
+
+@app.post("/api/reports/{report_id}/read")
+async def mark_report_read(
+    report_id: int,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    user_id = user_data.get("id")
+    report = await session.get(BehavioralReport, report_id)
+    if not report or report.user_id != user_id:
+        raise HTTPException(status_code=404, detail="Отчет не найден")
+    
+    if not report.is_read:
+        report.is_read = True
+        await session.commit()
+    
+    return {"status": "ok"}
 
 
 async def _generate_report_bg(user_id: int, report_title: str, report_prompt: str, start_d, end_d, ai_url: str, ai_token: str, num_entries: int):

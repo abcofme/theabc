@@ -60,6 +60,21 @@ export default function ReportsTab({ onSwitchTab }) {
     }
   };
 
+  const handleViewReport = async (report) => {
+    setViewReport(report);
+    if (!report.is_read) {
+      try {
+        await fetch(`${API_URL}/api/reports/${report.id}/read`, {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${WebApp.initData}` }
+        });
+        setReports(prev => prev.map(r => r.id === report.id ? { ...r, is_read: true } : r));
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
   const reportGroups = [
     {
       id: 'general',
@@ -387,13 +402,20 @@ export default function ReportsTab({ onSwitchTab }) {
                               {typeReports.map(r => (
                                 <div key={r.id} className="relative group w-full">
                                   <button
-                                    onClick={() => setViewReport(r)}
+                                    onClick={() => handleViewReport(r)}
                                     className="w-full text-left bg-rose-900 py-4 pl-4 pr-12 rounded-xl hover:bg-rose-800/80 transition-colors flex items-center justify-between"
                                   >
                                     <div className="flex items-center gap-3">
                                       <FileText className="text-[#F5E6D3] transition-colors" size={20} />
                                       <div>
-                                        <div className="text-[#F5E6D3] font-medium mb-1">Отчет от {new Date(r.created_at).toLocaleDateString('ru-RU')}</div>
+                                        <div className="text-[#F5E6D3] font-medium mb-1 flex items-center gap-2">
+                                          Отчет от {new Date(r.created_at).toLocaleDateString('ru-RU')}
+                                          {r.is_read === false && (
+                                            <span className="text-[10px] font-bold text-white bg-green-600 px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                                              Отчет готов!
+                                            </span>
+                                          )}
+                                        </div>
                                         <div className="text-xs text-[#F5E6D3]">
                                           {r.period_start ? `${new Date(r.period_start).toLocaleDateString('ru-RU')} - ` : ''} 
                                           {r.period_end ? new Date(r.period_end).toLocaleDateString('ru-RU') : 'За все время'}
