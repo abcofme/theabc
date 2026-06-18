@@ -2193,10 +2193,10 @@ async def cancel_subscription(
     session: AsyncSession = Depends(get_session)
 ):
     from backend.database.models import User
+    from fastapi import HTTPException
     user_id = user_data.get("id")
-    user = await session.get(User, user_id)
-    if not user:
-        from fastapi import HTTPException
+    db_user = await session.get(User, user_id)
+    if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
         
     user.yookassa_payment_method_id = None
