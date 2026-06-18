@@ -519,7 +519,7 @@ async def generate_personality_portrait(
             yield json.dumps({"detail": f"Ошибка генерации портрета: {repr(e)}"}).encode("utf-8")
 
     from fastapi.responses import StreamingResponse
-    return StreamingResponse(stream_generator(), media_type="application/json")
+    return StreamingResponse(stream_generator(), media_type="application/json", headers={"X-Accel-Buffering": "no"})
 
 from pydantic import BaseModel
 from typing import Optional
@@ -878,7 +878,7 @@ async def generate_report(
             yield json.dumps({"detail": f"Ошибка генерации отчета: {repr(e)}"}).encode("utf-8")
 
     from fastapi.responses import StreamingResponse
-    return StreamingResponse(stream_generator(), media_type="application/json")
+    return StreamingResponse(stream_generator(), media_type="application/json", headers={"X-Accel-Buffering": "no"})
 
 async def _analyze_reaction_bg(user_id: int, entry_id: int):
     import os

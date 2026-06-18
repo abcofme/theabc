@@ -41,6 +41,19 @@ export default function App() {
     };
   }, []);
 
+  const [bgHeight, setBgHeight] = useState('100vh');
+  useEffect(() => {
+    setBgHeight(`${window.innerHeight}px`);
+    const handleResize = () => {
+      // Ignore resize if keyboard is open
+      if (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        setBgHeight(`${window.innerHeight}px`);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Сообщаем Telegram, что приложение готово
   WebApp.ready();
 
@@ -59,10 +72,11 @@ export default function App() {
   return (
     <div className="flex flex-col h-full font-sans bg-rose-950 relative">
       <div 
-        className="fixed top-0 left-0 w-screen h-screen pointer-events-none z-0"
+        className="fixed top-0 left-0 w-screen pointer-events-none z-0 transition-all duration-300"
         style={{
+          height: bgHeight,
           backgroundImage: `url(${bgLeaves})`,
-          backgroundPosition: "bottom right",
+          backgroundPosition: `right 0px bottom ${isNavHidden ? '0px' : 'calc(75px + env(safe-area-inset-bottom))'}`,
           backgroundRepeat: "no-repeat",
           backgroundSize: "60%"
         }}
