@@ -1,7 +1,7 @@
 """is_read_reports
 
 Revision ID: n6o7p8q9r0s1
-Revises: m5n6o7p8q9r0
+Revises: k6l7m8n9p0q1
 Create Date: 2026-06-18 00:50:00.000000
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'n6o7p8q9r0s1'
-down_revision = 'm5n6o7p8q9r0'
+down_revision = 'k6l7m8n9p0q1'
 branch_labels = None
 depends_on = None
 
