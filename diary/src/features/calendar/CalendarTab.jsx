@@ -341,7 +341,7 @@ export default function CalendarTab({ onSheetOpen }) {
         </div>
 
         {/* Правая часть: юзернейм */}
-        <div className="relative z-10 text-[#F5E6D3] font-bold text-sm sm:text-lg whitespace-nowrap text-right overflow-hidden text-ellipsis max-w-[100px] sm:max-w-[150px]">
+        <div className="relative z-10 text-[#F5E6D3] font-bold text-base sm:text-2xl whitespace-nowrap text-right overflow-hidden text-ellipsis max-w-[100px] sm:max-w-[150px]">
           @{tgUser.username || tgUser.first_name}
         </div>
 
