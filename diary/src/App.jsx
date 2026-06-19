@@ -82,18 +82,18 @@ export default function App() {
         }}
       />
 
-      <main className={`flex-1 overflow-y-auto p-4 relative z-10 ${isNavHidden ? '' : 'pb-24'}`}>
+      <main className={`flex-1 flex flex-col overflow-y-auto p-4 relative z-10 ${isNavHidden ? '' : 'pb-24'}`}>
         {/* Передаем функцию скрытия меню в CalendarTab */}
-        <div style={{ display: activeTab === 'diary' ? 'block' : 'none' }}>
+        <div className="flex-1 flex-col" style={{ display: activeTab === 'diary' ? 'flex' : 'none' }}>
           <CalendarTab onSheetOpen={setIsNavHidden} />
         </div>
-        <div style={{ display: activeTab === 'tests' ? 'block' : 'none' }}>
+        <div className="flex-1 flex-col" style={{ display: activeTab === 'tests' ? 'flex' : 'none' }}>
           <TestsTab onOverlayOpen={setIsNavHidden} />
         </div>
-        <div style={{ display: activeTab === 'reports' ? 'block' : 'none' }}>
+        <div className="flex-1 flex-col" style={{ display: activeTab === 'reports' ? 'flex' : 'none' }}>
           <ReportsTab onSwitchTab={setActiveTab} />
         </div>
-        <div style={{ display: activeTab === 'profile' ? 'block' : 'none' }}>
+        <div className="flex-1 flex-col" style={{ display: activeTab === 'profile' ? 'flex' : 'none' }}>
           <ProfileTab onOverlayOpen={setIsNavHidden} />
         </div>
       </main>

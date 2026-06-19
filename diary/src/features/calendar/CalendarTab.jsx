@@ -321,7 +321,7 @@ export default function CalendarTab({ onSheetOpen }) {
 
 
   return (
-    <div className="flex flex-col h-full relative select-none">
+    <div className="flex flex-col flex-1 h-full w-full relative select-none">
       {/* ШАПКА: ВЫБОР МЕСЯЦА И НАЗВАНИЕ ДНЕВНИКА */}
       <div className="mb-6 mt-2 relative flex items-center justify-between gap-2">
         <button
