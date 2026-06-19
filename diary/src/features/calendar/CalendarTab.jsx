@@ -380,45 +380,54 @@ export default function CalendarTab({ onSheetOpen }) {
         )}
       </div>
 
-      {/* СЕТКА КАЛЕНДАРЯ */}
-      <div className="flex-1 flex flex-col bg-rose-900/40 rounded-3xl p-3 backdrop-blur-sm overflow-hidden min-h-[400px]">
-        <div className="grid grid-cols-7 mb-2 text-center">
-          {weekDays.map(day => (
-            <div key={day} className="text-xs font-semibold text-[#F5E6D3] uppercase py-2">
-              {day}
-            </div>
-          ))}
-        </div>
-        <div className="flex-1 grid grid-cols-7 gap-1">
-          {dayCells.map((date, index) => {
-            const isCurrentMonth = isSameMonth(date, currentMonth);
-            const isDayToday = isToday(date);
-            const hasEntries = diaryEntries.some(e => isSameDay(e.date, date));
-            const isFutureDay = date > now;
+      {/* СЕТКА КАЛЕНДАРЯ И ТЕКСТ */}
+      <div className="flex-1 flex flex-col gap-4">
+        <div className="basis-3/4 flex flex-col bg-rose-900/40 rounded-3xl p-3 backdrop-blur-sm overflow-hidden min-h-[300px]">
+          <div className="grid grid-cols-7 mb-2 text-center">
+            {weekDays.map(day => (
+              <div key={day} className="text-xs font-semibold text-[#F5E6D3] uppercase py-2">
+                {day}
+              </div>
+            ))}
+          </div>
+          <div className="flex-1 grid grid-cols-7 gap-1">
+            {dayCells.map((date, index) => {
+              const isCurrentMonth = isSameMonth(date, currentMonth);
+              const isDayToday = isToday(date);
+              const hasEntries = diaryEntries.some(e => isSameDay(e.date, date));
+              const isFutureDay = date > now;
 
-            return (
-              <button
-                key={index}
-                onClick={() => handleDayClick(date)}
-                disabled={isFutureDay}
-                className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all relative ${
-                  isCurrentMonth
-                    ? `bg-rose-900/80 text-[#F5E6D3] ${!isFutureDay && 'hover:bg-rose-800/80'}`
-                    : `bg-transparent text-[#F5E6D3] ${!isFutureDay && 'hover:text-[#F5E6D3]'}`
-                } ${
-                  isDayToday ? '! !text-[#F5E6D3] bg-blue-950/20' : ''
-                } ${
-                  hasEntries && isCurrentMonth ? '!bg-green-800/40 ! !text-[#F5E6D3] font-bold' : ''
-                } ${
-                  isFutureDay ? 'opacity-40 cursor-default' : 'cursor-pointer'
-                }`}
-              >
-                <span className={`text-base font-bold ${isDayToday ? 'scale-110' : ''}`}>
-                  {format(date, 'd')}
-                </span>
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={index}
+                  onClick={() => handleDayClick(date)}
+                  disabled={isFutureDay}
+                  className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all relative ${
+                    isCurrentMonth
+                      ? `bg-rose-900/80 text-[#F5E6D3] ${!isFutureDay && 'hover:bg-rose-800/80'}`
+                      : `bg-transparent text-[#F5E6D3] ${!isFutureDay && 'hover:text-[#F5E6D3]'}`
+                  } ${
+                    isDayToday ? '! !text-[#F5E6D3] bg-blue-950/20' : ''
+                  } ${
+                    hasEntries && isCurrentMonth ? '!bg-green-800/40 ! !text-[#F5E6D3] font-bold' : ''
+                  } ${
+                    isFutureDay ? 'opacity-40 cursor-default' : 'cursor-pointer'
+                  }`}
+                >
+                  <span className={`text-base font-bold ${isDayToday ? 'scale-110' : ''}`}>
+                    {format(date, 'd')}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ТЕКСТ ПОД КАЛЕНДАРЕМ */}
+        <div className="basis-1/4 flex items-center justify-center px-4">
+          <p className="text-[#F5E6D3] font-bold text-center text-sm sm:text-base leading-relaxed drop-shadow-md">
+            Говорящий личный дневник знает твою силу и слабости. Видит тебя без искажений. Обсуди с ним что произошло сегодня, он ответит.
+          </p>
         </div>
       </div>
 
