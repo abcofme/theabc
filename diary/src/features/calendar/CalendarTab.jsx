@@ -381,16 +381,16 @@ export default function CalendarTab({ onSheetOpen }) {
       </div>
 
       {/* СЕТКА КАЛЕНДАРЯ И ТЕКСТ */}
-      <div className="flex-1 flex flex-col gap-6 sm:gap-8 overflow-hidden">
-        <div className="flex-1 flex flex-col bg-rose-900/40 rounded-3xl p-3 backdrop-blur-sm overflow-hidden min-h-0">
-          <div className="grid grid-cols-7 mb-2 text-center">
+      <div className="flex-1 flex flex-col gap-4 sm:gap-6 overflow-hidden">
+        <div className="flex-1 flex flex-col bg-rose-900/40 rounded-3xl p-2 sm:p-3 backdrop-blur-sm overflow-hidden min-h-0">
+          <div className="grid grid-cols-7 mb-1 sm:mb-2 text-center shrink-0">
             {weekDays.map(day => (
-              <div key={day} className="text-xs font-semibold text-[#F5E6D3] uppercase py-2">
+              <div key={day} className="text-[10px] sm:text-xs font-semibold text-[#F5E6D3] uppercase py-1 sm:py-2">
                 {day}
               </div>
             ))}
           </div>
-          <div className="flex-1 grid grid-cols-7 gap-1">
+          <div className="flex-1 grid grid-cols-7 auto-rows-fr gap-1">
             {dayCells.map((date, index) => {
               const isCurrentMonth = isSameMonth(date, currentMonth);
               const isDayToday = isToday(date);
@@ -402,7 +402,7 @@ export default function CalendarTab({ onSheetOpen }) {
                   key={index}
                   onClick={() => handleDayClick(date)}
                   disabled={isFutureDay}
-                  className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all relative ${
+                  className={`flex flex-col items-center justify-center p-1 sm:p-2 rounded-xl sm:rounded-2xl transition-all relative h-full w-full ${
                     isCurrentMonth
                       ? `bg-rose-900/80 text-[#F5E6D3] ${!isFutureDay && 'hover:bg-rose-800/80'}`
                       : `bg-transparent text-[#F5E6D3] ${!isFutureDay && 'hover:text-[#F5E6D3]'}`
@@ -414,7 +414,7 @@ export default function CalendarTab({ onSheetOpen }) {
                     isFutureDay ? 'opacity-40 cursor-default' : 'cursor-pointer'
                   }`}
                 >
-                  <span className={`text-base font-bold ${isDayToday ? 'scale-110' : ''}`}>
+                  <span className={`text-sm sm:text-base font-bold ${isDayToday ? 'scale-110' : ''}`}>
                     {format(date, 'd')}
                   </span>
                 </button>
@@ -424,7 +424,7 @@ export default function CalendarTab({ onSheetOpen }) {
         </div>
 
         {/* ТЕКСТ ПОД КАЛЕНДАРЕМ */}
-        <div className="shrink-0 flex items-center justify-center px-4 py-2 mt-2">
+        <div className="shrink-0 flex items-center justify-center px-2 sm:px-4 py-1 mb-2">
           <p className="text-[#F5E6D3] font-bold text-center text-sm sm:text-base leading-relaxed drop-shadow-md">
             Говорящий личный дневник знает твою силу и слабости. Видит тебя без искажений. Обсуди с ним что произошло сегодня, он ответит.
           </p>
