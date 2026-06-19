@@ -381,8 +381,8 @@ export default function CalendarTab({ onSheetOpen }) {
       </div>
 
       {/* СЕТКА КАЛЕНДАРЯ И ТЕКСТ */}
-      <div className="flex-1 flex flex-col gap-4">
-        <div className="basis-3/4 flex flex-col bg-rose-900/40 rounded-3xl p-3 backdrop-blur-sm overflow-hidden min-h-[300px]">
+      <div className="flex-1 flex flex-col gap-2 sm:gap-4 overflow-hidden">
+        <div className="flex-1 flex flex-col bg-rose-900/40 rounded-3xl p-3 backdrop-blur-sm overflow-hidden min-h-0">
           <div className="grid grid-cols-7 mb-2 text-center">
             {weekDays.map(day => (
               <div key={day} className="text-xs font-semibold text-[#F5E6D3] uppercase py-2">
@@ -424,8 +424,8 @@ export default function CalendarTab({ onSheetOpen }) {
         </div>
 
         {/* ТЕКСТ ПОД КАЛЕНДАРЕМ */}
-        <div className="basis-1/4 flex items-center justify-center px-4">
-          <p className="text-[#F5E6D3] font-bold text-center text-sm sm:text-base leading-relaxed drop-shadow-md">
+        <div className="shrink-0 flex items-center justify-center px-4 py-2">
+          <p className="text-[#F5E6D3] font-bold text-center text-[11px] sm:text-sm leading-tight drop-shadow-md">
             Говорящий личный дневник знает твою силу и слабости. Видит тебя без искажений. Обсуди с ним что произошло сегодня, он ответит.
           </p>
         </div>
