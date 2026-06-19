@@ -324,20 +324,25 @@ export default function CalendarTab({ onSheetOpen }) {
   return (
     <div className="flex flex-col flex-1 h-full w-full relative select-none">
       {/* ШАПКА: ВЫБОР МЕСЯЦА И НАЗВАНИЕ ДНЕВНИКА */}
-      <div className="mb-6 mt-2 relative flex items-center justify-between gap-2">
+      <div className="mb-6 mt-2 relative flex items-center justify-between gap-1 sm:gap-2">
         <button
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="flex items-center gap-2 text-lg sm:text-2xl font-bold text-[#F5E6D3] hover:text-[#F5E6D3] transition-colors bg-rose-900/80 px-3 sm:px-4 py-2 rounded-xl shrink-0"
+          className="relative z-10 flex items-center gap-1 sm:gap-2 text-base sm:text-2xl font-bold text-[#F5E6D3] hover:text-[#F5E6D3] transition-colors bg-rose-900/80 px-2 sm:px-4 py-1.5 sm:py-2 rounded-xl shrink-0"
         >
           <span className="capitalize">
-            {format(currentMonth, 'LLLL yyyy', { locale: ru })}
+            {format(currentMonth, 'LLL yyyy', { locale: ru })}
           </span>
-          <ChevronDown size={20} className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown size={18} className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
         </button>
 
-        {/* Логотип вместо названия дневника */}
-        <div className="flex justify-end">
-          <img src={logo} alt="Азбука Я" className="h-10 sm:h-12 object-contain" />
+        {/* Центр: логотип */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none">
+          <img src={logo} alt="Азбука Я" className="h-10 sm:h-12 object-contain drop-shadow-md" />
+        </div>
+
+        {/* Правая часть: юзернейм */}
+        <div className="relative z-10 text-[#F5E6D3] font-bold text-xs sm:text-base whitespace-nowrap text-right overflow-hidden text-ellipsis max-w-[100px] sm:max-w-[150px]">
+          @{tgUser.username || tgUser.first_name}
         </div>
 
         {isDropdownOpen && (
