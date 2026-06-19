@@ -335,14 +335,12 @@ export default function CalendarTab({ onSheetOpen }) {
           <ChevronDown size={18} className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
         </button>
 
-        {/* Центр: логотип */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none">
-          <img src={logo} alt="Азбука Я" className="h-10 sm:h-12 object-contain drop-shadow-md" />
-        </div>
-
-        {/* Правая часть: юзернейм */}
-        <div className="relative z-10 text-[#F5E6D3] font-bold text-base sm:text-2xl whitespace-nowrap text-right overflow-hidden text-ellipsis max-w-[100px] sm:max-w-[150px]">
-          @{tgUser.username || tgUser.first_name}
+        {/* Правая часть: логотип и юзернейм */}
+        <div className="relative z-10 flex items-center gap-2 shrink-0 justify-end">
+          <img src={logo} alt="Азбука Я" className="h-8 sm:h-10 object-contain drop-shadow-md" />
+          <div className="text-[#F5E6D3] font-bold text-base sm:text-2xl whitespace-nowrap overflow-hidden text-ellipsis max-w-[90px] sm:max-w-[150px]">
+            @{tgUser.username || tgUser.first_name}
+          </div>
         </div>
 
         {isDropdownOpen && (
