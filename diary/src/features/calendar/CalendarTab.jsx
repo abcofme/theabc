@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, isToday, setMonth, setYear, getYear, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { ChevronDown, X, Plus, BookOpen, Check, Trash2, Lock, Activity, Sparkles } from 'lucide-react';
+import logo from '../../assets/logo.png';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
@@ -334,9 +335,9 @@ export default function CalendarTab({ onSheetOpen }) {
           <ChevronDown size={20} className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
         </button>
 
-        {/* Измененное название дневника */}
-        <div className="text-[#F5E6D3] font-bold text-sm sm:text-base whitespace-nowrap text-right overflow-hidden text-ellipsis">
-          Дневник @{tgUser.username || tgUser.first_name}
+        {/* Логотип вместо названия дневника */}
+        <div className="flex justify-end">
+          <img src={logo} alt="Азбука Я" className="h-10 sm:h-12 object-contain" />
         </div>
 
         {isDropdownOpen && (
