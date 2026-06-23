@@ -253,27 +253,47 @@ export default function CalendarTab({ onSheetOpen }) {
     const [progress, setProgress] = useState(0);
 
     useEffect(() => {
-      const interval = setInterval(() => {
-        setProgress(prev => {
-          if (prev < 30) return prev + Math.random() * 5;
-          if (prev < 70) return prev + Math.random() * 3;
-          if (prev < 90) return prev + Math.random() * 1.5;
-          if (prev < 99) return prev + Math.random() * 0.2;
-          return 99;
-        });
-      }, 500);
-      return () => clearInterval(interval);
+      let start = null;
+      let duration = 1000; // 1 second for one way
+      let animationFrameId;
+
+      const step = (timestamp) => {
+        if (!start) start = timestamp;
+        const elapsed = timestamp - start;
+        
+        const cycleElapsed = elapsed % (duration * 2);
+        
+        let currentProgress;
+        if (cycleElapsed < duration) {
+          currentProgress = (cycleElapsed / duration) * 100;
+        } else {
+          currentProgress = 100 - ((cycleElapsed - duration) / duration) * 100;
+        }
+        
+        setProgress(currentProgress);
+        animationFrameId = window.requestAnimationFrame(step);
+      };
+      
+      animationFrameId = window.requestAnimationFrame(step);
+      return () => window.cancelAnimationFrame(animationFrameId);
     }, []);
+
+    let colorClass = "bg-green-500";
+    if (progress <= 25) colorClass = "bg-red-500";
+    else if (progress <= 50) colorClass = "bg-orange-500";
+    else if (progress <= 75) colorClass = "bg-yellow-400";
+    
+    const textColorClass = colorClass.replace('bg-', 'text-');
 
     return (
       <div className="flex items-center gap-3 w-full">
         <div className="h-2 flex-1 bg-rose-800 rounded-full overflow-hidden shadow-inner relative">
           <div 
-            className="h-full bg-gradient-to-r from-green-700 to-green-600 rounded-full transition-all duration-500 ease-out"
+            className={`h-full ${colorClass}`}
             style={{ width: `${progress}%` }}
           ></div>
         </div>
-        <span className="text-xs text-[#F5E6D3] font-bold min-w-[3ch]">{Math.floor(progress)}%</span>
+        <span className={`text-xs font-bold min-w-[4ch] ${textColorClass}`}>{Math.floor(progress)}%</span>
       </div>
     );
   };
