@@ -249,6 +249,74 @@ export default function CalendarTab({ onSheetOpen }) {
       });
   };
 
+  const AnalysisProgressBar = () => {
+    const [progress, setProgress] = useState(0);
+
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setProgress(prev => {
+          if (prev < 30) return prev + Math.random() * 5;
+          if (prev < 70) return prev + Math.random() * 3;
+          if (prev < 90) return prev + Math.random() * 1.5;
+          if (prev < 99) return prev + Math.random() * 0.2;
+          return 99;
+        });
+      }, 500);
+      return () => clearInterval(interval);
+    }, []);
+
+    return (
+      <div className="flex items-center gap-3 w-full">
+        <div className="h-2 flex-1 bg-rose-800 rounded-full overflow-hidden shadow-inner relative">
+          <div 
+            className="h-full bg-gradient-to-r from-green-700 to-green-600 rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${progress}%` }}
+          ></div>
+        </div>
+        <span className="text-xs text-[#F5E6D3] font-bold min-w-[3ch]">{Math.floor(progress)}%</span>
+      </div>
+    );
+  };
+
+  const AnimatedMatchScale = ({ score, colorClass }) => {
+    const [animatedScore, setAnimatedScore] = useState(0);
+
+    useEffect(() => {
+      const startTimer = setTimeout(() => {
+        let start = null;
+        const duration = 1500;
+
+        const step = (timestamp) => {
+          if (!start) start = timestamp;
+          const progress = Math.min((timestamp - start) / duration, 1);
+          const easeOut = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+          
+          setAnimatedScore(score * easeOut);
+
+          if (progress < 1) {
+            window.requestAnimationFrame(step);
+          } else {
+            setAnimatedScore(score);
+          }
+        };
+        window.requestAnimationFrame(step);
+      }, 100);
+
+      return () => clearTimeout(startTimer);
+    }, [score]);
+
+    const textColorClass = colorClass.replace('bg-', 'text-');
+
+    return (
+      <div className="flex items-center gap-3">
+        <div className="h-2 flex-1 bg-rose-800 rounded-full overflow-hidden shadow-inner relative">
+          <div className={`absolute top-0 bottom-0 left-0 ${colorClass}`} style={{ width: `${animatedScore}%` }}></div>
+        </div>
+        <span className={`text-sm font-bold ${textColorClass}`}>{Math.round(animatedScore)}%</span>
+      </div>
+    );
+  };
+
   const renderMatchScale = (entry) => {
     if (accessLevel === 'Free') {
       return (
@@ -277,12 +345,7 @@ export default function CalendarTab({ onSheetOpen }) {
         <div className="mt-5 pt-5">
           <p className="text-xs font-bold text-[#F5E6D3] uppercase tracking-wider mb-3">Соответствие портрету личности:</p>
           {isAnalyzing ? (
-            <div className="flex items-center gap-3">
-              <div className="h-2 flex-1 bg-rose-800 rounded-full overflow-hidden relative">
-                <div className="absolute inset-0 bg-rose-700 animate-pulse"></div>
-              </div>
-              <span className="text-xs text-[#F5E6D3] font-bold flex items-center gap-1"><Sparkles size={12}/> Анализ...</span>
-            </div>
+              <AnalysisProgressBar />
           ) : (
             <button onClick={() => handleManualAnalysis(entry.id)} className="w-full py-2 bg-rose-800 hover:bg-rose-700 text-[#F5E6D3] font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
               <Activity size={16} /> Проанализировать реакцию
@@ -301,12 +364,7 @@ export default function CalendarTab({ onSheetOpen }) {
     return (
       <div className="mt-5 pt-5">
         <p className="text-xs font-bold text-[#F5E6D3] uppercase tracking-wider mb-3">Соответствие портрету личности:</p>
-        <div className="flex items-center gap-3">
-          <div className="h-2 flex-1 bg-rose-800 rounded-full overflow-hidden shadow-inner relative">
-            <div className={`absolute top-0 bottom-0 left-0 ${colorClass} transition-all duration-1000 ease-out`} style={{ width: `${score}%` }}></div>
-          </div>
-          <span className={`text-sm font-bold ${colorClass.replace('bg-', 'text-')}`}>{score}%</span>
-        </div>
+        <AnimatedMatchScale score={score} colorClass={colorClass} />
         {entry.portrait_match_explanation && (
           <div className="mt-4 p-3 bg-rose-900/50 rounded-xl relative overflow-hidden">
             <div className={`absolute left-0 top-0 bottom-0 w-2 ${colorClass}`}></div>
