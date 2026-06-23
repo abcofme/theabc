@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Repeat, Zap, ChevronLeft, ChevronDown, ChevronUp, Plus, Target, Sparkles, Calendar, FileText, Star, Trash2, Lock } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import bookIcon from '../../assets/book_icon.png';
-import { getMarkdownComponents } from '../../utils/markdownComponents';
 import GenerationProgress from '../../components/GenerationProgress';
 
 const WebApp = window.Telegram.WebApp;

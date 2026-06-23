@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, Search, UserPlus, Check, X, Trash2, Clock, User, Lock, Sparkles, Target, Heart, Flame, Activity, Brain, ShieldAlert } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { getMarkdownComponents } from '../../utils/markdownComponents';
 import GenerationProgress from '../../components/GenerationProgress';
 
 
