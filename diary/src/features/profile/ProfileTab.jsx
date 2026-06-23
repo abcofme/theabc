@@ -321,9 +321,9 @@ export default function ProfileTab({ onOverlayOpen }) {
 
   const PortraitScale = ({ left, right, leftValue, rightValue, description }) => (
     <div className="mb-10 w-full">
-      <div className="flex justify-between text-base sm:text-lg font-bold text-[#F5E6D3] mb-3">
-        <span>{left}</span>
-        <span>{right}</span>
+      <div className="flex justify-between items-end text-base sm:text-lg font-bold text-[#F5E6D3] mb-3">
+        <span>{left} <span className="text-xs sm:text-sm font-medium opacity-70 ml-1">{leftValue}%</span></span>
+        <span><span className="text-xs sm:text-sm font-medium opacity-70 mr-1">{rightValue}%</span> {right}</span>
       </div>
       <div className="h-4 w-full bg-rose-800 rounded-full overflow-hidden flex shadow-inner mb-4">
         <div className="h-full bg-green-700 transition-all duration-1000 ease-out" style={{ width: `${leftValue}%` }}></div>
