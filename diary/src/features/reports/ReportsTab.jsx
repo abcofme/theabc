@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Repeat, Zap, ChevronLeft, ChevronDown, ChevronUp, Plus, Target, Sparkles, Calendar, FileText, Star, Trash2, Lock } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import bookIcon from '../../assets/book_icon.png';
+import { getMarkdownComponents } from '../../utils/markdownComponents';
+import GenerationProgress from '../../components/GenerationProgress';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
@@ -250,59 +252,63 @@ export default function ReportsTab({ onSwitchTab }) {
           </div>
         </div>
 
-        <div className="bg-rose-900 rounded-2xl p-5 mb-6 mx-2">
-          <h3 className="text-sm font-bold text-[#F5E6D3] uppercase tracking-wider mb-4">Выбрать период</h3>
-          <div className="relative mb-4">
-            <select 
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="w-full appearance-none bg-rose-950 text-[#F5E6D3] text-base rounded-xl p-4 pr-10 focus:outline-none focus: transition-colors"
-            >
-              <option value="week">За последнюю неделю</option>
-              <option value="month">За последний месяц</option>
-              <option value="3months">За последние 3 месяца</option>
-              <option value="year">За год</option>
-              <option value="all">За всё время</option>
-              <option value="custom">Указать свой период</option>
-            </select>
-            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-[#F5E6D3] pointer-events-none" size={20} />
+        {isGenerating ? (
+          <div className="flex flex-col items-center justify-center flex-1 py-12 px-4 mt-8">
+            <GenerationProgress text="Отчёт формируется..." />
           </div>
-          
-          {selectedPeriod === 'custom' && (
-            <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-              <div>
-                <label className="text-xs text-[#F5E6D3] uppercase tracking-wider mb-1 block">От:</label>
-                <input 
-                  type="date" 
-                  value={customStart}
-                  onChange={(e) => setCustomStart(e.target.value)}
-                  className="w-full bg-rose-950 text-[#F5E6D3] text-base rounded-xl p-3 focus:outline-none focus:"
-                />
+        ) : (
+          <>
+            <div className="bg-rose-900 rounded-2xl p-5 mb-6 mx-2">
+              <h3 className="text-sm font-bold text-[#F5E6D3] uppercase tracking-wider mb-4">Выбрать период</h3>
+              <div className="relative mb-4">
+                <select 
+                  value={selectedPeriod}
+                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                  className="w-full appearance-none bg-rose-950 text-[#F5E6D3] text-base rounded-xl p-4 pr-10 focus:outline-none focus: transition-colors"
+                >
+                  <option value="week">За последнюю неделю</option>
+                  <option value="month">За последний месяц</option>
+                  <option value="3months">За последние 3 месяца</option>
+                  <option value="year">За год</option>
+                  <option value="all">За всё время</option>
+                  <option value="custom">Указать свой период</option>
+                </select>
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-[#F5E6D3] pointer-events-none" size={20} />
               </div>
-              <div>
-                <label className="text-xs text-[#F5E6D3] uppercase tracking-wider mb-1 block">До (необязательно):</label>
-                <input 
-                  type="date" 
-                  value={customEnd}
-                  onChange={(e) => setCustomEnd(e.target.value)}
-                  className="w-full bg-rose-950 text-[#F5E6D3] text-base rounded-xl p-3 focus:outline-none focus:"
-                />
-              </div>
+              
+              {selectedPeriod === 'custom' && (
+                <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div>
+                    <label className="text-xs text-[#F5E6D3] uppercase tracking-wider mb-1 block">От:</label>
+                    <input 
+                      type="date" 
+                      value={customStart}
+                      onChange={(e) => setCustomStart(e.target.value)}
+                      className="w-full bg-rose-950 text-[#F5E6D3] text-base rounded-xl p-3 focus:outline-none focus:"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-[#F5E6D3] uppercase tracking-wider mb-1 block">До (необязательно):</label>
+                    <input 
+                      type="date" 
+                      value={customEnd}
+                      onChange={(e) => setCustomEnd(e.target.value)}
+                      className="w-full bg-rose-950 text-[#F5E6D3] text-base rounded-xl p-3 focus:outline-none focus:"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        <button 
-          onClick={() => handleGenerate(activeForm)}
-          disabled={isGenerating}
-          className="w-[calc(100%-1rem)] mx-2 bg-green-800 disabled:bg-green-950/50 hover:bg-green-700 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
-        >
-          {isGenerating ? (
-            <><div className="w-5 h-5 rounded-full animate-spin"></div> Отчёт формируется...</>
-          ) : (
-            'Проанализировать'
-          )}
-        </button>
+            <button 
+              onClick={() => handleGenerate(activeForm)}
+              disabled={isGenerating}
+              className="w-[calc(100%-1rem)] mx-2 bg-green-800 disabled:bg-green-950/50 hover:bg-green-700 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
+            >
+              Проанализировать
+            </button>
+          </>
+        )}
       </div>
     );
   }

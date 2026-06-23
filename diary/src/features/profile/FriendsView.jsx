@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, Search, UserPlus, Check, X, Trash2, Clock, User, Lock, Sparkles, Target, Heart, Flame, Activity, Brain, ShieldAlert } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { getMarkdownComponents } from '../../utils/markdownComponents';
+import GenerationProgress from '../../components/GenerationProgress';
 
 
 const WebApp = window.Telegram.WebApp;
@@ -555,9 +557,8 @@ export default function FriendsView({ onBack }) {
             {activeTab === 'compatibility_result' && (
               <div className="flex flex-col mx-2 animate-in fade-in duration-300 h-full">
                 {isGeneratingCompat ? (
-                  <div className="flex flex-col items-center justify-center flex-1 py-20">
-                    <div className="animate-spin rounded-full h-12 w-12 mb-4 border-b-2 border-green-500"></div>
-                    <p className="text-[#F5E6D3] font-medium text-center px-4">Анализируем совместимость портретов...<br/><span className="text-xs text-[#F5E6D3]/70">Это может занять 15-30 секунд</span></p>
+                  <div className="flex flex-col items-center justify-center flex-1 py-20 px-4">
+                    <GenerationProgress text="Анализ совместимости..." />
                   </div>
                 ) : compatResult ? (
                   <div className="bg-rose-900/80 rounded-3xl p-5 sm:p-8 shadow-xl backdrop-blur-sm overflow-x-hidden mb-10">

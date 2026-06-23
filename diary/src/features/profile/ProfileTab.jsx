@@ -5,6 +5,7 @@ import AdminPanel from '../admin/AdminPanel';
 import FriendsView from './FriendsView';
 import qrCodeImg from '../../assets/qr-code.png';
 import QRCode from 'react-qr-code';
+import GenerationProgress from '../../components/GenerationProgress';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
@@ -607,9 +608,8 @@ export default function ProfileTab({ onOverlayOpen }) {
           </button>
 
           {isGeneratingPortrait ? (
-            <div className="flex-1 flex flex-col items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 mb-4"></div>
-              <p className="text-[#F5E6D3] font-medium text-center">Портрет личности формируется...</p>
+            <div className="flex-1 flex flex-col items-center justify-center py-12 px-4">
+              <GenerationProgress text="Портрет личности формируется..." />
             </div>
           ) : (
             <div className="flex flex-col">
