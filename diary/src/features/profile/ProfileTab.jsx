@@ -165,6 +165,7 @@ export default function ProfileTab({ onOverlayOpen }) {
       return;
     }
     setIsGeneratingPortrait(true);
+    setActiveSubTab('portrait');
     try {
       const response = await fetch(`${API_URL}/api/portrait/generate`, {
         method: "POST",
