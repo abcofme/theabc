@@ -252,7 +252,7 @@ export default function ReportsTab({ onSwitchTab }) {
         </div>
 
         {isGenerating ? (
-          <div className="flex flex-col items-center justify-center flex-1 py-12 px-4 mt-8">
+          <div className="px-4 mt-2 w-full">
             <GenerationProgress text="Отчёт формируется..." />
           </div>
         ) : (

@@ -319,19 +319,50 @@ export default function ProfileTab({ onOverlayOpen }) {
     }
   }
 
-  const PortraitScale = ({ left, right, leftValue, rightValue, description }) => (
-    <div className="mb-10 w-full">
-      <div className="flex justify-between items-end text-base sm:text-lg font-bold text-[#F5E6D3] mb-3">
-        <span>{left} <span className="text-xs sm:text-sm font-medium opacity-70 ml-1">{leftValue}%</span></span>
-        <span><span className="text-xs sm:text-sm font-medium opacity-70 mr-1">{rightValue}%</span> {right}</span>
+  const PortraitScale = ({ left, right, leftValue, rightValue, description }) => {
+    const [animatedLeft, setAnimatedLeft] = useState(0);
+    const [animatedRight, setAnimatedRight] = useState(0);
+
+    useEffect(() => {
+      const startTimer = setTimeout(() => {
+        let start = null;
+        const duration = 1500;
+
+        const step = (timestamp) => {
+          if (!start) start = timestamp;
+          const progress = Math.min((timestamp - start) / duration, 1);
+          const easeOut = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+          
+          setAnimatedLeft(leftValue * easeOut);
+          setAnimatedRight(rightValue * easeOut);
+
+          if (progress < 1) {
+            window.requestAnimationFrame(step);
+          } else {
+            setAnimatedLeft(leftValue);
+            setAnimatedRight(rightValue);
+          }
+        };
+        window.requestAnimationFrame(step);
+      }, 300);
+
+      return () => clearTimeout(startTimer);
+    }, [leftValue, rightValue]);
+
+    return (
+      <div className="mb-10 w-full">
+        <div className="flex justify-between items-end text-base sm:text-lg font-bold text-[#F5E6D3] mb-3">
+          <span>{left} <span className="text-xs sm:text-sm font-medium opacity-70 ml-1">{Math.round(animatedLeft)}%</span></span>
+          <span><span className="text-xs sm:text-sm font-medium opacity-70 mr-1">{Math.round(animatedRight)}%</span> {right}</span>
+        </div>
+        <div className="h-4 w-full bg-rose-800 rounded-full overflow-hidden flex shadow-inner mb-4">
+          <div className="h-full bg-green-700" style={{ width: `${animatedLeft}%` }}></div>
+          <div className="h-full bg-orange-500" style={{ width: `${animatedRight}%` }}></div>
+        </div>
+        {description && <div className="mt-4"><p className="text-sm sm:text-base text-[#F5E6D3] font-medium leading-relaxed block break-words whitespace-pre-wrap">{description}</p></div>}
       </div>
-      <div className="h-4 w-full bg-rose-800 rounded-full overflow-hidden flex shadow-inner mb-4">
-        <div className="h-full bg-green-700 transition-all duration-1000 ease-out" style={{ width: `${leftValue}%` }}></div>
-        <div className="h-full bg-orange-500 transition-all duration-1000 ease-out" style={{ width: `${rightValue}%` }}></div>
-      </div>
-      {description && <div className="mt-4"><p className="text-sm sm:text-base text-[#F5E6D3] font-medium leading-relaxed block break-words whitespace-pre-wrap">{description}</p></div>}
-    </div>
-  );
+    );
+  };
 
   const getMarkdownComponents = (sectionTitle) => {
     let IconComponent = Sparkles;
