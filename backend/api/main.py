@@ -306,7 +306,7 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
     prompt += '\n\nВыведи только красивый Markdown текст (включая блок с ```json внутри для шкал). Без дополнительных вступлений.'
 
     try:
-        async with httpx.AsyncClient(timeout=120.0) as client:
+        async with httpx.AsyncClient(timeout=None) as client:
             ai_response = await client.post(
                 ai_url,
                 headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
