@@ -176,6 +176,9 @@ export default function ProfileTab({ onOverlayOpen }) {
       if (data.detail) {
         throw new Error(data.detail);
       }
+      if (data.status === "error") {
+        throw new Error(data.message || "Неизвестная ошибка сервера");
+      }
       setPortraitData(data.portrait);
       WebApp.HapticFeedback.notificationOccurred('success');
     } catch (error) {
@@ -193,7 +196,8 @@ export default function ProfileTab({ onOverlayOpen }) {
         headers: { "Authorization": `Bearer ${WebApp.initData}` }
       });
       if (response.ok) {
-        setTimeout(checkStatus, 3000);
+        setPortraitData(null);
+        WebApp.showAlert("Портрет успешно удален");
       }
     } catch (err) {
       console.error(err);

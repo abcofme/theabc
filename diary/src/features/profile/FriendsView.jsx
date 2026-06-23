@@ -178,6 +178,11 @@ export default function FriendsView({ onBack }) {
       });
       if (res.ok) {
         const data = await res.json();
+        if (data.detail) {
+          WebApp.showAlert(data.detail);
+          setActiveTab('compatibility_form');
+          return;
+        }
         setCompatResult(data.content);
         fetchFriends(); // update has_compatibility status
       } else {
