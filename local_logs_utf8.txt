@@ -1,0 +1,500 @@
+﻿backend-1  | [36m[ 2026.06.17 13:56:06.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (11, 503, 503)
+backend-1  | [36m[ 2026.06.17 13:56:06.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (12, 405, 405)
+backend-1  | [36m[ 2026.06.17 13:56:06.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (16, 408, 408)
+backend-1  | [36m[ 2026.06.17 13:56:06.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (17, 605, 605)
+backend-1  | [36m[ 2026.06.17 13:56:06.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (18, 605, 605)
+backend-1  | [36m[ 2026.06.17 13:56:06.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (19, 605, 605)
+backend-1  | [36m[ 2026.06.17 13:56:06.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (20, 405, 405)
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (21, 408, 408)
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (14, 303, 303)
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (8, 1006, 1006)
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (9, 503, 503)
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (15, 604, 604)
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (4, 506, 506)
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (2, 906, 906)
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (13, 205, 205)
+backend-1  | [36m[ 2026.06.17 13:56:06.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.88 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (5, 405, 405)
+backend-1  | [36m[ 2026.06.17 13:56:06.88 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.88 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (23, 404, 404)
+backend-1  | [36m[ 2026.06.17 13:56:06.88 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:06.88 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (6, 608, 608)
+backend-1  | [36m[ 2026.06.17 13:56:06.88 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT personality_portraits.user_id, personality_portraits.content, personality_portraits.tests_count, personality_portraits.technical_summary, personality_portraits.id, personality_portraits.created_at, personality_portraits.updated_at 
+backend-1  | FROM personality_portraits 
+backend-1  | WHERE personality_portraits.user_id = $1::BIGINT
+backend-1  | [36m[ 2026.06.17 13:56:06.88 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8049s ago] (438536930,)
+backend-1  | [36m[ 2026.06.17 13:56:06.89 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> ROLLBACK
+backend-1  | INFO:     172.18.0.1:34772 - "GET /api/profile HTTP/1.1" 200 OK
+backend-1  | [36m[ 2026.06.17 13:56:07.79 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> BEGIN (implicit)
+backend-1  | [36m[ 2026.06.17 13:56:07.79 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT users.tg_first_name AS users_tg_first_name, users.tg_last_name AS users_tg_last_name, users.username AS users_username, users.photo_url AS users_photo_url, users.has_opened_app AS users_has_opened_app, users.registration_date AS users_registration_date, users.invited_id AS users_invited_id, users.discount_pct AS users_discount_pct, users.referral_balance_pending AS users_referral_balance_pending, users.referral_balance_available AS users_referral_balance_available, users.admin AS users_admin, users.banned AS users_banned, users.first_opened_at AS users_first_opened_at, users.premium_until AS users_premium_until, users.yookassa_payment_method_id AS users_yookassa_payment_method_id, users.has_career_access AS users_has_career_access, users.inn AS users_inn, users.inn_verified AS users_inn_verified, users.tracking_link_id AS users_tracking_link_id, users.id AS users_id, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+backend-1  | FROM users 
+backend-1  | WHERE users.id = $1::BIGINT
+backend-1  | [36m[ 2026.06.17 13:56:07.79 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (438536930,)
+backend-1  | [36m[ 2026.06.17 13:56:07.79 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> BEGIN (implicit)
+backend-1  | [36m[ 2026.06.17 13:56:07.79 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT users.tg_first_name, users.tg_last_name, users.username, users.photo_url, users.has_opened_app, users.registration_date, users.invited_id, users.discount_pct, users.referral_balance_pending, users.referral_balance_available, users.admin, users.banned, users.first_opened_at, users.premium_until, users.yookassa_payment_method_id, users.has_career_access, users.inn, users.inn_verified, users.tracking_link_id, users.id, users.created_at, users.updated_at 
+backend-1  | FROM users 
+backend-1  | WHERE users.id = $1::BIGINT
+backend-1  | [36m[ 2026.06.17 13:56:07.79 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (438536930,)
+backend-1  | [36m[ 2026.06.17 13:56:07.79 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT categories.name, categories.price, categories.description, categories.id, categories.created_at, categories.updated_at, tests_1.name AS name_1, tests_1.description AS description_1, tests_1.free, tests_1.order_number, tests_1.hardcode_test, tests_1.category_id, tests_1.id AS id_1, tests_1.created_at AS created_at_1, tests_1.updated_at AS updated_at_1 
+backend-1  | FROM categories LEFT OUTER JOIN tests AS tests_1 ON categories.id = tests_1.category_id
+backend-1  | [36m[ 2026.06.17 13:56:07.79 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] ()
+backend-1  | [36m[ 2026.06.17 13:56:07.79 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT count(users.id) AS count_1 
+backend-1  | FROM users 
+backend-1  | WHERE users.invited_id = $1::VARCHAR
+backend-1  | [36m[ 2026.06.17 13:56:07.80 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] ('438536930',)
+backend-1  | [36m[ 2026.06.17 13:56:07.81 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT progresses.test_id, progresses.user_id, progresses.value, progresses.hardcode_value, progresses.id, progresses.created_at, progresses.updated_at, tests_1.name, tests_1.description, tests_1.free, tests_1.order_number, tests_1.hardcode_test, tests_1.category_id, tests_1.id AS id_1, tests_1.created_at AS created_at_1, tests_1.updated_at AS updated_at_1 
+backend-1  | FROM progresses LEFT OUTER JOIN tests AS tests_1 ON tests_1.id = progresses.test_id 
+backend-1  | WHERE progresses.user_id = $1::BIGINT
+backend-1  | [36m[ 2026.06.17 13:56:07.81 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (438536930,)
+backend-1  | [36m[ 2026.06.17 13:56:07.81 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> ROLLBACK
+backend-1  | [36m[ 2026.06.17 13:56:07.81 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.81 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (3, 406, 406)
+backend-1  | INFO:     172.18.0.1:34806 - "GET /api/referral HTTP/1.1" 200 OK
+backend-1  | [36m[ 2026.06.17 13:56:07.82 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.82 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (10, 1010, 1010)
+backend-1  | [36m[ 2026.06.17 13:56:07.83 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.83 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (11, 503, 503)
+backend-1  | [36m[ 2026.06.17 13:56:07.83 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.83 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (12, 405, 405)
+backend-1  | [36m[ 2026.06.17 13:56:07.83 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.83 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (16, 408, 408)
+backend-1  | [36m[ 2026.06.17 13:56:07.83 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.83 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (17, 605, 605)
+backend-1  | [36m[ 2026.06.17 13:56:07.83 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.83 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (18, 605, 605)
+backend-1  | [36m[ 2026.06.17 13:56:07.84 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.84 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (19, 605, 605)
+backend-1  | [36m[ 2026.06.17 13:56:07.84 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.84 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (20, 405, 405)
+backend-1  | [36m[ 2026.06.17 13:56:07.84 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.84 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (21, 408, 408)
+backend-1  | [36m[ 2026.06.17 13:56:07.84 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.84 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (14, 303, 303)
+backend-1  | [36m[ 2026.06.17 13:56:07.84 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.84 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (8, 1006, 1006)
+backend-1  | [36m[ 2026.06.17 13:56:07.84 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.84 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (9, 503, 503)
+backend-1  | [36m[ 2026.06.17 13:56:07.84 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.84 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (15, 604, 604)
+backend-1  | [36m[ 2026.06.17 13:56:07.85 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.85 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (4, 506, 506)
+backend-1  | [36m[ 2026.06.17 13:56:07.85 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.85 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (2, 906, 906)
+backend-1  | [36m[ 2026.06.17 13:56:07.85 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.85 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (13, 205, 205)
+backend-1  | [36m[ 2026.06.17 13:56:07.85 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.85 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (5, 405, 405)
+backend-1  | [36m[ 2026.06.17 13:56:07.85 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.85 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (23, 404, 404)
+backend-1  | [36m[ 2026.06.17 13:56:07.85 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:07.85 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (6, 608, 608)
+backend-1  | [36m[ 2026.06.17 13:56:07.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT personality_portraits.user_id, personality_portraits.content, personality_portraits.tests_count, personality_portraits.technical_summary, personality_portraits.id, personality_portraits.created_at, personality_portraits.updated_at 
+backend-1  | FROM personality_portraits 
+backend-1  | WHERE personality_portraits.user_id = $1::BIGINT
+backend-1  | [36m[ 2026.06.17 13:56:07.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8050s ago] (438536930,)
+backend-1  | [36m[ 2026.06.17 13:56:07.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> ROLLBACK
+backend-1  | INFO:     172.18.0.1:34794 - "GET /api/profile HTTP/1.1" 200 OK
+backend-1  | [36m[ 2026.06.17 13:56:08.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> BEGIN (implicit)
+backend-1  | [36m[ 2026.06.17 13:56:08.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT behavioral_reports.user_id, behavioral_reports.title, behavioral_reports.period_start, behavioral_reports.period_end, behavioral_reports.content, behavioral_reports.id, behavioral_reports.created_at, behavioral_reports.updated_at 
+backend-1  | FROM behavioral_reports 
+backend-1  | WHERE behavioral_reports.user_id = $1::BIGINT ORDER BY behavioral_reports.created_at DESC
+backend-1  | [36m[ 2026.06.17 13:56:08.86 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 7746s ago] (438536930,)
+backend-1  | [36m[ 2026.06.17 13:56:08.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> BEGIN (implicit)
+backend-1  | [36m[ 2026.06.17 13:56:08.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT users.tg_first_name AS users_tg_first_name, users.tg_last_name AS users_tg_last_name, users.username AS users_username, users.photo_url AS users_photo_url, users.has_opened_app AS users_has_opened_app, users.registration_date AS users_registration_date, users.invited_id AS users_invited_id, users.discount_pct AS users_discount_pct, users.referral_balance_pending AS users_referral_balance_pending, users.referral_balance_available AS users_referral_balance_available, users.admin AS users_admin, users.banned AS users_banned, users.first_opened_at AS users_first_opened_at, users.premium_until AS users_premium_until, users.yookassa_payment_method_id AS users_yookassa_payment_method_id, users.has_career_access AS users_has_career_access, users.inn AS users_inn, users.inn_verified AS users_inn_verified, users.tracking_link_id AS users_tracking_link_id, users.id AS users_id, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+backend-1  | FROM users 
+backend-1  | WHERE users.id = $1::BIGINT
+backend-1  | [36m[ 2026.06.17 13:56:08.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (438536930,)
+backend-1  | [36m[ 2026.06.17 13:56:08.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT categories.name, categories.price, categories.description, categories.id, categories.created_at, categories.updated_at, tests_1.name AS name_1, tests_1.description AS description_1, tests_1.free, tests_1.order_number, tests_1.hardcode_test, tests_1.category_id, tests_1.id AS id_1, tests_1.created_at AS created_at_1, tests_1.updated_at AS updated_at_1 
+backend-1  | FROM categories LEFT OUTER JOIN tests AS tests_1 ON categories.id = tests_1.category_id
+backend-1  | [36m[ 2026.06.17 13:56:08.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] ()
+backend-1  | [36m[ 2026.06.17 13:56:08.87 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> ROLLBACK
+backend-1  | [36m[ 2026.06.17 13:56:08.88 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT progresses.test_id, progresses.user_id, progresses.value, progresses.hardcode_value, progresses.id, progresses.created_at, progresses.updated_at, tests_1.name, tests_1.description, tests_1.free, tests_1.order_number, tests_1.hardcode_test, tests_1.category_id, tests_1.id AS id_1, tests_1.created_at AS created_at_1, tests_1.updated_at AS updated_at_1 
+backend-1  | FROM progresses LEFT OUTER JOIN tests AS tests_1 ON tests_1.id = progresses.test_id 
+backend-1  | WHERE progresses.user_id = $1::BIGINT
+backend-1  | [36m[ 2026.06.17 13:56:08.88 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (438536930,)
+backend-1  | INFO:     172.18.0.1:54116 - "GET /api/reports HTTP/1.1" 200 OK
+backend-1  | [36m[ 2026.06.17 13:56:08.88 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.88 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (3, 406, 406)
+backend-1  | [36m[ 2026.06.17 13:56:08.88 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.88 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (10, 1010, 1010)
+backend-1  | [36m[ 2026.06.17 13:56:08.88 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.88 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (11, 503, 503)
+backend-1  | [36m[ 2026.06.17 13:56:08.88 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.88 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (12, 405, 405)
+backend-1  | [36m[ 2026.06.17 13:56:08.89 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.89 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (16, 408, 408)
+backend-1  | [36m[ 2026.06.17 13:56:08.89 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.89 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (17, 605, 605)
+backend-1  | [36m[ 2026.06.17 13:56:08.89 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.89 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (18, 605, 605)
+backend-1  | [36m[ 2026.06.17 13:56:08.89 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.89 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (19, 605, 605)
+backend-1  | [36m[ 2026.06.17 13:56:08.89 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.89 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (20, 405, 405)
+backend-1  | [36m[ 2026.06.17 13:56:08.89 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.89 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (21, 408, 408)
+backend-1  | [36m[ 2026.06.17 13:56:08.90 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.90 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (14, 303, 303)
+backend-1  | [36m[ 2026.06.17 13:56:08.90 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.90 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (8, 1006, 1006)
+backend-1  | [36m[ 2026.06.17 13:56:08.90 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.90 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (9, 503, 503)
+backend-1  | [36m[ 2026.06.17 13:56:08.90 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.90 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (15, 604, 604)
+backend-1  | [36m[ 2026.06.17 13:56:08.90 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.90 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (4, 506, 506)
+backend-1  | [36m[ 2026.06.17 13:56:08.90 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.90 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (2, 906, 906)
+backend-1  | [36m[ 2026.06.17 13:56:08.90 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.90 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (13, 205, 205)
+backend-1  | [36m[ 2026.06.17 13:56:08.90 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.90 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (5, 405, 405)
+backend-1  | [36m[ 2026.06.17 13:56:08.91 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.91 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (23, 404, 404)
+backend-1  | [36m[ 2026.06.17 13:56:08.91 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:08.91 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (6, 608, 608)
+backend-1  | [36m[ 2026.06.17 13:56:08.91 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT personality_portraits.user_id, personality_portraits.content, personality_portraits.tests_count, personality_portraits.technical_summary, personality_portraits.id, personality_portraits.created_at, personality_portraits.updated_at 
+backend-1  | FROM personality_portraits 
+backend-1  | WHERE personality_portraits.user_id = $1::BIGINT
+backend-1  | [36m[ 2026.06.17 13:56:08.91 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8051s ago] (438536930,)
+backend-1  | [36m[ 2026.06.17 13:56:08.91 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> ROLLBACK
+backend-1  | INFO:     172.18.0.1:54128 - "GET /api/profile HTTP/1.1" 200 OK
+backend-1  | [36m[ 2026.06.17 13:56:09.55 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> BEGIN (implicit)
+backend-1  | [36m[ 2026.06.17 13:56:09.55 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT users.tg_first_name AS users_tg_first_name, users.tg_last_name AS users_tg_last_name, users.username AS users_username, users.photo_url AS users_photo_url, users.has_opened_app AS users_has_opened_app, users.registration_date AS users_registration_date, users.invited_id AS users_invited_id, users.discount_pct AS users_discount_pct, users.referral_balance_pending AS users_referral_balance_pending, users.referral_balance_available AS users_referral_balance_available, users.admin AS users_admin, users.banned AS users_banned, users.first_opened_at AS users_first_opened_at, users.premium_until AS users_premium_until, users.yookassa_payment_method_id AS users_yookassa_payment_method_id, users.has_career_access AS users_has_career_access, users.inn AS users_inn, users.inn_verified AS users_inn_verified, users.tracking_link_id AS users_tracking_link_id, users.id AS users_id, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+backend-1  | FROM users 
+backend-1  | WHERE users.id = $1::BIGINT
+backend-1  | [36m[ 2026.06.17 13:56:09.55 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (438536930,)
+backend-1  | [36m[ 2026.06.17 13:56:09.55 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT categories.name, categories.price, categories.description, categories.id, categories.created_at, categories.updated_at, tests_1.name AS name_1, tests_1.description AS description_1, tests_1.free, tests_1.order_number, tests_1.hardcode_test, tests_1.category_id, tests_1.id AS id_1, tests_1.created_at AS created_at_1, tests_1.updated_at AS updated_at_1 
+backend-1  | FROM categories LEFT OUTER JOIN tests AS tests_1 ON categories.id = tests_1.category_id
+backend-1  | [36m[ 2026.06.17 13:56:09.55 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] ()
+backend-1  | [36m[ 2026.06.17 13:56:09.56 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT progresses.test_id, progresses.user_id, progresses.value, progresses.hardcode_value, progresses.id, progresses.created_at, progresses.updated_at, tests_1.name, tests_1.description, tests_1.free, tests_1.order_number, tests_1.hardcode_test, tests_1.category_id, tests_1.id AS id_1, tests_1.created_at AS created_at_1, tests_1.updated_at AS updated_at_1 
+backend-1  | FROM progresses LEFT OUTER JOIN tests AS tests_1 ON tests_1.id = progresses.test_id 
+backend-1  | WHERE progresses.user_id = $1::BIGINT
+backend-1  | [36m[ 2026.06.17 13:56:09.56 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (438536930,)
+backend-1  | [36m[ 2026.06.17 13:56:09.56 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.56 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (3, 406, 406)
+backend-1  | [36m[ 2026.06.17 13:56:09.56 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.56 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (10, 1010, 1010)
+backend-1  | [36m[ 2026.06.17 13:56:09.57 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.57 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (11, 503, 503)
+backend-1  | [36m[ 2026.06.17 13:56:09.57 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.57 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (12, 405, 405)
+backend-1  | [36m[ 2026.06.17 13:56:09.57 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.57 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (16, 408, 408)
+backend-1  | [36m[ 2026.06.17 13:56:09.57 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.57 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (17, 605, 605)
+backend-1  | [36m[ 2026.06.17 13:56:09.57 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.57 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (18, 605, 605)
+backend-1  | [36m[ 2026.06.17 13:56:09.57 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.57 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (19, 605, 605)
+backend-1  | [36m[ 2026.06.17 13:56:09.57 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.57 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (20, 405, 405)
+backend-1  | [36m[ 2026.06.17 13:56:09.58 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.58 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (21, 408, 408)
+backend-1  | [36m[ 2026.06.17 13:56:09.58 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.58 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (14, 303, 303)
+backend-1  | [36m[ 2026.06.17 13:56:09.58 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.58 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (8, 1006, 1006)
+backend-1  | [36m[ 2026.06.17 13:56:09.58 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.58 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (9, 503, 503)
+backend-1  | [36m[ 2026.06.17 13:56:09.58 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.58 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (15, 604, 604)
+backend-1  | [36m[ 2026.06.17 13:56:09.58 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.58 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (4, 506, 506)
+backend-1  | [36m[ 2026.06.17 13:56:09.58 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.58 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (2, 906, 906)
+backend-1  | [36m[ 2026.06.17 13:56:09.58 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.58 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (13, 205, 205)
+backend-1  | [36m[ 2026.06.17 13:56:09.59 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.59 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (5, 405, 405)
+backend-1  | [36m[ 2026.06.17 13:56:09.59 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.59 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (23, 404, 404)
+backend-1  | [36m[ 2026.06.17 13:56:09.59 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:09.59 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (6, 608, 608)
+backend-1  | [36m[ 2026.06.17 13:56:09.59 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT personality_portraits.user_id, personality_portraits.content, personality_portraits.tests_count, personality_portraits.technical_summary, personality_portraits.id, personality_portraits.created_at, personality_portraits.updated_at 
+backend-1  | FROM personality_portraits 
+backend-1  | WHERE personality_portraits.user_id = $1::BIGINT
+backend-1  | [36m[ 2026.06.17 13:56:09.59 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (438536930,)
+backend-1  | [36m[ 2026.06.17 13:56:09.59 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> ROLLBACK
+backend-1  | INFO:     172.18.0.1:54138 - "GET /api/profile HTTP/1.1" 200 OK
+backend-1  | [36m[ 2026.06.17 13:56:10.29 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> BEGIN (implicit)
+backend-1  | [36m[ 2026.06.17 13:56:10.29 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT users.tg_first_name AS users_tg_first_name, users.tg_last_name AS users_tg_last_name, users.username AS users_username, users.photo_url AS users_photo_url, users.has_opened_app AS users_has_opened_app, users.registration_date AS users_registration_date, users.invited_id AS users_invited_id, users.discount_pct AS users_discount_pct, users.referral_balance_pending AS users_referral_balance_pending, users.referral_balance_available AS users_referral_balance_available, users.admin AS users_admin, users.banned AS users_banned, users.first_opened_at AS users_first_opened_at, users.premium_until AS users_premium_until, users.yookassa_payment_method_id AS users_yookassa_payment_method_id, users.has_career_access AS users_has_career_access, users.inn AS users_inn, users.inn_verified AS users_inn_verified, users.tracking_link_id AS users_tracking_link_id, users.id AS users_id, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+backend-1  | FROM users 
+backend-1  | WHERE users.id = $1::BIGINT
+backend-1  | [36m[ 2026.06.17 13:56:10.29 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (438536930,)
+backend-1  | [36m[ 2026.06.17 13:56:10.29 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> BEGIN (implicit)
+backend-1  | [36m[ 2026.06.17 13:56:10.29 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT users.tg_first_name, users.tg_last_name, users.username, users.photo_url, users.has_opened_app, users.registration_date, users.invited_id, users.discount_pct, users.referral_balance_pending, users.referral_balance_available, users.admin, users.banned, users.first_opened_at, users.premium_until, users.yookassa_payment_method_id, users.has_career_access, users.inn, users.inn_verified, users.tracking_link_id, users.id, users.created_at, users.updated_at 
+backend-1  | FROM users 
+backend-1  | WHERE users.id = $1::BIGINT
+backend-1  | [36m[ 2026.06.17 13:56:10.30 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] (438536930,)
+backend-1  | [36m[ 2026.06.17 13:56:10.30 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT categories.name, categories.price, categories.description, categories.id, categories.created_at, categories.updated_at, tests_1.name AS name_1, tests_1.description AS description_1, tests_1.free, tests_1.order_number, tests_1.hardcode_test, tests_1.category_id, tests_1.id AS id_1, tests_1.created_at AS created_at_1, tests_1.updated_at AS updated_at_1 
+backend-1  | FROM categories LEFT OUTER JOIN tests AS tests_1 ON categories.id = tests_1.category_id
+backend-1  | [36m[ 2026.06.17 13:56:10.30 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] ()
+backend-1  | [36m[ 2026.06.17 13:56:10.30 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT progresses.test_id, progresses.user_id, progresses.value, progresses.hardcode_value, progresses.id, progresses.created_at, progresses.updated_at, tests_1.name, tests_1.description, tests_1.free, tests_1.order_number, tests_1.hardcode_test, tests_1.category_id, tests_1.id AS id_1, tests_1.created_at AS created_at_1, tests_1.updated_at AS updated_at_1 
+backend-1  | FROM progresses LEFT OUTER JOIN tests AS tests_1 ON tests_1.id = progresses.test_id 
+backend-1  | WHERE progresses.user_id = $1::BIGINT
+backend-1  | [36m[ 2026.06.17 13:56:10.30 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (438536930,)
+backend-1  | [36m[ 2026.06.17 13:56:10.30 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT count(users.id) AS count_1 
+backend-1  | FROM users 
+backend-1  | WHERE users.invited_id = $1::VARCHAR
+backend-1  | [36m[ 2026.06.17 13:56:10.30 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8052s ago] ('438536930',)
+backend-1  | [36m[ 2026.06.17 13:56:10.30 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> ROLLBACK
+backend-1  | [36m[ 2026.06.17 13:56:10.30 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.30 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (3, 406, 406)
+backend-1  | INFO:     172.18.0.1:54154 - "GET /api/referral HTTP/1.1" 200 OK
+backend-1  | [36m[ 2026.06.17 13:56:10.31 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.31 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (10, 1010, 1010)
+backend-1  | [36m[ 2026.06.17 13:56:10.31 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.31 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (11, 503, 503)
+backend-1  | [36m[ 2026.06.17 13:56:10.31 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.31 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (12, 405, 405)
+backend-1  | [36m[ 2026.06.17 13:56:10.31 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.31 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (16, 408, 408)
+backend-1  | [36m[ 2026.06.17 13:56:10.32 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.32 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (17, 605, 605)
+backend-1  | [36m[ 2026.06.17 13:56:10.32 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.32 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (18, 605, 605)
+backend-1  | [36m[ 2026.06.17 13:56:10.32 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.32 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (19, 605, 605)
+backend-1  | [36m[ 2026.06.17 13:56:10.32 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.32 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (20, 405, 405)
+backend-1  | [36m[ 2026.06.17 13:56:10.32 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ aiogram.client.session.middlewares.request_logging ][0m [33m[ __call__ ][0m [34m[ 32 ][0m --> Make request with method='GetUpdates' by bot id=8587664019
+backend-1  | [36m[ 2026.06.17 13:56:10.32 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.32 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (21, 408, 408)
+backend-1  | [36m[ 2026.06.17 13:56:10.33 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.33 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (14, 303, 303)
+backend-1  | [36m[ 2026.06.17 13:56:10.33 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.33 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (8, 1006, 1006)
+backend-1  | [36m[ 2026.06.17 13:56:10.33 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.33 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (9, 503, 503)
+backend-1  | [36m[ 2026.06.17 13:56:10.33 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.33 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (15, 604, 604)
+backend-1  | [36m[ 2026.06.17 13:56:10.33 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.33 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (4, 506, 506)
+backend-1  | [36m[ 2026.06.17 13:56:10.33 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.34 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (2, 906, 906)
+backend-1  | [36m[ 2026.06.17 13:56:10.34 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.34 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (13, 205, 205)
+backend-1  | [36m[ 2026.06.17 13:56:10.34 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.34 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (5, 405, 405)
+backend-1  | [36m[ 2026.06.17 13:56:10.34 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.34 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (23, 404, 404)
+backend-1  | [36m[ 2026.06.17 13:56:10.34 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT results.test_id, results.range_from, results.range_to, results.name, results.id, results.created_at, results.updated_at 
+backend-1  | FROM results 
+backend-1  | WHERE results.test_id = $1::BIGINT AND results.range_from <= $2::INTEGER AND results.range_to >= $3::INTEGER
+backend-1  | [36m[ 2026.06.17 13:56:10.34 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (6, 608, 608)
+backend-1  | [36m[ 2026.06.17 13:56:10.34 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> SELECT personality_portraits.user_id, personality_portraits.content, personality_portraits.tests_count, personality_portraits.technical_summary, personality_portraits.id, personality_portraits.created_at, personality_portraits.updated_at 
+backend-1  | FROM personality_portraits 
+backend-1  | WHERE personality_portraits.user_id = $1::BIGINT
+backend-1  | [36m[ 2026.06.17 13:56:10.34 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> [cached since 8053s ago] (438536930,)
+backend-1  | [36m[ 2026.06.17 13:56:10.35 ][0m[31m [ [1mINFO[0m[31m ] [0m[35m[ sqlalchemy.engine.base ][0m [33m[ _log_info ][0m [34m[ 194 ][0m --> ROLLBACK
+backend-1  | INFO:     172.18.0.1:54168 - "GET /api/profile HTTP/1.1" 200 OK

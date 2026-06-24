@@ -20,7 +20,7 @@ export default function CalendarTab({ onSheetOpen }) {
   useEffect(() => {
     fetch(`${API_URL}/api/profile`, {
       headers: {
-        "Authorization": `Bearer ${encodeURI(WebApp.initData)}`
+        "Authorization": `Bearer ${WebApp.initData}`
       }
     })
       .then(res => res.json())
@@ -72,7 +72,7 @@ export default function CalendarTab({ onSheetOpen }) {
     const month = currentMonth.getMonth() + 1; // 1-12
 
     fetch(`${API_URL}/api/diary?year=${year}&month=${month}`, {
-      headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` }
+      headers: { "Authorization": `Bearer ${WebApp.initData}` }
     })
       .then(res => res.json())
       .then(data => {
@@ -135,7 +135,7 @@ export default function CalendarTab({ onSheetOpen }) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${encodeURI(WebApp.initData)}`
+            "Authorization": `Bearer ${WebApp.initData}`
           },
           body: JSON.stringify({
             date: dateStr,
@@ -165,7 +165,7 @@ export default function CalendarTab({ onSheetOpen }) {
           fetch(`${API_URL}/api/analyze-reaction/${data.id}`, {
             method: "POST",
             headers: {
-              "Authorization": `Bearer ${encodeURI(WebApp.initData)}`
+              "Authorization": `Bearer ${WebApp.initData}`
             }
           })
             .then(res => res.json())
@@ -200,7 +200,7 @@ export default function CalendarTab({ onSheetOpen }) {
       const response = await fetch(`${API_URL}/api/diary/${entryToDelete.id}`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${encodeURI(WebApp.initData)}`
+          "Authorization": `Bearer ${WebApp.initData}`
         }
       });
       
@@ -221,7 +221,7 @@ export default function CalendarTab({ onSheetOpen }) {
       const response = await fetch(`${API_URL}/api/diary/${entryId}/rating`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${encodeURI(WebApp.initData)}`
+          "Authorization": `Bearer ${WebApp.initData}`
         }
       });
       if (!response.ok) throw new Error("Ошибка удаления оценки");
@@ -238,7 +238,7 @@ export default function CalendarTab({ onSheetOpen }) {
     fetch(`${API_URL}/api/analyze-reaction/${entryId}`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${encodeURI(WebApp.initData)}`
+        "Authorization": `Bearer ${WebApp.initData}`
       }
     })
       .then(res => res.json())
