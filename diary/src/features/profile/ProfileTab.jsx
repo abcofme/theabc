@@ -485,51 +485,77 @@ export default function ProfileTab({ onOverlayOpen }) {
           {/* ПОРТРЕТ ЛИЧНОСТИ КНОПКИ */}
           <div className="mx-2 mb-4 flex flex-col gap-4">
             {!portraitData ? (
-              <button 
-                onClick={() => {
-                  if (!(totalTests > 0 && passedTests === totalTests)) {
-                    WebApp.showAlert("Пройдите все тесты, чтобы сформировать портрет личности.");
-                    return;
-                  }
-                  handleGeneratePortrait();
-                }}
-                disabled={isGeneratingPortrait}
-                className={`w-full rounded-2xl p-5 hover:bg-rose-800/80 transition-all duration-300 flex flex-col items-center justify-center text-center shadow-sm backdrop-blur-sm ${
-                  (totalTests > 0 && passedTests === totalTests) 
-                    ? "bg-rose-900/80 text-[#F5E6D3] active:scale-[0.98]" 
-                    : "bg-rose-900/80 text-[#F5E6D3]"
-                }`}
-              >
-                {isGeneratingPortrait ? (
-                  <div className="w-8 h-8 rounded-full animate-spin border-2 border-[#F5E6D3] border-t-transparent mb-2"></div>
-                ) : (
-                  <Wand2 size={32} className="text-[#F5E6D3] mb-2" />
+              <div className="flex flex-col w-full">
+                <button 
+                  onClick={() => {
+                    if (accessLevel !== 'Premium') return;
+                    if (!(totalTests > 0 && passedTests === totalTests)) {
+                      WebApp.showAlert("Пройдите все тесты, чтобы сформировать портрет личности.");
+                      return;
+                    }
+                    handleGeneratePortrait();
+                  }}
+                  disabled={isGeneratingPortrait || accessLevel !== 'Premium'}
+                  className={`w-full rounded-2xl p-5 transition-all duration-300 flex flex-col items-center justify-center text-center shadow-sm backdrop-blur-sm ${
+                    accessLevel !== 'Premium'
+                      ? "bg-rose-900/40 text-[#F5E6D3]/50 cursor-not-allowed border border-rose-800/30"
+                      : (totalTests > 0 && passedTests === totalTests) 
+                        ? "bg-rose-900/80 hover:bg-rose-800/80 text-[#F5E6D3] active:scale-[0.98]" 
+                        : "bg-rose-900/80 hover:bg-rose-800/80 text-[#F5E6D3]"
+                  }`}
+                >
+                  {isGeneratingPortrait ? (
+                    <div className="w-8 h-8 rounded-full animate-spin border-2 border-current border-t-transparent mb-2"></div>
+                  ) : (
+                    <Wand2 size={32} className="mb-2" />
+                  )}
+                  <div>
+                    <h3 className="text-lg font-bold mb-1">Сформировать портрет</h3>
+                    <p className="text-sm opacity-80">
+                      {isGeneratingPortrait ? 'Генерация...' : (totalTests > 0 && passedTests === totalTests) ? 'Анализ ваших тестов' : `Пройдено ${passedTests} из ${totalTests} тестов`}
+                    </p>
+                  </div>
+                </button>
+                {accessLevel !== 'Premium' && (
+                  <div className="flex items-start justify-center gap-1.5 mt-3 opacity-70 px-2">
+                    <Lock size={14} className="text-[#F5E6D3] shrink-0 mt-0.5" />
+                    <span className="text-xs text-[#F5E6D3] text-center leading-tight">Для генерации портрета личности необходима подписка Premium</span>
+                  </div>
                 )}
-                <div>
-                  <h3 className="text-lg font-bold mb-1">Сформировать портрет</h3>
-                  <p className="text-sm text-[#F5E6D3]/80">
-                    {isGeneratingPortrait ? 'Генерация...' : (totalTests > 0 && passedTests === totalTests) ? 'Анализ ваших тестов' : `Пройдено ${passedTests} из ${totalTests} тестов`}
-                  </p>
-                </div>
-              </button>
+              </div>
             ) : (
               <>
                 {passedTests > portraitData.tests_count && (totalTests > 0 && passedTests === totalTests) && (
-                  <button 
-                    onClick={handleGeneratePortrait}
-                    disabled={isGeneratingPortrait}
-                    className="w-full bg-rose-900/80 rounded-2xl p-5 hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex flex-col items-center justify-center text-center shadow-sm backdrop-blur-sm"
-                  >
-                    {isGeneratingPortrait ? (
-                      <div className="w-8 h-8 rounded-full animate-spin border-2 border-[#F5E6D3] border-t-transparent mb-2"></div>
-                    ) : (
-                      <Wand2 className="text-[#F5E6D3] mb-2" size={32} />
+                  <div className="flex flex-col w-full">
+                    <button 
+                      onClick={() => {
+                        if (accessLevel !== 'Premium') return;
+                        handleGeneratePortrait();
+                      }}
+                      disabled={isGeneratingPortrait || accessLevel !== 'Premium'}
+                      className={`w-full rounded-2xl p-5 transition-all duration-300 flex flex-col items-center justify-center text-center shadow-sm backdrop-blur-sm ${
+                        accessLevel !== 'Premium'
+                          ? "bg-rose-900/40 text-[#F5E6D3]/50 cursor-not-allowed border border-rose-800/30"
+                          : "bg-rose-900/80 hover:bg-rose-800/80 text-[#F5E6D3] active:scale-[0.98]"
+                      }`}
+                    >
+                      {isGeneratingPortrait ? (
+                        <div className="w-8 h-8 rounded-full animate-spin border-2 border-current border-t-transparent mb-2"></div>
+                      ) : (
+                        <Wand2 className="mb-2" size={32} />
+                      )}
+                      <div>
+                        <h3 className="text-lg font-bold mb-1">Сформировать заново</h3>
+                        <p className="text-sm opacity-80">{isGeneratingPortrait ? 'Генерация...' : 'Обновить на основе новых тестов'}</p>
+                      </div>
+                    </button>
+                    {accessLevel !== 'Premium' && (
+                      <div className="flex items-start justify-center gap-1.5 mt-3 opacity-70 px-2">
+                        <Lock size={14} className="text-[#F5E6D3] shrink-0 mt-0.5" />
+                        <span className="text-xs text-[#F5E6D3] text-center leading-tight">Для генерации портрета личности необходима подписка Premium</span>
+                      </div>
                     )}
-                    <div>
-                      <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Сформировать заново</h3>
-                      <p className="text-sm text-[#F5E6D3]/80">{isGeneratingPortrait ? 'Генерация...' : 'Обновить на основе новых тестов'}</p>
-                    </div>
-                  </button>
+                  </div>
                 )}
                 <button 
                   onClick={() => setActiveSubTab('portrait')}
