@@ -161,7 +161,7 @@ export default function ProfileTab({ onOverlayOpen }) {
   }, []);
 
   const handleGeneratePortrait = async () => {
-    if (portraitData && portraitData.tests_count >= passedTests) {
+    if (portraitData && portraitData.tests_count === passedTests) {
       WebApp.showAlert("У вас нет новых пройденных тестов для обновления портрета.");
       return;
     }
@@ -650,9 +650,9 @@ export default function ProfileTab({ onOverlayOpen }) {
             </div>
           ) : (
             <div className="flex flex-col">
-              {portraitData && portraitData.tests_count < totalTests && (
+              {portraitData && portraitData.tests_count !== passedTests && (
                 <div className="mb-4 mx-2 bg-rose-900/80 p-6 rounded-3xl text-center">
-                  <p className="text-[#F5E6D3] text-sm mb-4 font-medium">Добавлены новые тесты! После прохождения вы можете сформировать новый портрет личности</p>
+                  <p className="text-[#F5E6D3] text-sm mb-4 font-medium">Ваш прогресс по тестам обновился! Вы можете сформировать новый портрет личности</p>
                   {passedTests < totalTests ? (
                     <button disabled className="w-full flex flex-col items-center justify-center text-center p-5 rounded-2xl bg-rose-800 text-[#F5E6D3] cursor-not-allowed">
                       <Lock size={32} className="mb-2" /> 
