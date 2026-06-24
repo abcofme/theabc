@@ -31,7 +31,7 @@ export default function ReportsTab({ onSwitchTab }) {
         fetch(`${API_URL}/api/profile`, { headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` } }).then(res => res.json())
       ])
       .then(([reportsData, profileData]) => {
-        setReports(Array.isArray(reportsData) ? reportsData : []);
+        setReports(reportsData || []);
         setHasCareerAccess(profileData.has_career_access || false);
         setAccessLevel(profileData.access_level || '');
         setLoading(false);
