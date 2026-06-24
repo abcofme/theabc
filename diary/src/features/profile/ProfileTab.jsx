@@ -494,23 +494,23 @@ export default function ProfileTab({ onOverlayOpen }) {
                   handleGeneratePortrait();
                 }}
                 disabled={isGeneratingPortrait}
-                className={`w-full rounded-2xl p-4 min-h-[88px] text-left transition-all duration-300 flex items-center justify-between shadow-sm backdrop-blur-sm ${
+                className={`w-full rounded-2xl p-5 hover:bg-rose-800/80 transition-all duration-300 flex flex-col items-center justify-center text-center shadow-sm backdrop-blur-sm ${
                   (totalTests > 0 && passedTests === totalTests) 
-                    ? "bg-rose-900/80 hover:bg-rose-800/80 text-[#F5E6D3] active:scale-[0.98]" 
-                    : "bg-rose-900/80 hover:bg-rose-800/80 text-[#F5E6D3]"
+                    ? "bg-rose-900/80 text-[#F5E6D3] active:scale-[0.98]" 
+                    : "bg-rose-900/80 text-[#F5E6D3]"
                 }`}
               >
+                {isGeneratingPortrait ? (
+                  <div className="w-8 h-8 rounded-full animate-spin border-2 border-[#F5E6D3] border-t-transparent mb-2"></div>
+                ) : (
+                  <Wand2 size={32} className="text-[#F5E6D3] mb-2" />
+                )}
                 <div>
                   <h3 className="text-lg font-bold mb-1">Сформировать портрет</h3>
                   <p className="text-sm text-[#F5E6D3]/80">
                     {isGeneratingPortrait ? 'Генерация...' : (totalTests > 0 && passedTests === totalTests) ? 'Анализ ваших тестов' : `Пройдено ${passedTests} из ${totalTests} тестов`}
                   </p>
                 </div>
-                {isGeneratingPortrait ? (
-                  <div className="w-6 h-6 rounded-full animate-spin border-2 border-[#F5E6D3] border-t-transparent"></div>
-                ) : (
-                  <Wand2 size={24} className="text-[#F5E6D3]" />
-                )}
               </button>
             ) : (
               <>
@@ -518,17 +518,17 @@ export default function ProfileTab({ onOverlayOpen }) {
                   <button 
                     onClick={handleGeneratePortrait}
                     disabled={isGeneratingPortrait}
-                    className="w-full bg-rose-900/80 rounded-2xl p-4 min-h-[88px] text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
+                    className="w-full bg-rose-900/80 rounded-2xl p-5 hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex flex-col items-center justify-center text-center shadow-sm backdrop-blur-sm"
                   >
+                    {isGeneratingPortrait ? (
+                      <div className="w-8 h-8 rounded-full animate-spin border-2 border-[#F5E6D3] border-t-transparent mb-2"></div>
+                    ) : (
+                      <Wand2 className="text-[#F5E6D3] mb-2" size={32} />
+                    )}
                     <div>
                       <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Сформировать заново</h3>
                       <p className="text-sm text-[#F5E6D3]/80">{isGeneratingPortrait ? 'Генерация...' : 'Обновить на основе новых тестов'}</p>
                     </div>
-                    {isGeneratingPortrait ? (
-                      <div className="w-6 h-6 rounded-full animate-spin border-2 border-[#F5E6D3] border-t-transparent"></div>
-                    ) : (
-                      <Wand2 className="text-[#F5E6D3]" size={24} />
-                    )}
                   </button>
                 )}
                 <button 
