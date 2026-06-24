@@ -283,7 +283,7 @@ export default function CalendarTab({ onSheetOpen }) {
     else if (progress <= 50) colorClass = "bg-orange-500";
     else if (progress <= 75) colorClass = "bg-yellow-400";
     
-    const textColorClass = colorClass.replace('bg-', 'text-');
+    const textColorClass = 'text-[#F5E6D3]';
 
     return (
       <div className="flex items-center gap-3 w-full">
@@ -325,7 +325,7 @@ export default function CalendarTab({ onSheetOpen }) {
       return () => clearTimeout(startTimer);
     }, [score]);
 
-    const textColorClass = colorClass.replace('bg-', 'text-');
+    const textColorClass = 'text-[#F5E6D3]';
 
     return (
       <div className="flex items-center gap-3">
