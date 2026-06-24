@@ -324,13 +324,15 @@ export default function ProfileTab({ onOverlayOpen }) {
   const PortraitScale = ({ left, right, leftValue, rightValue, description }) => {
     return (
       <div className="mb-10 w-full">
-        <div className="flex justify-between items-end text-base sm:text-lg font-bold text-[#F5E6D3] mb-3">
+        <div className="flex justify-start items-end text-base sm:text-lg font-bold text-[#F5E6D3] mb-3">
           <span>{left} <span className="text-xs sm:text-sm font-medium opacity-70 ml-1">{Math.round(leftValue)}%</span></span>
-          <span><span className="text-xs sm:text-sm font-medium opacity-70 mr-1">{Math.round(rightValue)}%</span> {right}</span>
         </div>
-        <div className="h-4 w-full bg-rose-800 rounded-full overflow-hidden flex shadow-inner mb-4">
+        <div className="h-4 w-full bg-rose-800 rounded-full overflow-hidden flex shadow-inner mb-3">
           <div className="h-full bg-green-700" style={{ width: `${leftValue}%` }}></div>
           <div className="h-full bg-orange-500" style={{ width: `${rightValue}%` }}></div>
+        </div>
+        <div className="flex justify-end items-start text-base sm:text-lg font-bold text-[#F5E6D3] mb-4">
+          <span><span className="text-xs sm:text-sm font-medium opacity-70 mr-1">{Math.round(rightValue)}%</span> {right}</span>
         </div>
         {description && <div className="mt-4"><p className="text-sm sm:text-base text-[#F5E6D3] font-medium leading-relaxed block break-words whitespace-pre-wrap">{description}</p></div>}
       </div>
