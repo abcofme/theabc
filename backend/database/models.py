@@ -163,16 +163,15 @@ class Progress(BaseModel):
         # lazy="joined"
     )
 
+    value: Mapped[int] = mapped_column(Integer(), nullable=True)
+
+    hardcode_value: Mapped[str] = mapped_column(Text(), nullable=True)
+
 class ProgressLog(BaseModel):
     __tablename__ = "progress_logs"
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     test_id: Mapped[int] = mapped_column(ForeignKey("tests.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-
-
-    value: Mapped[int] = mapped_column(Integer(), nullable=True)
-
-    hardcode_value: Mapped[str] = mapped_column(Text(), nullable=True)
 
 
 class Result(BaseModel):
@@ -253,12 +252,12 @@ class PersonalityPortrait(BaseModel):
     content: Mapped[str] = mapped_column(Text(), nullable=False)
     tests_count: Mapped[int] = mapped_column(Integer(), default=0)
 
+    technical_summary: Mapped[str] = mapped_column(Text(), nullable=True)
+
 class PortraitLog(BaseModel):
     __tablename__ = "portrait_logs"
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-
-    technical_summary: Mapped[str] = mapped_column(Text(), nullable=True)
 
 class BehavioralReport(BaseModel):
     __tablename__ = "behavioral_reports"
