@@ -134,16 +134,27 @@ export default function AdminPanel({ onBack }) {
     
     setIsGranting(true);
     try {
-      const response = await fetch(`${API_URL}/api/admin/grant`, {
+      let endpoint = `${API_URL}/api/admin/grant`;
+      let bodyData = {
+        target_username: grantTargetUsername,
+        grant_type: grantType
+      };
+
+      if (grantType === 'demo_7_days') {
+        endpoint = `${API_URL}/api/admin/grant_demo`;
+        bodyData = {
+          username_or_id: grantTargetUsername,
+          days: 7
+        };
+      }
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           "Authorization": `Bearer ${WebApp.initData}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          target_username: grantTargetUsername,
-          grant_type: grantType
-        })
+        body: JSON.stringify(bodyData)
       });
       
       const data = await response.json();
@@ -450,6 +461,7 @@ export default function AdminPanel({ onBack }) {
                 className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
               >
                 <option value="premium">Вечный Premium</option>
+                <option value="demo_7_days">Демо-доступ (7 дней)</option>
                 <option value="career">Блок Профориентация</option>
               </select>
             </div>

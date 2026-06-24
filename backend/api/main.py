@@ -67,9 +67,9 @@ async def get_profile(
         if db_user.premium_until and db_user.premium_until > now:
             access_level = "Premium"
             access_expires_at = db_user.premium_until.isoformat()
-        elif db_user.first_opened_at and db_user.first_opened_at + timedelta(days=14) > now:
+        elif db_user.first_opened_at and db_user.first_opened_at + timedelta(days=7) > now:
             access_level = "Демо-доступ"
-            access_expires_at = (db_user.first_opened_at + timedelta(days=14)).isoformat()
+            access_expires_at = (db_user.first_opened_at + timedelta(days=7)).isoformat()
     
     # Получаем все категории и тесты
     cats_query = select(Category).options(joinedload(Category.tests))
@@ -1361,6 +1361,39 @@ class TestCreate(BaseModel):
     category_id: int
     questions: List[QuestionCreate]
     results: List[ResultCreate]
+
+class GrantDemoRequest(BaseModel):
+    username_or_id: str
+    days: int = 7
+
+@app.post("/api/admin/grant_demo")
+async def admin_grant_demo(
+    request: GrantDemoRequest,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from fastapi import HTTPException
+    username = user_data.get("username", "")
+    if username not in ['ingenfrid', 'key_crp', 'fondlife']:
+        raise HTTPException(status_code=403, detail="Access denied")
+        
+    identifier = request.username_or_id.strip()
+    
+    target_user = None
+    if identifier.isdigit():
+        target_user = await session.get(User, int(identifier))
+    
+    if not target_user:
+        q = select(User).where(User.username.ilike(identifier.lstrip('@')))
+        target_user = (await session.execute(q)).scalars().first()
+        
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+        
+    target_user.premium_until = datetime.utcnow() + timedelta(days=request.days)
+    
+    await session.commit()
+    return {"status": "ok", "message": f"Демо-доступ (Premium) на {request.days} дней выдан пользователю {target_user.username or target_user.id}"}
 
 @app.get("/api/admin/tests/{test_id}")
 async def get_admin_test_details(
