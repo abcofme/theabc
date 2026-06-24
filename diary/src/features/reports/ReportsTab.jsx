@@ -314,9 +314,6 @@ export default function ReportsTab({ onSwitchTab }) {
 
   return (
     <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-2xl mx-auto w-full pt-4 pb-20 overflow-y-scroll">
-      <div className="flex justify-center mb-2">
-        <img src={bookIcon} alt="Поведенческий код" className="w-24 h-24 object-contain" />
-      </div>
       <h2 className="text-2xl font-bold text-[#F5E6D3] mb-2 px-4 text-center">Поведенческий код</h2>
       
       <p className="text-sm text-[#F5E6D3] text-center px-4 mb-8 leading-relaxed">
