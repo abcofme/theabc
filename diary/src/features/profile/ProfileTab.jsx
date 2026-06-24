@@ -110,11 +110,12 @@ export default function ProfileTab({ onOverlayOpen }) {
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [isOfferAccepted, setIsOfferAccepted] = useState(false);
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+  const [isSubscriptionInfoModalOpen, setIsSubscriptionInfoModalOpen] = useState(false);
 
   // Скрываем нижнее меню при открытии модалок
   useEffect(() => {
-    onOverlayOpen?.(isPremiumModalOpen || isOfferModalOpen || !!selectedResult || isQrExpanded);
-  }, [isPremiumModalOpen, isOfferModalOpen, selectedResult, isQrExpanded, onOverlayOpen]);
+    onOverlayOpen?.(isPremiumModalOpen || isOfferModalOpen || isSubscriptionInfoModalOpen || !!selectedResult || isQrExpanded);
+  }, [isPremiumModalOpen, isOfferModalOpen, isSubscriptionInfoModalOpen, selectedResult, isQrExpanded, onOverlayOpen]);
 
   // Получаем данные пользователя из Telegram (если открыто в браузере - ставим заглушку)
   const tgUser = WebApp.initDataUnsafe?.user || {
@@ -257,8 +258,9 @@ export default function ProfileTab({ onOverlayOpen }) {
       } else {
         WebApp.showAlert(`Ошибка: ${data.detail || "Неизвестная ошибка"}`);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
+      WebApp.showAlert(`Ошибка: ${error.message}`);
     } finally {
       setIsVerifyingInn(false);
     }
@@ -320,44 +322,15 @@ export default function ProfileTab({ onOverlayOpen }) {
   }
 
   const PortraitScale = ({ left, right, leftValue, rightValue, description }) => {
-    const [animatedLeft, setAnimatedLeft] = useState(0);
-    const [animatedRight, setAnimatedRight] = useState(0);
-
-    useEffect(() => {
-      const startTimer = setTimeout(() => {
-        let start = null;
-        const duration = 1500;
-
-        const step = (timestamp) => {
-          if (!start) start = timestamp;
-          const progress = Math.min((timestamp - start) / duration, 1);
-          const easeOut = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-          
-          setAnimatedLeft(leftValue * easeOut);
-          setAnimatedRight(rightValue * easeOut);
-
-          if (progress < 1) {
-            window.requestAnimationFrame(step);
-          } else {
-            setAnimatedLeft(leftValue);
-            setAnimatedRight(rightValue);
-          }
-        };
-        window.requestAnimationFrame(step);
-      }, 300);
-
-      return () => clearTimeout(startTimer);
-    }, [leftValue, rightValue]);
-
     return (
       <div className="mb-10 w-full">
         <div className="flex justify-between items-end text-base sm:text-lg font-bold text-[#F5E6D3] mb-3">
-          <span>{left} <span className="text-xs sm:text-sm font-medium opacity-70 ml-1">{Math.round(animatedLeft)}%</span></span>
-          <span><span className="text-xs sm:text-sm font-medium opacity-70 mr-1">{Math.round(animatedRight)}%</span> {right}</span>
+          <span>{left} <span className="text-xs sm:text-sm font-medium opacity-70 ml-1">{Math.round(leftValue)}%</span></span>
+          <span><span className="text-xs sm:text-sm font-medium opacity-70 mr-1">{Math.round(rightValue)}%</span> {right}</span>
         </div>
         <div className="h-4 w-full bg-rose-800 rounded-full overflow-hidden flex shadow-inner mb-4">
-          <div className="h-full bg-green-700" style={{ width: `${animatedLeft}%` }}></div>
-          <div className="h-full bg-orange-500" style={{ width: `${animatedRight}%` }}></div>
+          <div className="h-full bg-green-700" style={{ width: `${leftValue}%` }}></div>
+          <div className="h-full bg-orange-500" style={{ width: `${rightValue}%` }}></div>
         </div>
         {description && <div className="mt-4"><p className="text-sm sm:text-base text-[#F5E6D3] font-medium leading-relaxed block break-words whitespace-pre-wrap">{description}</p></div>}
       </div>
@@ -471,16 +444,18 @@ export default function ProfileTab({ onOverlayOpen }) {
           <h2 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] truncate">{tgUser.first_name}</h2>
           <p className="text-sm sm:text-base text-[#F5E6D3] font-medium truncate">@{tgUser.username}</p>
         </div>
-        <div className="flex flex-col items-end gap-1">
-          <span className={`font-bold px-2 py-1 rounded-xl text-xs sm:text-sm text-center ${
-            accessLevel === 'Premium' ? 'bg-amber-500 text-rose-950' : 
+        <div 
+          className={`flex items-center gap-1 transition-transform ${accessLevel === 'Premium' ? 'cursor-pointer active:scale-95' : ''}`}
+          onClick={() => { if (accessLevel === 'Premium') setIsSubscriptionInfoModalOpen(true); }}
+        >
+          <div className={`font-bold px-3 py-1.5 rounded-xl text-sm sm:text-base text-center flex items-center gap-1.5 shadow-sm ${
+            accessLevel === 'Premium' ? 'bg-green-500 text-green-950' : 
             accessLevel === 'Демо-доступ' ? 'bg-green-500/20 text-green-300' : 'bg-rose-950 text-[#F5E6D3]/60'
           }`}>
+            {accessLevel === 'Premium' && <Sparkles size={16} />}
             {accessLevel || 'Загрузка...'}
-          </span>
-          {accessExpiresAt && (
-             <span className="text-[10px] text-[#F5E6D3]/60">До {new Date(accessExpiresAt).toLocaleDateString()}</span>
-          )}
+          </div>
+          {accessLevel === 'Premium' && <ChevronRight size={20} className="text-[#F5E6D3]/60 shrink-0" />}
         </div>
       </div>
 
@@ -941,6 +916,64 @@ export default function ProfileTab({ onOverlayOpen }) {
             <div className="p-5 border-t border-rose-800/50 bg-rose-950/30 rounded-b-[2rem]">
               <button onClick={() => {setIsOfferAccepted(true); setIsOfferModalOpen(false);}} className="w-full py-3.5 bg-green-800 hover:bg-green-700 text-white font-bold rounded-xl transition-colors">
                 Принять и закрыть
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 8. SUBSCRIPTION INFO MODAL */}
+      {isSubscriptionInfoModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-rose-950/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="absolute inset-0" onClick={() => setIsSubscriptionInfoModalOpen(false)}></div>
+          <div className="relative bg-rose-900 w-full max-w-2xl rounded-t-[2rem] p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-full duration-300 flex flex-col max-h-[90vh]">
+            <button onClick={() => setIsSubscriptionInfoModalOpen(false)} className="absolute top-4 right-4 p-2 text-[#F5E6D3]/60 hover:text-[#F5E6D3] bg-rose-950/50 rounded-full transition-colors z-10">
+              <X size={20} />
+            </button>
+            <div className="text-center mb-6 mt-2">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-500/20 text-amber-500 rounded-full mb-4 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                <Sparkles size={32} />
+              </div>
+              <h2 className="text-2xl font-bold text-[#F5E6D3]">Ваша подписка</h2>
+            </div>
+            
+            <div className="overflow-y-auto flex-1 mb-4 hide-scrollbar">
+              <div className="bg-rose-950/50 rounded-2xl p-5 mb-4 border border-rose-800/50">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-[#F5E6D3]/70 font-medium">Статус</span>
+                  <span className="text-amber-500 font-bold bg-amber-500/10 px-2 py-1 rounded-lg text-sm border border-amber-500/20">Активна</span>
+                </div>
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-[#F5E6D3]/70 font-medium">Оформлена</span>
+                  <span className="text-[#F5E6D3] font-bold">
+                    {accessExpiresAt ? new Date(new Date(accessExpiresAt).setMonth(new Date(accessExpiresAt).getMonth() - 1)).toLocaleDateString() : 'Неизвестно'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#F5E6D3]/70 font-medium">Действует до</span>
+                  <span className="text-[#F5E6D3] font-bold">{accessExpiresAt ? new Date(accessExpiresAt).toLocaleDateString() : 'Неизвестно'}</span>
+                </div>
+              </div>
+
+              <div className="bg-rose-950/50 rounded-2xl p-5 mb-4 border border-rose-800/50">
+                <h3 className="text-[#F5E6D3] font-bold mb-4 flex items-center gap-2"><Check size={18} className="text-green-500"/> Преимущества Premium:</h3>
+                <ul className="text-[#F5E6D3]/90 text-sm space-y-3">
+                  <li className="flex gap-3"><Sparkles size={16} className="text-amber-500 shrink-0 mt-0.5" /> <span>Безлимитный анализ реакций в дневнике и соответствие портрету</span></li>
+                  <li className="flex gap-3"><Sparkles size={16} className="text-amber-500 shrink-0 mt-0.5" /> <span>Детализированные отчеты по сферам жизни</span></li>
+                  <li className="flex gap-3"><Sparkles size={16} className="text-amber-500 shrink-0 mt-0.5" /> <span>Ранний доступ к новым функциям и тестам</span></li>
+                  <li className="flex gap-3"><Sparkles size={16} className="text-amber-500 shrink-0 mt-0.5" /> <span>Приоритетная поддержка пользователей</span></li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="mt-auto pt-4 border-t border-rose-800/50">
+              <button
+                onClick={handleCancelSubscription}
+                disabled={isCancelling}
+                className="w-full py-4 bg-red-900/40 hover:bg-red-800/60 text-red-200 font-bold rounded-xl transition-all flex justify-center items-center gap-2 border border-red-800/50"
+              >
+                {isCancelling ? <span className="animate-spin text-xl">⏳</span> : <XCircle size={18} />}
+                {isCancelling ? "Отмена..." : "Отменить подписку"}
               </button>
             </div>
           </div>
