@@ -278,7 +278,7 @@ export default function CalendarTab({ onSheetOpen }) {
       return () => window.cancelAnimationFrame(animationFrameId);
     }, []);
 
-    let colorClass = "bg-green-500";
+    let colorClass = "bg-green-700";
     if (progress <= 25) colorClass = "bg-red-500";
     else if (progress <= 50) colorClass = "bg-orange-500";
     else if (progress <= 75) colorClass = "bg-yellow-400";
@@ -376,7 +376,7 @@ export default function CalendarTab({ onSheetOpen }) {
     }
 
     const score = entry.portrait_match_score;
-    let colorClass = "bg-green-500";
+    let colorClass = "bg-green-700";
     if (score <= 25) colorClass = "bg-red-500";
     else if (score <= 50) colorClass = "bg-orange-500";
     else if (score <= 75) colorClass = "bg-yellow-400";
