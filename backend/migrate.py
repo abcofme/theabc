@@ -51,8 +51,13 @@ async def migrate():
                     id BIGSERIAL PRIMARY KEY,
                     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
                     test_id BIGINT NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
-                    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
+                    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+                    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
                 );
+            """))
+            # Fix in case table was created without updated_at
+            await conn.execute(text("""
+                ALTER TABLE progress_logs ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now();
             """))
             print("Successfully created progress_logs table.")
             
@@ -61,8 +66,13 @@ async def migrate():
                 CREATE TABLE IF NOT EXISTS portrait_logs (
                     id BIGSERIAL PRIMARY KEY,
                     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
+                    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+                    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
                 );
+            """))
+            # Fix in case table was created without updated_at
+            await conn.execute(text("""
+                ALTER TABLE portrait_logs ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now();
             """))
             print("Successfully created portrait_logs table.")
         except Exception as e:
