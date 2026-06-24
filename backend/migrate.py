@@ -43,6 +43,9 @@ async def migrate():
             await conn.execute(text("""
                 ALTER TABLE diary_entries ADD COLUMN IF NOT EXISTS portrait_match_explanation TEXT;
             """))
+            await conn.execute(text("""
+                ALTER TABLE diary_entries ADD COLUMN IF NOT EXISTS portrait_match_score INTEGER;
+            """))
             print("Successfully updated diary_entries.")
             
             print("Creating progress_logs table...")
