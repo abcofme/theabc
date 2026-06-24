@@ -1703,7 +1703,12 @@ async def get_friends(
     user_data: dict = Depends(validate_twa_data),
     session: AsyncSession = Depends(get_session)
 ):
+    from backend.database.models import PersonalityPortrait, CompatibilityReport
     user_id = user_data.get("id")
+    
+    # Check if current user has portrait
+    current_user_portrait = (await session.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
+    current_user_has_portrait = bool(current_user_portrait)
     
     # Get all friendships where user is involved
     query = select(Friendship).where(
@@ -1720,12 +1725,28 @@ async def get_friends(
             other_id = f.friend_id if f.user_id == user_id else f.user_id
             other_user = await session.get(User, other_id)
             if other_user:
+                # Check if other user has portrait
+                other_portrait = (await session.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == other_id))).scalars().first()
+                has_portrait = bool(other_portrait)
+                
+                # Check if compatibility exists between these two
+                compat_query = select(CompatibilityReport).where(
+                    or_(
+                        and_(CompatibilityReport.user_id == user_id, CompatibilityReport.friend_id == other_id),
+                        and_(CompatibilityReport.user_id == other_id, CompatibilityReport.friend_id == user_id)
+                    )
+                )
+                compat = (await session.execute(compat_query)).scalars().first()
+                has_compatibility = bool(compat)
+                
                 friends.append({
                     "id": other_user.id,
                     "friendship_id": f.id,
                     "username": other_user.username,
                     "first_name": other_user.tg_first_name,
-                    "photo_url": other_user.photo_url
+                    "photo_url": other_user.photo_url,
+                    "has_portrait": has_portrait,
+                    "has_compatibility": has_compatibility
                 })
         elif f.status == "pending":
             if f.friend_id == user_id:
@@ -1754,7 +1775,8 @@ async def get_friends(
     return {
         "friends": friends,
         "incoming_requests": incoming_requests,
-        "outgoing_requests": outgoing_requests
+        "outgoing_requests": outgoing_requests,
+        "current_user_has_portrait": current_user_has_portrait
     }
 
 @app.post("/api/friends/request/{target_id}")
