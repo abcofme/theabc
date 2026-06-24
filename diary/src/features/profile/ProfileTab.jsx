@@ -943,10 +943,10 @@ export default function ProfileTab({ onOverlayOpen }) {
               <div className="bg-rose-950/50 rounded-2xl p-5 mb-4 border border-rose-800/50">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-[#F5E6D3]/70 font-medium">Статус</span>
-                  <span className="text-green-500 font-bold bg-green-500/10 px-2 py-1 rounded-lg text-sm border border-green-500/20">Активна</span>
+                  <span className="text-green-500 font-bold bg-green-500/10 px-2 py-1 rounded-lg text-sm border border-green-500/20">Активен</span>
                 </div>
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-[#F5E6D3]/70 font-medium">Оформлена</span>
+                  <span className="text-[#F5E6D3]/70 font-medium">Оформлен</span>
                   <span className="text-[#F5E6D3] font-bold">
                     {accessExpiresAt ? new Date(new Date(accessExpiresAt).setMonth(new Date(accessExpiresAt).getMonth() - 1)).toLocaleDateString() : 'Неизвестно'}
                   </span>
