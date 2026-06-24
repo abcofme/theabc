@@ -626,12 +626,18 @@ export default function ProfileTab({ onOverlayOpen }) {
                 <div className="mb-4 mx-2 bg-rose-900/80 p-6 rounded-3xl text-center">
                   <p className="text-[#F5E6D3] text-sm mb-4 font-medium">Добавлены новые тесты! После прохождения вы можете сформировать новый портрет личности</p>
                   {passedTests < totalTests ? (
-                    <button disabled className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-rose-800 text-[#F5E6D3] font-bold cursor-not-allowed">
-                      <Lock size={18} /> Мой портрет личности
+                    <button disabled className="w-full flex flex-col items-center justify-center text-center p-5 rounded-2xl bg-rose-800 text-[#F5E6D3] cursor-not-allowed">
+                      <Lock size={32} className="mb-2" /> 
+                      <div>
+                        <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Мой портрет личности</h3>
+                      </div>
                     </button>
                   ) : (
-                    <button onClick={handleGeneratePortrait} className="w-full flex items-center justify-center gap-2 bg-green-800 hover:bg-green-700 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] shadow-lg shadow-green-900/40">
-                      <ClipboardList size={18} /> Мой портрет личности
+                    <button onClick={handleGeneratePortrait} className="w-full flex flex-col items-center justify-center text-center p-5 rounded-2xl bg-green-800 hover:bg-green-700 text-[#F5E6D3] transition-colors active:scale-[0.98] shadow-lg shadow-green-900/40">
+                      <ClipboardList size={32} className="mb-2" />
+                      <div>
+                        <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Мой портрет личности</h3>
+                      </div>
                     </button>
                   )}
                 </div>
@@ -655,16 +661,22 @@ export default function ProfileTab({ onOverlayOpen }) {
               {totalTests > 0 && passedTests < totalTests && !portraitData && (
                 <div className="flex flex-col items-center text-center mt-auto bg-rose-900/80 p-6 rounded-3xl">
                   <p className="text-[#F5E6D3] text-sm mb-6">Чтобы сформировать портрет личности, пройдите все тесты.</p>
-                  <button disabled className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-rose-800 text-[#F5E6D3] font-bold cursor-not-allowed">
-                    <Lock size={18} /> Мой портрет личности
+                  <button disabled className="w-full flex flex-col items-center justify-center text-center p-5 rounded-2xl bg-rose-800 text-[#F5E6D3] cursor-not-allowed">
+                    <Lock size={32} className="mb-2" /> 
+                    <div>
+                      <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Мой портрет личности</h3>
+                    </div>
                   </button>
                 </div>
               )}
 
                 {totalTests > 0 && passedTests === totalTests && !portraitData && (
                   <div className="mt-auto">
-                    <button onClick={handleGeneratePortrait} className="w-full flex items-center justify-center gap-2 bg-green-800 hover:bg-green-700 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] shadow-lg shadow-green-900/40">
-                      <ClipboardList size={18} /> Мой портрет личности
+                    <button onClick={handleGeneratePortrait} className="w-full flex flex-col items-center justify-center text-center p-5 rounded-2xl bg-green-800 hover:bg-green-700 text-[#F5E6D3] transition-colors active:scale-[0.98] shadow-lg shadow-green-900/40">
+                      <ClipboardList size={32} className="mb-2" />
+                      <div>
+                        <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Мой портрет личности</h3>
+                      </div>
                     </button>
                   </div>
                 )}
