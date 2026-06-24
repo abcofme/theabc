@@ -1,7 +1,7 @@
 import asyncio
 import os
 from datetime import datetime
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +12,43 @@ from sqlalchemy.orm import selectinload, joinedload
 from backend.database import async_session
 from backend.database.models import User, Category, Test, Question, Answer, Progress, Result, DiaryEntry, PersonalityPortrait, BehavioralReport, Friendship
 from backend.telegram.views.hardcoded_tests import get_hardcoded_test_result
+
+
+async def generate_technical_summary_bg(user_id: int, generated_text: str):
+    import os
+    import httpx
+    from backend.database import async_session
+    from backend.database.models import PersonalityPortrait
+    from sqlalchemy import select
+    
+    ai_scale_token = os.getenv("TIMEWEB_AI_SCALE_TOKEN", os.getenv("TIMEWEB_AI_TOKEN"))
+    ai_scale_url = os.getenv("TIMEWEB_AI_SCALE_URL", os.getenv("TIMEWEB_AI_URL"))
+    if ai_scale_url and not ai_scale_url.endswith("/chat/completions"):
+        ai_scale_url = ai_scale_url.rstrip("/") + "/chat/completions"
+        
+    if ai_scale_url and ai_scale_token:
+        summary_prompt = f"""Оригинальный текст психологического портрета:\n{generated_text}\n\nЗадание:\nНапиши техническую выжимку ВСЕХ интерпретаций из портрета выше. Дословно перенеси смыслы всех результатов, но в максимально сокращенном формате (используй сухие факты, списки, аббревиатуры). Никакая информация не должна быть утеряна, но она должна быть максимально сжата. Текст не обязательно должен быть легко читаемым для человека, но обязан быть 100% понятным для ИИ, так как он будет использоваться как контекст личности.\nВыведи ТОЛЬКО текст выжимки, без вступлений."""
+        try:
+            async with httpx.AsyncClient(timeout=None) as client:
+                ai_summary_response = await client.post(
+                    ai_scale_url,
+                    headers={"Authorization": f"Bearer {ai_scale_token}", "Content-Type": "application/json"},
+                    json={
+                        "model": "gpt-4o-mini",
+                        "messages": [{"role": "user", "content": summary_prompt}]
+                    }
+                )
+                if ai_summary_response.status_code == 200:
+                    ai_summary_data = ai_summary_response.json()
+                    technical_summary = ai_summary_data["choices"][0]["message"]["content"].strip()
+                    
+                    async with async_session() as db:
+                        existing = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
+                        if existing:
+                            existing.technical_summary = technical_summary
+                            await db.commit()
+        except Exception as sum_e:
+            print("Failed to generate technical summary:", sum_e)
 
 app = FastAPI(title="TheABC Diary API")
 
@@ -337,34 +374,10 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
             content = generated_text
             technical_summary = ""
             
-            # Теперь делаем второй запрос к gpt-4o-mini для генерации выжимки
-            ai_scale_token = os.getenv("TIMEWEB_AI_SCALE_TOKEN", os.getenv("TIMEWEB_AI_TOKEN"))
-            ai_scale_url = os.getenv("TIMEWEB_AI_SCALE_URL", os.getenv("TIMEWEB_AI_URL"))
-            if ai_scale_url and not ai_scale_url.endswith("/chat/completions"):
-                ai_scale_url = ai_scale_url.rstrip("/") + "/chat/completions"
-                
-            if ai_scale_url and ai_scale_token:
-                summary_prompt = f"""Оригинальный текст психологического портрета:
-{generated_text}
-
-Задание:
-Напиши техническую выжимку ВСЕХ интерпретаций из портрета выше. Дословно перенеси смыслы всех результатов, но в максимально сокращенном формате (используй сухие факты, списки, аббревиатуры). Никакая информация не должна быть утеряна, но она должна быть максимально сжата. Текст не обязательно должен быть легко читаемым для человека, но обязан быть 100% понятным для ИИ, так как он будет использоваться как контекст личности.
-Выведи ТОЛЬКО текст выжимки, без вступлений."""
-                try:
-                    ai_summary_response = await client.post(
-                        ai_scale_url,
-                        headers={"Authorization": f"Bearer {ai_scale_token}", "Content-Type": "application/json"},
-                        json={
-                            "model": "gpt-4o-mini",
-                            "messages": [{"role": "user", "content": summary_prompt}]
-                        }
-                    )
-                    if ai_summary_response.status_code == 200:
-                        ai_summary_data = ai_summary_response.json()
-                        technical_summary = ai_summary_data["choices"][0]["message"]["content"].strip()
-                except Exception as sum_e:
-                    print("Failed to generate technical summary:", sum_e)
+            # Фоновая задача: мы больше не ждем gpt-4o-mini здесь
+            # Запускаем ее отдельно или вообще в другом месте
             
+
             async with async_session() as db:
                 existing = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
                 if existing:
@@ -390,6 +403,7 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
 
 @app.post("/api/portrait/generate")
 async def generate_personality_portrait(
+    background_tasks: BackgroundTasks,
     user_data: dict = Depends(validate_twa_data),
     session: AsyncSession = Depends(get_session)
 ):
@@ -508,6 +522,10 @@ async def generate_personality_portrait(
             result = task.result()
             if result.get("status") == "success":
                 p = result["portrait"]
+                
+                # Запускаем фоновую генерацию технической выжимки
+                asyncio.create_task(generate_technical_summary_bg(user_id, p.content))
+                
                 output = {
                     "status": "success",
                     "portrait": {
