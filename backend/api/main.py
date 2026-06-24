@@ -123,9 +123,10 @@ async def get_profile(
     for cat in categories:
         cat_data = {"id": cat.id, "name": cat.name, "tests": []}
         for t in cat.tests:
-            total_tests += 1
+            if cat.name != "Профориентация":
+                total_tests += 1
             passed = t.id in user_results
-            if passed:
+            if passed and cat.name != "Профориентация":
                 passed_tests += 1
             cat_data["tests"].append({
                 "id": t.id,
@@ -398,8 +399,11 @@ async def generate_personality_portrait(
     prog_query = select(Progress).where(Progress.user_id == user_id).options(joinedload(Progress.test))
     progresses = (await session.execute(prog_query)).scalars().all()
     
-    total_tests = (await session.execute(select(func.count(Test.id)))).scalar()
-    
+    career_cat = (await session.execute(select(Category).where(Category.name == "Профориентация"))).scalars().first()
+    if career_cat:
+        total_tests = (await session.execute(select(func.count(Test.id)).where(Test.category_id != career_cat.id))).scalar()
+    else:
+        total_tests = (await session.execute(select(func.count(Test.id)))).scalar()    
     # Собираем текстовые интерпретации
     test_results_text = ""
     for p in progresses:

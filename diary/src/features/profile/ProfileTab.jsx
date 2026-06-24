@@ -634,13 +634,15 @@ export default function ProfileTab({ onOverlayOpen }) {
 
       {activeSubTab === 'portrait' && (
         <div className="px-2 sm:px-4 pt-0 animate-in fade-in slide-in-from-right-8 duration-300 flex flex-col">
-          <button 
-            onClick={() => setActiveSubTab('main')}
-            className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-4 mx-2 transition-colors self-start"
-          >
-            <ChevronLeft size={20} />
-            <span className="font-medium">Назад</span>
-          </button>
+          {!isGeneratingPortrait && (
+            <button 
+              onClick={() => setActiveSubTab('main')}
+              className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-4 mx-2 transition-colors self-start"
+            >
+              <ChevronLeft size={20} />
+              <span className="font-medium">Назад</span>
+            </button>
+          )}
 
           {isGeneratingPortrait ? (
             <div className="flex-1 flex flex-col items-center justify-center py-12 px-4">
