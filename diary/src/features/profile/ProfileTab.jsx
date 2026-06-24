@@ -533,13 +533,13 @@ export default function ProfileTab({ onOverlayOpen }) {
                 )}
                 <button 
                   onClick={() => setActiveSubTab('portrait')}
-                  className="w-full bg-rose-900/80 rounded-2xl p-4 min-h-[88px] text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
+                  className="w-full bg-rose-900/80 rounded-2xl p-5 hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex flex-col items-center justify-center text-center shadow-sm backdrop-blur-sm"
                 >
-                  <div className="text-left">
+                  <ClipboardList className="text-[#F5E6D3] mb-2" size={32} />
+                  <div>
                     <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Мой портрет личности</h3>
                     <p className="text-sm text-[#F5E6D3]/80">Подробный анализ ваших черт характера</p>
                   </div>
-                  <ClipboardList className="text-[#F5E6D3]" size={24} />
                 </button>
 
               </>
@@ -548,13 +548,13 @@ export default function ProfileTab({ onOverlayOpen }) {
             {/* ВНЕ ЗАВИСИМОСТИ ОТ ПОРТРЕТА */}
             <button 
               onClick={() => setActiveSubTab('friends')}
-              className="w-full bg-rose-900/80 rounded-2xl p-4 min-h-[88px] text-left hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex items-center justify-between shadow-sm backdrop-blur-sm"
+              className="w-full bg-rose-900/80 rounded-2xl p-5 hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex flex-col items-center justify-center text-center shadow-sm backdrop-blur-sm"
             >
+              <Users className="text-[#F5E6D3] mb-2" size={32} />
               <div>
                 <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Друзья</h3>
                 <p className="text-sm text-[#F5E6D3]/80">Узнайте совместимость с вашим другом или партнером!</p>
               </div>
-              <Users className="text-[#F5E6D3]" size={24} />
             </button>
 
             {/* QR CODE BLOCK */}
