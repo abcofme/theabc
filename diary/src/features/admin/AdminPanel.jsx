@@ -40,7 +40,7 @@ export default function AdminPanel({ onBack }) {
     setIsLoadingLinks(true);
     try {
       const response = await fetch(`${API_URL}/api/admin/tracking_links`, {
-        headers: { "Authorization": `Bearer ` }
+        headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` }
       });
       if (response.ok) {
         setTrackingLinks(await response.json());
@@ -59,7 +59,7 @@ export default function AdminPanel({ onBack }) {
       const response = await fetch(`${API_URL}/api/admin/tracking_links`, {
         method: 'POST',
         headers: {
-          "Authorization": `Bearer `,
+          "Authorization": `Bearer ${encodeURI(WebApp.initData)}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ name: newLinkName })
@@ -84,7 +84,7 @@ export default function AdminPanel({ onBack }) {
       try {
         const response = await fetch(`${API_URL}/api/admin/tracking_links/${id}`, {
           method: 'DELETE',
-          headers: { "Authorization": `Bearer ` }
+          headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` }
         });
         if (response.ok) {
           fetchTrackingLinks();
@@ -109,7 +109,7 @@ export default function AdminPanel({ onBack }) {
       if (isUnique) params.append('unique', 'true');
 
       const response = await fetch(`${API_URL}/api/admin/stats?${params.toString()}`, {
-        headers: { "Authorization": `Bearer ` }
+        headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` }
       });
       
       if (!response.ok) {
@@ -151,7 +151,7 @@ export default function AdminPanel({ onBack }) {
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          "Authorization": `Bearer `,
+          "Authorization": `Bearer ${encodeURI(WebApp.initData)}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify(bodyData)
@@ -183,7 +183,7 @@ export default function AdminPanel({ onBack }) {
       const response = await fetch(`${API_URL}/api/admin/revoke`, {
         method: 'POST',
         headers: {
-          "Authorization": `Bearer `,
+          "Authorization": `Bearer ${encodeURI(WebApp.initData)}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -216,7 +216,7 @@ export default function AdminPanel({ onBack }) {
     try {
       const response = await fetch(`${API_URL}/api/admin/tests/${testId}`, {
         method: 'DELETE',
-        headers: { "Authorization": `Bearer ` }
+        headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` }
       });
       
       if (!response.ok) {

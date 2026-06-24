@@ -27,8 +27,8 @@ export default function ReportsTab({ onSwitchTab }) {
   useEffect(() => {
     if (WebApp.initData) {
       Promise.all([
-        fetch(`${API_URL}/api/reports`, { headers: { "Authorization": `Bearer ` } }).then(res => res.json()),
-        fetch(`${API_URL}/api/profile`, { headers: { "Authorization": `Bearer ` } }).then(res => res.json())
+        fetch(`${API_URL}/api/reports`, { headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` } }).then(res => res.json()),
+        fetch(`${API_URL}/api/profile`, { headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` } }).then(res => res.json())
       ])
       .then(([reportsData, profileData]) => {
         setReports(reportsData || []);
@@ -51,7 +51,7 @@ export default function ReportsTab({ onSwitchTab }) {
     try {
       const res = await fetch(`${API_URL}/api/reports/${reportId}`, {
         method: "DELETE",
-        headers: { "Authorization": `Bearer ` }
+        headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` }
       });
       if (!res.ok) throw new Error("Failed to delete");
       setReports(prev => prev.filter(r => r.id !== reportId));
@@ -67,7 +67,7 @@ export default function ReportsTab({ onSwitchTab }) {
       try {
         await fetch(`${API_URL}/api/reports/${report.id}/read`, {
           method: "POST",
-          headers: { "Authorization": `Bearer ` }
+          headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` }
         });
         setReports(prev => prev.map(r => r.id === report.id ? { ...r, is_read: true } : r));
       } catch (err) {
@@ -143,7 +143,7 @@ export default function ReportsTab({ onSwitchTab }) {
       const res = await fetch(`${API_URL}/api/reports/generate`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer `,
+          "Authorization": `Bearer ${encodeURI(WebApp.initData)}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
@@ -174,7 +174,7 @@ export default function ReportsTab({ onSwitchTab }) {
       const response = await fetch(`${API_URL}/api/career/buy`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer `,
+          "Authorization": `Bearer ${encodeURI(WebApp.initData)}`,
           "Content-Type": "application/json"
         }
       });

@@ -128,7 +128,7 @@ export default function ProfileTab({ onOverlayOpen }) {
   useEffect(() => {
     if (WebApp.initData) {
       fetch(`${API_URL}/api/profile`, {
-        headers: { "Authorization": `Bearer ` }
+        headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` }
       })
         .then(res => res.json())
         .then(data => {
@@ -147,7 +147,7 @@ export default function ProfileTab({ onOverlayOpen }) {
         });
 
       fetch(`${API_URL}/api/referral`, {
-        headers: { "Authorization": `Bearer ` }
+        headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` }
       })
       .then(res => res.json())
       .then(data => {
@@ -170,7 +170,7 @@ export default function ProfileTab({ onOverlayOpen }) {
     try {
       const response = await fetch(`${API_URL}/api/portrait/generate`, {
         method: "POST",
-        headers: { "Authorization": `Bearer ` }
+        headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` }
       });
       const data = await response.json();
       if (!response.ok) {
@@ -196,7 +196,7 @@ export default function ProfileTab({ onOverlayOpen }) {
     try {
       const response = await fetch(`${API_URL}/api/portrait/clear`, {
         method: "DELETE",
-        headers: { "Authorization": `Bearer ` }
+        headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` }
       });
       if (response.ok) {
         setPortraitData(null);
@@ -218,7 +218,7 @@ export default function ProfileTab({ onOverlayOpen }) {
       try {
         const res = await fetch(`${API_URL}/api/subscription/cancel`, {
           method: 'POST',
-          headers: { "Authorization": `Bearer ` }
+          headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` }
         });
         const result = await res.json();
         if (result.status === 'success') {
@@ -246,7 +246,7 @@ export default function ProfileTab({ onOverlayOpen }) {
       const response = await fetch(`${API_URL}/api/referral/verify_inn`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer `,
+          "Authorization": `Bearer ${encodeURI(WebApp.initData)}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ inn: innInput })
@@ -272,7 +272,7 @@ export default function ProfileTab({ onOverlayOpen }) {
       const response = await fetch(`${API_URL}/api/subscription/buy`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer `,
+          "Authorization": `Bearer ${encodeURI(WebApp.initData)}`,
           "Content-Type": "application/json"
         }
       });
@@ -295,7 +295,7 @@ export default function ProfileTab({ onOverlayOpen }) {
       const response = await fetch(`${API_URL}/api/referral/withdraw`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer `,
+          "Authorization": `Bearer ${encodeURI(WebApp.initData)}`,
           "Content-Type": "application/json"
         }
       });

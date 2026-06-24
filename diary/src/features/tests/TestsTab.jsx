@@ -48,7 +48,7 @@ export default function TestsTab({ onOverlayOpen }) {
   const fetchCategories = () => {
     if (WebApp.initData) {
       fetch(`${API_URL}/api/profile`, {
-        headers: { "Authorization": `Bearer ` }
+        headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` }
       })
       .then(res => res.json())
       .then(data => {
@@ -90,7 +90,7 @@ export default function TestsTab({ onOverlayOpen }) {
     
     try {
       const response = await fetch(`${API_URL}/api/tests/${test.id}`, {
-        headers: { "Authorization": `Bearer ` }
+        headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` }
       });
       if (response.ok) {
         const data = await response.json();
@@ -120,7 +120,7 @@ export default function TestsTab({ onOverlayOpen }) {
         const response = await fetch(`${API_URL}/api/tests/${testDetails.id}/submit`, {
           method: "POST",
           headers: { 
-            "Authorization": `Bearer `,
+            "Authorization": `Bearer ${encodeURI(WebApp.initData)}`,
             "Content-Type": "application/json"
           },
           body: JSON.stringify({ answer_ids: newAnswers })
@@ -156,7 +156,7 @@ export default function TestsTab({ onOverlayOpen }) {
       const resId = selectedResult.id;
       const response = await fetch(`${API_URL}/api/tests/${resId}/progress`, {
         method: "DELETE",
-        headers: { "Authorization": `Bearer ` }
+        headers: { "Authorization": `Bearer ${encodeURI(WebApp.initData)}` }
       });
       if (response.ok) {
         const testToRetake = { ...selectedResult, passed: false };
@@ -182,7 +182,7 @@ export default function TestsTab({ onOverlayOpen }) {
       const response = await fetch(`${API_URL}/api/career/buy`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer `,
+          "Authorization": `Bearer ${encodeURI(WebApp.initData)}`,
           "Content-Type": "application/json"
         }
       });
