@@ -44,6 +44,27 @@ async def migrate():
                 ALTER TABLE diary_entries ADD COLUMN IF NOT EXISTS portrait_match_explanation TEXT;
             """))
             print("Successfully updated diary_entries.")
+            
+            print("Creating progress_logs table...")
+            await conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS progress_logs (
+                    id BIGSERIAL PRIMARY KEY,
+                    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                    test_id BIGINT NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
+                    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
+                );
+            """))
+            print("Successfully created progress_logs table.")
+            
+            print("Creating portrait_logs table...")
+            await conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS portrait_logs (
+                    id BIGSERIAL PRIMARY KEY,
+                    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
+                );
+            """))
+            print("Successfully created portrait_logs table.")
         except Exception as e:
             print(f"Migration failed: {e}")
 

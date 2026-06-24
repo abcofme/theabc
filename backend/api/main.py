@@ -165,7 +165,7 @@ async def check_access(user_id: int, session: AsyncSession):
     now = datetime.utcnow()
     if user.premium_until and user.premium_until > now:
         return
-    if user.first_opened_at and user.first_opened_at + timedelta(days=14) > now:
+    if user.first_opened_at and user.first_opened_at + timedelta(days=7) > now:
         return
     raise HTTPException(status_code=403, detail="Для доступа к этой функции необходим Демо-доступ или Premium подписка.")
 
@@ -299,7 +299,7 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
     import re
     from fastapi import HTTPException
     from backend.database import async_session
-    from backend.database.models import PersonalityPortrait
+    from backend.database.models import PersonalityPortrait, PortraitLog
     from sqlalchemy import select
     
     # Добавляем инструкции для JSON формата и технического саммари
@@ -312,7 +312,7 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
                 ai_url,
                 headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                 json={
-                    "model": "claude-3-opus",
+                    "model": "claude-3.5-sonnet",
                     "messages": [{"role": "user", "content": prompt}]
                 }
             )
@@ -322,7 +322,7 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
                     ai_url,
                     headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                     json={
-                        "model": "claude-3-opus",
+                        "model": "claude-3.5-sonnet",
                         "messages": [{"role": "user", "content": prompt}]
                     }
                 )
@@ -375,6 +375,10 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
                 else:
                     new_portrait = PersonalityPortrait(user_id=user_id, content=content, technical_summary=technical_summary, tests_count=user_tests_count)
                     db.add(new_portrait)
+                
+                # Записываем генерацию в лог для не-уникальной статистики
+                db.add(PortraitLog(user_id=user_id))
+                
                 await db.commit()
                 await db.refresh(new_portrait)
             return {"status": "success", "portrait": new_portrait}
@@ -579,7 +583,7 @@ async def _generate_report_bg(user_id: int, report_title: str, report_prompt: st
     from backend.database.models import BehavioralReport
     try:
         payload = {
-            "model": "claude-3-opus",
+            "model": "claude-3.5-sonnet",
             "messages": [{"role": "user", "content": report_prompt}]
         }
         print(f"--- Отправка запроса к ИИ ({payload['model']}) ---")
@@ -595,7 +599,7 @@ async def _generate_report_bg(user_id: int, report_title: str, report_prompt: st
             )
             
             if ai_response.status_code == 404:
-                payload["model"] = "claude-3-opus"
+                payload["model"] = "claude-3.5-sonnet"
                 ai_response = await client.post(
                     ai_url,
                     headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
@@ -1106,6 +1110,10 @@ async def submit_test(
                 hardcode_value=result_text
             )
             session.add(progress)
+            
+            # Логируем прохождение для статистики
+            from backend.database.models import ProgressLog
+            session.add(ProgressLog(user_id=user_id, test_id=test_id))
         else:
             points = sum((a.value or 0) for a in answers)
             result_query = select(Result).where(
@@ -1121,6 +1129,10 @@ async def submit_test(
                 value=points
             )
             session.add(progress)
+            
+            # Логируем прохождение для статистики
+            from backend.database.models import ProgressLog
+            session.add(ProgressLog(user_id=user_id, test_id=test_id))
             result_text = result_obj.name if result_obj and result_obj.name else "Результат не найден"
             
         await session.commit()
@@ -1264,8 +1276,13 @@ async def get_admin_stats(
         reports_q = apply_filters(reports_q, BehavioralReport)
         reports_count = (await session.execute(reports_q)).scalar() or 0
         
-        portraits_q = select(get_count_expr(PersonalityPortrait))
-        portraits_q = apply_filters(portraits_q, PersonalityPortrait)
+        from backend.database.models import PortraitLog, ProgressLog
+        if not unique:
+            portraits_q = select(get_count_expr(PortraitLog))
+            portraits_q = apply_filters(portraits_q, PortraitLog)
+        else:
+            portraits_q = select(get_count_expr(PersonalityPortrait))
+            portraits_q = apply_filters(portraits_q, PersonalityPortrait)
         portraits_count = (await session.execute(portraits_q)).scalar() or 0
         
         # Referral users
@@ -1311,9 +1328,13 @@ async def get_admin_stats(
         for cat in categories:
             cat_data = {"id": cat.id, "name": cat.name, "tests": []}
             for t in cat.tests:
-                prog_q = select(get_count_expr(Progress)).where(Progress.test_id == t.id)
-                prog_q = apply_filters(prog_q, Progress)
-                prog_q = prog_q.where(or_(Progress.value.isnot(None), Progress.hardcode_value.isnot(None)))
+                if not unique:
+                    prog_q = select(get_count_expr(ProgressLog)).where(ProgressLog.test_id == t.id)
+                    prog_q = apply_filters(prog_q, ProgressLog)
+                else:
+                    prog_q = select(get_count_expr(Progress)).where(Progress.test_id == t.id)
+                    prog_q = apply_filters(prog_q, Progress)
+                    prog_q = prog_q.where(or_(Progress.value.isnot(None), Progress.hardcode_value.isnot(None)))
                 
                 count = (await session.execute(prog_q)).scalar() or 0
                 cat_data["tests"].append({
@@ -1966,7 +1987,7 @@ async def _generate_compatibility_bg(user_id: int, friend_id: int, compat_type: 
                 ai_url,
                 headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                 json={
-                    "model": "claude-3-opus",
+                    "model": "claude-3.5-sonnet",
                     "messages": [{"role": "user", "content": prompt}]
                 }
             )
@@ -1975,7 +1996,7 @@ async def _generate_compatibility_bg(user_id: int, friend_id: int, compat_type: 
                     ai_url,
                     headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                     json={
-                        "model": "claude-3-opus",
+                        "model": "claude-3.5-sonnet",
                         "messages": [{"role": "user", "content": prompt}]
                     }
                 )
