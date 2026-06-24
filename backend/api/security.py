@@ -14,6 +14,9 @@ def validate_twa_data(auth_header: str = Security(header_scheme)) -> dict:
         raise HTTPException(status_code=401, detail="Invalid token format")
     
     init_data = auth_header.replace("Bearer ", "")
+    # Декодируем строку, так как фронтенд кодирует её (через encodeURI/encodeURIComponent) 
+    # для корректной передачи non-ASCII символов в заголовках iOS Safari
+    init_data = urllib.parse.unquote(init_data)
     parsed_data = dict(urllib.parse.parse_qsl(init_data))
     
     if "hash" not in parsed_data:

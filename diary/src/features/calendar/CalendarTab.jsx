@@ -76,6 +76,10 @@ export default function CalendarTab({ onSheetOpen }) {
     })
       .then(res => res.json())
       .then(data => {
+        if (!Array.isArray(data)) {
+          console.error("Ошибка загрузки дневника: получен некорректный формат данных", data);
+          return;
+        }
         const loadedEntries = data.map(entry => ({
           id: entry.id,
           date: new Date(entry.date),
