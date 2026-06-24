@@ -29,7 +29,7 @@ async def generate_technical_summary_bg(user_id: int, generated_text: str):
     if ai_scale_url and ai_scale_token:
         summary_prompt = f"""Оригинальный текст психологического портрета:\n{generated_text}\n\nЗадание:\nНапиши техническую выжимку ВСЕХ интерпретаций из портрета выше. Дословно перенеси смыслы всех результатов, но в максимально сокращенном формате (используй сухие факты, списки, аббревиатуры). Никакая информация не должна быть утеряна, но она должна быть максимально сжата. Текст не обязательно должен быть легко читаемым для человека, но обязан быть 100% понятным для ИИ, так как он будет использоваться как контекст личности.\nВыведи ТОЛЬКО текст выжимки, без вступлений."""
         try:
-            async with httpx.AsyncClient(timeout=None) as client:
+            async with httpx.AsyncClient(timeout=90.0) as client:
                 ai_summary_response = await client.post(
                     ai_scale_url,
                     headers={"Authorization": f"Bearer {ai_scale_token}", "Content-Type": "application/json"},
@@ -344,7 +344,7 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
     prompt += '\n\nВыведи только красивый Markdown текст (включая блок с ```json внутри для шкал). Без дополнительных вступлений.'
 
     try:
-        async with httpx.AsyncClient(timeout=None) as client:
+        async with httpx.AsyncClient(timeout=90.0) as client:
             ai_response = await client.post(
                 ai_url,
                 headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
@@ -394,6 +394,11 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
                 
                 await db.commit()
                 await db.refresh(new_portrait)
+                
+            # Запускаем фоновую генерацию технической выжимки
+            import asyncio
+            asyncio.create_task(generate_technical_summary_bg(user_id, content))
+            
             return {"status": "success", "portrait": new_portrait}
     except Exception as e:
         import traceback
@@ -511,41 +516,9 @@ async def generate_personality_portrait(
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail="TIMEWEB_AI_TOKEN is not set on the server")
         
-    task = asyncio.create_task(_generate_portrait_bg(user_id, total_tests, prompt, ai_url, ai_token))
-    
-    async def stream_generator():
-        try:
-            while not task.done():
-                yield b" "
-                await asyncio.sleep(5)
-                
-            result = task.result()
-            if result.get("status") == "success":
-                p = result["portrait"]
-                
-                # Запускаем фоновую генерацию технической выжимки
-                asyncio.create_task(generate_technical_summary_bg(user_id, p.content))
-                
-                output = {
-                    "status": "success",
-                    "portrait": {
-                        "id": p.id,
-                        "content": p.content,
-                        "tests_count": p.tests_count,
-                        "created_at": p.created_at.isoformat() if p.created_at else None
-                    }
-                }
-                import json
-                yield json.dumps(output).encode("utf-8")
-            else:
-                import json
-                yield json.dumps(result).encode("utf-8")
-        except Exception as e:
-            import json
-            yield json.dumps({"detail": f"Ошибка генерации портрета: {repr(e)}"}).encode("utf-8")
-
-    from fastapi.responses import StreamingResponse
-    return StreamingResponse(stream_generator(), media_type="application/json", headers={"X-Accel-Buffering": "no"})
+    # Запускаем генерацию в фоне и сразу возвращаем ответ
+    background_tasks.add_task(_generate_portrait_bg, user_id, total_tests, prompt, ai_url, ai_token)
+    return {"status": "generating"}
 
 from pydantic import BaseModel
 from typing import Optional
@@ -609,7 +582,7 @@ async def _generate_report_bg(user_id: int, report_title: str, report_prompt: st
         print(f"Записей дневника передано: {num_entries}")
         print("-------------------------------------------------", flush=True)
 
-        async with httpx.AsyncClient(timeout=None) as client:
+        async with httpx.AsyncClient(timeout=90.0) as client:
             ai_response = await client.post(
                 ai_url,
                 headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
@@ -2020,7 +1993,7 @@ async def generate_compatibility(
 async def _generate_compatibility_bg(user_id: int, friend_id: int, compat_type: str, my_gender: str, friend_gender: str, prompt: str, ai_url: str, ai_token: str):
     import httpx
     try:
-        async with httpx.AsyncClient(timeout=None) as client:
+        async with httpx.AsyncClient(timeout=90.0) as client:
             ai_response = await client.post(
                 ai_url,
                 headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},

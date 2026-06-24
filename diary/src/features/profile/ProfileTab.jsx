@@ -182,15 +182,46 @@ export default function ProfileTab({ onOverlayOpen }) {
       if (data.status === "error") {
         throw new Error(data.message || "Неизвестная ошибка сервера");
       }
-      setPortraitData(data.portrait);
-      WebApp.HapticFeedback.notificationOccurred('success');
+      
+      // Бэкенд теперь отвечает {"status": "generating"}. Ожидаем готовности через поллинг.
+      if (data.portrait) {
+        // Если вдруг вернул сразу
+        setPortraitData(data.portrait);
+        setIsGeneratingPortrait(false);
+        WebApp.HapticFeedback.notificationOccurred('success');
+      }
     } catch (error) {
       console.error(error);
       WebApp.showAlert(`Произошла ошибка при генерации портрета: ${error.message}`);
-    } finally {
       setIsGeneratingPortrait(false);
     }
   };
+
+  // Поллинг портрета
+  useEffect(() => {
+    let interval;
+    if (isGeneratingPortrait) {
+      interval = setInterval(async () => {
+        try {
+          const res = await fetch(`${API_URL}/api/profile`, {
+            headers: { "Authorization": `Bearer ${WebApp.initData}` }
+          });
+          const data = await res.json();
+          if (data.portrait && data.portrait.tests_count === passedTests) {
+            setPortraitData(data.portrait);
+            setIsGeneratingPortrait(false);
+            WebApp.HapticFeedback.notificationOccurred('success');
+            clearInterval(interval);
+          }
+        } catch (e) {
+          console.error("Polling error", e);
+        }
+      }, 3000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isGeneratingPortrait, passedTests]);
 
   const handleClearPortrait = async () => {
     try {
