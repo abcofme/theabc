@@ -972,8 +972,7 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                         "model": "gpt-4o-mini",
                         "messages": [
                             {"role": "user", "content": prompt}
-                        ],
-                        "response_format": {"type": "json_object"}
+                        ]
                     }
                 )
                 
@@ -988,8 +987,7 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                             "model": "gpt-4o-mini",
                             "messages": [
                                 {"role": "user", "content": prompt}
-                            ],
-                            "response_format": {"type": "json_object"}
+                            ]
                         }
                     )
                     
@@ -2005,7 +2003,7 @@ async def _generate_compatibility_bg(user_id: int, friend_id: int, compat_type: 
                 ai_url,
                 headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                 json={
-                    "model": "claude-3.5-sonnet",
+                    "model": "gpt-4o-mini",
                     "messages": [{"role": "user", "content": prompt}]
                 }
             )
@@ -2014,7 +2012,7 @@ async def _generate_compatibility_bg(user_id: int, friend_id: int, compat_type: 
                     ai_url,
                     headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                     json={
-                        "model": "claude-3.5-sonnet",
+                        "model": "gpt-4o-mini",
                         "messages": [{"role": "user", "content": prompt}]
                     }
                 )

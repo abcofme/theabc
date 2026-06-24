@@ -19,6 +19,13 @@ async def start_app():
 
     await create_all_tables(engine, Base.metadata)
     await run_async_upgrade()
+    
+    try:
+        from backend.migrate import migrate
+        await migrate()
+    except Exception as e:
+        logger.error(f"Failed to run backend migrations: {e}")
+        
     register_middlewares(bot)
 
     from backend.telegram import handlers  # NOQA
