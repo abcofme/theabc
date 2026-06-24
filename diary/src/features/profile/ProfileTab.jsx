@@ -933,7 +933,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <X size={20} />
             </button>
             <div className="text-center mb-6 mt-2">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-500/20 text-amber-500 rounded-full mb-4 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500/20 text-green-500 rounded-full mb-4 shadow-[0_0_20px_rgba(34,197,94,0.2)]">
                 <Sparkles size={32} />
               </div>
               <h2 className="text-2xl font-bold text-[#F5E6D3]">Ваша подписка</h2>
@@ -943,7 +943,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <div className="bg-rose-950/50 rounded-2xl p-5 mb-4 border border-rose-800/50">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-[#F5E6D3]/70 font-medium">Статус</span>
-                  <span className="text-amber-500 font-bold bg-amber-500/10 px-2 py-1 rounded-lg text-sm border border-amber-500/20">Активна</span>
+                  <span className="text-green-500 font-bold bg-green-500/10 px-2 py-1 rounded-lg text-sm border border-green-500/20">Активна</span>
                 </div>
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-[#F5E6D3]/70 font-medium">Оформлена</span>
@@ -960,10 +960,10 @@ export default function ProfileTab({ onOverlayOpen }) {
               <div className="bg-rose-950/50 rounded-2xl p-5 mb-4 border border-rose-800/50">
                 <h3 className="text-[#F5E6D3] font-bold mb-4 flex items-center gap-2"><Check size={18} className="text-green-500"/> Преимущества Premium:</h3>
                 <ul className="text-[#F5E6D3]/90 text-sm space-y-3">
-                  <li className="flex gap-3"><Sparkles size={16} className="text-amber-500 shrink-0 mt-0.5" /> <span>Безлимитный анализ реакций в дневнике и соответствие портрету</span></li>
-                  <li className="flex gap-3"><Sparkles size={16} className="text-amber-500 shrink-0 mt-0.5" /> <span>Детализированные отчеты по сферам жизни</span></li>
-                  <li className="flex gap-3"><Sparkles size={16} className="text-amber-500 shrink-0 mt-0.5" /> <span>Ранний доступ к новым функциям и тестам</span></li>
-                  <li className="flex gap-3"><Sparkles size={16} className="text-amber-500 shrink-0 mt-0.5" /> <span>Приоритетная поддержка пользователей</span></li>
+                  <li className="flex gap-3"><Sparkles size={16} className="text-green-500 shrink-0 mt-0.5" /> <span>Безлимитный анализ реакций в дневнике и соответствие портрету</span></li>
+                  <li className="flex gap-3"><Sparkles size={16} className="text-green-500 shrink-0 mt-0.5" /> <span>Детализированные отчеты по сферам жизни</span></li>
+                  <li className="flex gap-3"><Sparkles size={16} className="text-green-500 shrink-0 mt-0.5" /> <span>Ранний доступ к новым функциям и тестам</span></li>
+                  <li className="flex gap-3"><Sparkles size={16} className="text-green-500 shrink-0 mt-0.5" /> <span>Приоритетная поддержка пользователей</span></li>
                 </ul>
               </div>
             </div>
