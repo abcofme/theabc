@@ -968,11 +968,11 @@ export default function ProfileTab({ onOverlayOpen }) {
               </div>
             </div>
             
-            <div className="mt-auto pt-4 border-t border-rose-800/50">
+            <div className="mt-auto pt-4">
               <button
                 onClick={handleCancelSubscription}
                 disabled={isCancelling}
-                className="w-full py-4 bg-red-900/40 hover:bg-red-800/60 text-red-200 font-bold rounded-xl transition-all flex justify-center items-center gap-2 border border-red-800/50"
+                className="w-full py-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl transition-all flex justify-center items-center gap-2"
               >
                 {isCancelling ? <span className="animate-spin text-xl">⏳</span> : <XCircle size={18} />}
                 {isCancelling ? "Отмена..." : "Отменить подписку"}
