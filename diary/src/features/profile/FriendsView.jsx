@@ -29,7 +29,7 @@ export default function FriendsView({ onBack }) {
   const fetchFriends = async () => {
     try {
       const res = await fetch(`${API_URL}/api/friends`, {
-        headers: { "Authorization": `Bearer ${WebApp.initData}` }
+        headers: { "Authorization": `Bearer ` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -65,7 +65,7 @@ export default function FriendsView({ onBack }) {
     setIsSearching(true);
     try {
       const res = await fetch(`${API_URL}/api/users/search?q=${encodeURIComponent(query)}`, {
-        headers: { "Authorization": `Bearer ${WebApp.initData}` }
+        headers: { "Authorization": `Bearer ` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -82,7 +82,7 @@ export default function FriendsView({ onBack }) {
     try {
       const res = await fetch(`${API_URL}/api/friends/request/${targetId}`, {
         method: 'POST',
-        headers: { "Authorization": `Bearer ${WebApp.initData}` }
+        headers: { "Authorization": `Bearer ` }
       });
       if (res.ok) {
         WebApp.showAlert("Заявка отправлена!");
@@ -100,7 +100,7 @@ export default function FriendsView({ onBack }) {
     try {
       const res = await fetch(`${API_URL}/api/friends/accept/${requestId}`, {
         method: 'POST',
-        headers: { "Authorization": `Bearer ${WebApp.initData}` }
+        headers: { "Authorization": `Bearer ` }
       });
       if (res.ok) fetchFriends();
     } catch (e) {
@@ -112,7 +112,7 @@ export default function FriendsView({ onBack }) {
     try {
       const res = await fetch(`${API_URL}/api/friends/reject/${requestId}`, {
         method: 'POST',
-        headers: { "Authorization": `Bearer ${WebApp.initData}` }
+        headers: { "Authorization": `Bearer ` }
       });
       if (res.ok) fetchFriends();
     } catch (e) {
@@ -125,7 +125,7 @@ export default function FriendsView({ onBack }) {
     try {
       const res = await fetch(`${API_URL}/api/friends/${friendId}`, {
         method: 'DELETE',
-        headers: { "Authorization": `Bearer ${WebApp.initData}` }
+        headers: { "Authorization": `Bearer ` }
       });
       if (res.ok) fetchFriends();
     } catch (e) {
@@ -138,7 +138,7 @@ export default function FriendsView({ onBack }) {
     setIsGeneratingCompat(true);
     try {
       const res = await fetch(`${API_URL}/api/friends/compatibility/${friendId}`, {
-        headers: { "Authorization": `Bearer ${WebApp.initData}` }
+        headers: { "Authorization": `Bearer ` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -167,7 +167,7 @@ export default function FriendsView({ onBack }) {
       const res = await fetch(`${API_URL}/api/friends/compatibility`, {
         method: 'POST',
         headers: {
-          "Authorization": `Bearer ${WebApp.initData}`,
+          "Authorization": `Bearer `,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({

@@ -20,7 +20,7 @@ export default function CalendarTab({ onSheetOpen }) {
   useEffect(() => {
     fetch(`${API_URL}/api/profile`, {
       headers: {
-        "Authorization": `Bearer ${WebApp.initData}`
+        "Authorization": `Bearer `
       }
     })
       .then(res => res.json())
@@ -72,7 +72,7 @@ export default function CalendarTab({ onSheetOpen }) {
     const month = currentMonth.getMonth() + 1; // 1-12
 
     fetch(`${API_URL}/api/diary?year=${year}&month=${month}`, {
-      headers: { "Authorization": `Bearer ${WebApp.initData}` }
+      headers: { "Authorization": `Bearer ` }
     })
       .then(res => res.json())
       .then(data => {
@@ -131,7 +131,7 @@ export default function CalendarTab({ onSheetOpen }) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${WebApp.initData}`
+            "Authorization": `Bearer `
           },
           body: JSON.stringify({
             date: dateStr,
@@ -161,7 +161,7 @@ export default function CalendarTab({ onSheetOpen }) {
           fetch(`${API_URL}/api/analyze-reaction/${data.id}`, {
             method: "POST",
             headers: {
-              "Authorization": `Bearer ${WebApp.initData}`
+              "Authorization": `Bearer `
             }
           })
             .then(res => res.json())
@@ -196,7 +196,7 @@ export default function CalendarTab({ onSheetOpen }) {
       const response = await fetch(`${API_URL}/api/diary/${entryToDelete.id}`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${WebApp.initData}`
+          "Authorization": `Bearer `
         }
       });
       
@@ -217,7 +217,7 @@ export default function CalendarTab({ onSheetOpen }) {
       const response = await fetch(`${API_URL}/api/diary/${entryId}/rating`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${WebApp.initData}`
+          "Authorization": `Bearer `
         }
       });
       if (!response.ok) throw new Error("Ошибка удаления оценки");
@@ -234,7 +234,7 @@ export default function CalendarTab({ onSheetOpen }) {
     fetch(`${API_URL}/api/analyze-reaction/${entryId}`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${WebApp.initData}`
+        "Authorization": `Bearer `
       }
     })
       .then(res => res.json())

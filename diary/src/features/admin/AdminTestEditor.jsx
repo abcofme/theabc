@@ -18,7 +18,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
   useEffect(() => {
     if (testId) {
       fetch(`${API_URL}/api/admin/tests/${testId}`, {
-        headers: { "Authorization": `Bearer ${WebApp.initData}` }
+        headers: { "Authorization": `Bearer ` }
       })
       .then(res => res.json())
       .then(data => {
@@ -88,7 +88,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
       const response = await fetch(url, {
         method,
         headers: { 
-          "Authorization": `Bearer ${WebApp.initData}`,
+          "Authorization": `Bearer `,
           "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
