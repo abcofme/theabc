@@ -936,7 +936,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500/20 text-green-500 rounded-full mb-4 shadow-[0_0_20px_rgba(34,197,94,0.2)]">
                 <Sparkles size={32} />
               </div>
-              <h2 className="text-2xl font-bold text-[#F5E6D3]">Ваша подписка</h2>
+              <h2 className="text-2xl font-bold text-[#F5E6D3]">Premium</h2>
             </div>
             
             <div className="overflow-y-auto flex-1 mb-4 hide-scrollbar">
