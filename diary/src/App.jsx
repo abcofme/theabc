@@ -76,7 +76,7 @@ export default function App() {
         style={{
           height: bgHeight,
           backgroundImage: `url(${bgLeaves})`,
-          backgroundPosition: `right 0px bottom ${isNavHidden ? '-20px' : 'calc(20px + env(safe-area-inset-bottom))'}`,
+          backgroundPosition: `right 0px bottom ${isNavHidden ? '-10px' : 'calc(45px + env(safe-area-inset-bottom))'}`,
           backgroundRepeat: "no-repeat",
           backgroundSize: "60%"
         }}
