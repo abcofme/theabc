@@ -265,7 +265,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
               </div>
             </div>
           ))}
-          <button onClick={addResult} className="w-full mt-2 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
+          <button onClick={addResult} className="w-full mt-2 py-3 bg-emerald-800 hover:bg-emerald-800 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
             <Plus size={18} /> Результат
           </button>
         </div>
@@ -320,7 +320,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
               </div>
             </div>
           ))}
-          <button onClick={addQuestion} className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
+          <button onClick={addQuestion} className="w-full py-3 bg-emerald-800 hover:bg-emerald-800 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
             <Plus size={18} /> Вопрос
           </button>
         </div>
@@ -330,7 +330,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
         <button 
           onClick={handleSave} 
           disabled={saving}
-          className="w-full bg-emerald-800 hover:bg-emerald-700 disabled:opacity-50 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-all active:scale-[0.98] shadow-lg flex justify-center items-center gap-2"
+          className="w-full bg-emerald-800 hover:bg-emerald-800 disabled:opacity-50 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-all active:scale-[0.98] shadow-lg flex justify-center items-center gap-2"
         >
           {saving ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div> : <Save size={20} />}
           {saving ? 'Сохранение...' : 'Сохранить тест'}

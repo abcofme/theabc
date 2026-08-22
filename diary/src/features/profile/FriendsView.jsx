@@ -334,7 +334,7 @@ export default function FriendsView({ onBack }) {
                             disabled={!(f.has_portrait && currentUserHasPortrait)}
                             className={`px-3 py-2 text-sm font-bold rounded-xl transition-colors ${
                               f.has_portrait && currentUserHasPortrait 
-                                ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-900/40' 
+                                ? 'bg-emerald-800 hover:bg-emerald-800 text-white shadow-md shadow-emerald-900/40' 
                                 : 'bg-rose-800 text-white/50 cursor-not-allowed'
                             }`}
                           >
@@ -407,7 +407,7 @@ export default function FriendsView({ onBack }) {
                         ) : (
                           <button 
                             onClick={() => sendRequest(u.id)}
-                            className="bg-emerald-800 hover:bg-emerald-700 text-white p-2 rounded-lg transition-colors shadow-lg shadow-emerald-950/50"
+                            className="bg-emerald-800 hover:bg-emerald-800 text-white p-2 rounded-lg transition-colors shadow-lg shadow-emerald-950/50"
                           >
                             <UserPlus size={20} />
                           </button>
@@ -432,14 +432,14 @@ export default function FriendsView({ onBack }) {
                 {incomingRequests.length > 0 && (
                   <div className="mb-8">
                     <h3 className="text-[#F5E6D3] font-bold mb-3 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-700"></span>
+                      <span className="w-2 h-2 rounded-full bg-emerald-800"></span>
                       Входящие запросы
                     </h3>
                     {incomingRequests.map(req => (
                       <UserCard key={req.request_id} user={req}>
                         <button 
                           onClick={() => acceptRequest(req.request_id)}
-                          className="p-2 text-emerald-400 bg-emerald-400/10 hover:bg-emerald-400/20 rounded-lg transition-colors"
+                          className="p-2 text-emerald-400 bg-emerald-800/10 hover:bg-emerald-800/20 rounded-lg transition-colors"
                         >
                           <Check size={20} />
                         </button>
@@ -546,7 +546,7 @@ export default function FriendsView({ onBack }) {
 
                 <button 
                   onClick={handleGenerateCompatibility}
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] mt-4 shadow-lg shadow-emerald-900/40"
+                  className="w-full bg-emerald-800 hover:bg-emerald-800 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] mt-4 shadow-lg shadow-emerald-900/40"
                 >
                   Узнать совместимость
                 </button>

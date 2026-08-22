@@ -309,7 +309,7 @@ export default function AdminPanel({ onBack }) {
           <button 
             onClick={handleCreateLink}
             disabled={!newLinkName || isCreatingLink}
-            className="bg-emerald-800 hover:bg-emerald-700 disabled:opacity-50 text-white px-4 py-3 rounded-xl font-medium transition-colors"
+            className="bg-emerald-800 hover:bg-emerald-800 disabled:opacity-50 text-white px-4 py-3 rounded-xl font-medium transition-colors"
           >
             {isCreatingLink ? "..." : "Создать"}
           </button>
@@ -468,7 +468,7 @@ export default function AdminPanel({ onBack }) {
             <button 
               onClick={handleGrantAccess}
               disabled={isGranting}
-              className="w-full bg-emerald-800 hover:bg-emerald-700 disabled:opacity-50 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-sm"
+              className="w-full bg-emerald-800 hover:bg-emerald-800 disabled:opacity-50 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-sm"
             >
               {isGranting ? "Обработка..." : "Выдать права"}
             </button>
@@ -546,7 +546,7 @@ export default function AdminPanel({ onBack }) {
             <h3 className="text-xl font-bold text-[#F5E6D3]">Управление тестами</h3>
             <button 
               onClick={() => setEditingTestId(null)}
-              className="p-2 px-3 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 rounded-xl transition-colors flex items-center gap-1 text-sm font-bold"
+              className="p-2 px-3 bg-emerald-800/20 text-emerald-400 hover:bg-emerald-800/30 rounded-xl transition-colors flex items-center gap-1 text-sm font-bold"
             >
               <Plus size={16} /> Создать тест
             </button>
@@ -581,7 +581,7 @@ export default function AdminPanel({ onBack }) {
                           <div className="flex items-center gap-1">
                             <button 
                               onClick={() => setEditingTestId(test.id)}
-                              className="p-2 text-emerald-600 hover:text-emerald-500 hover:bg-emerald-600/10 rounded-lg transition-colors"
+                              className="p-2 text-emerald-600 hover:text-emerald-500 hover:bg-emerald-800/10 rounded-lg transition-colors"
                             >
                               <Edit size={20} />
                             </button>

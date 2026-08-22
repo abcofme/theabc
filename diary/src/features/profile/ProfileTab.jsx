@@ -359,7 +359,7 @@ export default function ProfileTab({ onOverlayOpen }) {
           <span>{left} <span className="text-xs sm:text-sm font-medium opacity-70 ml-1">{Math.round(leftValue)}%</span></span>
         </div>
         <div className="h-4 w-full bg-rose-800 rounded-full overflow-hidden flex shadow-inner mb-3">
-          <div className="h-full bg-emerald-700" style={{ width: `${leftValue}%` }}></div>
+          <div className="h-full bg-emerald-800" style={{ width: `${leftValue}%` }}></div>
           <div className="h-full bg-orange-500" style={{ width: `${rightValue}%` }}></div>
         </div>
         <div className="flex justify-end items-start text-base sm:text-lg font-bold text-[#F5E6D3] mb-4">
@@ -482,8 +482,8 @@ export default function ProfileTab({ onOverlayOpen }) {
           onClick={() => { if (accessLevel === 'Premium') setIsSubscriptionInfoModalOpen(true); }}
         >
           <div className={`font-bold px-3 py-1.5 rounded-xl text-sm sm:text-base text-center flex items-center gap-1.5 shadow-sm ${
-            accessLevel === 'Premium' ? 'bg-emerald-500 text-emerald-950' : 
-            accessLevel === 'Демо-доступ' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-950 text-[#F5E6D3]/60'
+            accessLevel === 'Premium' ? 'bg-emerald-800 text-emerald-950' : 
+            accessLevel === 'Демо-доступ' ? 'bg-emerald-800/20 text-emerald-300' : 'bg-rose-950 text-[#F5E6D3]/60'
           }`}>
             {accessLevel === 'Premium' && <Sparkles size={16} />}
             {accessLevel || 'Загрузка...'}
@@ -506,7 +506,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <button
                 onClick={() => setIsPremiumModalOpen(true)}
                 disabled={isBuying}
-                className="w-full py-3.5 bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
+                className="w-full py-3.5 bg-emerald-800 hover:bg-emerald-800 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
               >
                 {isBuying ? <span className="animate-spin text-xl">⏳</span> : <Sparkles size={18} />}
                 Оформить Premium (149 ₽ / мес)
@@ -642,7 +642,7 @@ export default function ProfileTab({ onOverlayOpen }) {
             {['ingenfrid', 'key_crp', 'fondlife'].includes(tgUser.username) && (
               <button 
                 onClick={() => setActiveSubTab('admin')}
-                className="w-full py-3 bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] text-sm font-bold rounded-2xl transition-colors shadow-sm flex items-center justify-center gap-2 mt-4"
+                className="w-full py-3 bg-emerald-800 hover:bg-emerald-800 text-[#F5E6D3] text-sm font-bold rounded-2xl transition-colors shadow-sm flex items-center justify-center gap-2 mt-4"
               >
                 Админ-панель
               </button>
@@ -692,7 +692,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                       </div>
                     </button>
                   ) : (
-                    <button onClick={handleGeneratePortrait} className="w-full flex flex-col items-center justify-center text-center p-5 rounded-2xl bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] transition-colors active:scale-[0.98] shadow-lg shadow-emerald-900/40">
+                    <button onClick={handleGeneratePortrait} className="w-full flex flex-col items-center justify-center text-center p-5 rounded-2xl bg-emerald-800 hover:bg-emerald-800 text-[#F5E6D3] transition-colors active:scale-[0.98] shadow-lg shadow-emerald-900/40">
                       <ClipboardList size={32} className="mb-2" />
                       <div>
                         <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Мой портрет личности</h3>
@@ -731,7 +731,7 @@ export default function ProfileTab({ onOverlayOpen }) {
 
                 {totalTests > 0 && passedTests === totalTests && !portraitData && (
                   <div className="mt-auto">
-                    <button onClick={handleGeneratePortrait} className="w-full flex flex-col items-center justify-center text-center p-5 rounded-2xl bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] transition-colors active:scale-[0.98] shadow-lg shadow-emerald-900/40">
+                    <button onClick={handleGeneratePortrait} className="w-full flex flex-col items-center justify-center text-center p-5 rounded-2xl bg-emerald-800 hover:bg-emerald-800 text-[#F5E6D3] transition-colors active:scale-[0.98] shadow-lg shadow-emerald-900/40">
                       <ClipboardList size={32} className="mb-2" />
                       <div>
                         <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Мой портрет личности</h3>
@@ -769,7 +769,7 @@ export default function ProfileTab({ onOverlayOpen }) {
             </div>
             {/* Нижняя кнопка */}
             <div className="p-4 sm:p-5 bg-rose-950/50 rounded-b-[2rem]">
-              <button onClick={() => setSelectedResult(null)} className="w-full bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all active:bg-emerald-900 shadow-lg shadow-emerald-950/20">
+              <button onClick={() => setSelectedResult(null)} className="w-full bg-emerald-800 hover:bg-emerald-800 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all active:bg-emerald-900 shadow-lg shadow-emerald-950/20">
                 Отлично
               </button>
             </div>
@@ -833,7 +833,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                 <button 
                   onClick={handleVerifyInn}
                   disabled={isVerifyingInn || innInput.length < 10}
-                  className="w-full bg-emerald-800 hover:bg-emerald-700 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-emerald-950/20"
+                  className="w-full bg-emerald-800 hover:bg-emerald-800 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-emerald-950/20"
                 >
                   {isVerifyingInn ? "Проверка..." : "Проверить ИНН"}
                 </button>
@@ -885,7 +885,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                         navigator.clipboard.writeText(referralInfo.link);
                         WebApp.showAlert("Ссылка скопирована!");
                       }}
-                      className="bg-emerald-800 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
+                      className="bg-emerald-800 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
                     >
                       Копировать
                     </button>
@@ -899,7 +899,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                   <button 
                     onClick={handleWithdraw}
                     disabled={isWithdrawing || referralInfo.available < 100}
-                    className="w-full bg-emerald-800 hover:bg-emerald-700 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-emerald-950/20"
+                    className="w-full bg-emerald-800 hover:bg-emerald-800 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-emerald-950/20"
                   >
                     {isWithdrawing ? "Обработка..." : "Запросить вывод"}
                   </button>
@@ -919,7 +919,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <X size={20} />
             </button>
             <div className="text-center mb-6 mt-2">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full mb-4 shadow-[0_0_20px_rgba(34,197,94,0.2)]">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-800/20 text-emerald-400 rounded-full mb-4 shadow-[0_0_20px_rgba(34,197,94,0.2)]">
                 <Sparkles size={32} />
               </div>
               <h2 className="text-2xl font-bold text-[#F5E6D3]">Оформить Premium</h2>
@@ -961,7 +961,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               disabled={isBuying}
               className={`w-full py-4 text-[#F5E6D3] font-bold rounded-xl shadow-lg transition-all flex justify-center items-center gap-2 ${
                 isOfferAccepted 
-                  ? "bg-emerald-800 hover:bg-emerald-700 shadow-emerald-900/30" 
+                  ? "bg-emerald-800 hover:bg-emerald-800 shadow-emerald-900/30" 
                   : "bg-emerald-900/40 text-[#F5E6D3]/40 cursor-not-allowed"
               }`}
             >
@@ -987,7 +987,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <ReactMarkdown>{PUBLIC_OFFER_TEXT}</ReactMarkdown>
             </div>
             <div className="p-5 border-t border-rose-800/50 bg-rose-950/30 rounded-b-[2rem]">
-              <button onClick={() => {setIsOfferAccepted(true); setIsOfferModalOpen(false);}} className="w-full py-3.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors">
+              <button onClick={() => {setIsOfferAccepted(true); setIsOfferModalOpen(false);}} className="w-full py-3.5 bg-emerald-800 hover:bg-emerald-800 text-white font-bold rounded-xl transition-colors">
                 Принять и закрыть
               </button>
             </div>
@@ -1004,7 +1004,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <X size={20} />
             </button>
             <div className="text-center mb-6 mt-2">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-500/20 text-emerald-500 rounded-full mb-4 shadow-[0_0_20px_rgba(34,197,94,0.2)]">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-800/20 text-emerald-500 rounded-full mb-4 shadow-[0_0_20px_rgba(34,197,94,0.2)]">
                 <Sparkles size={32} />
               </div>
               <h2 className="text-2xl font-bold text-[#F5E6D3]">Premium</h2>
@@ -1014,7 +1014,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <div className="bg-rose-950/50 rounded-2xl p-5 mb-4 border border-rose-800/50">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-[#F5E6D3]/70 font-medium">Статус</span>
-                  <span className="text-emerald-500 font-bold bg-emerald-500/10 px-2 py-1 rounded-lg text-sm border border-emerald-500/20">Активен</span>
+                  <span className="text-emerald-500 font-bold bg-emerald-800/10 px-2 py-1 rounded-lg text-sm border border-emerald-500/20">Активен</span>
                 </div>
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-[#F5E6D3]/70 font-medium">Оформлен</span>

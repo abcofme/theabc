@@ -324,7 +324,7 @@ export default function TestsTab({ onOverlayOpen }) {
                       <button
                         onClick={buyCareerGuidance}
                         disabled={isBuyingCareer}
-                        className="w-full py-3.5 bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
+                        className="w-full py-3.5 bg-emerald-800 hover:bg-emerald-800 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
                       >
                         {isBuyingCareer ? <span className="animate-spin text-xl">⏳</span> : "Купить за 1499 ₽"}
                       </button>
@@ -342,7 +342,7 @@ export default function TestsTab({ onOverlayOpen }) {
                           {test.name}
                         </span>
                         {test.passed ? (
-                          <span className="flex items-center gap-1.5 text-emerald-500 text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-500/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">
+                          <span className="flex items-center gap-1.5 text-emerald-500 text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-800/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">
                             <Check size={14} /> Пройден
                           </span>
                         ) : (
@@ -375,7 +375,7 @@ export default function TestsTab({ onOverlayOpen }) {
               <button onClick={() => setSelectedResult(null)} className="w-full bg-rose-800 hover:bg-rose-700 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all">
                 Закрыть
               </button>
-              <button onClick={handleRetake} className="w-full bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all active:bg-emerald-700 shadow-lg shadow-emerald-900/20">
+              <button onClick={handleRetake} className="w-full bg-emerald-800 hover:bg-emerald-800 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all active:bg-emerald-800 shadow-lg shadow-emerald-900/20">
                 Пройти тест заново
               </button>
             </div>
@@ -408,7 +408,7 @@ export default function TestsTab({ onOverlayOpen }) {
                   <div className="text-[#F5E6D3] text-base leading-relaxed whitespace-pre-wrap flex-1 overflow-y-auto pb-4 font-bold">
                     {testResult}
                   </div>
-                  <button onClick={closeTest} className="w-full mt-4 bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] font-bold py-4 rounded-xl transition-all active:bg-emerald-900 shadow-lg shadow-emerald-950/20">
+                  <button onClick={closeTest} className="w-full mt-4 bg-emerald-800 hover:bg-emerald-800 text-[#F5E6D3] font-bold py-4 rounded-xl transition-all active:bg-emerald-900 shadow-lg shadow-emerald-950/20">
                     Вернуться к тестам
                   </button>
                 </div>
@@ -435,7 +435,7 @@ export default function TestsTab({ onOverlayOpen }) {
                 </div>
                 <button 
                   onClick={() => setIsStarted(true)} 
-                  className="w-full bg-emerald-800 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl transition-colors shadow-lg flex justify-center items-center gap-2"
+                  className="w-full bg-emerald-800 hover:bg-emerald-800 text-white font-bold py-4 rounded-xl transition-colors shadow-lg flex justify-center items-center gap-2"
                 >
                   Пройти тест
                 </button>
@@ -448,7 +448,7 @@ export default function TestsTab({ onOverlayOpen }) {
                   </span>
                   <div className="flex-1 ml-4 h-2 bg-rose-900/50 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-emerald-700 transition-all duration-500 ease-out"
+                      className="h-full bg-emerald-800 transition-all duration-500 ease-out"
                       style={{ width: `${((currentQuestionIndex + 1) / testDetails.questions.length) * 100}%` }}
                     ></div>
                   </div>
@@ -483,7 +483,7 @@ export default function TestsTab({ onOverlayOpen }) {
                   >
                     {/* Overlay for Color Hint */}
                     <div 
-                      className={`absolute inset-0 transition-opacity duration-200 ${dragOffset > 0 ? 'bg-emerald-500' : 'bg-red-500'}`}
+                      className={`absolute inset-0 transition-opacity duration-200 ${dragOffset > 0 ? 'bg-emerald-800' : 'bg-red-500'}`}
                       style={{ opacity: Math.min(Math.abs(dragOffset) / 300, 0.4) }}
                     />
                     
@@ -506,7 +506,7 @@ export default function TestsTab({ onOverlayOpen }) {
                       <button 
                         onClick={(e) => { e.stopPropagation(); triggerSwipe('right'); }} 
                         onTouchEnd={(e) => e.stopPropagation()}
-                        className="flex items-center gap-2 bg-emerald-800/90 hover:bg-emerald-700 text-[#F5E6D3] font-bold tracking-wider uppercase px-5 py-3.5 rounded-xl backdrop-blur-sm transition-colors active:scale-95"
+                        className="flex items-center gap-2 bg-emerald-800/90 hover:bg-emerald-800 text-[#F5E6D3] font-bold tracking-wider uppercase px-5 py-3.5 rounded-xl backdrop-blur-sm transition-colors active:scale-95"
                       >
                         Да <ArrowRight size={20} />
                       </button>

@@ -282,7 +282,7 @@ export default function CalendarTab({ onSheetOpen }) {
       return () => window.cancelAnimationFrame(animationFrameId);
     }, []);
 
-    let colorClass = "bg-emerald-700";
+    let colorClass = "bg-emerald-800";
     if (progress <= 25) colorClass = "bg-red-500";
     else if (progress <= 50) colorClass = "bg-orange-500";
     else if (progress <= 75) colorClass = "bg-yellow-400";
@@ -380,7 +380,7 @@ export default function CalendarTab({ onSheetOpen }) {
     }
 
     const score = entry.portrait_match_score;
-    let colorClass = "bg-emerald-700";
+    let colorClass = "bg-emerald-800";
     if (score <= 25) colorClass = "bg-red-500";
     else if (score <= 50) colorClass = "bg-orange-500";
     else if (score <= 75) colorClass = "bg-yellow-400";
@@ -649,7 +649,7 @@ export default function CalendarTab({ onSheetOpen }) {
               <button
                 type="submit"
                 disabled={isSubmitDisabled || isSubmitting}
-                className="w-full bg-emerald-800 disabled:bg-emerald-950/40 disabled:text-[#F5E6D3]/50 hover:bg-emerald-700 text-[#F5E6D3] font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-emerald-950/20"
+                className="w-full bg-emerald-800 disabled:bg-emerald-950/40 disabled:text-[#F5E6D3]/50 hover:bg-emerald-800 text-[#F5E6D3] font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-emerald-950/20"
               >
                 {isSubmitting ? 'Сохранение...' : `Сохранить ${newEntries.length > 1 ? 'все записи' : 'запись'}`}
               </button>
