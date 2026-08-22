@@ -91,11 +91,24 @@ export default function TestsTab({ onOverlayOpen }) {
     // Begin test taking
     setTakingTestId(test.id);
     setTestDetails(null);
-    setCurrentQuestionIndex(0);
-    setSelectedAnswers([]);
     setTestResult(null);
     setIsStarted(false);
     WebApp.HapticFeedback.impactOccurred('light');
+    
+    const saved = localStorage.getItem(`test_progress_${test.id}`);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setSelectedAnswers(parsed.answers || []);
+        setCurrentQuestionIndex(parsed.index || 0);
+      } catch (e) {
+        setSelectedAnswers([]);
+        setCurrentQuestionIndex(0);
+      }
+    } else {
+      setSelectedAnswers([]);
+      setCurrentQuestionIndex(0);
+    }
     
     try {
       const response = await fetch(`${API_URL}/api/tests/${test.id}`, {
@@ -125,6 +138,7 @@ export default function TestsTab({ onOverlayOpen }) {
     } else {
       // Submit test
       setIsSubmitting(true);
+      localStorage.removeItem(`test_progress_${testDetails.id}`);
       try {
         const response = await fetch(`${API_URL}/api/tests/${testDetails.id}/submit`, {
           method: "POST",
@@ -158,6 +172,16 @@ export default function TestsTab({ onOverlayOpen }) {
     setTestDetails(null);
     setTestResult(null);
     setIsStarted(false);
+  };
+
+  const handleExit = () => {
+    if (takingTestId && currentQuestionIndex > 0) {
+      localStorage.setItem(`test_progress_${takingTestId}`, JSON.stringify({
+        answers: selectedAnswers,
+        index: currentQuestionIndex
+      }));
+    }
+    closeTest();
   };
 
   const handleRetake = async () => {
