@@ -473,7 +473,7 @@ export default function TestsTab({ onOverlayOpen }) {
                     onTouchEnd={handleTouchEnd}
                     className={`absolute inset-2 bg-rose-900/80 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 shadow-2xl flex flex-col items-center justify-center text-center overflow-hidden cursor-grab active:cursor-grabbing select-none
                       animate-in fade-in zoom-in-[0.96] duration-500 ease-out
-                      ${isDragging ? 'transition-none' : 'transition-transform duration-500 ease-out'}
+                      ${isDragging ? 'transition-none' : 'transition-all duration-500 ease-out'}
                       ${swipingOut === 'right' ? 'translate-x-[150%] rotate-[10deg] opacity-0' : ''}
                       ${swipingOut === 'left' ? '-translate-x-[150%] -rotate-[10deg] opacity-0' : ''}
                     `}
