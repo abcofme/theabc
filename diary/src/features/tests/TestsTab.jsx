@@ -324,7 +324,7 @@ export default function TestsTab({ onOverlayOpen }) {
                       <button
                         onClick={buyCareerGuidance}
                         disabled={isBuyingCareer}
-                        className="w-full py-3.5 bg-green-800 hover:bg-green-700 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
+                        className="w-full py-3.5 bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
                       >
                         {isBuyingCareer ? <span className="animate-spin text-xl">⏳</span> : "Купить за 1499 ₽"}
                       </button>
@@ -342,7 +342,7 @@ export default function TestsTab({ onOverlayOpen }) {
                           {test.name}
                         </span>
                         {test.passed ? (
-                          <span className="flex items-center gap-1.5 text-green-500 text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-500/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">
+                          <span className="flex items-center gap-1.5 text-emerald-500 text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-500/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">
                             <Check size={14} /> Пройден
                           </span>
                         ) : (
@@ -408,7 +408,7 @@ export default function TestsTab({ onOverlayOpen }) {
                   <div className="text-[#F5E6D3] text-base leading-relaxed whitespace-pre-wrap flex-1 overflow-y-auto pb-4 font-bold">
                     {testResult}
                   </div>
-                  <button onClick={closeTest} className="w-full mt-4 bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] font-bold py-4 rounded-xl transition-all active:bg-emerald-900 shadow-lg shadow-green-950/20">
+                  <button onClick={closeTest} className="w-full mt-4 bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] font-bold py-4 rounded-xl transition-all active:bg-emerald-900 shadow-lg shadow-emerald-950/20">
                     Вернуться к тестам
                   </button>
                 </div>
@@ -448,7 +448,7 @@ export default function TestsTab({ onOverlayOpen }) {
                   </span>
                   <div className="flex-1 ml-4 h-2 bg-rose-900/50 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-green-700 transition-all duration-500 ease-out"
+                      className="h-full bg-emerald-700 transition-all duration-500 ease-out"
                       style={{ width: `${((currentQuestionIndex + 1) / testDetails.questions.length) * 100}%` }}
                     ></div>
                   </div>
@@ -483,7 +483,7 @@ export default function TestsTab({ onOverlayOpen }) {
                   >
                     {/* Overlay for Color Hint */}
                     <div 
-                      className={`absolute inset-0 transition-opacity duration-200 ${dragOffset > 0 ? 'bg-green-500' : 'bg-red-500'}`}
+                      className={`absolute inset-0 transition-opacity duration-200 ${dragOffset > 0 ? 'bg-emerald-500' : 'bg-red-500'}`}
                       style={{ opacity: Math.min(Math.abs(dragOffset) / 300, 0.4) }}
                     />
                     
@@ -513,7 +513,7 @@ export default function TestsTab({ onOverlayOpen }) {
                     </div>
 
                     {/* Indicators "ДА" / "НЕТ" on the card edges */}
-                    <div className="absolute top-8 left-6 border-4 border-green-500 text-green-500 font-black text-3xl px-4 py-1 rounded-xl transform -rotate-12 opacity-0 transition-opacity pointer-events-none duration-200" style={{ opacity: dragOffset > 30 ? Math.min(dragOffset/100, 1) : 0 }}>
+                    <div className="absolute top-8 left-6 border-4 border-emerald-500 text-emerald-500 font-black text-3xl px-4 py-1 rounded-xl transform -rotate-12 opacity-0 transition-opacity pointer-events-none duration-200" style={{ opacity: dragOffset > 30 ? Math.min(dragOffset/100, 1) : 0 }}>
                       ДА
                     </div>
                     <div className="absolute top-8 right-6 border-4 border-red-500 text-red-500 font-black text-3xl px-4 py-1 rounded-xl transform rotate-12 opacity-0 transition-opacity pointer-events-none duration-200" style={{ opacity: dragOffset < -30 ? Math.min(-dragOffset/100, 1) : 0 }}>

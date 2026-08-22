@@ -282,7 +282,7 @@ export default function CalendarTab({ onSheetOpen }) {
       return () => window.cancelAnimationFrame(animationFrameId);
     }, []);
 
-    let colorClass = "bg-green-700";
+    let colorClass = "bg-emerald-700";
     if (progress <= 25) colorClass = "bg-red-500";
     else if (progress <= 50) colorClass = "bg-orange-500";
     else if (progress <= 75) colorClass = "bg-yellow-400";
@@ -380,7 +380,7 @@ export default function CalendarTab({ onSheetOpen }) {
     }
 
     const score = entry.portrait_match_score;
-    let colorClass = "bg-green-700";
+    let colorClass = "bg-emerald-700";
     if (score <= 25) colorClass = "bg-red-500";
     else if (score <= 50) colorClass = "bg-orange-500";
     else if (score <= 75) colorClass = "bg-yellow-400";
@@ -437,7 +437,7 @@ export default function CalendarTab({ onSheetOpen }) {
                     setIsDropdownOpen(false);
                   }}
                   className={`py-2 text-sm rounded-xl transition-colors ${
-                    currentMonth.getMonth() === idx ? 'bg-green-800 text-[#F5E6D3] font-medium' : 'text-[#F5E6D3] hover:bg-rose-800'
+                    currentMonth.getMonth() === idx ? 'bg-emerald-800 text-[#F5E6D3] font-medium' : 'text-[#F5E6D3] hover:bg-rose-800'
                   }`}
                 >
                   {m.substring(0, 3)}
@@ -455,7 +455,7 @@ export default function CalendarTab({ onSheetOpen }) {
                     setIsDropdownOpen(false);
                   }}
                   className={`py-1.5 text-xs rounded-lg transition-colors ${
-                    getYear(currentMonth) === y ? 'bg-green-800 text-[#F5E6D3] font-medium' : 'text-[#F5E6D3] hover:bg-rose-800'
+                    getYear(currentMonth) === y ? 'bg-emerald-800 text-[#F5E6D3] font-medium' : 'text-[#F5E6D3] hover:bg-rose-800'
                   }`}
                 >
                   {y}
@@ -495,7 +495,7 @@ export default function CalendarTab({ onSheetOpen }) {
                   } ${
                     isDayToday ? '! !text-[#F5E6D3] bg-blue-950/20' : ''
                   } ${
-                    hasEntries && isCurrentMonth ? '!bg-green-800/40 ! !text-[#F5E6D3] font-bold' : ''
+                    hasEntries && isCurrentMonth ? '!bg-emerald-800/40 ! !text-[#F5E6D3] font-bold' : ''
                   } ${
                     isFutureDay ? 'opacity-40 cursor-default' : 'cursor-pointer'
                   }`}
@@ -607,7 +607,7 @@ export default function CalendarTab({ onSheetOpen }) {
                         placeholder="Что произошло? (Событие)"
                         value={entry.event}
                         onChange={(e) => updateEntry(index, 'event', e.target.value)}
-                        className="w-full bg-rose-900 rounded-xl px-4 py-3.5 text-[#F5E6D3] placeholder:text-[#F5E6D3] focus:outline-none focus:ring-2 focus:ring-green-700 transition-all"
+                        className="w-full bg-rose-900 rounded-xl px-4 py-3.5 text-[#F5E6D3] placeholder:text-[#F5E6D3] focus:outline-none focus:ring-2 focus:ring-emerald-700 transition-all"
                       />
                     </div>
                     <div>
@@ -616,7 +616,7 @@ export default function CalendarTab({ onSheetOpen }) {
                         value={entry.reaction}
                         onChange={(e) => updateEntry(index, 'reaction', e.target.value)}
                         rows="3"
-                        className="w-full bg-rose-900 rounded-xl px-4 py-3.5 text-[#F5E6D3] placeholder:text-[#F5E6D3] focus:outline-none focus:ring-2 focus:ring-green-700 transition-all resize-none"
+                        className="w-full bg-rose-900 rounded-xl px-4 py-3.5 text-[#F5E6D3] placeholder:text-[#F5E6D3] focus:outline-none focus:ring-2 focus:ring-emerald-700 transition-all resize-none"
                       />
                     </div>
                   </div>
@@ -635,7 +635,7 @@ export default function CalendarTab({ onSheetOpen }) {
                         onClick={() => setNewRating(num)}
                         className={`flex-1 py-3 rounded-xl font-bold transition-all text-lg ${
                           newRating === num 
-                            ? 'bg-green-800 text-[#F5E6D3] shadow-lg shadow-green-950/30 scale-105' 
+                            ? 'bg-emerald-800 text-[#F5E6D3] shadow-lg shadow-emerald-950/30 scale-105' 
                             : 'bg-rose-900 text-[#F5E6D3] hover:bg-rose-800'
                         }`}
                       >
@@ -649,7 +649,7 @@ export default function CalendarTab({ onSheetOpen }) {
               <button
                 type="submit"
                 disabled={isSubmitDisabled || isSubmitting}
-                className="w-full bg-green-800 disabled:bg-green-950/40 disabled:text-[#F5E6D3]/50 hover:bg-green-700 text-[#F5E6D3] font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-green-950/20"
+                className="w-full bg-emerald-800 disabled:bg-emerald-950/40 disabled:text-[#F5E6D3]/50 hover:bg-emerald-700 text-[#F5E6D3] font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-emerald-950/20"
               >
                 {isSubmitting ? 'Сохранение...' : `Сохранить ${newEntries.length > 1 ? 'все записи' : 'запись'}`}
               </button>

@@ -314,7 +314,7 @@ export default function FriendsView({ onBack }) {
                     <p className="text-[#F5E6D3]/80">У вас пока нет добавленных друзей.</p>
                     <button 
                       onClick={() => setActiveTab('search')}
-                      className="mt-4 text-green-600 font-medium hover:underline"
+                      className="mt-4 text-emerald-600 font-medium hover:underline"
                     >
                       Найти друзей
                     </button>
@@ -334,7 +334,7 @@ export default function FriendsView({ onBack }) {
                             disabled={!(f.has_portrait && currentUserHasPortrait)}
                             className={`px-3 py-2 text-sm font-bold rounded-xl transition-colors ${
                               f.has_portrait && currentUserHasPortrait 
-                                ? 'bg-green-600 hover:bg-green-500 text-white shadow-md shadow-green-900/40' 
+                                ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-900/40' 
                                 : 'bg-rose-800 text-white/50 cursor-not-allowed'
                             }`}
                           >
@@ -392,22 +392,22 @@ export default function FriendsView({ onBack }) {
                     return (
                       <UserCard key={u.id} user={u}>
                         {isFriend ? (
-                          <span className="text-green-400 text-sm font-medium pr-2">В друзьях</span>
+                          <span className="text-emerald-400 text-sm font-medium pr-2">В друзьях</span>
                         ) : isOutgoing ? (
-                          <span className="text-green-500 text-sm font-medium pr-2 flex items-center gap-1">
+                          <span className="text-emerald-500 text-sm font-medium pr-2 flex items-center gap-1">
                             <Clock size={16} /> Запрос отправлен
                           </span>
                         ) : isIncoming ? (
                           <button 
                             onClick={() => setActiveTab('requests')}
-                            className="bg-green-800/30 text-green-500 px-3 py-1.5 rounded-lg text-sm font-medium"
+                            className="bg-emerald-800/30 text-emerald-500 px-3 py-1.5 rounded-lg text-sm font-medium"
                           >
                             Ответить
                           </button>
                         ) : (
                           <button 
                             onClick={() => sendRequest(u.id)}
-                            className="bg-green-800 hover:bg-green-700 text-white p-2 rounded-lg transition-colors shadow-lg shadow-green-950/50"
+                            className="bg-emerald-800 hover:bg-emerald-700 text-white p-2 rounded-lg transition-colors shadow-lg shadow-emerald-950/50"
                           >
                             <UserPlus size={20} />
                           </button>
@@ -432,14 +432,14 @@ export default function FriendsView({ onBack }) {
                 {incomingRequests.length > 0 && (
                   <div className="mb-8">
                     <h3 className="text-[#F5E6D3] font-bold mb-3 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-green-700"></span>
+                      <span className="w-2 h-2 rounded-full bg-emerald-700"></span>
                       Входящие запросы
                     </h3>
                     {incomingRequests.map(req => (
                       <UserCard key={req.request_id} user={req}>
                         <button 
                           onClick={() => acceptRequest(req.request_id)}
-                          className="p-2 text-green-400 bg-green-400/10 hover:bg-green-400/20 rounded-lg transition-colors"
+                          className="p-2 text-emerald-400 bg-emerald-400/10 hover:bg-emerald-400/20 rounded-lg transition-colors"
                         >
                           <Check size={20} />
                         </button>
@@ -489,13 +489,13 @@ export default function FriendsView({ onBack }) {
                     <div className="flex gap-2">
                       <button 
                         onClick={() => setCompatType('friendly')}
-                        className={`flex-1 py-3 rounded-xl font-medium transition-colors ${compatType === 'friendly' ? 'bg-green-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                        className={`flex-1 py-3 rounded-xl font-medium transition-colors ${compatType === 'friendly' ? 'bg-emerald-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
                       >
                         Дружеская
                       </button>
                       <button 
                         onClick={() => setCompatType('partner')}
-                        className={`flex-1 py-3 rounded-xl font-medium transition-colors ${compatType === 'partner' ? 'bg-green-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                        className={`flex-1 py-3 rounded-xl font-medium transition-colors ${compatType === 'partner' ? 'bg-emerald-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
                       >
                         Партнерская
                       </button>
@@ -510,13 +510,13 @@ export default function FriendsView({ onBack }) {
                         <div className="flex gap-2">
                           <button 
                             onClick={() => setMyGender('Мужской')}
-                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${myGender === 'Мужской' ? 'bg-green-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${myGender === 'Мужской' ? 'bg-emerald-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
                           >
                             Мужской
                           </button>
                           <button 
                             onClick={() => setMyGender('Женский')}
-                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${myGender === 'Женский' ? 'bg-green-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${myGender === 'Женский' ? 'bg-emerald-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
                           >
                             Женский
                           </button>
@@ -528,13 +528,13 @@ export default function FriendsView({ onBack }) {
                         <div className="flex gap-2">
                           <button 
                             onClick={() => setFriendGender('Мужской')}
-                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${friendGender === 'Мужской' ? 'bg-green-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${friendGender === 'Мужской' ? 'bg-emerald-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
                           >
                             Мужской
                           </button>
                           <button 
                             onClick={() => setFriendGender('Женский')}
-                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${friendGender === 'Женский' ? 'bg-green-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
+                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${friendGender === 'Женский' ? 'bg-emerald-800 text-white' : 'bg-rose-800 text-[#F5E6D3]/70'}`}
                           >
                             Женский
                           </button>
@@ -546,7 +546,7 @@ export default function FriendsView({ onBack }) {
 
                 <button 
                   onClick={handleGenerateCompatibility}
-                  className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] mt-4 shadow-lg shadow-green-900/40"
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] mt-4 shadow-lg shadow-emerald-900/40"
                 >
                   Узнать совместимость
                 </button>

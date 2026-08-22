@@ -26,7 +26,7 @@ const GenerationProgress = ({ text = "Генерация..." }) => {
       </div>
       <div className="h-3 w-full bg-[#3D1418] rounded-full overflow-hidden shadow-inner">
         <div 
-          className="h-full bg-gradient-to-r from-green-700 to-green-600 rounded-full transition-all duration-500 ease-out relative"
+          className="h-full bg-gradient-to-r from-emerald-700 to-emerald-600 rounded-full transition-all duration-500 ease-out relative"
           style={{ width: `${progress}%` }}
         >
           {/* Блик на прогресс-баре для красоты */}

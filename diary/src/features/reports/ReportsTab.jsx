@@ -85,16 +85,16 @@ export default function ReportsTab({ onSwitchTab }) {
           title: 'Какие события чаще всего повторяются в моей жизни?',
           desc: 'Любовь или зависимость, мудрость или глупость. Что чаще, такие и мы. Наша жизнь в привычках, а контроль над ними в анализе.',
           icon: Repeat,
-          color: 'text-green-500',
-          bg: 'bg-green-600/20'
+          color: 'text-emerald-500',
+          bg: 'bg-emerald-600/20'
         },
         {
           id: 'effective_reactions',
           title: 'На какие ситуации я реагирую эффективно, а на какие нет?',
           desc: 'Эффективность в предсказуемости, а во внезапности не решение проблемы, а усугубление. Важно понимать что мы строим и почему ломаем.',
           icon: Zap,
-          color: 'text-green-500',
-          bg: 'bg-green-600/20'
+          color: 'text-emerald-500',
+          bg: 'bg-emerald-600/20'
         }
       ]
     },
@@ -108,16 +108,16 @@ export default function ReportsTab({ onSwitchTab }) {
           title: 'Энергия',
           desc: 'От каких задач я забываю про время, какие действия дают мне энергию, а какие забирают. Ты не ленивый, просто не знаешь точно где твоя энергия умножается.',
           icon: Sparkles,
-          color: 'text-green-500',
-          bg: 'bg-green-600/20'
+          color: 'text-emerald-500',
+          bg: 'bg-emerald-600/20'
         },
         {
           id: 'competence',
           title: 'Чувство компетентности',
           desc: 'Понимание в чем твоя стезя подавляет страх, тревогу, неготовность к ответственности. Это есть у всех, состоит из побед, даже маленьких, похвалы от людей и результатов, которые замечают. В этом твоя сила.',
           icon: Target,
-          color: 'text-green-500',
-          bg: 'bg-green-600/20'
+          color: 'text-emerald-500',
+          bg: 'bg-emerald-600/20'
         }
       ]
     }
@@ -302,7 +302,7 @@ export default function ReportsTab({ onSwitchTab }) {
             <button 
               onClick={() => handleGenerate(activeForm)}
               disabled={isGenerating}
-              className="w-[calc(100%-1rem)] mx-2 bg-green-800 disabled:bg-green-950/50 hover:bg-green-700 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
+              className="w-[calc(100%-1rem)] mx-2 bg-emerald-800 disabled:bg-emerald-950/50 hover:bg-emerald-700 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
             >
               Проанализировать
             </button>
@@ -376,7 +376,7 @@ export default function ReportsTab({ onSwitchTab }) {
                               <button
                                 onClick={buyCareerGuidance}
                                 disabled={isBuyingCareer}
-                                className="w-full py-3.5 bg-green-800 hover:bg-green-700 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
+                                className="w-full py-3.5 bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
                               >
                                 {isBuyingCareer ? <span className="animate-spin text-xl">⏳</span> : "Купить за 1499 ₽"}
                               </button>
@@ -413,7 +413,7 @@ export default function ReportsTab({ onSwitchTab }) {
                                         <div className="text-[#F5E6D3] font-medium mb-1 flex items-center gap-2">
                                           Отчет от {new Date(r.created_at).toLocaleDateString('ru-RU')}
                                           {r.is_read === false && (
-                                            <span className="text-[10px] font-bold text-white bg-green-600 px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                                            <span className="text-[10px] font-bold text-white bg-emerald-600 px-2 py-0.5 rounded-full shadow-sm animate-pulse">
                                               Отчет готов!
                                             </span>
                                           )}
@@ -452,7 +452,7 @@ export default function ReportsTab({ onSwitchTab }) {
         </div>
       )}
 
-      <div className="mt-10 mb-8 mx-4 p-5 bg-green-800 rounded-2xl text-center shadow-md">
+      <div className="mt-10 mb-8 mx-4 p-5 bg-emerald-800 rounded-2xl text-center shadow-md">
         <p className="text-sm font-medium text-[#F5E6D3] leading-relaxed">
           Команда проекта «Азбука Я» регулярно добавляет новые отчеты.<br/>Следите за обновлениями!
         </p>

@@ -359,7 +359,7 @@ export default function ProfileTab({ onOverlayOpen }) {
           <span>{left} <span className="text-xs sm:text-sm font-medium opacity-70 ml-1">{Math.round(leftValue)}%</span></span>
         </div>
         <div className="h-4 w-full bg-rose-800 rounded-full overflow-hidden flex shadow-inner mb-3">
-          <div className="h-full bg-green-700" style={{ width: `${leftValue}%` }}></div>
+          <div className="h-full bg-emerald-700" style={{ width: `${leftValue}%` }}></div>
           <div className="h-full bg-orange-500" style={{ width: `${rightValue}%` }}></div>
         </div>
         <div className="flex justify-end items-start text-base sm:text-lg font-bold text-[#F5E6D3] mb-4">
@@ -469,7 +469,7 @@ export default function ProfileTab({ onOverlayOpen }) {
         {tgUser.photo_url ? (
           <img src={tgUser.photo_url} alt="Avatar" className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg" />
         ) : (
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-950/40 text-[#F5E6D3] rounded-full flex items-center justify-center font-bold text-2xl shadow-inner">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-950/40 text-[#F5E6D3] rounded-full flex items-center justify-center font-bold text-2xl shadow-inner">
             {tgUser.first_name?.[0] || <User size={32} />}
           </div>
         )}
@@ -482,8 +482,8 @@ export default function ProfileTab({ onOverlayOpen }) {
           onClick={() => { if (accessLevel === 'Premium') setIsSubscriptionInfoModalOpen(true); }}
         >
           <div className={`font-bold px-3 py-1.5 rounded-xl text-sm sm:text-base text-center flex items-center gap-1.5 shadow-sm ${
-            accessLevel === 'Premium' ? 'bg-green-500 text-green-950' : 
-            accessLevel === 'Демо-доступ' ? 'bg-green-500/20 text-green-300' : 'bg-rose-950 text-[#F5E6D3]/60'
+            accessLevel === 'Premium' ? 'bg-emerald-500 text-emerald-950' : 
+            accessLevel === 'Демо-доступ' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-950 text-[#F5E6D3]/60'
           }`}>
             {accessLevel === 'Premium' && <Sparkles size={16} />}
             {accessLevel || 'Загрузка...'}
@@ -506,7 +506,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <button
                 onClick={() => setIsPremiumModalOpen(true)}
                 disabled={isBuying}
-                className="w-full py-3.5 bg-green-800 hover:bg-green-700 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
+                className="w-full py-3.5 bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
               >
                 {isBuying ? <span className="animate-spin text-xl">⏳</span> : <Sparkles size={18} />}
                 Оформить Premium (149 ₽ / мес)
@@ -642,7 +642,7 @@ export default function ProfileTab({ onOverlayOpen }) {
             {['ingenfrid', 'key_crp', 'fondlife'].includes(tgUser.username) && (
               <button 
                 onClick={() => setActiveSubTab('admin')}
-                className="w-full py-3 bg-green-800 hover:bg-green-700 text-[#F5E6D3] text-sm font-bold rounded-2xl transition-colors shadow-sm flex items-center justify-center gap-2 mt-4"
+                className="w-full py-3 bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] text-sm font-bold rounded-2xl transition-colors shadow-sm flex items-center justify-center gap-2 mt-4"
               >
                 Админ-панель
               </button>
@@ -692,7 +692,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                       </div>
                     </button>
                   ) : (
-                    <button onClick={handleGeneratePortrait} className="w-full flex flex-col items-center justify-center text-center p-5 rounded-2xl bg-green-800 hover:bg-green-700 text-[#F5E6D3] transition-colors active:scale-[0.98] shadow-lg shadow-green-900/40">
+                    <button onClick={handleGeneratePortrait} className="w-full flex flex-col items-center justify-center text-center p-5 rounded-2xl bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] transition-colors active:scale-[0.98] shadow-lg shadow-emerald-900/40">
                       <ClipboardList size={32} className="mb-2" />
                       <div>
                         <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Мой портрет личности</h3>
@@ -731,7 +731,7 @@ export default function ProfileTab({ onOverlayOpen }) {
 
                 {totalTests > 0 && passedTests === totalTests && !portraitData && (
                   <div className="mt-auto">
-                    <button onClick={handleGeneratePortrait} className="w-full flex flex-col items-center justify-center text-center p-5 rounded-2xl bg-green-800 hover:bg-green-700 text-[#F5E6D3] transition-colors active:scale-[0.98] shadow-lg shadow-green-900/40">
+                    <button onClick={handleGeneratePortrait} className="w-full flex flex-col items-center justify-center text-center p-5 rounded-2xl bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] transition-colors active:scale-[0.98] shadow-lg shadow-emerald-900/40">
                       <ClipboardList size={32} className="mb-2" />
                       <div>
                         <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Мой портрет личности</h3>
@@ -769,7 +769,7 @@ export default function ProfileTab({ onOverlayOpen }) {
             </div>
             {/* Нижняя кнопка */}
             <div className="p-4 sm:p-5 bg-rose-950/50 rounded-b-[2rem]">
-              <button onClick={() => setSelectedResult(null)} className="w-full bg-green-800 hover:bg-green-700 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all active:bg-green-900 shadow-lg shadow-green-950/20">
+              <button onClick={() => setSelectedResult(null)} className="w-full bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all active:bg-emerald-900 shadow-lg shadow-emerald-950/20">
                 Отлично
               </button>
             </div>
@@ -809,7 +809,7 @@ export default function ProfileTab({ onOverlayOpen }) {
           
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-[#F5E6D3] mb-2 flex items-center gap-2">
-              <Users className="text-green-600" />
+              <Users className="text-emerald-600" />
               Реферальная программа
             </h2>
             <p className="text-[#F5E6D3]/70">Приглашайте друзей и получайте 50% от их оплат на свой баланс.</p>
@@ -833,7 +833,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                 <button 
                   onClick={handleVerifyInn}
                   disabled={isVerifyingInn || innInput.length < 10}
-                  className="w-full bg-green-800 hover:bg-green-700 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-green-950/20"
+                  className="w-full bg-emerald-800 hover:bg-emerald-700 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-emerald-950/20"
                 >
                   {isVerifyingInn ? "Проверка..." : "Проверить ИНН"}
                 </button>
@@ -848,18 +848,18 @@ export default function ProfileTab({ onOverlayOpen }) {
                       <div className="text-[#F5E6D3]/70 text-sm mb-1">Сумма в ожидании</div>
                       <div className="text-[#F5E6D3] text-2xl font-bold">{referralInfo.pending} ₽</div>
                     </div>
-                    <Activity className="text-green-600 opacity-50" size={32} />
+                    <Activity className="text-emerald-600 opacity-50" size={32} />
                   </div>
                   <div className="bg-[#2B0A0A] p-4 rounded-2xl flex justify-between items-center">
                     <div>
                       <div className="text-[#F5E6D3]/70 text-sm mb-1">Доступно к выводу</div>
                       <div className="text-[#F5E6D3] text-2xl font-bold">{referralInfo.available} ₽</div>
                     </div>
-                    <Check className="text-green-600" size={32} />
+                    <Check className="text-emerald-600" size={32} />
                   </div>
                 </div>
                 <div className="mt-4 p-3 bg-rose-950/30 rounded-xl text-xs text-[#F5E6D3]/60 flex gap-2">
-                  <ShieldAlert className="shrink-0 text-green-500/80" size={16} />
+                  <ShieldAlert className="shrink-0 text-emerald-500/80" size={16} />
                   <span>Внимание! Баланс переходит в статус «Доступно к выводу» 1 числа каждого месяца. Выплаты осуществляются как самозанятому (ИНН: {referralInfo.inn}).</span>
                 </div>
               </div>
@@ -885,7 +885,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                         navigator.clipboard.writeText(referralInfo.link);
                         WebApp.showAlert("Ссылка скопирована!");
                       }}
-                      className="bg-green-800 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
+                      className="bg-emerald-800 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
                     >
                       Копировать
                     </button>
@@ -899,7 +899,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                   <button 
                     onClick={handleWithdraw}
                     disabled={isWithdrawing || referralInfo.available < 100}
-                    className="w-full bg-green-800 hover:bg-green-700 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-green-950/20"
+                    className="w-full bg-emerald-800 hover:bg-emerald-700 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-emerald-950/20"
                   >
                     {isWithdrawing ? "Обработка..." : "Запросить вывод"}
                   </button>
@@ -919,11 +919,11 @@ export default function ProfileTab({ onOverlayOpen }) {
               <X size={20} />
             </button>
             <div className="text-center mb-6 mt-2">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500/20 text-green-400 rounded-full mb-4 shadow-[0_0_20px_rgba(34,197,94,0.2)]">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full mb-4 shadow-[0_0_20px_rgba(34,197,94,0.2)]">
                 <Sparkles size={32} />
               </div>
               <h2 className="text-2xl font-bold text-[#F5E6D3]">Оформить Premium</h2>
-              <p className="text-green-500/90 font-medium text-sm mt-1">149 ₽ в месяц</p>
+              <p className="text-emerald-500/90 font-medium text-sm mt-1">149 ₽ в месяц</p>
             </div>
             
             <div className="bg-rose-950/50 rounded-2xl p-5 mb-6">
@@ -938,14 +938,14 @@ export default function ProfileTab({ onOverlayOpen }) {
                 <div className="relative flex items-center justify-center mt-0.5">
                   <input 
                     type="checkbox" 
-                    className="peer appearance-none w-5 h-5 border-2 border-rose-800 rounded-md checked:bg-green-800 checked:border-green-800 transition-colors"
+                    className="peer appearance-none w-5 h-5 border-2 border-rose-800 rounded-md checked:bg-emerald-800 checked:border-emerald-800 transition-colors"
                     checked={isOfferAccepted}
                     onChange={(e) => setIsOfferAccepted(e.target.checked)}
                   />
                   <Check size={14} className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
                 </div>
                 <span className="text-[#F5E6D3]/80 text-sm select-none">
-                  Я согласен с <button onClick={(e) => {e.preventDefault(); setIsOfferModalOpen(true);}} className="text-green-600 hover:text-green-500 underline underline-offset-2">публичной офертой</button> и правилами предоставления услуг.
+                  Я согласен с <button onClick={(e) => {e.preventDefault(); setIsOfferModalOpen(true);}} className="text-emerald-600 hover:text-emerald-500 underline underline-offset-2">публичной офертой</button> и правилами предоставления услуг.
                 </span>
               </label>
             </div>
@@ -961,8 +961,8 @@ export default function ProfileTab({ onOverlayOpen }) {
               disabled={isBuying}
               className={`w-full py-4 text-[#F5E6D3] font-bold rounded-xl shadow-lg transition-all flex justify-center items-center gap-2 ${
                 isOfferAccepted 
-                  ? "bg-green-800 hover:bg-green-700 shadow-green-900/30" 
-                  : "bg-green-900/40 text-[#F5E6D3]/40 cursor-not-allowed"
+                  ? "bg-emerald-800 hover:bg-emerald-700 shadow-emerald-900/30" 
+                  : "bg-emerald-900/40 text-[#F5E6D3]/40 cursor-not-allowed"
               }`}
             >
               {isBuying ? <span className="animate-spin text-xl">⏳</span> : <Sparkles size={18} />}
@@ -987,7 +987,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <ReactMarkdown>{PUBLIC_OFFER_TEXT}</ReactMarkdown>
             </div>
             <div className="p-5 border-t border-rose-800/50 bg-rose-950/30 rounded-b-[2rem]">
-              <button onClick={() => {setIsOfferAccepted(true); setIsOfferModalOpen(false);}} className="w-full py-3.5 bg-green-800 hover:bg-green-700 text-white font-bold rounded-xl transition-colors">
+              <button onClick={() => {setIsOfferAccepted(true); setIsOfferModalOpen(false);}} className="w-full py-3.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors">
                 Принять и закрыть
               </button>
             </div>
@@ -1004,7 +1004,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <X size={20} />
             </button>
             <div className="text-center mb-6 mt-2">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500/20 text-green-500 rounded-full mb-4 shadow-[0_0_20px_rgba(34,197,94,0.2)]">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-500/20 text-emerald-500 rounded-full mb-4 shadow-[0_0_20px_rgba(34,197,94,0.2)]">
                 <Sparkles size={32} />
               </div>
               <h2 className="text-2xl font-bold text-[#F5E6D3]">Premium</h2>
@@ -1014,7 +1014,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <div className="bg-rose-950/50 rounded-2xl p-5 mb-4 border border-rose-800/50">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-[#F5E6D3]/70 font-medium">Статус</span>
-                  <span className="text-green-500 font-bold bg-green-500/10 px-2 py-1 rounded-lg text-sm border border-green-500/20">Активен</span>
+                  <span className="text-emerald-500 font-bold bg-emerald-500/10 px-2 py-1 rounded-lg text-sm border border-emerald-500/20">Активен</span>
                 </div>
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-[#F5E6D3]/70 font-medium">Оформлен</span>
@@ -1029,12 +1029,12 @@ export default function ProfileTab({ onOverlayOpen }) {
               </div>
 
               <div className="bg-rose-950/50 rounded-2xl p-5 mb-4 border border-rose-800/50">
-                <h3 className="text-[#F5E6D3] font-bold mb-4 flex items-center gap-2"><Check size={18} className="text-green-500"/> Преимущества Premium:</h3>
+                <h3 className="text-[#F5E6D3] font-bold mb-4 flex items-center gap-2"><Check size={18} className="text-emerald-500"/> Преимущества Premium:</h3>
                 <ul className="text-[#F5E6D3]/90 text-sm space-y-3">
-                  <li className="flex gap-3"><Sparkles size={16} className="text-green-500 shrink-0 mt-0.5" /> <span>Безлимитный анализ реакций в дневнике и соответствие портрету</span></li>
-                  <li className="flex gap-3"><Sparkles size={16} className="text-green-500 shrink-0 mt-0.5" /> <span>Детализированные отчеты по сферам жизни</span></li>
-                  <li className="flex gap-3"><Sparkles size={16} className="text-green-500 shrink-0 mt-0.5" /> <span>Ранний доступ к новым функциям и тестам</span></li>
-                  <li className="flex gap-3"><Sparkles size={16} className="text-green-500 shrink-0 mt-0.5" /> <span>Приоритетная поддержка пользователей</span></li>
+                  <li className="flex gap-3"><Sparkles size={16} className="text-emerald-500 shrink-0 mt-0.5" /> <span>Безлимитный анализ реакций в дневнике и соответствие портрету</span></li>
+                  <li className="flex gap-3"><Sparkles size={16} className="text-emerald-500 shrink-0 mt-0.5" /> <span>Детализированные отчеты по сферам жизни</span></li>
+                  <li className="flex gap-3"><Sparkles size={16} className="text-emerald-500 shrink-0 mt-0.5" /> <span>Ранний доступ к новым функциям и тестам</span></li>
+                  <li className="flex gap-3"><Sparkles size={16} className="text-emerald-500 shrink-0 mt-0.5" /> <span>Приоритетная поддержка пользователей</span></li>
                 </ul>
               </div>
             </div>

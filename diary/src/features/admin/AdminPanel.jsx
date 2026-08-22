@@ -309,7 +309,7 @@ export default function AdminPanel({ onBack }) {
           <button 
             onClick={handleCreateLink}
             disabled={!newLinkName || isCreatingLink}
-            className="bg-green-800 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-3 rounded-xl font-medium transition-colors"
+            className="bg-emerald-800 hover:bg-emerald-700 disabled:opacity-50 text-white px-4 py-3 rounded-xl font-medium transition-colors"
           >
             {isCreatingLink ? "..." : "Создать"}
           </button>
@@ -323,7 +323,7 @@ export default function AdminPanel({ onBack }) {
               <div key={link.id} className="bg-rose-950/40 p-4 rounded-xl flex flex-col gap-2 relative">
                 <div className="flex justify-between items-start pr-8">
                   <div className="font-medium text-[#F5E6D3]">{link.name}</div>
-                  <div className="flex items-center gap-1 text-green-400 bg-green-900/30 px-2 py-1 rounded-lg text-sm font-bold">
+                  <div className="flex items-center gap-1 text-emerald-400 bg-emerald-900/30 px-2 py-1 rounded-lg text-sm font-bold">
                     <Users size={14} /> {link.clicks_count}
                   </div>
                 </div>
@@ -377,7 +377,7 @@ export default function AdminPanel({ onBack }) {
 
           <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Check className="text-green-500" size={24} />
+              <Check className="text-emerald-500" size={24} />
               <span className="text-[#F5E6D3] font-medium">Активных пользователей</span>
             </div>
             <span className="text-xl font-bold text-[#F5E6D3]">{stats.active_users || 0}</span>
@@ -385,7 +385,7 @@ export default function AdminPanel({ onBack }) {
           
           <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Calendar className="text-green-700" size={24} />
+              <Calendar className="text-emerald-700" size={24} />
               <span className="text-[#F5E6D3] font-medium">Записи дневника</span>
             </div>
             <span className="text-xl font-bold text-[#F5E6D3]">{stats.diary_entries || 0}</span>
@@ -468,7 +468,7 @@ export default function AdminPanel({ onBack }) {
             <button 
               onClick={handleGrantAccess}
               disabled={isGranting}
-              className="w-full bg-green-800 hover:bg-green-700 disabled:opacity-50 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-sm"
+              className="w-full bg-emerald-800 hover:bg-emerald-700 disabled:opacity-50 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-sm"
             >
               {isGranting ? "Обработка..." : "Выдать права"}
             </button>
@@ -581,7 +581,7 @@ export default function AdminPanel({ onBack }) {
                           <div className="flex items-center gap-1">
                             <button 
                               onClick={() => setEditingTestId(test.id)}
-                              className="p-2 text-green-600 hover:text-green-500 hover:bg-green-600/10 rounded-lg transition-colors"
+                              className="p-2 text-emerald-600 hover:text-emerald-500 hover:bg-emerald-600/10 rounded-lg transition-colors"
                             >
                               <Edit size={20} />
                             </button>
