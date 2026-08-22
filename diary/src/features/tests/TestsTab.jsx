@@ -40,6 +40,16 @@ export default function TestsTab({ onOverlayOpen }) {
 
   const [testResult, setTestResult] = useState(null);
 
+  // Auto-save progress
+  useEffect(() => {
+    if (takingTestId && isStarted && !isSubmitting && !testResult) {
+      localStorage.setItem(`test_progress_${takingTestId}`, JSON.stringify({
+        answers: selectedAnswers,
+        index: currentQuestionIndex
+      }));
+    }
+  }, [takingTestId, currentQuestionIndex, selectedAnswers, isStarted, isSubmitting, testResult]);
+
   // Swipe states
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
