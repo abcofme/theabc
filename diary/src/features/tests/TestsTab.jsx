@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, Check, XCircle, X, Brain, ClipboardList, Lock, Sparkles } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ChevronDown, ChevronUp, Check, XCircle, X, Brain, ClipboardList, Lock, Sparkles, ArrowLeft, ArrowRight } from 'lucide-react';
 import bgLeaves from '../../assets/bg-leaves.png';
 
 import iconPersonality from '../../assets/icons/personality.png';
@@ -37,7 +37,16 @@ export default function TestsTab({ onOverlayOpen }) {
   const [selectedAnswers, setSelectedAnswers] = useState([]); // array of answer_ids
   const [isStarted, setIsStarted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [testResult, setTestResult] = useState(null);
+
+  // Swipe states
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [swipingOut, setSwipingOut] = useState(null);
+  const startXRef = useRef(0);
+  const currentXRef = useRef(0);
+
 
   useEffect(() => {
     if (onOverlayOpen) {
@@ -199,7 +208,63 @@ export default function TestsTab({ onOverlayOpen }) {
     }
   };
 
+
+  const handleTouchStart = (e) => {
+    startXRef.current = e.touches[0].clientX;
+    currentXRef.current = startXRef.current;
+    setIsDragging(true);
+    setSwipingOut(null);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging) return;
+    currentXRef.current = e.touches[0].clientX;
+    setDragOffset(currentXRef.current - startXRef.current);
+  };
+
+  const executeSwipe = (direction) => {
+    if (swipingOut) return;
+    setSwipingOut(direction);
+    const isYes = direction === 'right';
+    
+    const currentQ = testDetails.questions[currentQuestionIndex];
+    let chosenAnswerId = null;
+    
+    if (isYes) {
+      const ans = currentQ.answers.find(a => a.name.toLowerCase().includes('да') || a.name.toLowerCase() === 'верно') || currentQ.answers[0];
+      chosenAnswerId = ans.id;
+    } else {
+      const ans = currentQ.answers.find(a => a.name.toLowerCase().includes('нет') || a.name.toLowerCase() === 'неверно') || currentQ.answers[1] || currentQ.answers[0];
+      chosenAnswerId = ans.id;
+    }
+    
+    setTimeout(() => {
+      handleAnswerClick(chosenAnswerId);
+      setDragOffset(0);
+      setSwipingOut(null);
+    }, 300);
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    if (dragOffset > 80) {
+      executeSwipe('right');
+    } else if (dragOffset < -80) {
+      executeSwipe('left');
+    } else {
+      setDragOffset(0);
+    }
+  };
+
+  const triggerSwipe = (direction) => {
+    if (swipingOut) return;
+    setIsDragging(false);
+    setDragOffset(direction === 'right' ? 300 : -300);
+    executeSwipe(direction);
+  };
+
   return (
+
     <div className="flex flex-col relative select-none bg-transparent max-w-2xl mx-auto w-full pt-4 h-full overflow-y-scroll pb-16">
       <h2 className="text-2xl font-bold text-[#F5E6D3] px-4 mb-8 text-center flex items-center justify-center gap-2">
         <ClipboardList size={28} />
@@ -379,8 +444,8 @@ export default function TestsTab({ onOverlayOpen }) {
                 </button>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
-                <div className="mb-6 flex items-center justify-between">
+              <div className="flex-1 flex flex-col max-w-md mx-auto w-full relative">
+                <div className="mb-4 flex items-center justify-between px-2">
                   <span className="text-[#F5E6D3]/60 font-semibold text-sm">
                     Вопрос {currentQuestionIndex + 1} из {testDetails.questions.length}
                   </span>
@@ -392,22 +457,64 @@ export default function TestsTab({ onOverlayOpen }) {
                   </div>
                 </div>
                 
-                <div className="bg-rose-900 rounded-[2rem] p-6 sm:p-8 shadow-xl mb-6">
-                  <h4 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] leading-snug">
-                    {testDetails.questions[currentQuestionIndex].name}
-                  </h4>
+                {/* Cards Stack Container */}
+                <div className="relative flex-1 flex flex-col w-full min-h-[350px] sm:min-h-[400px] mb-4 perspective-1000">
+                  {/* Next Card (Underneath) */}
+                  {currentQuestionIndex + 1 < testDetails.questions.length && (
+                    <div className="absolute inset-4 bg-rose-900/80 rounded-[2rem] p-6 sm:p-8 shadow-sm flex items-center justify-center text-center transform scale-[0.92] translate-y-4 opacity-60 select-none transition-all duration-300">
+                       <h4 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] leading-snug blur-[2px]">
+                         {testDetails.questions[currentQuestionIndex + 1].name}
+                       </h4>
+                    </div>
+                  )}
+                  
+                  {/* Current Card */}
+                  <div 
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    className={`absolute inset-4 bg-rose-900 rounded-[2rem] p-6 sm:p-8 shadow-2xl flex flex-col items-center justify-center text-center overflow-hidden cursor-grab active:cursor-grabbing select-none border border-rose-800/30
+                      ${isDragging ? 'transition-none' : 'transition-transform duration-300 ease-out'}
+                      ${swipingOut === 'right' ? 'translate-x-[150%] rotate-12 opacity-0' : ''}
+                      ${swipingOut === 'left' ? '-translate-x-[150%] -rotate-12 opacity-0' : ''}
+                    `}
+                    style={(!swipingOut && isDragging) ? {
+                      transform: `translateX(${dragOffset}px) rotate(${dragOffset * 0.05}deg)`
+                    } : {}}
+                  >
+                    {/* Overlay for Color Hint */}
+                    <div 
+                      className={`absolute inset-0 transition-opacity duration-150 ${dragOffset > 0 ? 'bg-green-500' : 'bg-red-500'}`}
+                      style={{ opacity: Math.min(Math.abs(dragOffset) / 300, 0.4) }}
+                    />
+                    <h4 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] leading-snug relative z-10 pointer-events-none">
+                      {testDetails.questions[currentQuestionIndex].name}
+                    </h4>
+                    
+                    {/* Indicators "ДА" / "НЕТ" on the card edges */}
+                    <div className="absolute top-6 left-6 border-4 border-green-500 text-green-500 font-black text-3xl px-4 py-1 rounded-xl transform -rotate-12 opacity-0 transition-opacity pointer-events-none" style={{ opacity: dragOffset > 30 ? Math.min(dragOffset/100, 1) : 0 }}>
+                      ДА
+                    </div>
+                    <div className="absolute top-6 right-6 border-4 border-red-500 text-red-500 font-black text-3xl px-4 py-1 rounded-xl transform rotate-12 opacity-0 transition-opacity pointer-events-none" style={{ opacity: dragOffset < -30 ? Math.min(-dragOffset/100, 1) : 0 }}>
+                      НЕТ
+                    </div>
+                  </div>
                 </div>
                 
-                <div className="space-y-3 flex flex-col pb-8">
-                  {testDetails.questions[currentQuestionIndex].answers.map(ans => (
-                    <button
-                      key={ans.id}
-                      onClick={() => handleAnswerClick(ans.id)}
-                      className="w-full bg-rose-800/40 hover:bg-rose-800 text-[#F5E6D3] font-medium text-left p-5 rounded-2xl transition-colors active:scale-[0.98]"
-                    >
-                      {ans.name}
-                    </button>
-                  ))}
+                {/* Reminders / Controls */}
+                <div className="flex justify-between items-center px-10 pb-8 w-full max-w-sm mx-auto z-10">
+                  <button onClick={() => triggerSwipe('left')} className="flex flex-col items-center gap-2 text-red-400/80 hover:text-red-400 transition-colors active:scale-95">
+                    <div className="w-16 h-16 rounded-full bg-rose-900/60 shadow-lg flex items-center justify-center border-2 border-red-500/30 hover:border-red-500/70 backdrop-blur-sm">
+                      <ArrowLeft size={32} />
+                    </div>
+                    <span className="text-sm font-bold tracking-widest uppercase">Нет</span>
+                  </button>
+                  <button onClick={() => triggerSwipe('right')} className="flex flex-col items-center gap-2 text-green-400/80 hover:text-green-400 transition-colors active:scale-95">
+                    <div className="w-16 h-16 rounded-full bg-rose-900/60 shadow-lg flex items-center justify-center border-2 border-green-500/30 hover:border-green-500/70 backdrop-blur-sm">
+                      <ArrowRight size={32} />
+                    </div>
+                    <span className="text-sm font-bold tracking-widest uppercase">Да</span>
+                  </button>
                 </div>
               </div>
             )}
