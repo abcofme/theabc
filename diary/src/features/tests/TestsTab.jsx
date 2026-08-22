@@ -242,7 +242,7 @@ export default function TestsTab({ onOverlayOpen }) {
       handleAnswerClick(chosenAnswerId);
       setDragOffset(0);
       setSwipingOut(null);
-    }, 300);
+    }, 450);
   };
 
   const handleTouchEnd = () => {
@@ -461,8 +461,8 @@ export default function TestsTab({ onOverlayOpen }) {
                 <div className="relative flex-1 flex flex-col w-full min-h-[400px] mb-8 perspective-1000">
                   {/* Next Card (Underneath) */}
                   {currentQuestionIndex + 1 < testDetails.questions.length && (
-                    <div className="absolute inset-2 bg-rose-950/40 backdrop-blur-sm rounded-[2rem] p-6 shadow-sm flex items-center justify-center text-center transform scale-[0.92] translate-y-6 opacity-60 select-none transition-all duration-300">
-                       <h4 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] leading-snug blur-[2px]">
+                    <div className="absolute inset-2 bg-rose-900/80 rounded-[2rem] p-6 sm:p-8 shadow-sm flex items-center justify-center text-center opacity-70 blur-[3px] select-none transition-all duration-500 ease-out">
+                       <h4 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] leading-snug">
                          {testDetails.questions[currentQuestionIndex + 1].name}
                        </h4>
                     </div>
@@ -474,11 +474,11 @@ export default function TestsTab({ onOverlayOpen }) {
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
-                    className={`absolute inset-2 bg-rose-900/80 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 shadow-2xl flex flex-col items-center justify-center text-center overflow-hidden cursor-grab active:cursor-grabbing select-none border border-rose-500/20
-                      animate-in zoom-in-[0.92] slide-in-from-top-[1.5rem] duration-300 ease-out
-                      ${isDragging ? 'transition-none' : 'transition-transform duration-300 ease-out'}
-                      ${swipingOut === 'right' ? 'translate-x-[150%] rotate-12 opacity-0' : ''}
-                      ${swipingOut === 'left' ? '-translate-x-[150%] -rotate-12 opacity-0' : ''}
+                    className={`absolute inset-2 bg-rose-900/80 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 shadow-2xl flex flex-col items-center justify-center text-center overflow-hidden cursor-grab active:cursor-grabbing select-none
+                      animate-in fade-in zoom-in-[0.96] duration-500 ease-out
+                      ${isDragging ? 'transition-none' : 'transition-transform duration-500 ease-out'}
+                      ${swipingOut === 'right' ? 'translate-x-[150%] rotate-[10deg] opacity-0' : ''}
+                      ${swipingOut === 'left' ? '-translate-x-[150%] -rotate-[10deg] opacity-0' : ''}
                     `}
                     style={(!swipingOut && isDragging) ? {
                       transform: `translateX(${dragOffset}px) rotate(${dragOffset * 0.05}deg)`
@@ -486,7 +486,7 @@ export default function TestsTab({ onOverlayOpen }) {
                   >
                     {/* Overlay for Color Hint */}
                     <div 
-                      className={`absolute inset-0 transition-opacity duration-150 ${dragOffset > 0 ? 'bg-green-500' : 'bg-red-500'}`}
+                      className={`absolute inset-0 transition-opacity duration-200 ${dragOffset > 0 ? 'bg-green-500' : 'bg-red-500'}`}
                       style={{ opacity: Math.min(Math.abs(dragOffset) / 300, 0.4) }}
                     />
                     
@@ -502,24 +502,24 @@ export default function TestsTab({ onOverlayOpen }) {
                       <button 
                         onClick={(e) => { e.stopPropagation(); triggerSwipe('left'); }} 
                         onTouchEnd={(e) => e.stopPropagation()}
-                        className="flex items-center gap-2 bg-rose-950/50 hover:bg-red-500/30 text-red-300 font-bold tracking-wider uppercase px-4 py-3 rounded-xl backdrop-blur-sm transition-colors active:scale-95 border border-red-500/20"
+                        className="flex items-center gap-2 bg-red-600/80 hover:bg-red-500 text-[#F5E6D3] font-bold tracking-wider uppercase px-5 py-3.5 rounded-xl backdrop-blur-sm transition-colors active:scale-95"
                       >
                         <ArrowLeft size={20} /> Нет
                       </button>
                       <button 
                         onClick={(e) => { e.stopPropagation(); triggerSwipe('right'); }} 
                         onTouchEnd={(e) => e.stopPropagation()}
-                        className="flex items-center gap-2 bg-rose-950/50 hover:bg-green-500/30 text-green-300 font-bold tracking-wider uppercase px-4 py-3 rounded-xl backdrop-blur-sm transition-colors active:scale-95 border border-green-500/20"
+                        className="flex items-center gap-2 bg-green-600/80 hover:bg-green-500 text-[#F5E6D3] font-bold tracking-wider uppercase px-5 py-3.5 rounded-xl backdrop-blur-sm transition-colors active:scale-95"
                       >
                         Да <ArrowRight size={20} />
                       </button>
                     </div>
 
                     {/* Indicators "ДА" / "НЕТ" on the card edges */}
-                    <div className="absolute top-8 left-6 border-4 border-green-500 text-green-500 font-black text-3xl px-4 py-1 rounded-xl transform -rotate-12 opacity-0 transition-opacity pointer-events-none" style={{ opacity: dragOffset > 30 ? Math.min(dragOffset/100, 1) : 0 }}>
+                    <div className="absolute top-8 left-6 border-4 border-green-500 text-green-500 font-black text-3xl px-4 py-1 rounded-xl transform -rotate-12 opacity-0 transition-opacity pointer-events-none duration-200" style={{ opacity: dragOffset > 30 ? Math.min(dragOffset/100, 1) : 0 }}>
                       ДА
                     </div>
-                    <div className="absolute top-8 right-6 border-4 border-red-500 text-red-500 font-black text-3xl px-4 py-1 rounded-xl transform rotate-12 opacity-0 transition-opacity pointer-events-none" style={{ opacity: dragOffset < -30 ? Math.min(-dragOffset/100, 1) : 0 }}>
+                    <div className="absolute top-8 right-6 border-4 border-red-500 text-red-500 font-black text-3xl px-4 py-1 rounded-xl transform rotate-12 opacity-0 transition-opacity pointer-events-none duration-200" style={{ opacity: dragOffset < -30 ? Math.min(-dragOffset/100, 1) : 0 }}>
                       НЕТ
                     </div>
                   </div>
