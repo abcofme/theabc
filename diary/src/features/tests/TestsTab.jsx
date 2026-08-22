@@ -458,10 +458,10 @@ export default function TestsTab({ onOverlayOpen }) {
                 </div>
                 
                 {/* Cards Stack Container */}
-                <div className="relative flex-1 flex flex-col w-full min-h-[350px] sm:min-h-[400px] mb-4 perspective-1000">
+                <div className="relative flex-1 flex flex-col w-full min-h-[400px] mb-8 perspective-1000">
                   {/* Next Card (Underneath) */}
                   {currentQuestionIndex + 1 < testDetails.questions.length && (
-                    <div className="absolute inset-4 bg-rose-900/80 rounded-[2rem] p-6 sm:p-8 shadow-sm flex items-center justify-center text-center transform scale-[0.92] translate-y-4 opacity-60 select-none transition-all duration-300">
+                    <div className="absolute inset-2 bg-rose-950/40 backdrop-blur-sm rounded-[2rem] p-6 shadow-sm flex items-center justify-center text-center transform scale-[0.92] translate-y-6 opacity-60 select-none transition-all duration-300">
                        <h4 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] leading-snug blur-[2px]">
                          {testDetails.questions[currentQuestionIndex + 1].name}
                        </h4>
@@ -470,10 +470,12 @@ export default function TestsTab({ onOverlayOpen }) {
                   
                   {/* Current Card */}
                   <div 
+                    key={currentQuestionIndex}
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
-                    className={`absolute inset-4 bg-rose-900 rounded-[2rem] p-6 sm:p-8 shadow-2xl flex flex-col items-center justify-center text-center overflow-hidden cursor-grab active:cursor-grabbing select-none border border-rose-800/30
+                    className={`absolute inset-2 bg-rose-900/80 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 shadow-2xl flex flex-col items-center justify-center text-center overflow-hidden cursor-grab active:cursor-grabbing select-none border border-rose-500/20
+                      animate-in zoom-in-[0.92] slide-in-from-top-[1.5rem] duration-300 ease-out
                       ${isDragging ? 'transition-none' : 'transition-transform duration-300 ease-out'}
                       ${swipingOut === 'right' ? 'translate-x-[150%] rotate-12 opacity-0' : ''}
                       ${swipingOut === 'left' ? '-translate-x-[150%] -rotate-12 opacity-0' : ''}
@@ -487,34 +489,40 @@ export default function TestsTab({ onOverlayOpen }) {
                       className={`absolute inset-0 transition-opacity duration-150 ${dragOffset > 0 ? 'bg-green-500' : 'bg-red-500'}`}
                       style={{ opacity: Math.min(Math.abs(dragOffset) / 300, 0.4) }}
                     />
-                    <h4 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] leading-snug relative z-10 pointer-events-none">
-                      {testDetails.questions[currentQuestionIndex].name}
-                    </h4>
                     
+                    {/* Question Text */}
+                    <div className="flex-1 flex items-center justify-center w-full relative z-10 pointer-events-none mb-16">
+                      <h4 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] leading-snug">
+                        {testDetails.questions[currentQuestionIndex].name}
+                      </h4>
+                    </div>
+                    
+                    {/* Buttons inside the card */}
+                    <div className="absolute bottom-6 inset-x-6 flex justify-between items-center z-20">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); triggerSwipe('left'); }} 
+                        onTouchEnd={(e) => e.stopPropagation()}
+                        className="flex items-center gap-2 bg-rose-950/50 hover:bg-red-500/30 text-red-300 font-bold tracking-wider uppercase px-4 py-3 rounded-xl backdrop-blur-sm transition-colors active:scale-95 border border-red-500/20"
+                      >
+                        <ArrowLeft size={20} /> Нет
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); triggerSwipe('right'); }} 
+                        onTouchEnd={(e) => e.stopPropagation()}
+                        className="flex items-center gap-2 bg-rose-950/50 hover:bg-green-500/30 text-green-300 font-bold tracking-wider uppercase px-4 py-3 rounded-xl backdrop-blur-sm transition-colors active:scale-95 border border-green-500/20"
+                      >
+                        Да <ArrowRight size={20} />
+                      </button>
+                    </div>
+
                     {/* Indicators "ДА" / "НЕТ" on the card edges */}
-                    <div className="absolute top-6 left-6 border-4 border-green-500 text-green-500 font-black text-3xl px-4 py-1 rounded-xl transform -rotate-12 opacity-0 transition-opacity pointer-events-none" style={{ opacity: dragOffset > 30 ? Math.min(dragOffset/100, 1) : 0 }}>
+                    <div className="absolute top-8 left-6 border-4 border-green-500 text-green-500 font-black text-3xl px-4 py-1 rounded-xl transform -rotate-12 opacity-0 transition-opacity pointer-events-none" style={{ opacity: dragOffset > 30 ? Math.min(dragOffset/100, 1) : 0 }}>
                       ДА
                     </div>
-                    <div className="absolute top-6 right-6 border-4 border-red-500 text-red-500 font-black text-3xl px-4 py-1 rounded-xl transform rotate-12 opacity-0 transition-opacity pointer-events-none" style={{ opacity: dragOffset < -30 ? Math.min(-dragOffset/100, 1) : 0 }}>
+                    <div className="absolute top-8 right-6 border-4 border-red-500 text-red-500 font-black text-3xl px-4 py-1 rounded-xl transform rotate-12 opacity-0 transition-opacity pointer-events-none" style={{ opacity: dragOffset < -30 ? Math.min(-dragOffset/100, 1) : 0 }}>
                       НЕТ
                     </div>
                   </div>
-                </div>
-                
-                {/* Reminders / Controls */}
-                <div className="flex justify-between items-center px-10 pb-8 w-full max-w-sm mx-auto z-10">
-                  <button onClick={() => triggerSwipe('left')} className="flex flex-col items-center gap-2 text-red-400/80 hover:text-red-400 transition-colors active:scale-95">
-                    <div className="w-16 h-16 rounded-full bg-rose-900/60 shadow-lg flex items-center justify-center border-2 border-red-500/30 hover:border-red-500/70 backdrop-blur-sm">
-                      <ArrowLeft size={32} />
-                    </div>
-                    <span className="text-sm font-bold tracking-widest uppercase">Нет</span>
-                  </button>
-                  <button onClick={() => triggerSwipe('right')} className="flex flex-col items-center gap-2 text-green-400/80 hover:text-green-400 transition-colors active:scale-95">
-                    <div className="w-16 h-16 rounded-full bg-rose-900/60 shadow-lg flex items-center justify-center border-2 border-green-500/30 hover:border-green-500/70 backdrop-blur-sm">
-                      <ArrowRight size={32} />
-                    </div>
-                    <span className="text-sm font-bold tracking-widest uppercase">Да</span>
-                  </button>
                 </div>
               </div>
             )}
