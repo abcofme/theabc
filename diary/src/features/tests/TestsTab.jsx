@@ -367,7 +367,7 @@ export default function TestsTab({ onOverlayOpen }) {
           <div className="relative bg-rose-900 rounded-[2rem] w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-300">
 
             <div className="p-5 sm:p-6 overflow-y-auto">
-              <div className="text-[#F5E6D3] text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
+              <div className="text-[#F5E6D3] text-sm sm:text-base leading-relaxed whitespace-pre-wrap font-bold">
                 {selectedResult.result_text || 'Нет детального описания результата.'}
               </div>
             </div>
@@ -375,7 +375,7 @@ export default function TestsTab({ onOverlayOpen }) {
               <button onClick={() => setSelectedResult(null)} className="w-full bg-rose-800 hover:bg-rose-700 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all">
                 Закрыть
               </button>
-              <button onClick={handleRetake} className="w-full bg-emerald-600 hover:bg-emerald-500 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all active:bg-emerald-700 shadow-lg shadow-emerald-900/20">
+              <button onClick={handleRetake} className="w-full bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all active:bg-emerald-700 shadow-lg shadow-emerald-900/20">
                 Пройти тест заново
               </button>
             </div>
@@ -405,13 +405,10 @@ export default function TestsTab({ onOverlayOpen }) {
             ) : testResult ? (
               <div className="flex-1 flex flex-col animate-in zoom-in-95 duration-300">
                 <div className="flex-1 bg-rose-900 rounded-[2rem] p-6 shadow-xl flex flex-col">
-                  <span className="text-[#F5E6D3]/70 text-xs font-bold uppercase tracking-widest mb-2 text-center block">
-                    Ваш результат
-                  </span>
-                  <div className="text-[#F5E6D3] text-base leading-relaxed whitespace-pre-wrap flex-1 overflow-y-auto pb-4">
+                  <div className="text-[#F5E6D3] text-base leading-relaxed whitespace-pre-wrap flex-1 overflow-y-auto pb-4 font-bold">
                     {testResult}
                   </div>
-                  <button onClick={closeTest} className="w-full mt-4 bg-green-800 hover:bg-green-700 text-[#F5E6D3] font-bold py-4 rounded-xl transition-all active:bg-green-900 shadow-lg shadow-green-950/20">
+                  <button onClick={closeTest} className="w-full mt-4 bg-emerald-800 hover:bg-emerald-700 text-[#F5E6D3] font-bold py-4 rounded-xl transition-all active:bg-emerald-900 shadow-lg shadow-green-950/20">
                     Вернуться к тестам
                   </button>
                 </div>
@@ -438,7 +435,7 @@ export default function TestsTab({ onOverlayOpen }) {
                 </div>
                 <button 
                   onClick={() => setIsStarted(true)} 
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl transition-colors shadow-lg flex justify-center items-center gap-2"
+                  className="w-full bg-emerald-800 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl transition-colors shadow-lg flex justify-center items-center gap-2"
                 >
                   Пройти тест
                 </button>
@@ -502,14 +499,14 @@ export default function TestsTab({ onOverlayOpen }) {
                       <button 
                         onClick={(e) => { e.stopPropagation(); triggerSwipe('left'); }} 
                         onTouchEnd={(e) => e.stopPropagation()}
-                        className="flex items-center gap-2 bg-red-600/80 hover:bg-red-500 text-[#F5E6D3] font-bold tracking-wider uppercase px-5 py-3.5 rounded-xl backdrop-blur-sm transition-colors active:scale-95"
+                        className="flex items-center gap-2 bg-red-800/90 hover:bg-red-700 text-[#F5E6D3] font-bold tracking-wider uppercase px-5 py-3.5 rounded-xl backdrop-blur-sm transition-colors active:scale-95"
                       >
                         <ArrowLeft size={20} /> Нет
                       </button>
                       <button 
                         onClick={(e) => { e.stopPropagation(); triggerSwipe('right'); }} 
                         onTouchEnd={(e) => e.stopPropagation()}
-                        className="flex items-center gap-2 bg-green-600/80 hover:bg-green-500 text-[#F5E6D3] font-bold tracking-wider uppercase px-5 py-3.5 rounded-xl backdrop-blur-sm transition-colors active:scale-95"
+                        className="flex items-center gap-2 bg-emerald-800/90 hover:bg-emerald-700 text-[#F5E6D3] font-bold tracking-wider uppercase px-5 py-3.5 rounded-xl backdrop-blur-sm transition-colors active:scale-95"
                       >
                         Да <ArrowRight size={20} />
                       </button>
