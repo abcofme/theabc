@@ -1984,8 +1984,10 @@ async def _generate_compatibility_bg(user_id: int, friend_id: int, compat_type: 
         
         async with async_session() as db_session:
             existing = (await db_session.execute(select(CompatibilityReport).where(
-                CompatibilityReport.user_id == user_id,
-                CompatibilityReport.friend_id == friend_id
+                or_(
+                    and_(CompatibilityReport.user_id == user_id, CompatibilityReport.friend_id == friend_id),
+                    and_(CompatibilityReport.user_id == friend_id, CompatibilityReport.friend_id == user_id)
+                )
             ))).scalars().first()
             
             if existing:
@@ -2094,8 +2096,10 @@ async def get_compatibility(
     from backend.database.models import CompatibilityReport
     user_id = user_data.get("id")
     report = (await db.execute(select(CompatibilityReport).where(
-        CompatibilityReport.user_id == user_id,
-        CompatibilityReport.friend_id == friend_id
+        or_(
+            and_(CompatibilityReport.user_id == user_id, CompatibilityReport.friend_id == friend_id),
+            and_(CompatibilityReport.user_id == friend_id, CompatibilityReport.friend_id == user_id)
+        )
     ))).scalars().first()
     
     if not report:

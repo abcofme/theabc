@@ -587,6 +587,12 @@ export default function FriendsView({ onBack }) {
                     <ReactMarkdown components={getMarkdownComponents()}>
                       {compatResult}
                     </ReactMarkdown>
+                    <button 
+                      onClick={() => setActiveTab('compatibility_form')}
+                      className="w-full bg-emerald-800 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] mt-8 shadow-lg shadow-emerald-900/40"
+                    >
+                      Перегенерировать отчет
+                    </button>
                   </div>
                 ) : (
                   <div className="flex items-center justify-center flex-1">
