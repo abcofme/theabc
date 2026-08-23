@@ -127,6 +127,16 @@ export default function TestsTab({ onOverlayOpen }) {
       if (response.ok) {
         const data = await response.json();
         setTestDetails(data);
+        
+        // Защита от краша: если вопросы удалили/изменили, а в кэше индекс больше допустимого
+        setCurrentQuestionIndex(prev => {
+          if (!data.questions || data.questions.length === 0) return 0;
+          return Math.min(prev, data.questions.length - 1);
+        });
+        setSelectedAnswers(prev => {
+          if (!data.questions || data.questions.length === 0) return [];
+          return prev.slice(0, Math.min(prev.length, data.questions.length - 1));
+        });
       } else {
         WebApp.showAlert("Ошибка при загрузке теста");
         setTakingTestId(null);
@@ -524,7 +534,7 @@ export default function TestsTab({ onOverlayOpen }) {
                     {/* Question Text */}
                     <div className="flex-1 flex items-center justify-center w-full relative z-10 pointer-events-none mb-16">
                       <h4 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] leading-snug">
-                        {testDetails.questions[currentQuestionIndex].name}
+                        {testDetails.questions[currentQuestionIndex]?.name || 'Вопрос загружается...'}
                       </h4>
                     </div>
                     
