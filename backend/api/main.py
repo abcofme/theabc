@@ -2049,8 +2049,8 @@ async def generate_compatibility(
 
 Напиши подробный анализ совместимости. Опиши сильные стороны союза, возможные конфликты и дай рекомендации. Пиши так, как будто ты обращаешься к пользователю 1. Используй красивое форматирование Markdown (заголовки, списки). Не используй никаких вступлений, сразу выдавай результат анализа."""
 
-        ai_token = os.getenv("TIMEWEB_AI_TOKEN")
-        ai_url = os.getenv("TIMEWEB_AI_URL")
+        ai_token = os.getenv("TIMEWEB_AI_TOKEN", os.getenv("TIMEWEB_AI_REPORTS_TOKEN", os.getenv("TIMEWEB_AI_SCALE_TOKEN")))
+        ai_url = os.getenv("TIMEWEB_AI_URL", os.getenv("TIMEWEB_AI_REPORTS_URL", os.getenv("TIMEWEB_AI_SCALE_URL")))
         
         if not ai_token or not ai_url:
             raise HTTPException(status_code=500, detail="AI service not configured")
