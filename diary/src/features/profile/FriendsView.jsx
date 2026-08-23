@@ -193,6 +193,7 @@ export default function FriendsView({ onBack }) {
       }
     } catch (e) {
       console.error(e);
+      WebApp.showAlert('Ошибка: ' + e.message);
       setActiveTab('compatibility_form');
     } finally {
       setIsGeneratingCompat(false);
