@@ -1950,46 +1950,6 @@ class CompatibilityRequest(BaseModel):
     my_gender: str
     friend_gender: str
 
-@app.post("/api/friends/compatibility")
-async def generate_compatibility(
-    req: CompatibilityRequest,
-    user_data: dict = Depends(validate_twa_data),
-    db: AsyncSession = Depends(get_session)
-):
-    import httpx
-    import os
-    user_id = user_data.get("id")
-    await check_access(user_id, db)
-    
-    from backend.database.models import PersonalityPortrait, CompatibilityReport
-    friend_id = req.friend_id
-    
-    # Get portraits
-    my_portrait = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
-    friend_portrait = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == friend_id))).scalars().first()
-    
-    if not my_portrait or not friend_portrait:
-        raise HTTPException(status_code=400, detail="Both users must have personality portraits")
-        
-    prompt = f"""Сравни два психологических портрета и напиши анализ совместимости.
-Тип отношений: {'Дружеская' if req.type == 'friendly' else 'Партнерская'}
-Пол пользователя 1 (я): {req.my_gender}
-Пол пользователя 2 (друг): {req.friend_gender}
-
-Портрет пользователя 1:
-{my_portrait.content}
-
-Портрет пользователя 2:
-{friend_portrait.content}
-
-Напиши подробный анализ совместимости. Опиши сильные стороны союза, возможные конфликты и дай рекомендации. Пиши так, как будто ты обращаешься к пользователю 1. Используй красивое форматирование Markdown (заголовки, списки). Не используй никаких вступлений, сразу выдавай результат анализа."""
-
-    ai_token = os.getenv("TIMEWEB_AI_TOKEN")
-    ai_url = os.getenv("TIMEWEB_AI_URL")
-    
-    if not ai_token or not ai_url:
-        raise HTTPException(status_code=500, detail="AI service not configured")
-
 async def _generate_compatibility_bg(user_id: int, friend_id: int, compat_type: str, my_gender: str, friend_gender: str, prompt: str, ai_url: str, ai_token: str):
     import httpx
     try:
