@@ -2057,10 +2057,26 @@ async def generate_compatibility(
     if not ai_url.endswith("/chat/completions"):
         ai_url = ai_url.rstrip("/") + "/chat/completions"
 
-    result = await _generate_compatibility_bg(user_id, friend_id, req.type, req.my_gender, req.friend_gender, prompt, ai_url, ai_token)
-    if result.get("status") == "error":
-        raise HTTPException(status_code=500, detail=result.get("message", "Ошибка генерации"))
-    return result
+    task = asyncio.create_task(_generate_compatibility_bg(user_id, friend_id, req.type, req.my_gender, req.friend_gender, prompt, ai_url, ai_token))
+    
+    async def stream_generator():
+        try:
+            while not task.done():
+                yield b" "
+                await asyncio.sleep(3)
+                
+            result = task.result()
+            if result.get("status") == "success":
+                import json
+                yield json.dumps(result).encode("utf-8")
+            else:
+                import json
+                yield json.dumps({"detail": result.get("message", "Unknown error")}).encode("utf-8")
+        except Exception as e:
+            import json
+            yield json.dumps({"detail": f"Ошибка генерации совместимости: {repr(e)}"}).encode("utf-8")
+
+    return StreamingResponse(stream_generator(), media_type="application/json", headers={"X-Accel-Buffering": "no"})
 
 @app.get("/api/friends/compatibility/{friend_id}")
 async def get_compatibility(

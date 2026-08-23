@@ -178,7 +178,17 @@ export default function FriendsView({ onBack }) {
         })
       });
       if (res.ok) {
-        const data = await res.json();
+        const rawText = await res.text();
+        const jsonStart = rawText.indexOf('{');
+        
+        if (jsonStart === -1) {
+            WebApp.showAlert('Неверный формат ответа от сервера.');
+            setActiveTab('compatibility_form');
+            return;
+        }
+        
+        const data = JSON.parse(rawText.substring(jsonStart));
+        
         if (data.detail) {
           WebApp.showAlert(data.detail);
           setActiveTab('compatibility_form');
@@ -187,13 +197,25 @@ export default function FriendsView({ onBack }) {
         setCompatResult(data.content);
         fetchFriends(); // update has_compatibility status
       } else {
-        const err = await res.json();
-        WebApp.showAlert(err.detail || 'Произошла ошибка при генерации');
+        let errStr = `Ошибка сервера (${res.status})`;
+        try {
+            const raw = await res.text();
+            const jsonStart = raw.indexOf('{');
+            if (jsonStart !== -1) {
+                const err = JSON.parse(raw.substring(jsonStart));
+                errStr = err.detail || errStr;
+            } else {
+                errStr = `Код ${res.status}: ` + raw.substring(0, 100);
+            }
+        } catch (e) {
+            // fallback
+        }
+        WebApp.showAlert(errStr);
         setActiveTab('compatibility_form');
       }
     } catch (e) {
       console.error(e);
-      WebApp.showAlert('Ошибка: ' + e.message);
+      WebApp.showAlert('Сетевая ошибка: ' + e.message);
       setActiveTab('compatibility_form');
     } finally {
       setIsGeneratingCompat(false);
