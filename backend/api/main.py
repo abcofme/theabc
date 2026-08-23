@@ -2018,24 +2018,25 @@ async def generate_compatibility(
     user_data: dict = Depends(validate_twa_data),
     db: AsyncSession = Depends(get_session)
 ):
-    import httpx
-    import os
-    import asyncio
-    from fastapi.responses import StreamingResponse
-    user_id = user_data.get("id")
-    await check_access(user_id, db)
-    
-    from backend.database.models import PersonalityPortrait
-    friend_id = req.friend_id
-    
-    # Get portraits
-    my_portrait = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
-    friend_portrait = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == friend_id))).scalars().first()
-    
-    if not my_portrait or not friend_portrait:
-        raise HTTPException(status_code=400, detail="Оба пользователя должны иметь портрет личности для анализа.")
+    try:
+        import httpx
+        import os
+        import asyncio
+        from fastapi.responses import StreamingResponse
+        user_id = user_data.get("id")
+        await check_access(user_id, db)
         
-    prompt = f"""Сравни два психологических портрета и напиши анализ совместимости.
+        from backend.database.models import PersonalityPortrait
+        friend_id = req.friend_id
+        
+        # Get portraits
+        my_portrait = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
+        friend_portrait = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == friend_id))).scalars().first()
+        
+        if not my_portrait or not friend_portrait:
+            raise HTTPException(status_code=400, detail="Оба пользователя должны иметь портрет личности для анализа.")
+            
+        prompt = f"""Сравни два психологических портрета и напиши анализ совместимости.
 Тип отношений: {'Дружеская' if req.type == 'friendly' else 'Партнерская'}
 Пол пользователя 1 (я): {req.my_gender}
 Пол пользователя 2 (друг): {req.friend_gender}
@@ -2048,35 +2049,41 @@ async def generate_compatibility(
 
 Напиши подробный анализ совместимости. Опиши сильные стороны союза, возможные конфликты и дай рекомендации. Пиши так, как будто ты обращаешься к пользователю 1. Используй красивое форматирование Markdown (заголовки, списки). Не используй никаких вступлений, сразу выдавай результат анализа."""
 
-    ai_token = os.getenv("TIMEWEB_AI_TOKEN")
-    ai_url = os.getenv("TIMEWEB_AI_URL")
-    
-    if not ai_token or not ai_url:
-        raise HTTPException(status_code=500, detail="AI service not configured")
+        ai_token = os.getenv("TIMEWEB_AI_TOKEN")
+        ai_url = os.getenv("TIMEWEB_AI_URL")
         
-    if not ai_url.endswith("/chat/completions"):
-        ai_url = ai_url.rstrip("/") + "/chat/completions"
+        if not ai_token or not ai_url:
+            raise HTTPException(status_code=500, detail="AI service not configured")
+            
+        if not ai_url.endswith("/chat/completions"):
+            ai_url = ai_url.rstrip("/") + "/chat/completions"
 
-    task = asyncio.create_task(_generate_compatibility_bg(user_id, friend_id, req.type, req.my_gender, req.friend_gender, prompt, ai_url, ai_token))
-    
-    async def stream_generator():
-        try:
-            while not task.done():
-                yield b" "
-                await asyncio.sleep(3)
-                
-            result = task.result()
-            if result.get("status") == "success":
+        task = asyncio.create_task(_generate_compatibility_bg(user_id, friend_id, req.type, req.my_gender, req.friend_gender, prompt, ai_url, ai_token))
+        
+        async def stream_generator():
+            try:
+                while not task.done():
+                    yield b" "
+                    await asyncio.sleep(3)
+                    
+                result = task.result()
+                if result.get("status") == "success":
+                    import json
+                    yield json.dumps(result).encode("utf-8")
+                else:
+                    import json
+                    yield json.dumps({"detail": result.get("message", "Unknown error")}).encode("utf-8")
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
                 import json
-                yield json.dumps(result).encode("utf-8")
-            else:
-                import json
-                yield json.dumps({"detail": result.get("message", "Unknown error")}).encode("utf-8")
-        except Exception as e:
-            import json
-            yield json.dumps({"detail": f"Ошибка генерации совместимости: {repr(e)}"}).encode("utf-8")
+                yield json.dumps({"detail": f"Ошибка генерации совместимости: {repr(e)}"}).encode("utf-8")
 
-    return StreamingResponse(stream_generator(), media_type="application/json", headers={"X-Accel-Buffering": "no"})
+        return StreamingResponse(stream_generator(), media_type="application/json", headers={"X-Accel-Buffering": "no"})
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Внутренняя ошибка API: {repr(exc)}")
 
 @app.get("/api/friends/compatibility/{friend_id}")
 async def get_compatibility(
