@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, ChevronUp, Check, XCircle, X, Brain, ClipboardList, Lock, Sparkles, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check, XCircle, X, Brain, ClipboardList, Lock, Sparkles, ArrowLeft, ArrowRight, Undo2 } from 'lucide-react';
 import bgLeaves from '../../assets/bg-leaves.png';
 
 import iconPersonality from '../../assets/icons/personality.png';
@@ -202,6 +202,14 @@ export default function TestsTab({ onOverlayOpen }) {
       }));
     }
     closeTest();
+  };
+
+  const handleGoBack = () => {
+    if (currentQuestionIndex > 0) {
+      WebApp.HapticFeedback.impactOccurred('light');
+      setCurrentQuestionIndex(prev => prev - 1);
+      setSelectedAnswers(prev => prev.slice(0, -1));
+    }
   };
 
   const handleRetake = async () => {
@@ -479,23 +487,40 @@ export default function TestsTab({ onOverlayOpen }) {
                 </div>
                 <button 
                   onClick={() => setIsStarted(true)} 
-                  className="w-full bg-emerald-800 hover:bg-emerald-800 text-white font-bold py-4 rounded-xl transition-colors shadow-lg flex justify-center items-center gap-2"
+                  className="w-full bg-emerald-800 hover:bg-emerald-800 text-white font-bold py-4 rounded-xl transition-colors shadow-lg flex justify-center items-center gap-2 mb-3"
                 >
-                  Пройти тест
+                  {currentQuestionIndex > 0 ? "Продолжить тест" : "Пройти тест"}
+                </button>
+                <button 
+                  onClick={handleExit} 
+                  className="w-full bg-rose-900/50 hover:bg-rose-800 text-[#F5E6D3]/70 hover:text-red-300 font-bold py-3 rounded-xl transition-colors flex justify-center items-center gap-2"
+                >
+                  Закрыть
                 </button>
               </div>
             ) : (
               <div className="flex-1 flex flex-col max-w-md mx-auto w-full relative">
                 <div className="mb-4 flex items-center justify-between px-2">
-                  <span className="text-[#F5E6D3]/60 font-semibold text-sm">
-                    Вопрос {currentQuestionIndex + 1} из {testDetails.questions.length}
-                  </span>
-                  <div className="flex-1 ml-4 h-2 bg-rose-900/50 rounded-full overflow-hidden">
+                  <div className="flex items-center gap-2">
+                    {currentQuestionIndex > 0 && (
+                      <button onClick={handleGoBack} className="text-[#F5E6D3]/60 hover:text-[#F5E6D3] p-1 active:scale-95 transition-all">
+                        <Undo2 size={24} />
+                      </button>
+                    )}
+                    <span className="text-[#F5E6D3]/60 font-semibold text-sm whitespace-nowrap">
+                      Вопрос {currentQuestionIndex + 1} из {testDetails.questions.length}
+                    </span>
+                  </div>
+                  
+                  <div className="flex-1 mx-4 h-2 bg-rose-900/50 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-emerald-800 transition-all duration-500 ease-out"
                       style={{ width: `${((currentQuestionIndex + 1) / testDetails.questions.length) * 100}%` }}
                     ></div>
                   </div>
+                  <button onClick={handleExit} className="text-[#F5E6D3]/60 hover:text-red-400 p-1 active:scale-95 transition-all">
+                    <X size={24} />
+                  </button>
                 </div>
                 
                 {/* Cards Stack Container */}
