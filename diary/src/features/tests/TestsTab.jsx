@@ -608,8 +608,8 @@ export default function TestsTab({ onOverlayOpen }) {
                             </div>
                           </div>
                           
-                          <p className="text-base sm:text-lg text-[#F5E6D3]/70 font-bold mt-16 animate-pulse bg-rose-900/60 px-8 py-3 rounded-full border border-rose-800/50">
-                            Нажми, чтобы начать
+                          <p className="text-base sm:text-lg text-[#F5E6D3]/60 font-medium mt-16 animate-pulse">
+                            (Нажми, чтобы начать)
                           </p>
                         </div>
                       </div>
