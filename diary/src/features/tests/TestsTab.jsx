@@ -45,15 +45,11 @@ export default function TestsTab({ onOverlayOpen }) {
   useEffect(() => {
     if (isStarted && !isSubmitting && !testResult && takingTestId) {
       if (currentQuestionIndex === 0) {
-        const seen = localStorage.getItem('swipe_tutorial_seen');
-        if (!seen) {
-          setShowSwipeTutorial(true);
-          const t = setTimeout(() => {
-            setShowSwipeTutorial(false);
-            localStorage.setItem('swipe_tutorial_seen', 'true');
-          }, 3500);
-          return () => clearTimeout(t);
-        }
+        setShowSwipeTutorial(true);
+        const t = setTimeout(() => {
+          setShowSwipeTutorial(false);
+        }, 3500);
+        return () => clearTimeout(t);
       }
     }
   }, [isStarted, isSubmitting, testResult, takingTestId, currentQuestionIndex]);
@@ -589,7 +585,6 @@ export default function TestsTab({ onOverlayOpen }) {
                         className="absolute inset-0 z-50 rounded-[2rem] bg-rose-950/90 backdrop-blur-md flex flex-col items-center justify-center animate-in fade-in duration-500 cursor-pointer shadow-inner"
                         onClick={() => {
                           setShowSwipeTutorial(false);
-                          localStorage.setItem('swipe_tutorial_seen', 'true');
                         }}
                       >
                         <div className="flex flex-col items-center text-[#F5E6D3] px-6 text-center">
