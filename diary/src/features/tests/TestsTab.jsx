@@ -586,31 +586,35 @@ export default function TestsTab({ onOverlayOpen }) {
                     {/* Tutorial Overlay */}
                     {showSwipeTutorial && currentQuestionIndex === 0 && (
                       <div 
-                        className="absolute inset-0 z-50 rounded-[2rem] bg-rose-950/80 backdrop-blur-sm flex flex-col items-center justify-center animate-in fade-in duration-500"
+                        className="absolute inset-0 z-50 rounded-[2rem] bg-rose-950/90 backdrop-blur-md flex flex-col items-center justify-center animate-in fade-in duration-500 cursor-pointer shadow-inner"
                         onClick={() => {
                           setShowSwipeTutorial(false);
                           localStorage.setItem('swipe_tutorial_seen', 'true');
                         }}
                       >
-                        <div className="flex flex-col items-center gap-8 text-[#F5E6D3] px-6 text-center">
-                          <p className="text-xl sm:text-2xl font-black uppercase tracking-widest drop-shadow-md">
-                            Свайпай карточку
-                          </p>
+                        <div className="flex flex-col items-center text-[#F5E6D3] px-6 text-center">
+                          <h3 className="text-2xl sm:text-3xl font-black uppercase tracking-widest drop-shadow-xl mb-12">
+                            Свайпай<br/>карточку
+                          </h3>
                           
-                          <div className="flex items-center justify-between w-full max-w-[280px] gap-4">
-                            <div className="flex flex-col items-center gap-2">
-                              <div className="text-3xl animate-pulse">👈</div>
-                              <span className="text-red-400 font-bold tracking-wider">НЕТ</span>
+                          <div className="flex items-center justify-between w-full max-w-[320px] gap-8">
+                            <div className="flex flex-col items-center gap-4">
+                              <div className="bg-red-500/20 text-red-500 p-5 rounded-full animate-pulse shadow-[0_0_30px_rgba(239,68,68,0.3)]">
+                                <ArrowLeft size={48} strokeWidth={3.5} />
+                              </div>
+                              <span className="text-red-500 font-black text-2xl tracking-widest uppercase drop-shadow-md">Нет</span>
                             </div>
                             
-                            <div className="flex flex-col items-center gap-2">
-                              <span className="text-emerald-400 font-bold tracking-wider">ДА</span>
-                              <div className="text-3xl animate-pulse">👉</div>
+                            <div className="flex flex-col items-center gap-4">
+                              <div className="bg-emerald-500/20 text-emerald-500 p-5 rounded-full animate-pulse shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                                <ArrowRight size={48} strokeWidth={3.5} />
+                              </div>
+                              <span className="text-emerald-500 font-black text-2xl tracking-widest uppercase drop-shadow-md">Да</span>
                             </div>
                           </div>
                           
-                          <p className="text-sm text-[#F5E6D3]/60 mt-4 animate-pulse">
-                            (Нажми чтобы скрыть)
+                          <p className="text-base sm:text-lg text-[#F5E6D3]/70 font-bold mt-16 animate-pulse bg-rose-900/60 px-8 py-3 rounded-full border border-rose-800/50">
+                            Нажми, чтобы начать
                           </p>
                         </div>
                       </div>
