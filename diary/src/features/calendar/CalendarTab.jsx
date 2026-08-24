@@ -522,8 +522,8 @@ export default function CalendarTab({ onSheetOpen }) {
         <div className="fixed inset-0 z-50 bg-rose-950 flex flex-col animate-in slide-in-from-bottom-8 duration-300">
           <div className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-6 flex flex-col overflow-y-auto">
             <div className="flex justify-between items-start mb-8 pt-4">
-              <div>
-                <h3 className="text-3xl font-bold text-[#F5E6D3]">
+              <div className="min-w-0 flex-1">
+                <h3 className="text-3xl font-bold text-[#F5E6D3] truncate">
                   {selectedDate && format(selectedDate, 'd MMMM yyyy', { locale: ru })}
                 </h3>
                 <p className="text-sm text-[#F5E6D3] mt-1 uppercase tracking-wider font-medium text-[#F5E6D3]">
@@ -532,7 +532,7 @@ export default function CalendarTab({ onSheetOpen }) {
               </div>
               <button
                 onClick={() => setIsSheetOpen(false)}
-                className="p-2 bg-rose-900 hover:bg-rose-800 rounded-xl text-[#F5E6D3] hover:text-[#F5E6D3] transition-colors"
+                className="p-2 bg-rose-900 hover:bg-rose-800 rounded-xl text-[#F5E6D3] hover:text-[#F5E6D3] transition-colors shrink-0 ml-4"
               >
                 <X size={24} />
               </button>

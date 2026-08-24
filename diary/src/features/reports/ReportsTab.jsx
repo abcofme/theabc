@@ -354,7 +354,7 @@ export default function ReportsTab({ onSwitchTab }) {
                         <div className={`p-3 rounded-xl shrink-0 ${rtype.bg}`}>
                           <rtype.icon className={rtype.color} size={24} />
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <h3 className="text-lg font-bold leading-tight text-[#F5E6D3]">{rtype.title}</h3>
                         </div>
                         <div className="mt-2 text-[#F5E6D3]">

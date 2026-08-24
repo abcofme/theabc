@@ -465,20 +465,20 @@ export default function ProfileTab({ onOverlayOpen }) {
   return (
     <div className="flex flex-col relative select-none bg-transparent max-w-2xl mx-auto w-full">
       {/* 1. ШАПКА ПРОФИЛЯ (Аватар и Юзернейм) */}
-      <div className="flex items-center gap-4 p-4 sm:p-6 bg-rose-900/80 rounded-3xl mx-2 mt-2 mb-4 backdrop-blur-sm shadow-sm">
+      <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-6 bg-rose-900/80 rounded-3xl mx-2 mt-2 mb-4 backdrop-blur-sm shadow-sm min-w-0">
         {tgUser.photo_url ? (
-          <img src={tgUser.photo_url} alt="Avatar" className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg" />
+          <img src={tgUser.photo_url} alt="Avatar" className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg shrink-0" />
         ) : (
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-950/40 text-[#F5E6D3] rounded-full flex items-center justify-center font-bold text-2xl shadow-inner">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-950/40 text-[#F5E6D3] rounded-full flex items-center justify-center font-bold text-2xl shadow-inner shrink-0">
             {tgUser.first_name?.[0] || <User size={32} />}
           </div>
         )}
-        <div className="flex-1 overflow-hidden">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] truncate">{tgUser.first_name}</h2>
-          <p className="text-sm sm:text-base text-[#F5E6D3] font-medium truncate">@{tgUser.username}</p>
+        <div className="flex-1 min-w-0">
+          <h2 className="text-lg sm:text-2xl font-bold text-[#F5E6D3] truncate">{tgUser.first_name}</h2>
+          <p className="text-xs sm:text-base text-[#F5E6D3] font-medium truncate">@{tgUser.username}</p>
         </div>
         <div 
-          className={`flex items-center gap-1 transition-transform ${accessLevel === 'Premium' ? 'cursor-pointer active:scale-95' : ''}`}
+          className={`flex items-center gap-1 transition-transform shrink-0 ${accessLevel === 'Premium' ? 'cursor-pointer active:scale-95' : ''}`}
           onClick={() => { if (accessLevel === 'Premium') setIsSubscriptionInfoModalOpen(true); }}
         >
           <div className={`font-bold px-3 py-1.5 rounded-xl text-sm sm:text-base text-center flex items-center gap-1.5 shadow-sm ${

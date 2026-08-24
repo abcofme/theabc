@@ -39,6 +39,24 @@ export default function TestsTab({ onOverlayOpen }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [testResult, setTestResult] = useState(null);
+  const [showSwipeTutorial, setShowSwipeTutorial] = useState(false);
+
+  // Auto-hide swipe tutorial
+  useEffect(() => {
+    if (isStarted && !isSubmitting && !testResult && takingTestId) {
+      if (currentQuestionIndex === 0) {
+        const seen = localStorage.getItem('swipe_tutorial_seen');
+        if (!seen) {
+          setShowSwipeTutorial(true);
+          const t = setTimeout(() => {
+            setShowSwipeTutorial(false);
+            localStorage.setItem('swipe_tutorial_seen', 'true');
+          }, 3500);
+          return () => clearTimeout(t);
+        }
+      }
+    }
+  }, [isStarted, isSubmitting, testResult, takingTestId, currentQuestionIndex]);
 
   // Auto-save progress
   useEffect(() => {
@@ -557,11 +575,46 @@ export default function TestsTab({ onOverlayOpen }) {
                     />
                     
                     {/* Question Text */}
-                    <div className="flex-1 flex items-center justify-center w-full relative z-10 pointer-events-none mb-16">
-                      <h4 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] leading-snug">
-                        {testDetails.questions[currentQuestionIndex]?.name || 'Вопрос загружается...'}
-                      </h4>
+                    <div className="flex-1 flex flex-col justify-center w-full relative z-10 overflow-y-auto overflow-x-hidden mb-16 pointer-events-auto px-2">
+                      <div className="flex items-center min-h-full">
+                        <h4 className="text-lg sm:text-xl md:text-2xl font-bold text-[#F5E6D3] leading-snug mx-auto w-full max-h-full">
+                          {testDetails.questions[currentQuestionIndex]?.name || 'Вопрос загружается...'}
+                        </h4>
+                      </div>
                     </div>
+                    
+                    {/* Tutorial Overlay */}
+                    {showSwipeTutorial && currentQuestionIndex === 0 && (
+                      <div 
+                        className="absolute inset-0 z-50 rounded-[2rem] bg-rose-950/80 backdrop-blur-sm flex flex-col items-center justify-center animate-in fade-in duration-500"
+                        onClick={() => {
+                          setShowSwipeTutorial(false);
+                          localStorage.setItem('swipe_tutorial_seen', 'true');
+                        }}
+                      >
+                        <div className="flex flex-col items-center gap-8 text-[#F5E6D3] px-6 text-center">
+                          <p className="text-xl sm:text-2xl font-black uppercase tracking-widest drop-shadow-md">
+                            Свайпай карточку
+                          </p>
+                          
+                          <div className="flex items-center justify-between w-full max-w-[280px] gap-4">
+                            <div className="flex flex-col items-center gap-2">
+                              <div className="text-3xl animate-pulse">👈</div>
+                              <span className="text-red-400 font-bold tracking-wider">НЕТ</span>
+                            </div>
+                            
+                            <div className="flex flex-col items-center gap-2">
+                              <span className="text-emerald-400 font-bold tracking-wider">ДА</span>
+                              <div className="text-3xl animate-pulse">👉</div>
+                            </div>
+                          </div>
+                          
+                          <p className="text-sm text-[#F5E6D3]/60 mt-4 animate-pulse">
+                            (Нажми чтобы скрыть)
+                          </p>
+                        </div>
+                      </div>
+                    )}
                     
                     {/* Buttons inside the card */}
                     <div className="absolute bottom-6 inset-x-6 flex justify-between items-center z-20">

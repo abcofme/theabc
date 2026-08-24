@@ -240,12 +240,12 @@ export default function FriendsView({ onBack }) {
   };
 
   const UserCard = ({ user, children }) => (
-    <div className="flex items-center justify-between bg-rose-900/60 p-4 rounded-2xl mb-3">
-      <div className="flex items-center gap-3">
+    <div className="flex flex-wrap sm:flex-nowrap items-center justify-between bg-rose-900/60 p-4 rounded-2xl mb-3 gap-3">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
         {user.photo_url ? (
-          <img src={user.photo_url} alt="" className="w-12 h-12 rounded-full object-cover shadow-sm" />
+          <img src={user.photo_url} alt="" className="w-12 h-12 rounded-full object-cover shadow-sm shrink-0" />
         ) : (
-          <div className="w-12 h-12 rounded-full bg-rose-800 flex items-center justify-center shadow-sm">
+          <div className="w-12 h-12 shrink-0 rounded-full bg-rose-800 flex items-center justify-center shadow-sm">
             {user.first_name ? (
               <span className="text-lg font-bold text-[#F5E6D3]">{user.first_name[0]}</span>
             ) : user.username ? (
@@ -255,16 +255,16 @@ export default function FriendsView({ onBack }) {
             )}
           </div>
         )}
-        <div>
-          <p className="text-[#F5E6D3] font-bold text-sm sm:text-base">
+        <div className="min-w-0 flex-1">
+          <p className="text-[#F5E6D3] font-bold text-sm sm:text-base truncate">
             {user.first_name || 'Без имени'}
           </p>
           {user.username && (
-            <p className="text-[#F5E6D3]/80 text-xs sm:text-sm">@{user.username}</p>
+            <p className="text-[#F5E6D3]/80 text-xs sm:text-sm truncate">@{user.username}</p>
           )}
         </div>
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-2 shrink-0 flex-wrap justify-end">
         {children}
       </div>
     </div>
