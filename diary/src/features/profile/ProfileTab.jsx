@@ -473,22 +473,24 @@ export default function ProfileTab({ onOverlayOpen }) {
             {tgUser.first_name?.[0] || <User size={32} />}
           </div>
         )}
-        <div className="flex-1 min-w-0">
-          <h2 className="text-lg sm:text-2xl font-bold text-[#F5E6D3] truncate">{tgUser.first_name}</h2>
-          <p className="text-xs sm:text-base text-[#F5E6D3] font-medium truncate">@{tgUser.username}</p>
-        </div>
-        <div 
-          className={`flex items-center gap-1 transition-transform shrink-0 ${accessLevel === 'Premium' ? 'cursor-pointer active:scale-95' : ''}`}
-          onClick={() => { if (accessLevel === 'Premium') setIsSubscriptionInfoModalOpen(true); }}
-        >
-          <div className={`font-bold px-3 py-1.5 rounded-xl text-sm sm:text-base text-center flex items-center gap-1.5 shadow-sm ${
-            accessLevel === 'Premium' ? 'bg-emerald-800 text-emerald-950' : 
-            accessLevel === 'Демо-доступ' ? 'bg-emerald-800/20 text-emerald-300' : 'bg-rose-950 text-[#F5E6D3]/60'
-          }`}>
-            {accessLevel === 'Premium' && <Sparkles size={16} />}
-            {accessLevel || 'Загрузка...'}
+        <div className="flex-1 min-w-0 flex flex-wrap items-center gap-3 justify-between">
+          <div className="min-w-[100px] flex-1">
+            <h2 className="text-lg sm:text-2xl font-bold text-[#F5E6D3] truncate">{tgUser.first_name}</h2>
+            <p className="text-xs sm:text-base text-[#F5E6D3] font-medium truncate">@{tgUser.username}</p>
           </div>
-          {accessLevel === 'Premium' && <ChevronRight size={20} className="text-[#F5E6D3]/60 shrink-0" />}
+          <div 
+            className={`flex items-center gap-1 transition-transform shrink-0 ${accessLevel === 'Premium' ? 'cursor-pointer active:scale-95' : ''}`}
+            onClick={() => { if (accessLevel === 'Premium') setIsSubscriptionInfoModalOpen(true); }}
+          >
+            <div className={`font-bold px-3 py-1.5 rounded-xl text-sm sm:text-base text-center flex items-center gap-1.5 shadow-sm ${
+              accessLevel === 'Premium' ? 'bg-emerald-800 text-emerald-950' : 
+              accessLevel === 'Демо-доступ' ? 'bg-emerald-800/20 text-emerald-300' : 'bg-rose-950 text-[#F5E6D3]/60'
+            }`}>
+              {accessLevel === 'Premium' && <Sparkles size={16} />}
+              {accessLevel || 'Загрузка...'}
+            </div>
+            {accessLevel === 'Premium' && <ChevronRight size={20} className="text-[#F5E6D3]/60 shrink-0" />}
+          </div>
         </div>
       </div>
 
