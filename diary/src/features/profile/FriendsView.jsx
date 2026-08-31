@@ -243,9 +243,9 @@ export default function FriendsView({ onBack }) {
     <div className="flex flex-wrap sm:flex-nowrap items-center justify-between bg-rose-900/60 p-4 rounded-2xl mb-3 gap-3">
       <div className="flex items-center gap-3 min-w-0 flex-1">
         {user.photo_url ? (
-          <img src={user.photo_url} alt="" className="w-12 h-12 rounded-full object-cover shadow-sm shrink-0" />
+          <img src={user.photo_url} alt="" className="w-12 h-12 aspect-square rounded-full object-cover shadow-sm shrink-0" />
         ) : (
-          <div className="w-12 h-12 shrink-0 rounded-full bg-rose-800 flex items-center justify-center shadow-sm">
+          <div className="w-12 h-12 aspect-square shrink-0 rounded-full bg-rose-800 flex items-center justify-center shadow-sm">
             {user.first_name ? (
               <span className="text-lg font-bold text-[#F5E6D3]">{user.first_name[0]}</span>
             ) : user.username ? (

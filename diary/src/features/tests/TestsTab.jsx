@@ -354,17 +354,17 @@ export default function TestsTab({ onOverlayOpen }) {
                 onClick={() => toggleCategory(cat.id)}
                 className={`w-full relative flex items-center px-6 py-4 min-h-[80px] hover:bg-rose-800/70 transition-colors active:bg-rose-800 overflow-hidden isolate ${openCategory === cat.id ? 'rounded-t-2xl' : 'rounded-2xl'} justify-between`}
               >
-                <div className="flex items-center justify-between gap-4 z-10 relative text-left w-full">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between gap-4 z-10 relative text-left w-full min-w-0">
+                  <div className="flex items-center gap-3 min-w-0">
                     {categoryIcons[cat.name.trim()] && (
                       <img 
                         src={categoryIcons[cat.name.trim()]} 
                         alt="" 
-                        className="w-10 h-10 object-contain drop-shadow-md"
+                        className="w-10 h-10 object-contain drop-shadow-md shrink-0"
                         onError={(e) => { e.target.style.display = 'none'; }}
                       />
                     )}
-                    <span className="font-semibold text-[#F5E6D3] text-xl sm:text-2xl leading-tight">
+                    <span className="font-semibold text-[#F5E6D3] text-xl sm:text-2xl leading-tight truncate">
                       {cat.name}
                     </span>
                   </div>
@@ -408,12 +408,12 @@ export default function TestsTab({ onOverlayOpen }) {
                           {test.name}
                         </span>
                         {test.passed ? (
-                          <span className="flex items-center gap-1.5 text-emerald-500 text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-800/10 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">
-                            <Check size={14} /> Пройден
+                          <span className="flex items-center justify-center text-emerald-500 bg-emerald-800/20 w-8 h-8 rounded-lg shrink-0">
+                            <Check size={20} strokeWidth={3} />
                           </span>
                         ) : (
-                          <span className="flex items-center gap-1.5 text-[#F5E6D3]/60 text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-rose-950/50 px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0">
-                            Пройти
+                          <span className="flex items-center justify-center text-[#F5E6D3]/60 bg-rose-950/50 w-8 h-8 rounded-lg shrink-0">
+                            <X size={20} strokeWidth={3} />
                           </span>
                         )}
                       </div>

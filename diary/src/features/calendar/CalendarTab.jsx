@@ -426,7 +426,7 @@ export default function CalendarTab({ onSheetOpen }) {
         </div>
 
         {isDropdownOpen && (
-          <div className="absolute top-14 left-0 z-40 w-80 bg-rose-900 rounded-2xl shadow-2xl p-4 animate-slide-down">
+          <div className="absolute top-14 left-0 z-40 w-[calc(100vw-2rem)] sm:w-80 max-w-[320px] bg-rose-900 rounded-2xl shadow-2xl p-4 animate-slide-down overflow-hidden">
             <div className="text-xs font-semibold text-[#F5E6D3] uppercase tracking-wider mb-2">Выберите месяц</div>
             <div className="grid grid-cols-3 gap-1.5 mb-4">
               {monthsRu.map((m, idx) => (

@@ -349,15 +349,15 @@ export default function ReportsTab({ onSwitchTab }) {
                     <div key={rtype.id} className="bg-rose-900/80 rounded-2xl overflow-hidden transition-all duration-300">
                       <button 
                         onClick={() => setOpenCategory(isOpen ? null : rtype.id)}
-                        className="w-full p-5 text-left hover:bg-rose-800/80 transition-all flex items-center gap-4"
+                        className="w-full p-4 sm:p-5 text-center sm:text-left hover:bg-rose-800/80 transition-all flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3 sm:gap-4 relative"
                       >
                         <div className={`p-3 rounded-xl shrink-0 ${rtype.bg}`}>
                           <rtype.icon className={rtype.color} size={24} />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-bold leading-tight text-[#F5E6D3]">{rtype.title}</h3>
+                        <div className="flex-1 min-w-0 w-full px-6 sm:px-0">
+                          <h3 className="text-lg font-bold leading-tight text-[#F5E6D3] break-words hyphens-auto">{rtype.title}</h3>
                         </div>
-                        <div className="mt-2 text-[#F5E6D3]">
+                        <div className="absolute top-4 right-4 sm:relative sm:top-auto sm:right-auto text-[#F5E6D3] shrink-0 mt-0 sm:mt-2">
                           {isOpen ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
                         </div>
                       </button>
@@ -392,9 +392,8 @@ export default function ReportsTab({ onSwitchTab }) {
                             <>
                               <button 
                                 onClick={() => setActiveForm(rtype.id)}
-                                className="w-full py-3 bg-rose-800 hover:bg-rose-700 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
+                                className="w-full py-3 bg-rose-800 hover:bg-rose-700 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center transition-colors text-center"
                               >
-                                <Plus size={18} />
                                 Сформировать новый отчет
                               </button>
                           
@@ -405,26 +404,28 @@ export default function ReportsTab({ onSwitchTab }) {
                                 <div key={r.id} className="relative group w-full">
                                   <button
                                     onClick={() => handleViewReport(r)}
-                                    className="w-full text-left bg-rose-900 py-4 pl-4 pr-12 rounded-xl hover:bg-rose-800/80 transition-colors flex items-center justify-between"
+                                    className="w-full text-left bg-rose-900 py-4 pl-4 pr-16 rounded-xl hover:bg-rose-800/80 transition-colors flex items-center justify-between"
                                   >
-                                    <div className="flex items-center gap-3">
-                                      <FileText className="text-[#F5E6D3] transition-colors" size={20} />
-                                      <div>
-                                        <div className="text-[#F5E6D3] font-medium mb-1 flex items-center gap-2">
-                                          Отчет от {new Date(r.created_at).toLocaleDateString('ru-RU')}
+                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                      <FileText className="text-[#F5E6D3] transition-colors shrink-0" size={20} />
+                                      <div className="min-w-0 flex-1">
+                                        <div className="text-[#F5E6D3] font-medium mb-1 flex items-center flex-wrap gap-2">
+                                          <span className="truncate">Отчет от {new Date(r.created_at).toLocaleDateString('ru-RU')}</span>
                                           {r.is_read === false && (
-                                            <span className="text-[10px] font-bold text-white bg-emerald-800 px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                                            <span className="text-[10px] font-bold text-white bg-emerald-800 px-2 py-0.5 rounded-full shadow-sm animate-pulse shrink-0">
                                               Отчет готов!
                                             </span>
                                           )}
                                         </div>
-                                        <div className="text-xs text-[#F5E6D3]">
+                                        <div className="text-xs text-[#F5E6D3] truncate">
                                           {r.period_start ? `${new Date(r.period_start).toLocaleDateString('ru-RU')} - ` : ''} 
                                           {r.period_end ? new Date(r.period_end).toLocaleDateString('ru-RU') : 'За все время'}
                                         </div>
                                       </div>
                                     </div>
-                                  <ChevronLeft className="text-[#F5E6D3] rotate-180" size={16} />
+                                  <div className="shrink-0 flex items-center justify-center w-6 opacity-0 sm:opacity-100">
+                                    <ChevronLeft className="text-[#F5E6D3] rotate-180" size={16} />
+                                  </div>
                                 </button>
                                 <button
                                   onClick={(e) => handleDeleteReport(e, r.id)}
