@@ -40,7 +40,6 @@ export default function CalendarTab({ onSheetOpen }) {
   // Начинаем с пустого массива, данные придут с сервера
   const [diaryEntries, setDiaryEntries] = useState([]);
   const [newEntries, setNewEntries] = useState([{ event: '', reaction: '' }]);
-  const [newRating, setNewRating] = useState(0);
 
   const tgUser = WebApp.initDataUnsafe?.user || {
     first_name: "Пользователь",
@@ -99,7 +98,6 @@ export default function CalendarTab({ onSheetOpen }) {
     setSelectedDate(date);
     setIsSheetOpen(true);
     setNewEntries([{ event: '', reaction: '' }]);
-    setNewRating(0);
   };
 
   const updateEntry = (index, field, value) => {
@@ -115,8 +113,6 @@ export default function CalendarTab({ onSheetOpen }) {
   const activeEntries = diaryEntries.filter(entry =>
     selectedDate && isSameDay(entry.date, selectedDate)
   ).sort((a, b) => a.id - b.id);
-
-  const hasDailyRating = activeEntries.some(e => e.rating);
 
   const handleAddEntry = async (e) => {
     e.preventDefault();
@@ -140,8 +136,7 @@ export default function CalendarTab({ onSheetOpen }) {
           body: JSON.stringify({
             date: dateStr,
             event: entry.event,
-            reaction: entry.reaction,
-            rating: hasDailyRating ? null : newRating
+            reaction: entry.reaction
           })
         });
 
@@ -156,7 +151,6 @@ export default function CalendarTab({ onSheetOpen }) {
           date: selectedDate,
           event: entry.event,
           reaction: entry.reaction,
-          rating: newRating,
           portrait_match_score: null
         }]);
 
@@ -183,7 +177,6 @@ export default function CalendarTab({ onSheetOpen }) {
       
       // Сбрасываем форму
       setNewEntries([{ event: '', reaction: '' }]);
-      setNewRating(0);
       WebApp.HapticFeedback.notificationOccurred('success');
     } catch (error) {
       console.error(error);
@@ -216,21 +209,6 @@ export default function CalendarTab({ onSheetOpen }) {
 
   const isSubmitDisabled = newEntries.some(ent => !ent.event.trim() || !ent.reaction.trim());
 
-  const handleDeleteRating = async (entryId) => {
-    try {
-      const response = await fetch(`${API_URL}/api/diary/${entryId}/rating`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${WebApp.initData}`
-        }
-      });
-      if (!response.ok) throw new Error("Ошибка удаления оценки");
-      setDiaryEntries(prev => prev.map(e => e.id === entryId ? { ...e, rating: null } : e));
-    } catch (error) {
-      console.error(error);
-      WebApp.showAlert("Произошла ошибка при удалении оценки.");
-    }
-  };
 
   const handleManualAnalysis = (entryId) => {
     if (!hasPortrait) return;
@@ -539,26 +517,6 @@ export default function CalendarTab({ onSheetOpen }) {
             </div>
 
             <div className="flex-1 space-y-4 mb-8">
-              {activeEntries.some(e => e.rating) ? (
-                <div className="flex items-center justify-between gap-2 mb-4 bg-rose-900/40 p-4 rounded-2xl relative group">
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm font-bold text-[#F5E6D3] uppercase tracking-wider">Оценка дня:</span>
-                    <div className="flex gap-1 text-[#F5E6D3] text-xl">
-                      {(() => {
-                        const ratedEntry = activeEntries.find(e => e.rating);
-                        return '★'.repeat(ratedEntry.rating) + '☆'.repeat(5 - ratedEntry.rating);
-                      })()}
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => handleDeleteRating(activeEntries.find(e => e.rating).id)}
-                    className="p-2 text-[#F5E6D3] hover:text-[#F5E6D3] hover:bg-red-500/10 rounded-xl transition-colors active:scale-95"
-                    title="Удалить оценку дня"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              ) : null}
               {activeEntries.length > 0 ? (
                 activeEntries.map(entry => (
                   <div key={entry.id} className="bg-rose-900/80 p-5 rounded-2xl shadow-inner relative">
@@ -623,28 +581,6 @@ export default function CalendarTab({ onSheetOpen }) {
                 ))}
               </div>
 
-
-              {!hasDailyRating && (
-                <div className="mt-4 pt-4">
-                  <span className="text-sm font-bold text-[#F5E6D3] block mb-3">Оцените день по пятибальной шкале:</span>
-                  <div className="flex justify-between gap-2">
-                    {[1, 2, 3, 4, 5].map(num => (
-                      <button
-                        key={num}
-                        type="button"
-                        onClick={() => setNewRating(num)}
-                        className={`flex-1 py-3 rounded-xl font-bold transition-all text-lg ${
-                          newRating === num 
-                            ? 'bg-emerald-800 text-[#F5E6D3] shadow-lg shadow-emerald-950/30 scale-105' 
-                            : 'bg-rose-900 text-[#F5E6D3] hover:bg-rose-800'
-                        }`}
-                      >
-                        {newRating >= num ? '★' : '☆'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               <button
                 type="submit"
