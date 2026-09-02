@@ -2116,8 +2116,8 @@ async def buy_subscription(
     from backend.database.models import Payment
     user_id = user_data.get("id")
     
-    # 149 RUB for 1 month Premium
-    url, payment_id = await _create_payment(amount=149, chat_id=str(user_id), description="Premium подписка (1 месяц)", email="", save_payment_method=True)
+    # 299 RUB for 1 month Premium
+    url, payment_id = await _create_payment(amount=299, chat_id=str(user_id), description="Premium подписка (1 месяц)", email="", save_payment_method=True)
     
     payment = Payment(
         user_id=user_id,
