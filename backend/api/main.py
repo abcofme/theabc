@@ -14,41 +14,6 @@ from backend.database.models import User, Category, Test, Question, Answer, Prog
 from backend.telegram.views.hardcoded_tests import get_hardcoded_test_result
 
 
-async def generate_technical_summary_bg(user_id: int, generated_text: str):
-    import os
-    import httpx
-    from backend.database import async_session
-    from backend.database.models import PersonalityPortrait
-    from sqlalchemy import select
-    
-    ai_scale_token = os.getenv("TIMEWEB_AI_SCALE_TOKEN", os.getenv("TIMEWEB_AI_TOKEN"))
-    ai_scale_url = os.getenv("TIMEWEB_AI_SCALE_URL", os.getenv("TIMEWEB_AI_URL"))
-    if ai_scale_url and not ai_scale_url.endswith("/chat/completions"):
-        ai_scale_url = ai_scale_url.rstrip("/") + "/chat/completions"
-        
-    if ai_scale_url and ai_scale_token:
-        summary_prompt = f"""Оригинальный текст психологического портрета:\n{generated_text}\n\nЗадание:\nНапиши техническую выжимку ВСЕХ интерпретаций из портрета выше. Дословно перенеси смыслы всех результатов, но в максимально сокращенном формате (используй сухие факты, списки, аббревиатуры). Никакая информация не должна быть утеряна, но она должна быть максимально сжата. Текст не обязательно должен быть легко читаемым для человека, но обязан быть 100% понятным для ИИ, так как он будет использоваться как контекст личности.\nВыведи ТОЛЬКО текст выжимки, без вступлений."""
-        try:
-            async with httpx.AsyncClient(timeout=90.0) as client:
-                ai_summary_response = await client.post(
-                    ai_scale_url,
-                    headers={"Authorization": f"Bearer {ai_scale_token}", "Content-Type": "application/json"},
-                    json={
-                        "model": "gpt-4o-mini",
-                        "messages": [{"role": "user", "content": summary_prompt}]
-                    }
-                )
-                if ai_summary_response.status_code == 200:
-                    ai_summary_data = ai_summary_response.json()
-                    technical_summary = ai_summary_data["choices"][0]["message"]["content"].strip()
-                    
-                    async with async_session() as db:
-                        existing = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
-                        if existing:
-                            existing.technical_summary = technical_summary
-                            await db.commit()
-        except Exception as sum_e:
-            print("Failed to generate technical summary:", sum_e)
 
 app = FastAPI(title="TheABC Diary API")
 
@@ -372,21 +337,15 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
             generated_text = ai_data["choices"][0]["message"]["content"].strip()
             
             content = generated_text
-            technical_summary = ""
-            
-            # Фоновая задача: мы больше не ждем gpt-4o-mini здесь
-            # Запускаем ее отдельно или вообще в другом месте
-            
 
             async with async_session() as db:
                 existing = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
                 if existing:
                     existing.content = content
-                    existing.technical_summary = technical_summary
                     existing.tests_count = user_tests_count
                     new_portrait = existing
                 else:
-                    new_portrait = PersonalityPortrait(user_id=user_id, content=content, technical_summary=technical_summary, tests_count=user_tests_count)
+                    new_portrait = PersonalityPortrait(user_id=user_id, content=content, tests_count=user_tests_count)
                     db.add(new_portrait)
                 
                 # Записываем генерацию в лог для не-уникальной статистики
@@ -395,10 +354,6 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
                 await db.commit()
                 await db.refresh(new_portrait)
                 
-            # Запускаем фоновую генерацию технической выжимки
-            import asyncio
-            asyncio.create_task(generate_technical_summary_bg(user_id, content))
-            
             return {"status": "success", "portrait": new_portrait}
     except Exception as e:
         import traceback
@@ -911,7 +866,7 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
             portrait = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
             if not portrait:
                 return
-            portrait_text = portrait.technical_summary if portrait.technical_summary else portrait.content
+            portrait_text = portrait.content
             
             prompt = f"""Ты — система сравнения реакции личности с её целостным психологическим портретом.
 Не давай оценок («хорошо/плохо»), не используй оценочных прилагательных, не давай общих советов. Обращайся к пользователю на «ты».
