@@ -1762,12 +1762,21 @@ async def delete_admin_test(
     test = await session.get(Test, test_id)
     if not test:
         raise HTTPException(status_code=404, detail="Test not found")
-        
-    from sqlalchemy import delete
-    from backend.database.models import Progress, Result
-    await session.execute(delete(Progress).where(Progress.test_id == test_id))
-    await session.execute(delete(Result).where(Result.test_id == test_id))
-        
+
+    from sqlalchemy import delete as sa_delete
+    from backend.database.models import Progress, Result, ProgressLog
+
+    # Delete in correct FK order
+    await session.execute(sa_delete(ProgressLog).where(ProgressLog.test_id == test_id))
+    await session.execute(sa_delete(Progress).where(Progress.test_id == test_id))
+    await session.execute(sa_delete(Result).where(Result.test_id == test_id))
+
+    # Delete answers for all questions of this test
+    from backend.database.models import Answer as Ans, Question as Q
+    subq = select(Q.id).where(Q.test_id == test_id)
+    await session.execute(sa_delete(Ans).where(Ans.question_id.in_(subq)))
+    await session.execute(sa_delete(Q).where(Q.test_id == test_id))
+
     await session.delete(test)
     await session.commit()
     return {"status": "success"}
