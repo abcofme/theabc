@@ -1,5 +1,7 @@
 import asyncio
 import os
+import uuid
+import time
 from datetime import datetime
 from fastapi import FastAPI, Depends, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,7 +15,8 @@ from backend.database import async_session
 from backend.database.models import User, Category, Test, Question, Answer, Progress, Result, DiaryEntry, PersonalityPortrait, BehavioralReport, Friendship
 from backend.telegram.views.hardcoded_tests import get_hardcoded_test_result
 
-
+# In-memory store for export download tokens: {token: {test_ids, expires_at}}
+_export_tokens: dict = {}
 
 app = FastAPI(title="TheABC Diary API")
 
@@ -1421,15 +1424,37 @@ async def admin_grant_demo(
 async def export_tests(
     test_ids: str = "",
     user_data: dict = Depends(validate_twa_data),
-    session: AsyncSession = Depends(get_session)
 ):
-    from fastapi import HTTPException
-    from fastapi.responses import PlainTextResponse
     username = user_data.get("username", "")
     if username not in ['ingenfrid', 'key_crp', 'fondlife']:
         raise HTTPException(status_code=403, detail="Access denied")
 
-    # Parse test IDs from comma-separated string
+    # Clean expired tokens
+    now = time.time()
+    expired = [k for k, v in _export_tokens.items() if v["expires_at"] < now]
+    for k in expired:
+        del _export_tokens[k]
+
+    token = str(uuid.uuid4())
+    _export_tokens[token] = {
+        "test_ids": test_ids,
+        "expires_at": now + 120  # valid 2 minutes
+    }
+    return {"token": token}
+
+@app.get("/api/admin/tests/export/download")
+async def download_export_by_token(
+    token: str,
+    session: AsyncSession = Depends(get_session)
+):
+    from fastapi.responses import PlainTextResponse
+    import datetime as dt
+
+    entry = _export_tokens.pop(token, None)
+    if not entry or entry["expires_at"] < time.time():
+        raise HTTPException(status_code=403, detail="Токен недействителен или истёк")
+
+    test_ids = entry["test_ids"]
     if test_ids:
         ids = [int(i) for i in test_ids.split(",") if i.strip().isdigit()]
         query = select(Test).options(
@@ -1451,13 +1476,11 @@ async def export_tests(
         if test.description:
             lines.append(f"Описание: {test.description}")
         lines.append("")
-
         if test.results:
             lines.append("--- ИНТЕРПРЕТАЦИИ (баллы → результат) ---")
             for r in sorted(test.results, key=lambda x: x.range_from):
                 lines.append(f"  [{r.range_from} – {r.range_to}] {r.name}")
             lines.append("")
-
         if test.questions:
             lines.append("--- ВОПРОСЫ И ВАРИАНТЫ ОТВЕТОВ ---")
             for i, q in enumerate(test.questions, 1):
@@ -1467,7 +1490,7 @@ async def export_tests(
             lines.append("")
 
     content = "\n".join(lines)
-    filename = f"tests_export_{__import__('datetime').date.today()}.txt"
+    filename = f"tests_export_{dt.date.today()}.txt"
     return PlainTextResponse(
         content=content,
         media_type="text/plain; charset=utf-8",

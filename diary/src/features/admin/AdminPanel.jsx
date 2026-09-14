@@ -268,17 +268,9 @@ export default function AdminPanel({ onBack }) {
         headers: { 'Authorization': `Bearer ${WebApp.initData}` }
       });
       if (!response.ok) throw new Error(await response.text());
-      const text = await response.text();
-      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `tests_export_${new Date().toISOString().slice(0,10)}.txt`;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      const { token } = await response.json();
+      const downloadUrl = `${API_URL}/api/admin/tests/export/download?token=${token}`;
+      WebApp.openLink(downloadUrl);
     } catch (e) {
       console.error(e);
       WebApp.showAlert('Ошибка при экспорте: ' + e.message);
