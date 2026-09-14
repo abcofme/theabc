@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, Check, Trash2, Edit, Plus, Heart, Gift, Link2 } from 'lucide-react';
+import { ChevronLeft, ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, Check, Trash2, Edit, Plus, Heart, Gift, Link2, Download } from 'lucide-react';
 import AdminTestEditor from './AdminTestEditor';
 
 const WebApp = window.Telegram.WebApp;
@@ -27,6 +27,8 @@ export default function AdminPanel({ onBack }) {
   const [newLinkName, setNewLinkName] = useState('');
   const [isLoadingLinks, setIsLoadingLinks] = useState(false);
   const [isCreatingLink, setIsCreatingLink] = useState(false);
+  const [exportSelectedIds, setExportSelectedIds] = useState([]);
+  const [isExporting, setIsExporting] = useState(false);
   useEffect(() => {
     fetchStats();
   }, [startDate, endDate, isUnique]);
@@ -235,6 +237,51 @@ export default function AdminPanel({ onBack }) {
 
   const toggleCategory = (id) => {
     setOpenCategory(openCategory === id ? null : id);
+  };
+
+  const allTestIds = (stats?.tests || []).flatMap(cat => cat.tests.map(t => t.id));
+
+  const toggleExportTest = (id) => {
+    setExportSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAllExport = () => {
+    setExportSelectedIds(allTestIds);
+  };
+
+  const handleDeselectAllExport = () => {
+    setExportSelectedIds([]);
+  };
+
+  const handleExport = async () => {
+    if (exportSelectedIds.length === 0) {
+      WebApp.showAlert('Выберите хотя бы один тест');
+      return;
+    }
+    setIsExporting(true);
+    try {
+      const params = new URLSearchParams();
+      params.append('test_ids', exportSelectedIds.join(','));
+      const response = await fetch(`${API_URL}/api/admin/tests/export?${params.toString()}`, {
+        headers: { 'Authorization': `Bearer ${WebApp.initData}` }
+      });
+      if (!response.ok) throw new Error(await response.text());
+      const text = await response.text();
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `tests_export_${new Date().toISOString().slice(0,10)}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error(e);
+      WebApp.showAlert('Ошибка при экспорте: ' + e.message);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   if (editingTestId !== undefined) {
@@ -541,6 +588,60 @@ export default function AdminPanel({ onBack }) {
             </div>
           ))}
 
+
+          <div className="flex items-center justify-between mt-8 mb-4">
+            <h3 className="text-xl font-bold text-[#F5E6D3]">Экспорт тестов</h3>
+          </div>
+          <div className="bg-rose-900/40 p-4 rounded-3xl mb-2">
+            <div className="flex gap-2 mb-3">
+              <button
+                onClick={handleSelectAllExport}
+                className="flex-1 py-2 bg-rose-800/60 hover:bg-rose-800 text-[#F5E6D3] text-sm font-bold rounded-xl transition-colors"
+              >
+                Выбрать все
+              </button>
+              <button
+                onClick={handleDeselectAllExport}
+                className="flex-1 py-2 bg-rose-800/60 hover:bg-rose-800 text-[#F5E6D3] text-sm font-bold rounded-xl transition-colors"
+              >
+                Снять все
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-1 mb-4 max-h-64 overflow-y-auto pr-1">
+              {(stats.tests || []).map(cat => (
+                <div key={`exp-cat-${cat.id}`}>
+                  <div className="text-xs font-bold text-[#F5E6D3]/60 uppercase tracking-wider px-1 py-1.5">{cat.name}</div>
+                  {cat.tests.map(test => (
+                    <label
+                      key={`exp-test-${test.id}`}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-rose-800/40 cursor-pointer transition-colors"
+                    >
+                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${exportSelectedIds.includes(test.id) ? 'bg-emerald-700 border-emerald-600' : 'border-[#F5E6D3]/40'}`}>
+                        {exportSelectedIds.includes(test.id) && <Check size={12} className="text-white" strokeWidth={3} />}
+                      </div>
+                      <input
+                        type="checkbox"
+                        className="hidden"
+                        checked={exportSelectedIds.includes(test.id)}
+                        onChange={() => toggleExportTest(test.id)}
+                      />
+                      <span className="text-sm text-[#F5E6D3] leading-tight">{test.name}</span>
+                    </label>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={handleExport}
+              disabled={isExporting || exportSelectedIds.length === 0}
+              className="w-full py-3 bg-emerald-800 hover:bg-emerald-700 disabled:bg-emerald-950/40 disabled:text-[#F5E6D3]/50 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
+            >
+              <Download size={18} />
+              {isExporting ? 'Экспорт...' : `Скачать TXT${exportSelectedIds.length > 0 ? ` (${exportSelectedIds.length})` : ''}`}
+            </button>
+          </div>
 
           <div className="flex items-center justify-between mt-8 mb-4">
             <h3 className="text-xl font-bold text-[#F5E6D3]">Управление тестами</h3>

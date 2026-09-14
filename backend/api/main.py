@@ -1417,6 +1417,58 @@ async def admin_grant_demo(
     await session.commit()
     return {"status": "ok", "message": f"Демо-доступ (Premium) на {request.days} дней выдан пользователю {target_user.username or target_user.id}"}
 
+@app.get("/api/admin/tests/export")
+async def export_tests(
+    test_ids: str = "",
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from fastapi import HTTPException
+    from fastapi.responses import PlainTextResponse
+    username = user_data.get("username", "")
+    if username not in ['ingenfrid', 'key_crp', 'fondlife']:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    # Parse test IDs from comma-separated string
+    if test_ids:
+        ids = [int(i) for i in test_ids.split(",") if i.strip().isdigit()]
+        query = select(Test).options(
+            selectinload(Test.questions).selectinload(Question.answers),
+            selectinload(Test.results)
+        ).where(Test.id.in_(ids))
+    else:
+        query = select(Test).options(
+            selectinload(Test.questions).selectinload(Question.answers),
+            selectinload(Test.results)
+        )
+
+    tests = (await session.execute(query)).scalars().all()
+
+    lines = []
+    for test in tests:
+        lines.append(f"{'='*60}")
+        lines.append(f"ТЕСТ: {test.name}")
+        if test.description:
+            lines.append(f"Описание: {test.description}")
+        lines.append("")
+
+        if test.results:
+            lines.append("--- ИНТЕРПРЕТАЦИИ (баллы → результат) ---")
+            for r in sorted(test.results, key=lambda x: x.range_from):
+                lines.append(f"  [{r.range_from} – {r.range_to}] {r.name}")
+            lines.append("")
+
+        if test.questions:
+            lines.append("--- ВОПРОСЫ И ВАРИАНТЫ ОТВЕТОВ ---")
+            for i, q in enumerate(test.questions, 1):
+                lines.append(f"  {i}. {q.name}")
+                for a in sorted(q.answers, key=lambda x: x.value):
+                    lines.append(f"       [{a.value}] {a.name}")
+            lines.append("")
+
+    content = "\n".join(lines)
+    return PlainTextResponse(content=content, media_type="text/plain; charset=utf-8")
+
 @app.get("/api/admin/tests/{test_id}")
 async def get_admin_test_details(
     test_id: int,
