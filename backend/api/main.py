@@ -1467,7 +1467,12 @@ async def export_tests(
             lines.append("")
 
     content = "\n".join(lines)
-    return PlainTextResponse(content=content, media_type="text/plain; charset=utf-8")
+    filename = f"tests_export_{__import__('datetime').date.today()}.txt"
+    return PlainTextResponse(
+        content=content,
+        media_type="text/plain; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
 
 @app.get("/api/admin/tests/{test_id}")
 async def get_admin_test_details(
