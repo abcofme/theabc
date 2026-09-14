@@ -29,6 +29,10 @@ export default function AdminPanel({ onBack }) {
   const [isCreatingLink, setIsCreatingLink] = useState(false);
   const [exportSelectedIds, setExportSelectedIds] = useState([]);
   const [isExporting, setIsExporting] = useState(false);
+  const [aiImportText, setAiImportText] = useState('');
+  const [aiImportCategoryId, setAiImportCategoryId] = useState('');
+  const [isAiImporting, setIsAiImporting] = useState(false);
+  const [aiImportResult, setAiImportResult] = useState(null); // {test_name, questions_count, results_count} or error string
   useEffect(() => {
     fetchStats();
   }, [startDate, endDate, isUnique]);
@@ -253,6 +257,29 @@ export default function AdminPanel({ onBack }) {
 
   const handleDeselectAllExport = () => {
     setExportSelectedIds([]);
+  };
+
+  const handleAiImport = async () => {
+    if (!aiImportText.trim()) { WebApp.showAlert('Вставьте текст теста'); return; }
+    if (!aiImportCategoryId) { WebApp.showAlert('Выберите категорию'); return; }
+    setIsAiImporting(true);
+    setAiImportResult(null);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/tests/ai-import`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${WebApp.initData}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ raw_text: aiImportText, category_id: parseInt(aiImportCategoryId) })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || 'Ошибка');
+      setAiImportResult({ success: true, ...data });
+      setAiImportText('');
+      fetchStats();
+    } catch (e) {
+      setAiImportResult({ success: false, error: e.message });
+    } finally {
+      setIsAiImporting(false);
+    }
   };
 
   const handleExport = async () => {
@@ -583,6 +610,50 @@ export default function AdminPanel({ onBack }) {
             </div>
           ))}
 
+
+          <div className="flex items-center justify-between mt-8 mb-4">
+            <h3 className="text-xl font-bold text-[#F5E6D3]">ИИ-импорт теста</h3>
+          </div>
+          <div className="bg-rose-900/40 p-4 rounded-3xl mb-2">
+            <div className="mb-3">
+              <label className="text-[#F5E6D3]/70 text-xs font-bold uppercase tracking-wider mb-1.5 block">Категория</label>
+              <select
+                value={aiImportCategoryId}
+                onChange={e => setAiImportCategoryId(e.target.value)}
+                className="w-full bg-rose-950/60 text-[#F5E6D3] p-3 rounded-xl focus:outline-none text-sm"
+              >
+                <option value="">— выберите категорию —</option>
+                {(stats.tests || []).map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-3">
+              <label className="text-[#F5E6D3]/70 text-xs font-bold uppercase tracking-wider mb-1.5 block">Сырой текст теста</label>
+              <textarea
+                value={aiImportText}
+                onChange={e => setAiImportText(e.target.value)}
+                placeholder="Вставьте текст теста: вопросы, варианты ответов с баллами, интерпретации..."
+                rows={8}
+                className="w-full bg-rose-950/60 text-[#F5E6D3] p-3 rounded-xl focus:outline-none text-sm resize-none placeholder:text-[#F5E6D3]/30"
+              />
+            </div>
+            {aiImportResult && (
+              <div className={`mb-3 p-3 rounded-xl text-sm font-medium ${aiImportResult.success ? 'bg-emerald-900/50 text-emerald-300' : 'bg-red-900/50 text-red-300'}`}>
+                {aiImportResult.success
+                  ? `✓ Тест «${aiImportResult.test_name}» создан: ${aiImportResult.questions_count} вопр., ${aiImportResult.results_count} интерпр.`
+                  : `✗ Ошибка: ${aiImportResult.error}`}
+              </div>
+            )}
+            <button
+              onClick={handleAiImport}
+              disabled={isAiImporting || !aiImportText.trim() || !aiImportCategoryId}
+              className="w-full py-3 bg-purple-800 hover:bg-purple-700 disabled:bg-purple-950/40 disabled:text-[#F5E6D3]/40 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
+            >
+              <Brain size={18} />
+              {isAiImporting ? 'ИИ обрабатывает...' : 'Создать тест через ИИ'}
+            </button>
+          </div>
 
           <div className="flex items-center justify-between mt-8 mb-4">
             <h3 className="text-xl font-bold text-[#F5E6D3]">Экспорт тестов</h3>

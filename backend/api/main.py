@@ -1420,6 +1420,124 @@ async def admin_grant_demo(
     await session.commit()
     return {"status": "ok", "message": f"Демо-доступ (Premium) на {request.days} дней выдан пользователю {target_user.username or target_user.id}"}
 
+class AITestImportRequest(BaseModel):
+    raw_text: str
+    category_id: int
+
+@app.post("/api/admin/tests/ai-import")
+async def ai_import_test(
+    payload: AITestImportRequest,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    import httpx, json as _json
+
+    username = user_data.get("username", "")
+    if username not in ['ingenfrid', 'key_crp', 'fondlife']:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    ai_token = os.getenv("TIMEWEB_AI_REPORTS_TOKEN", os.getenv("TIMEWEB_AI_TOKEN"))
+    ai_url = os.getenv("TIMEWEB_AI_REPORTS_URL", os.getenv("TIMEWEB_AI_URL", ""))
+    if not ai_token or not ai_url:
+        raise HTTPException(status_code=500, detail="AI сервис не настроен")
+    if not ai_url.endswith("/chat/completions"):
+        ai_url = ai_url.rstrip("/") + "/chat/completions"
+
+    prompt = f"""Ты — ассистент по извлечению данных психологических тестов.
+Из сырого текста ниже извлеки структуру теста и верни ТОЛЬКО валидный JSON без каких-либо пояснений.
+
+Формат JSON:
+{{
+  "name": "Название теста",
+  "description": "Краткое описание теста (если есть, иначе пустая строка)",
+  "questions": [
+    {{
+      "text": "Текст вопроса",
+      "answers": [
+        {{"text": "Текст варианта ответа", "value": 1}},
+        {{"text": "Текст варианта ответа", "value": 2}}
+      ]
+    }}
+  ],
+  "results": [
+    {{
+      "range_from": 0,
+      "range_to": 10,
+      "name": "Полный текст интерпретации для данного диапазона баллов"
+    }}
+  ]
+}}
+
+Правила:
+- value в answers — это целое число (балл за данный ответ)
+- range_from включительно, range_to НЕ включительно (как в Python range)
+- Если диапазонов нет — results = []
+- Верни ТОЛЬКО JSON, без markdown, без объяснений
+
+Сырой текст теста:
+{payload.raw_text}"""
+
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        resp = await client.post(
+            ai_url,
+            headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
+            json={"model": "gpt-4o-mini", "messages": [{"role": "user", "content": prompt}]}
+        )
+        if resp.status_code != 200:
+            raise HTTPException(status_code=502, detail=f"AI ошибка: {resp.text}")
+        ai_content = resp.json()["choices"][0]["message"]["content"].strip()
+
+    # Parse AI response
+    try:
+        clean = ai_content.replace("```json", "").replace("```", "").strip()
+        data = _json.loads(clean)
+    except Exception:
+        raise HTTPException(status_code=422, detail=f"AI вернул невалидный JSON: {ai_content[:300]}")
+
+    # Validate structure
+    if "name" not in data or "questions" not in data:
+        raise HTTPException(status_code=422, detail="AI не смог извлечь структуру теста")
+
+    # Create test in DB
+    test = Test(
+        name=data["name"],
+        description=data.get("description", "") or "",
+        category_id=payload.category_id,
+        free=False,
+    )
+    session.add(test)
+    await session.flush()  # get test.id
+
+    for q_data in data.get("questions", []):
+        question = Question(test_id=test.id, name=q_data["text"])
+        session.add(question)
+        await session.flush()
+        for a_data in q_data.get("answers", []):
+            answer = Answer(
+                question_id=question.id,
+                name=a_data["text"],
+                value=int(a_data.get("value", 0))
+            )
+            session.add(answer)
+
+    for r_data in data.get("results", []):
+        result = Result(
+            test_id=test.id,
+            range_from=int(r_data.get("range_from", 0)),
+            range_to=int(r_data.get("range_to", 0)),
+            name=r_data.get("name", "")
+        )
+        session.add(result)
+
+    await session.commit()
+    return {
+        "status": "ok",
+        "test_id": test.id,
+        "test_name": data["name"],
+        "questions_count": len(data.get("questions", [])),
+        "results_count": len(data.get("results", []))
+    }
+
 @app.get("/api/admin/tests/export")
 async def export_tests(
     test_ids: str = "",
