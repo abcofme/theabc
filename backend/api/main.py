@@ -3,7 +3,7 @@ import os
 import uuid
 import time
 from datetime import datetime
-from fastapi import FastAPI, Depends, BackgroundTasks, HTTPException
+from fastapi import FastAPI, Depends, BackgroundTasks, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -1426,15 +1426,29 @@ class AITestImportRequest(BaseModel):
 
 @app.post("/api/admin/tests/ai-import")
 async def ai_import_test(
-    payload: AITestImportRequest,
+    request: Request,
     user_data: dict = Depends(validate_twa_data),
     session: AsyncSession = Depends(get_session)
 ):
     import httpx, json as _json
+    from fastapi import Request as _Request
 
     username = user_data.get("username", "")
     if username not in ['ingenfrid', 'key_crp', 'fondlife']:
         raise HTTPException(status_code=403, detail="Access denied")
+
+    # Parse body manually to avoid Pydantic str pattern validation issues
+    try:
+        body = await request.json()
+        raw_text = str(body.get("raw_text", "")).strip()
+        category_id = int(body.get("category_id", 0))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Ошибка чтения запроса: {str(e)}")
+
+    if not raw_text:
+        raise HTTPException(status_code=400, detail="raw_text не может быть пустым")
+    if not category_id:
+        raise HTTPException(status_code=400, detail="category_id обязателен")
 
     ai_token = os.getenv("TIMEWEB_AI_REPORTS_TOKEN", os.getenv("TIMEWEB_AI_TOKEN"))
     ai_url = os.getenv("TIMEWEB_AI_REPORTS_URL", os.getenv("TIMEWEB_AI_URL", ""))
@@ -1476,17 +1490,22 @@ async def ai_import_test(
 - Верни ТОЛЬКО JSON, без markdown, без объяснений
 
 Сырой текст теста:
-{payload.raw_text}"""
+{raw_text}"""
 
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        resp = await client.post(
-            ai_url,
-            headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
-            json={"model": "gpt-4o-mini", "messages": [{"role": "user", "content": prompt}]}
-        )
-        if resp.status_code != 200:
-            raise HTTPException(status_code=502, detail=f"AI ошибка: {resp.text}")
-        ai_content = resp.json()["choices"][0]["message"]["content"].strip()
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.post(
+                ai_url,
+                headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
+                json={"model": "gpt-4o-mini", "messages": [{"role": "user", "content": prompt}]}
+            )
+            if resp.status_code != 200:
+                raise HTTPException(status_code=502, detail=f"AI ошибка {resp.status_code}: {resp.text[:300]}")
+            ai_content = resp.json()["choices"][0]["message"]["content"].strip()
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Ошибка соединения с AI: {str(e)}")
 
     # Parse AI response
     try:
@@ -1495,7 +1514,6 @@ async def ai_import_test(
     except Exception:
         raise HTTPException(status_code=422, detail=f"AI вернул невалидный JSON: {ai_content[:300]}")
 
-    # Validate structure
     if "name" not in data or "questions" not in data:
         raise HTTPException(status_code=422, detail="AI не смог извлечь структуру теста")
 
@@ -1503,11 +1521,11 @@ async def ai_import_test(
     test = Test(
         name=data["name"],
         description=data.get("description", "") or "",
-        category_id=payload.category_id,
+        category_id=category_id,
         free=False,
     )
     session.add(test)
-    await session.flush()  # get test.id
+    await session.flush()
 
     for q_data in data.get("questions", []):
         question = Question(test_id=test.id, name=q_data["text"])
