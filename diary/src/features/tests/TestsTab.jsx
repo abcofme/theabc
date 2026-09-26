@@ -332,10 +332,9 @@ export default function TestsTab({ onOverlayOpen }) {
   return (
 
     <div className="flex flex-col relative select-none bg-transparent max-w-2xl mx-auto w-full pt-4 h-full overflow-y-scroll pb-16">
-      <h2 className="text-2xl font-bold text-[#F5E6D3] px-4 mb-8 text-center flex items-center justify-center gap-2">
-        <ClipboardList size={28} />
-        Тесты
-      </h2>
+      <div className="flex justify-center px-4 mb-8">
+        <img src="/testy_title.png" alt="Тесты" className="h-14 object-contain" />
+      </div>
       
       {/* Список категорий */}
       <div className="px-4 pb-6 space-y-3 animate-in fade-in duration-300 flex flex-col flex-1">
