@@ -56,6 +56,10 @@ export default function App() {
 
   // Сообщаем Telegram, что приложение готово
   WebApp.ready();
+  WebApp.expand();
+  if (WebApp.requestFullscreen) {
+    WebApp.requestFullscreen();
+  }
 
   // Блокировка: если нет данных от Telegram, не пускаем
   if (!WebApp.initData) {
