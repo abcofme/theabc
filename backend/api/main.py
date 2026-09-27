@@ -1001,13 +1001,18 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
 Реакция: {entry.reaction}
 
 ФОРМАТ ВЫВОДА (ТЕХНИЧЕСКИЕ ТРЕБОВАНИЯ)
-Верни ответ СТРОГО в формате JSON:
-{{
-  "score": <число от 0 до 100 — степень соответствия реакции портрету>,
-  "recommendation": "<полный текст разбора для пользователя, включающий все пять блоков: Слои, Зеркало, Мои предположения, Что можно дополнить, Могу предложить попробовать, и финальная строка Что проверить после. Блоки разделяй двойным переносом строки. Технический слой по осям НЕ включай.>"
-}}
-Если событие или реакция содержат бессмысленный набор символов, спам или абсолютно нереалистичное содержание — верни score = 0, recommendation = «Недостаточно данных для разбора».
-Верни ТОЛЬКО JSON. Без markdown-обёрток, без пояснений вне JSON."""
+Верни ответ СТРОГО в следующем формате — две части, разделённые строкой "---TEXT---":
+
+SCORE:<число от 0 до 100>
+---TEXT---
+<полный текст разбора для пользователя: все пять блоков — Слои, Зеркало, Мои предположения, Что можно дополнить, Могу предложить попробовать, и финальная строка Что проверить после. Технический слой по осям НЕ включай.>
+
+Если событие или реакция содержат бессмысленный набор символов, спам — верни:
+SCORE:0
+---TEXT---
+Недостаточно данных для разбора.
+
+Никакого JSON. Никакого markdown вокруг. Только этот формат."""
 
             async with httpx.AsyncClient(timeout=120.0) as client:
                 ai_response = await client.post(
@@ -1049,24 +1054,24 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                 score = 50
                 explanation = ""
                 try:
-                    clean_text = generated_text.replace('```json', '').replace('```', '').strip()
-                    # Fix unescaped newlines inside JSON string values
-                    # Find the JSON object boundaries and fix inner newlines
-                    parsed = json.loads(clean_text)
-                    score = int(parsed.get("score", 50))
-                    explanation = parsed.get("recommendation", parsed.get("explanation", ""))
+                    if "---TEXT---" in generated_text:
+                        parts = generated_text.split("---TEXT---", 1)
+                        score_line = parts[0].strip()
+                        explanation = parts[1].strip() if len(parts) > 1 else ""
+                        score_match = re.search(r'SCORE:\s*(\d+)', score_line)
+                        if score_match:
+                            score = int(score_match.group(1))
+                    else:
+                        # Fallback: try JSON
+                        clean_text = generated_text.replace('```json', '').replace('```', '').strip()
+                        parsed = json.loads(clean_text)
+                        score = int(parsed.get("score", 50))
+                        explanation = parsed.get("recommendation", parsed.get("explanation", ""))
                 except Exception:
-                    # Fallback: extract score and recommendation via regex
-                    score_match = re.search(r'"score"\s*:\s*(\d+)', generated_text)
+                    score_match = re.search(r'SCORE:\s*(\d+)', generated_text)
                     if score_match:
                         score = int(score_match.group(1))
-                    # Extract recommendation text - everything between "recommendation": " and the closing "
-                    rec_match = re.search(r'"recommendation"\s*:\s*"([\s\S]*?)(?:"\s*\}|",\s*")', generated_text)
-                    if rec_match:
-                        explanation = rec_match.group(1).replace('\\n', '\n')
-                    else:
-                        # Last resort: use raw text but strip JSON wrapper
-                        explanation = generated_text
+                    explanation = generated_text
                     
                 score = max(0, min(100, score))
                     
