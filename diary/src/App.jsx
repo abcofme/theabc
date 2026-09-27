@@ -90,7 +90,6 @@ export default function App() {
         {/* Safe area spacer for fullscreen Telegram WebApp */}
         <div style={{ height: 'env(safe-area-inset-top, 0px)', minHeight: '0px' }} />
         <div style={{ height: 'env(safe-area-inset-top, 0px)', minHeight: '0px' }} />
-        <div style={{ height: 'env(safe-area-inset-top, 0px)', minHeight: '0px' }} />
         {/* Передаем функцию скрытия меню в CalendarTab */}
         <div className="flex-1 flex-col" style={{ display: activeTab === 'diary' ? 'flex' : 'none' }}>
           <CalendarTab onSheetOpen={setIsNavHidden} />
