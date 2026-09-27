@@ -368,10 +368,10 @@ export default function CalendarTab({ onSheetOpen }) {
         <p className="text-xs font-bold text-[#F5E6D3] uppercase tracking-wider mb-3">Соответствие портрету личности:</p>
         <AnimatedMatchScale score={score} colorClass={colorClass} />
         {entry.portrait_match_explanation && (
-          <div className="mt-4 p-3 bg-rose-900/50 rounded-xl relative overflow-hidden">
-            <div className={`absolute left-0 top-0 bottom-0 w-2 ${colorClass}`}></div>
-            <p className="text-sm text-[#F5E6D3]/90 italic leading-relaxed pl-3">
-              "{entry.portrait_match_explanation}"
+          <div className="mt-4 p-3 bg-rose-900/50 rounded-xl relative">
+            <div className={`absolute left-0 top-0 bottom-0 w-2 rounded-l-xl ${colorClass}`}></div>
+            <p className="text-sm text-[#F5E6D3]/90 leading-relaxed pl-3 whitespace-pre-wrap">
+              {entry.portrait_match_explanation}
             </p>
           </div>
         )}

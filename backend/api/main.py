@@ -1018,6 +1018,7 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                     },
                     json={
                         "model": "gpt-4o-mini",
+                        "max_tokens": 4096,
                         "messages": [
                             {"role": "user", "content": prompt}
                         ]
@@ -1033,6 +1034,7 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                         },
                         json={
                             "model": "gpt-4o-mini",
+                            "max_tokens": 4096,
                             "messages": [
                                 {"role": "user", "content": prompt}
                             ]
@@ -1044,18 +1046,27 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                 generated_text = ai_data["choices"][0]["message"]["content"].strip()
                 
                 import json
+                score = 50
+                explanation = ""
                 try:
                     clean_text = generated_text.replace('```json', '').replace('```', '').strip()
+                    # Fix unescaped newlines inside JSON string values
+                    # Find the JSON object boundaries and fix inner newlines
                     parsed = json.loads(clean_text)
                     score = int(parsed.get("score", 50))
                     explanation = parsed.get("recommendation", parsed.get("explanation", ""))
                 except Exception:
-                    numbers = re.findall(r'\d+', generated_text)
-                    if numbers:
-                        score = int(numbers[0])
+                    # Fallback: extract score and recommendation via regex
+                    score_match = re.search(r'"score"\s*:\s*(\d+)', generated_text)
+                    if score_match:
+                        score = int(score_match.group(1))
+                    # Extract recommendation text - everything between "recommendation": " and the closing "
+                    rec_match = re.search(r'"recommendation"\s*:\s*"([\s\S]*?)(?:"\s*\}|",\s*")', generated_text)
+                    if rec_match:
+                        explanation = rec_match.group(1).replace('\\n', '\n')
                     else:
-                        score = 50
-                    explanation = generated_text
+                        # Last resort: use raw text but strip JSON wrapper
+                        explanation = generated_text
                     
                 score = max(0, min(100, score))
                     
