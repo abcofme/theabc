@@ -87,6 +87,8 @@ export default function App() {
       />
 
       <main className={`flex-1 flex flex-col overflow-y-auto p-4 relative z-10 ${isNavHidden ? '' : 'pb-24'}`}>
+        {/* Safe area spacer for fullscreen Telegram WebApp */}
+        <div style={{ height: 'env(safe-area-inset-top, 0px)', minHeight: '0px' }} />
         {/* Передаем функцию скрытия меню в CalendarTab */}
         <div className="flex-1 flex-col" style={{ display: activeTab === 'diary' ? 'flex' : 'none' }}>
           <CalendarTab onSheetOpen={setIsNavHidden} />

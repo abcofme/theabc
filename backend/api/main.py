@@ -1009,7 +1009,7 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
 Если событие или реакция содержат бессмысленный набор символов, спам или абсолютно нереалистичное содержание — верни score = 0, recommendation = «Недостаточно данных для разбора».
 Верни ТОЛЬКО JSON. Без markdown-обёрток, без пояснений вне JSON."""
 
-            async with httpx.AsyncClient(timeout=30.0) as client:
+            async with httpx.AsyncClient(timeout=120.0) as client:
                 ai_response = await client.post(
                     ai_url,
                     headers={
