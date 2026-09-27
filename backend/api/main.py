@@ -1000,19 +1000,27 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
 Событие: {entry.event}
 Реакция: {entry.reaction}
 
-ФОРМАТ ВЫВОДА (ТЕХНИЧЕСКИЕ ТРЕБОВАНИЯ)
-Верни ответ СТРОГО в следующем формате — две части, разделённые строкой "---TEXT---":
+ФОРМАТ ВЫВОДА — строго две части:
 
-SCORE:<число от 0 до 100>
+Часть 1 — одна строка: {"score": <число от 0 до 100>}
+Часть 2 — разделитель и текст:
 ---TEXT---
-<полный текст разбора для пользователя: все пять блоков — Слои, Зеркало, Мои предположения, Что можно дополнить, Могу предложить попробовать, и финальная строка Что проверить после. Технический слой по осям НЕ включай.>
+<полный текст разбора: все пять блоков — Слои, Зеркало, Мои предположения, Что можно дополнить, Могу предложить попробовать, и финальная строка Что проверить после. Технический слой по осям НЕ включай.>
 
-Если событие или реакция содержат бессмысленный набор символов, спам — верни:
-SCORE:0
+Пример:
+{"score": 74}
 ---TEXT---
-Недостаточно данных для разбора.
+**Слои**
 
-Никакого JSON. Никакого markdown вокруг. Только этот формат."""
+Событие: описано. Реакция: описана. Тело: не описано. Мысль: не описана. Импульс: не описан. Действие: не описано.
+
+**Зеркало**
+...и так далее
+
+Если событие или реакция — бессмысленный набор символов или спам:
+{"score": 0}
+---TEXT---
+Недостаточно данных для разбора."""
 
             async with httpx.AsyncClient(timeout=120.0) as client:
                 ai_response = await client.post(
@@ -1053,28 +1061,33 @@ SCORE:0
                 import json
                 score = 50
                 explanation = ""
-                try:
-                    if "---TEXT---" in generated_text:
-                        parts = generated_text.split("---TEXT---", 1)
-                        score_line = parts[0].strip()
-                        explanation = parts[1].strip() if len(parts) > 1 else ""
-                        score_match = re.search(r'SCORE:\s*(\d+)', score_line)
-                        if score_match:
-                            score = int(score_match.group(1))
-                    else:
-                        # Fallback: try JSON
-                        clean_text = generated_text.replace('```json', '').replace('```', '').strip()
-                        parsed = json.loads(clean_text)
+
+                if "---TEXT---" in generated_text:
+                    parts = generated_text.split("---TEXT---", 1)
+                    score_part = parts[0].strip()
+                    explanation = parts[1].strip() if len(parts) > 1 else ""
+                    # score_part is like: {"score": 74}
+                    try:
+                        parsed = json.loads(score_part)
                         score = int(parsed.get("score", 50))
-                        explanation = parsed.get("recommendation", parsed.get("explanation", ""))
-                except Exception:
-                    score_match = re.search(r'SCORE:\s*(\d+)', generated_text)
-                    if score_match:
-                        score = int(score_match.group(1))
+                    except Exception:
+                        # fallback: find any number in the score part
+                        m = re.search(r'\d+', score_part)
+                        if m:
+                            score = int(m.group())
+                else:
+                    # AI didn't follow format — try to extract from raw text
+                    m = re.search(r'"score"\s*:\s*(\d+)', generated_text)
+                    if m:
+                        score = int(m.group(1))
+                    else:
+                        m = re.search(r'\b(\d{1,3})\b', generated_text)
+                        if m:
+                            score = int(m.group(1))
                     explanation = generated_text
-                    
+
                 score = max(0, min(100, score))
-                    
+
                 entry.portrait_match_score = score
                 entry.portrait_match_explanation = explanation
                 await db.commit()
