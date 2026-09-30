@@ -871,7 +871,7 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                 return
             portrait_text = portrait.content
             
-            prompt = f"""1. Роль и принцип
+            SYSTEM_PROMPT = """1. Роль и принцип
 Ты — дневник-зеркало. Ты отражаешь, а не решаешь. Ты показываешь человеку, что видно в его ситуации, и оставляешь выбор за ним.
 Ты не оракул. Не ставишь диагнозы. Не выносишь вердикты. Не оцениваешь поступки. Не морализируешь. Не предсказываешь будущее. Не судишь по прошлым записям.
 Ты работаешь строго в рамках классических правил и авторитетов психодиагностики, психологии личности, поведенческой активации, теории мотивации и психологии действия. Ничего сверх этого не выдумываешь.
@@ -992,35 +992,32 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
 Не диагностируй. Не работай с кризисом, суицидом, психозом, насилием без кризисного протокола. Если видишь признаки кризиса — останови обычный формат, дай кризисные ресурсы, порекомендуй очную помощь.
 Не патологизируй. Не усиливай избегание. Не работай без согласия.
 
-ВХОДНЫЕ ДАННЫЕ
+ТЕХНИЧЕСКИЙ ФОРМАТ ВЫВОДА:
+Сначала напиши одно число — процент соответствия реакции портрету (от 0 до 100). Следующей строкой напиши ровно три знака: ===
+После этого — полный текст разбора для пользователя (все пять блоков). Технический слой не показывай.
 
-Портрет пользователя (все результаты тестов с полными описаниями):
-{portrait_text}
+Пример структуры вывода:
+78
+===
+Слои
 
-Событие: {entry.event}
-Реакция: {entry.reaction}
+Событие: описано. Реакция: описана. ...
 
-ФОРМАТ ВЫВОДА — строго две части:
+Зеркало
+...
 
-Часть 1 — одна строка: {"score": <число от 0 до 100>}
-Часть 2 — разделитель и текст:
----TEXT---
-<полный текст разбора: все пять блоков — Слои, Зеркало, Мои предположения, Что можно дополнить, Могу предложить попробовать, и финальная строка Что проверить после. Технический слой по осям НЕ включай.>
-
-Пример:
-{"score": 74}
----TEXT---
-**Слои**
-
-Событие: описано. Реакция: описана. Тело: не описано. Мысль: не описана. Импульс: не описан. Действие: не описано.
-
-**Зеркало**
-...и так далее
-
-Если событие или реакция — бессмысленный набор символов или спам:
-{"score": 0}
----TEXT---
+Если событие — бессмысленный набор символов или спам, верни:
+0
+===
 Недостаточно данных для разбора."""
+
+            prompt = (
+                SYSTEM_PROMPT
+                + "\n\nПортрет пользователя (все результаты тестов с полными описаниями):\n"
+                + portrait_text
+                + "\n\nСобытие: " + entry.event
+                + "\nРеакция: " + entry.reaction
+            )
 
             async with httpx.AsyncClient(timeout=120.0) as client:
                 ai_response = await client.post(
@@ -1062,28 +1059,19 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                 score = 50
                 explanation = ""
 
-                if "---TEXT---" in generated_text:
-                    parts = generated_text.split("---TEXT---", 1)
+                if "===" in generated_text:
+                    parts = generated_text.split("===", 1)
                     score_part = parts[0].strip()
                     explanation = parts[1].strip() if len(parts) > 1 else ""
-                    # score_part is like: {"score": 74}
-                    try:
-                        parsed = json.loads(score_part)
-                        score = int(parsed.get("score", 50))
-                    except Exception:
-                        # fallback: find any number in the score part
-                        m = re.search(r'\d+', score_part)
-                        if m:
-                            score = int(m.group())
+                    # score_part is just a number like "78"
+                    m = re.search(r'\d+', score_part)
+                    if m:
+                        score = int(m.group())
                 else:
-                    # AI didn't follow format — try to extract from raw text
-                    m = re.search(r'"score"\s*:\s*(\d+)', generated_text)
+                    # AI didn't follow format — extract score from anywhere, use full text
+                    m = re.search(r'\b(\d{1,3})\b', generated_text)
                     if m:
                         score = int(m.group(1))
-                    else:
-                        m = re.search(r'\b(\d{1,3})\b', generated_text)
-                        if m:
-                            score = int(m.group(1))
                     explanation = generated_text
 
                 score = max(0, min(100, score))
