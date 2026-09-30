@@ -1011,13 +1011,17 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
 ===
 Недостаточно данных для разбора."""
 
-            prompt = (
-                SYSTEM_PROMPT
-                + "\n\nПортрет пользователя (все результаты тестов с полными описаниями):\n"
+            user_message = (
+                "Портрет пользователя (все результаты тестов с полными описаниями):\n"
                 + portrait_text
                 + "\n\nСобытие: " + entry.event
                 + "\nРеакция: " + entry.reaction
             )
+
+            messages = [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_message}
+            ]
 
             async with httpx.AsyncClient(timeout=120.0) as client:
                 ai_response = await client.post(
@@ -1029,12 +1033,10 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                     json={
                         "model": "gpt-4o-mini",
                         "max_tokens": 4096,
-                        "messages": [
-                            {"role": "user", "content": prompt}
-                        ]
+                        "messages": messages
                     }
                 )
-                
+
                 if ai_response.status_code == 404:
                     ai_response = await client.post(
                         ai_url,
@@ -1045,15 +1047,14 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                         json={
                             "model": "gpt-4o-mini",
                             "max_tokens": 4096,
-                            "messages": [
-                                {"role": "user", "content": prompt}
-                            ]
+                            "messages": messages
                         }
                     )
-                    
+
                 ai_response.raise_for_status()
                 ai_data = ai_response.json()
-                generated_text = ai_data["choices"][0]["message"]["content"].strip()
+                generated_text = (ai_data.get("choices", [{}])[0].get("message", {}).get("content") or "").strip()
+                print(f"AI response for entry {entry_id}: [{generated_text[:200]}]")
                 
                 import json
                 score = 50
