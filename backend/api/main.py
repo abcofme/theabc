@@ -869,7 +869,11 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
             portrait = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
             if not portrait:
                 return
-            portrait_text = portrait.content
+            portrait_text = portrait.content or ""
+            # Ограничиваем портрет чтобы не превысить лимит токенов API
+            if len(portrait_text) > 4000:
+                portrait_text = portrait_text[:4000] + "\n[портрет обрезан]"
+            print(f"Portrait len: {len(portrait_text)}, event len: {len(entry.event)}, reaction len: {len(entry.reaction)}")
             
             SYSTEM_PROMPT = """1. Роль и принцип
 Ты — дневник-зеркало. Ты отражаешь, а не решаешь. Ты показываешь человеку, что видно в его ситуации, и оставляешь выбор за ним.
@@ -1080,7 +1084,8 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                 entry.portrait_match_score = score
                 entry.portrait_match_explanation = explanation
                 await db.commit()
-                return {"score": score, "explanation": explanation, "debug_raw": generated_text[:500]}
+                debug_info = generated_text[:500] if generated_text else f"EMPTY. HTTP {ai_response.status_code}. Body: {ai_data}"
+                return {"score": score, "explanation": explanation, "debug_raw": debug_info}
                 
     except Exception as e:
         print("BG analyze reaction failed:", e)

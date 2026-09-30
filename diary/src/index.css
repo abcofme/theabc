@@ -29,6 +29,11 @@ html, body {
   padding-top: calc(env(safe-area-inset-top, 0px) * 2);
 }
 
+/* Все fullscreen оверлеи — тоже получают отступ сверху */
+.fixed.inset-0 {
+  padding-top: calc(env(safe-area-inset-top, 0px) * 2);
+}
+
 /* Плавные анимации для всех интерактивных элементов */
 button, a, input, textarea, select, .transition-all {
   @apply transition-all duration-300 ease-in-out;
