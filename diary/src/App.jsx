@@ -86,9 +86,10 @@ export default function App() {
         }}
       />
 
-      <main className={`flex-1 flex flex-col overflow-y-auto p-4 relative z-10 ${isNavHidden ? '' : 'pb-24'}`}>
-        {/* Safe area spacer — одинаков для всех страниц */}
-        <div style={{ height: 'env(safe-area-inset-top, 0px)' }} />
+      <main
+        className={`flex-1 flex flex-col overflow-y-auto p-4 relative z-10 ${isNavHidden ? '' : 'pb-24'}`}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1rem)' }}
+      >
         {/* Передаем функцию скрытия меню в CalendarTab */}
         <div className="flex-1 flex-col" style={{ display: activeTab === 'diary' ? 'flex' : 'none' }}>
           <CalendarTab onSheetOpen={setIsNavHidden} />
