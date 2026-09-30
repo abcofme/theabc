@@ -1055,10 +1055,16 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                         }
                     )
 
-                ai_response.raise_for_status()
+                # Не используем raise_for_status() — обрабатываем явно
+                if ai_response.status_code >= 400:
+                    error_body = ai_response.text[:500]
+                    print(f"AI API HTTP {ai_response.status_code}: {error_body}")
+                    await db.commit()
+                    return {"score": 0, "explanation": "", "debug_raw": f"HTTP {ai_response.status_code}: {error_body}"}
+
                 ai_data = ai_response.json()
                 generated_text = (ai_data.get("choices", [{}])[0].get("message", {}).get("content") or "").strip()
-                print(f"AI response for entry {entry_id}: [{generated_text[:200]}]")
+                print(f"AI response for entry {entry_id}: len={len(generated_text)}, first200=[{generated_text[:200]}]")
                 
                 import json
                 score = 50
