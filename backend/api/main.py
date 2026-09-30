@@ -1079,7 +1079,7 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                 entry.portrait_match_score = score
                 entry.portrait_match_explanation = explanation
                 await db.commit()
-                return {"score": score, "explanation": explanation}
+                return {"score": score, "explanation": explanation, "debug_raw": generated_text[:500]}
                 
     except Exception as e:
         print("BG analyze reaction failed:", e)

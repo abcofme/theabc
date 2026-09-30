@@ -164,6 +164,9 @@ export default function CalendarTab({ onSheetOpen }) {
           })
             .then(res => res.json())
             .then(analysisData => {
+              if (analysisData.debug_raw !== undefined) {
+                WebApp.showAlert('RAW: ' + analysisData.debug_raw + '\n\nEXPL: ' + (analysisData.explanation || '(пусто)'));
+              }
               if (analysisData.status === "success") {
                 setDiaryEntries(prevEntries => prevEntries.map(e => e.id === data.id ? { ...e, portrait_match_score: analysisData.score, portrait_match_explanation: analysisData.explanation } : e));
               }
