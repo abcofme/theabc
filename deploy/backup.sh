@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Ежедневный дамп базы (theabc-backup.timer). Хранятся 14 дней, плюс бэкапы диска в Timeweb.
 set -euo pipefail
+# В дампах персональные данные — доступ только у root
+umask 077
 cd /opt/theabc
 
 dir=/var/backups/theabc
