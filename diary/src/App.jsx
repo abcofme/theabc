@@ -54,12 +54,15 @@ export default function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Сообщаем Telegram, что приложение готово
-  WebApp.ready();
-  WebApp.expand();
-  if (WebApp.requestFullscreen) {
-    WebApp.requestFullscreen();
-  }
+  // Сообщаем Telegram, что приложение готово (один раз, а не на каждый рендер)
+  useEffect(() => {
+    WebApp.ready();
+    WebApp.expand();
+    // Полный экран только на телефонах: в Telegram на Mac/ПК он прячет кнопку закрытия
+    if (WebApp.requestFullscreen && ['ios', 'android'].includes(WebApp.platform)) {
+      WebApp.requestFullscreen();
+    }
+  }, []);
 
   // Блокировка: если нет данных от Telegram, не пускаем
   if (!WebApp.initData) {
