@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { User, ChevronDown, ChevronUp, Check, XCircle, X, ChevronLeft, Lock, Wand2, Trash2, Brain, Activity, Star, ShieldAlert, Sparkles, Target, Heart, Flame, ClipboardList, Users, ChevronRight } from 'lucide-react';
 import AdminPanel from '../admin/AdminPanel';
 import FriendsView from './FriendsView';
-import qrCodeImg from '../../assets/qr-code.png';
+import qrCodeImg from '../../assets/qr-code.webp';
 import QRCode from 'react-qr-code';
 import GenerationProgress from '../../components/GenerationProgress';
 

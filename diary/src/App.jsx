@@ -4,7 +4,7 @@ import CalendarTab from './features/calendar/CalendarTab';
 import ProfileTab from './features/profile/ProfileTab';
 import ReportsTab from './features/reports/ReportsTab';
 import TestsTab from './features/tests/TestsTab';
-import bgLeaves from './assets/bg-leaves.png';
+import bgLeaves from './assets/bg-leaves.webp';
 
 const WebApp = window.Telegram.WebApp;
 

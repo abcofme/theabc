@@ -1,47 +1,108 @@
+# Продакшен: сервер в Москве. Снаружи открыт только web (Caddy), всё остальное — во внутренней сети Docker.
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+x-backend: &backend
+  build: .
+  image: theabc-backend
+  env_file: .env
+  environment:
+    POSTGRES_HOST: db
+    POSTGRES_PORT: "5432"
+    REDIS_HOST: redis
+    REDIS_PORT: "6379"
+  # Сертификат ретранслятора лежит на сервере, не в репозитории: в нём адрес ретранслятора
+  volumes:
+    - /etc/theabc/relay-ca.pem:/run/secrets/relay-ca.pem:ro
+  restart: unless-stopped
+  logging: *logging
+
 services:
-  backend:
-    build: .
-    env_file: .env
-    restart: always
+  # Миграции один раз перед стартом api и bot
+  migrate:
+    <<: *backend
+    command: ["python", "run.py", "migrate"]
+    restart: "no"
     depends_on:
-      - redis
-      - db  # Добавили зависимость от базы
-    ports:
-      - "8000:8000"
+      db:
+        condition: service_healthy
 
-  redis:
-    env_file: .env
-    image: redis:7.2.2-alpine3.18
-    restart: always
-    command:
-      - redis-server
-      - --appendonly yes
-      - --requirepass ${REDIS_PASSWORD}
-    volumes:
-      - redis-data:/data
-    ports:
-      - ${REDIS_PORT}:6379
+  api:
+    <<: *backend
+    command: ["python", "run.py", "api"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
-  # --- ДОБАВЬТЕ ЭТОТ БЛОК ---
+  # Бот и планировщик: в Telegram ходит через ретранслятор (TELEGRAM_API_URL в .env)
+  bot:
+    <<: *backend
+    command: ["python", "run.py", "bot"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
   db:
-    image: postgres:15-alpine
-    restart: always
+    image: postgres:17-alpine
     env_file: .env
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    restart: unless-stopped
+    logging: *logging
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  frontend:
+  redis:
+    image: redis:7.4-alpine
+    env_file: .env
+    restart: unless-stopped
+    logging: *logging
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Caddy: TLS (Let's Encrypt), HTTP/2 и HTTP/3, сжатие, статика фронтенда, прокси /api
+  web:
     build: ./diary
-    restart: always
+    image: theabc-web
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN}
     ports:
-      - "3000:80"
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - api
 
 volumes:
+  postgres-data:
   redis-data:
-  postgres-data: # Добавили том для данных БД
+  caddy-data:
+  caddy-config:

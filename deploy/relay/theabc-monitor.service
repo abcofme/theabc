@@ -1,0 +1,6 @@
+[Unit]
+Description=theabc: production health check
+
+[Service]
+Type=oneshot
+ExecStart=/opt/theabc-relay/monitor.sh

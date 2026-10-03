@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     TIMEWEB_AI_SCALE_URL: str | None = None
     TIMEWEB_AI_SCALE_TOKEN: str | None = None
 
+    # Ретранслятор Bot API: из российского ДЦ api.telegram.org недоступен
+    TELEGRAM_API_URL: str | None = None
+    TELEGRAM_API_CA_FILE: str | None = None
+
     @property
     def url(self) -> str:
         return (

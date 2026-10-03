@@ -1,0 +1,8 @@
+[Unit]
+Description=theabc: database dump
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/theabc/deploy/backup.sh

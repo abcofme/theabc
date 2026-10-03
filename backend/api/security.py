@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import json
+import time
 import urllib.parse
 from fastapi import HTTPException, Security
 from fastapi.security import APIKeyHeader
@@ -8,6 +9,9 @@ from settings import settings
 
 # Ожидаем токен в заголовке Authorization
 header_scheme = APIKeyHeader(name="Authorization")
+
+# Сколько живёт подпись initData: без ограничения перехваченный заголовок работал бы вечно
+INIT_DATA_MAX_AGE = 24 * 60 * 60
 
 def validate_twa_data(auth_header: str = Security(header_scheme)) -> dict:
     if not auth_header.startswith("Bearer "):
@@ -27,8 +31,15 @@ def validate_twa_data(auth_header: str = Security(header_scheme)) -> dict:
     secret_key = hmac.new(b"WebAppData", settings.BOT_TOKEN.encode(), hashlib.sha256).digest()
     calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
     
-    if calculated_hash != hash_:
+    if not hmac.compare_digest(calculated_hash, hash_):
         raise HTTPException(status_code=401, detail="Invalid initData hash")
+
+    try:
+        auth_date = int(parsed_data.get("auth_date", 0))
+    except ValueError:
+        auth_date = 0
+    if time.time() - auth_date > INIT_DATA_MAX_AGE:
+        raise HTTPException(status_code=401, detail="initData expired")
     
     # Возвращаем данные пользователя (id, username и т.д.)
     user_data = json.loads(parsed_data.get("user", "{}"))

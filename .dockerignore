@@ -1,0 +1,15 @@
+.git
+.github
+.env
+.env.*
+diary
+deploy/systemd
+node_modules
+**/__pycache__
+*.deb
+*.exe
+*.docx
+local_logs*.txt
+tail_logs.txt
+.deployed-commit
+.failed-commit

@@ -15,7 +15,8 @@ logger_format = (
 def hide_secrets(record: dict):
     record['message'] = record['message'].replace(settings.BOT_TOKEN, '[BOT_TOKEN]')
     record['message'] = record['message'].replace(settings.POSTGRES_PASSWORD, '[POSTGRES_PASSWORD]')
-    record['message'] = record['message'].replace(settings.REDIS_PASSWORD, '[REDIS_PASSWORD]')
+    if settings.REDIS_PASSWORD:
+        record['message'] = record['message'].replace(settings.REDIS_PASSWORD, '[REDIS_PASSWORD]')
 
 
 def configure_logger():
@@ -30,7 +31,8 @@ def configure_logger():
     )
     logger.configure(patcher=hide_secrets)
 
-    logging.getLogger('sqlalchemy.engine').setLevel(log_level)
+    # SQL-запросы пишем в лог только в режиме отладки, иначе они забивают весь вывод
+    logging.getLogger('sqlalchemy.engine').setLevel(logging.DEBUG if settings.DEBUG else logging.WARNING)
 
     logging.basicConfig(level=log_level, force=True, handlers=[InterceptHandler()])
     root = logging.getLogger()

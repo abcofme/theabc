@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, ChevronUp, Check, XCircle, X, Brain, ClipboardList, Lock, Sparkles, ArrowLeft, ArrowRight, Undo2 } from 'lucide-react';
-import bgLeaves from '../../assets/bg-leaves.png';
+import bgLeaves from '../../assets/bg-leaves.webp';
 
-import iconPersonality from '../../assets/icons/personality.png';
-import iconSelfEsteem from '../../assets/icons/self_esteem.png';
-import iconTemperament from '../../assets/icons/temperament.png';
-import iconSociability from '../../assets/icons/sociability.png';
-import iconCareer from '../../assets/icons/career.png';
+import iconPersonality from '../../assets/icons/personality.webp';
+import iconSelfEsteem from '../../assets/icons/self_esteem.webp';
+import iconTemperament from '../../assets/icons/temperament.webp';
+import iconSociability from '../../assets/icons/sociability.webp';
+import iconCareer from '../../assets/icons/career.webp';
 
 const categoryIcons = {
   "Личность": iconPersonality,
@@ -333,7 +333,7 @@ export default function TestsTab({ onOverlayOpen }) {
 
     <div className="flex flex-col relative select-none bg-transparent max-w-2xl mx-auto w-full pt-4 h-full overflow-y-scroll pb-16">
       <div className="flex justify-center px-4 mb-8">
-        <img src="/testy_title.png" alt="Тесты" className="h-14 object-contain" />
+        <img src="/testy_title.webp" alt="Тесты" className="h-14 object-contain" />
       </div>
       
       {/* Список категорий */}

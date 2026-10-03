@@ -1,0 +1,31 @@
+# Обновляет копию telegram-web-app.js (раздаём со своего домена: telegram.org в РФ замедляют).
+# Раннеры GitHub за рубежом, им telegram.org доступен. Коммит подхватит автодеплой на сервере.
+name: Update Telegram WebApp SDK
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download telegram-web-app.js
+        run: curl -fsSL https://telegram.org/js/telegram-web-app.js -o diary/public/telegram-web-app.js
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git commit -am "chore: update telegram-web-app.js"
+          git push

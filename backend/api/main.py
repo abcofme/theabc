@@ -20,10 +20,13 @@ _export_tokens: dict = {}
 
 app = FastAPI(title="TheABC Diary API")
 
-# Разрешаем CORS для вашего Github Pages
+# Фронтенд отдаётся с того же домена, что и API, поэтому разрешаем только его
+from urllib.parse import urlsplit
+from settings import settings as _settings
+_web_app = urlsplit(_settings.WEB_APP_URL)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # В идеале здесь должен быть URL вашего Github Pages
+    allow_origins=[f"{_web_app.scheme}://{_web_app.netloc}"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -32,6 +35,14 @@ app.add_middleware(
 async def get_session() -> AsyncSession:
     async with async_session() as session:
         yield session
+
+
+# Для мониторинга и healthcheck контейнера
+@app.get("/api/health")
+async def health(session: AsyncSession = Depends(get_session)):
+    from sqlalchemy import text
+    await session.execute(text("SELECT 1"))
+    return {"status": "ok"}
 
 # Эндпоинт 1: Получение данных для Личного Кабинета (Тесты)
 @app.get("/api/profile")
@@ -2676,16 +2687,25 @@ async def yookassa_webhook(request: Request, session: AsyncSession = Depends(get
         
     event = body.get("event")
     if event == "payment.succeeded":
-        payment_obj = body.get("object", {})
-        payment_uuid = payment_obj.get("id")
-        payment_method = payment_obj.get("payment_method", {})
-        payment_method_id = payment_method.get("id") if payment_method.get("saved") else None
-        
+        payment_uuid = (body.get("object") or {}).get("id")
+        if not payment_uuid:
+            return {"status": "ok"}
+
         from backend.database.models import Payment, User
+        from backend.integrations.payment.yoo import _check_payment
         from sqlalchemy import select
         from datetime import datetime, timedelta
-        
+
         payment = (await session.execute(select(Payment).where(Payment.uuid == payment_uuid))).scalars().first()
+        if not payment or payment.success:
+            return {"status": "ok"}
+
+        # Телу вебхука не доверяем: его может прислать кто угодно.
+        # Статус, сумму и сохранённый способ оплаты берём из API ЮKassa.
+        verified_metadata, amount_val, payment_method_id = await _check_payment(payment_uuid)
+        if verified_metadata is False:
+            return {"status": "ok"}
+
         if payment and not payment.success:
             payment.success = True
             user_id = payment.user_id
@@ -2703,7 +2723,6 @@ async def yookassa_webhook(request: Request, session: AsyncSession = Depends(get
                 else: 
                     user.has_career_access = True
                     
-                amount_val = float(payment_obj.get("amount", {}).get("value", 0))
                 if user.invited_id and amount_val > 0:
                     try:
                         inviter_id = int(user.invited_id)
@@ -2729,6 +2748,6 @@ async def cancel_subscription(
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
         
-    user.yookassa_payment_method_id = None
+    db_user.yookassa_payment_method_id = None
     await session.commit()
     return {"status": "success"}
