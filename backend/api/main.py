@@ -847,12 +847,12 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
     from sqlalchemy import select
     
     try:
-        ai_token = os.getenv("TIMEWEB_AI_SCALE_TOKEN", os.getenv("TIMEWEB_AI_TOKEN"))
-        ai_url = os.getenv("TIMEWEB_AI_SCALE_URL", os.getenv("TIMEWEB_AI_URL"))
-        
-        if not ai_url:
-            print("TIMEWEB_AI_URL is not set")
-            return
+        # Анализ записей дневника — агент Timeweb Cloud AI (Gemini 3.8 Flash)
+        ai_token = os.getenv("TIMEWEB_AI_DIARY_TOKEN") or os.getenv("TIMEWEB_AI_SCALE_TOKEN") or os.getenv("TIMEWEB_AI_TOKEN")
+        ai_url = os.getenv(
+            "TIMEWEB_AI_DIARY_URL",
+            "https://agent.timeweb.cloud/api/v1/cloud-ai/agents/4adc43af-71a3-4290-85e0-9d629969609e/v1",
+        )
             
         if not ai_url.endswith("/chat/completions"):
             ai_url = ai_url.rstrip("/") + "/chat/completions"
@@ -1035,25 +1035,11 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                         "Content-Type": "application/json"
                     },
                     json={
-                        "model": "gpt-4o-mini",
-                        "max_tokens": 4096,
+                        "model": "gemini-3.8-flash",
+                        "max_tokens": 8192,
                         "messages": messages
                     }
                 )
-
-                if ai_response.status_code == 404:
-                    ai_response = await client.post(
-                        ai_url,
-                        headers={
-                            "Authorization": f"Bearer {ai_token}",
-                            "Content-Type": "application/json"
-                        },
-                        json={
-                            "model": "gpt-4o-mini",
-                            "max_tokens": 4096,
-                            "messages": messages
-                        }
-                    )
 
                 # Не используем raise_for_status() — обрабатываем явно
                 if ai_response.status_code >= 400:
