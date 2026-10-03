@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, Search, UserPlus, Check, X, Trash2, Clock, User, Lock, Sparkles, Target, Heart, Flame, Activity, Brain, ShieldAlert } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import GenerationProgress from '../../components/GenerationProgress';
+import Avatar from '../../components/Avatar';
 
 
 const WebApp = window.Telegram.WebApp;
@@ -242,19 +243,21 @@ export default function FriendsView({ onBack }) {
   const UserCard = ({ user, children }) => (
     <div className="flex flex-wrap sm:flex-nowrap items-center justify-between bg-rose-900/60 p-4 rounded-2xl mb-3 gap-3">
       <div className="flex items-center gap-3 min-w-0 flex-1">
-        {user.photo_url ? (
-          <img src={user.photo_url} alt="" className="w-12 h-12 aspect-square rounded-full object-cover shadow-sm shrink-0" />
-        ) : (
-          <div className="w-12 h-12 aspect-square shrink-0 rounded-full bg-rose-800 flex items-center justify-center shadow-sm">
-            {user.first_name ? (
-              <span className="text-lg font-bold text-[#F5E6D3]">{user.first_name[0]}</span>
-            ) : user.username ? (
-              <span className="text-lg font-bold text-[#F5E6D3]">{user.username[0].toUpperCase()}</span>
-            ) : (
-              <User className="text-[#F5E6D3]" size={24} />
-            )}
-          </div>
-        )}
+        <Avatar
+          src={user.photo_url}
+          className="w-12 h-12 aspect-square rounded-full object-cover shadow-sm shrink-0"
+          fallback={
+            <div className="w-12 h-12 aspect-square shrink-0 rounded-full bg-rose-800 flex items-center justify-center shadow-sm">
+              {user.first_name ? (
+                <span className="text-lg font-bold text-[#F5E6D3]">{user.first_name[0]}</span>
+              ) : user.username ? (
+                <span className="text-lg font-bold text-[#F5E6D3]">{user.username[0].toUpperCase()}</span>
+              ) : (
+                <User className="text-[#F5E6D3]" size={24} />
+              )}
+            </div>
+          }
+        />
         <div className="min-w-0 flex-1">
           <p className="text-[#F5E6D3] font-bold text-sm sm:text-base truncate">
             {user.first_name || 'Без имени'}

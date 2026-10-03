@@ -44,6 +44,54 @@ async def health(session: AsyncSession = Depends(get_session)):
     await session.execute(text("SELECT 1"))
     return {"status": "ok"}
 
+
+# Аватарки: t.me в РФ и из российских ДЦ недоступен, поэтому берём фото через Bot API
+# (бот ходит через ретранслятор), кэшируем в Redis и отдаём со своего домена.
+AVATAR_TTL = 24 * 60 * 60
+AVATAR_MISS_TTL = 6 * 60 * 60
+
+
+def avatar_url(user) -> str | None:
+    # photo_url появляется, только если Telegram сам передал фото в initData
+    return f"/api/avatar/{user.id}" if user and user.photo_url else None
+
+
+async def _fetch_avatar(user_id: int) -> bytes | None:
+    from io import BytesIO
+    from backend.telegram.bot import bot
+
+    photos = await bot.get_user_profile_photos(user_id=user_id, limit=1)
+    if not photos.photos:
+        return None
+    sizes = photos.photos[0]
+    # Наименьший размер не меньше 160px: аватар на экране до 80px, с запасом на ретину
+    size = next((ps for ps in sizes if ps.width >= 160), sizes[-1])
+    buf = await bot.download(size.file_id, destination=BytesIO())
+    return buf.getvalue()
+
+
+@app.get("/api/avatar/{user_id}")
+async def get_avatar(user_id: int, session: AsyncSession = Depends(get_session)):
+    from fastapi.responses import Response
+    from backend.redis_db import async_redis
+
+    cache_key = f"avatar:{user_id}"
+    cached = await async_redis.get(cache_key)
+    if cached is None:
+        db_user = await session.get(User, user_id)
+        if not db_user or not db_user.photo_url:
+            raise HTTPException(status_code=404)
+        try:
+            cached = await _fetch_avatar(user_id) or b""
+        except Exception as e:
+            print(f"Avatar fetch failed for {user_id}: {e!r}")
+            raise HTTPException(status_code=502)
+        await async_redis.set(cache_key, cached, ex=AVATAR_TTL if cached else AVATAR_MISS_TTL)
+
+    if not cached:
+        raise HTTPException(status_code=404)
+    return Response(content=cached, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=86400"})
+
 # Эндпоинт 1: Получение данных для Личного Кабинета (Тесты)
 @app.get("/api/profile")
 async def get_profile(
@@ -1992,7 +2040,7 @@ async def search_users(
             "id": u.id,
             "username": u.username,
             "first_name": u.tg_first_name,
-            "photo_url": u.photo_url
+            "photo_url": avatar_url(u)
         })
     return result
 
@@ -2042,7 +2090,7 @@ async def get_friends(
                     "friendship_id": f.id,
                     "username": other_user.username,
                     "first_name": other_user.tg_first_name,
-                    "photo_url": other_user.photo_url,
+                    "photo_url": avatar_url(other_user),
                     "has_portrait": has_portrait,
                     "has_compatibility": has_compatibility
                 })
@@ -2056,7 +2104,7 @@ async def get_friends(
                         "request_id": f.id,
                         "username": other_user.username,
                         "first_name": other_user.tg_first_name,
-                        "photo_url": other_user.photo_url
+                        "photo_url": avatar_url(other_user)
                     })
             else:
                 # outgoing request
@@ -2067,7 +2115,7 @@ async def get_friends(
                         "request_id": f.id,
                         "username": other_user.username,
                         "first_name": other_user.tg_first_name,
-                        "photo_url": other_user.photo_url
+                        "photo_url": avatar_url(other_user)
                     })
                 
     return {

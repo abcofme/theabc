@@ -6,6 +6,7 @@ import FriendsView from './FriendsView';
 import qrCodeImg from '../../assets/qr-code.webp';
 import QRCode from 'react-qr-code';
 import GenerationProgress from '../../components/GenerationProgress';
+import Avatar from '../../components/Avatar';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
@@ -466,13 +467,15 @@ export default function ProfileTab({ onOverlayOpen }) {
     <div className="flex flex-col relative select-none bg-transparent max-w-2xl mx-auto w-full">
       {/* 1. ШАПКА ПРОФИЛЯ (Аватар и Юзернейм) */}
       <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-6 bg-rose-900/80 rounded-3xl mx-2 mt-2 mb-4 backdrop-blur-sm shadow-sm min-w-0">
-        {tgUser.photo_url ? (
-          <img src={tgUser.photo_url} alt="Avatar" className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg shrink-0" />
-        ) : (
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-950/40 text-[#F5E6D3] rounded-full flex items-center justify-center font-bold text-2xl shadow-inner shrink-0">
-            {tgUser.first_name?.[0] || <User size={32} />}
-          </div>
-        )}
+        <Avatar
+          src={tgUser.photo_url && tgUser.id ? `${API_URL}/api/avatar/${tgUser.id}` : null}
+          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg shrink-0"
+          fallback={
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-950/40 text-[#F5E6D3] rounded-full flex items-center justify-center font-bold text-2xl shadow-inner shrink-0">
+              {tgUser.first_name?.[0] || <User size={32} />}
+            </div>
+          }
+        />
         <div className="flex-1 min-w-0 flex flex-wrap items-center gap-3 justify-between">
           <div className="min-w-[100px] flex-1">
             <h2 className="text-lg sm:text-2xl font-bold text-[#F5E6D3] truncate">{tgUser.first_name}</h2>
