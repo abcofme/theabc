@@ -40,9 +40,6 @@ class Settings(BaseSettings):
     TELEGRAM_API_URL: str | None = None
     TELEGRAM_API_CA_FILE: str | None = None
 
-    # Токен служебного API для бота с тестами (backend/api/service.py)
-    SERVICE_API_TOKEN: str | None = None
-
     @property
     def url(self) -> str:
         return (

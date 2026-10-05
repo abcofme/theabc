@@ -1,8 +1,0 @@
-[Unit]
-Description=theabc testbot: deploy new commits from main
-After=docker.service network-online.target
-Requires=docker.service
-
-[Service]
-Type=oneshot
-ExecStart=/opt/theabc/testbot/deploy/autodeploy.sh

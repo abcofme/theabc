@@ -9,13 +9,6 @@
 	}
 
 	handle /api/* {
-		# Служебный API бота с тестами — только с его сервера (SERVICE_ALLOWED_IPS в .env)
-		@service_foreign {
-			path /api/service/*
-			not remote_ip {$SERVICE_ALLOWED_IPS:127.0.0.1}
-		}
-		respond @service_foreign 403
-
 		reverse_proxy api:8000 {
 			# Генерация ИИ отдаёт ответ потоком (пробелы-пинги, потом JSON): не буферизуем
 			flush_interval -1
