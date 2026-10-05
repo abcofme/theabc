@@ -32,6 +32,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Служебный API для бота с тестами в NL
+from backend.api.service import router as service_router
+app.include_router(service_router)
+
+
 async def get_session() -> AsyncSession:
     async with async_session() as session:
         yield session

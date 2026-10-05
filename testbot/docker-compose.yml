@@ -1,0 +1,37 @@
+# Бот с тестами «Азбука Я». Сервер в NL: Telegram доступен напрямую.
+# Тесты и результаты — в основном бэкенде (Москва), здесь только Redis для незавершённых тестов.
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  bot:
+    build: .
+    image: theabc-testbot
+    env_file: .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    restart: unless-stopped
+    logging: *logging
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    logging: *logging
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "64mb", "--maxmemory-policy", "volatile-lru"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  redis-data:
