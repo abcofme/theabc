@@ -6,6 +6,8 @@ import logo from '../../assets/logo.webp';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
+// Такую оценку бэкенд ставит, когда ИИ не делал разбор (см. NO_ANALYSIS_SCORE в backend/api/main.py)
+const NO_ANALYSIS_SCORE = -1;
 
 export default function CalendarTab({ onSheetOpen }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -359,6 +361,21 @@ export default function CalendarTab({ onSheetOpen }) {
               <Activity size={16} /> Проанализировать реакцию
             </button>
           )}
+        </div>
+      );
+    }
+
+    // Дневник не стал делать разбор: попросил дописать запись или дал кризисный ответ — шкалу не показываем
+    if (entry.portrait_match_score === NO_ANALYSIS_SCORE) {
+      return (
+        <div className="mt-5 pt-5">
+          <p className="text-xs font-bold text-[#F5E6D3] uppercase tracking-wider mb-3">Ответ дневника:</p>
+          <div className="p-3 bg-rose-900/50 rounded-xl relative">
+            <div className="absolute left-0 top-0 bottom-0 w-2 rounded-l-xl bg-[#F5E6D3]/40"></div>
+            <p className="text-sm text-[#F5E6D3]/90 leading-relaxed pl-3 whitespace-pre-wrap">
+              {entry.portrait_match_explanation}
+            </p>
+          </div>
         </div>
       );
     }
