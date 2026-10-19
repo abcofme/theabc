@@ -3,10 +3,10 @@ import { ChevronLeft, ChevronDown, Target, Sparkles, Calendar, FileText, Trash2,
 import ReactMarkdown from 'react-markdown';
 import GenerationProgress from '../../components/GenerationProgress';
 import ReportBanner from './ReportBanner';
-import repeatingEventsImage from '../../assets/reports/repeating-events-scene.webp';
-import reactionsImage from '../../assets/reports/my-reactions-scene.webp';
-import energyImage from '../../assets/reports/energy-scene.webp';
-import competenceImage from '../../assets/reports/competence-scene.webp';
+import repeatingEventsImage from '../../assets/reports/repeating-events-clay-serif.webp';
+import reactionsImage from '../../assets/reports/my-reactions-clay-serif.webp';
+import energyImage from '../../assets/reports/energy-clay-serif.webp';
+import competenceImage from '../../assets/reports/competence-clay-serif.webp';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;

@@ -2,7 +2,6 @@
   position: relative;
   display: block;
   isolation: isolate;
-  container-type: inline-size;
   width: 100%;
   padding: 0;
   overflow: hidden;
@@ -19,7 +18,7 @@ button.clay-banner {
   transition: border-color 180ms ease, box-shadow 180ms ease;
 }
 
-button.clay-banner:hover,
+button.clay-banner:hover:not(:disabled),
 button.clay-banner[aria-expanded='true'] {
   border-color: #d8b38c66;
   box-shadow: 0 8px 24px #16030540;
@@ -30,51 +29,17 @@ button.clay-banner:focus-visible {
   outline-offset: 4px;
 }
 
+button.clay-banner:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 .clay-banner__art {
   display: block;
   width: 100%;
   height: auto;
   pointer-events: none;
   user-select: none;
-}
-
-.clay-banner__title {
-  position: absolute;
-  z-index: 1;
-  top: 45%;
-  left: 4.5%;
-  width: 64%;
-  margin: 0;
-  transform: translateY(-50%) scaleX(0.9);
-  transform-origin: left center;
-  font-family: Arial, 'Helvetica Neue', sans-serif;
-  font-size: 7.6cqw;
-  font-weight: 700;
-  line-height: 1.08;
-  letter-spacing: -0.04em;
-  white-space: pre-line;
-  overflow-wrap: normal;
-}
-
-.clay-banner__depth {
-  position: absolute;
-  inset: 0;
-  color: #c6a67e;
-  -webkit-text-stroke: 0.4px #c6a67e;
-  transform: translate(0.2px, 0.8px);
-  text-shadow: 0 0.4px 0 #b8946d, 0.2px 0.8px 0.5px #a47c56, 0.5px 1.5px 1.5px #21060999;
-}
-
-.clay-banner__face {
-  position: relative;
-  display: block;
-  color: transparent;
-  background-image: linear-gradient(170deg, #fff2d526, #d0ae7a1a), url('../assets/clay-cream-texture.webp');
-  background-size: 100% 100%, 160px 160px;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-stroke: 0.2px #ead8bb;
-  filter: drop-shadow(0 -0.4px 0 #fff0d0);
 }
 
 .clay-banner__action {

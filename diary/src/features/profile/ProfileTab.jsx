@@ -7,6 +7,9 @@ import qrCodeImg from '../../assets/qr-code.webp';
 import QRCode from 'react-qr-code';
 import GenerationProgress from '../../components/GenerationProgress';
 import Avatar from '../../components/Avatar';
+import ClayBanner from '../../components/ClayBanner';
+import portraitBanner from '../../assets/profile/portrait-clay-serif.webp';
+import friendsBanner from '../../assets/profile/friends-clay-serif.webp';
 import { useProfile } from '../../context/profile';
 
 const WebApp = window.Telegram.WebApp;
@@ -527,7 +530,12 @@ export default function ProfileTab({ onOverlayOpen }) {
           <div className="mx-2 mb-4 flex flex-col gap-4">
             {!portraitData ? (
               <div className="flex flex-col w-full">
-                <button 
+                <ClayBanner
+                  id="profile-portrait-create"
+                  kind="profile"
+                  title="Мой портрет личности"
+                  image={portraitBanner}
+                  description={isGeneratingPortrait ? 'Портрет формируется' : (totalTests > 0 && passedTests === totalTests) ? 'Сформировать портрет на основе ваших тестов' : `Пройдено ${passedTests} из ${totalTests} тестов`}
                   onClick={() => {
                     if (accessLevel !== 'Premium') return;
                     if (!(totalTests > 0 && passedTests === totalTests)) {
@@ -537,26 +545,10 @@ export default function ProfileTab({ onOverlayOpen }) {
                     handleGeneratePortrait();
                   }}
                   disabled={isGeneratingPortrait || accessLevel !== 'Premium'}
-                  className={`w-full rounded-2xl p-5 transition-all duration-300 flex flex-col items-center justify-center text-center shadow-sm backdrop-blur-sm ${
-                    accessLevel !== 'Premium'
-                      ? "bg-rose-900/40 text-[#F5E6D3]/50 cursor-not-allowed border border-rose-800/30"
-                      : (totalTests > 0 && passedTests === totalTests) 
-                        ? "bg-rose-900/80 hover:bg-rose-800/80 text-[#F5E6D3] active:scale-[0.98]" 
-                        : "bg-rose-900/80 hover:bg-rose-800/80 text-[#F5E6D3]"
-                  }`}
-                >
-                  {isGeneratingPortrait ? (
-                    <div className="w-8 h-8 rounded-full animate-spin border-2 border-current border-t-transparent mb-2"></div>
-                  ) : (
-                    <Wand2 size={32} className="mb-2" />
-                  )}
-                  <div>
-                    <h3 className="text-lg font-bold mb-1">Сформировать портрет</h3>
-                    <p className="text-sm opacity-80">
-                      {isGeneratingPortrait ? 'Генерация...' : (totalTests > 0 && passedTests === totalTests) ? 'Анализ ваших тестов' : `Пройдено ${passedTests} из ${totalTests} тестов`}
-                    </p>
-                  </div>
-                </button>
+                />
+                <p className="text-sm text-[#F5E6D3]/80 text-center mt-2 px-2" aria-live="polite">
+                  {isGeneratingPortrait ? 'Портрет формируется...' : (totalTests > 0 && passedTests === totalTests) ? 'Сформировать портрет на основе ваших тестов' : `Пройдено ${passedTests} из ${totalTests} тестов`}
+                </p>
                 {accessLevel !== 'Premium' && (
                   <div className="flex items-start justify-center gap-1.5 mt-3 opacity-70 px-2">
                     <Lock size={14} className="text-[#F5E6D3] shrink-0 mt-0.5" />
@@ -598,31 +590,27 @@ export default function ProfileTab({ onOverlayOpen }) {
                     )}
                   </div>
                 )}
-                <button 
+                <ClayBanner
+                  id="profile-portrait"
+                  kind="profile"
+                  title="Мой портрет личности"
+                  description="Подробный анализ ваших черт характера"
+                  image={portraitBanner}
                   onClick={() => setActiveSubTab('portrait')}
-                  className="w-full bg-rose-900/80 rounded-2xl p-5 hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex flex-col items-center justify-center text-center shadow-sm backdrop-blur-sm"
-                >
-                  <ClipboardList className="text-[#F5E6D3] mb-2" size={32} />
-                  <div>
-                    <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Мой портрет личности</h3>
-                    <p className="text-sm text-[#F5E6D3]/80">Подробный анализ ваших черт характера</p>
-                  </div>
-                </button>
+                />
 
               </>
             )}
 
             {/* ВНЕ ЗАВИСИМОСТИ ОТ ПОРТРЕТА */}
-            <button 
+            <ClayBanner
+              id="profile-friends"
+              kind="profile"
+              title="Друзья"
+              description="Узнайте совместимость с вашим другом или партнером!"
+              image={friendsBanner}
               onClick={() => setActiveSubTab('friends')}
-              className="w-full bg-rose-900/80 rounded-2xl p-5 hover:bg-rose-800/80 transition-all duration-300 active:scale-[0.98] flex flex-col items-center justify-center text-center shadow-sm backdrop-blur-sm"
-            >
-              <Users className="text-[#F5E6D3] mb-2" size={32} />
-              <div>
-                <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Друзья</h3>
-                <p className="text-sm text-[#F5E6D3]/80">Узнайте совместимость с вашим другом или партнером!</p>
-              </div>
-            </button>
+            />
 
             {/* QR CODE BLOCK */}
             <div className="bg-rose-900/40 rounded-3xl p-6 flex flex-col items-center justify-center text-center">

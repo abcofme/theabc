@@ -1,8 +1,8 @@
-import temperament from '../../assets/tests/temperament-scene.webp';
-import sociability from '../../assets/tests/sociability-scene.webp';
-import selfEsteem from '../../assets/tests/self-esteem-scene.webp';
-import personality from '../../assets/tests/personality-scene.webp';
-import career from '../../assets/tests/career-scene.webp';
+import temperament from '../../assets/tests/temperament-clay-serif.webp';
+import sociability from '../../assets/tests/sociability-clay-serif.webp';
+import selfEsteem from '../../assets/tests/self-esteem-clay-serif.webp';
+import personality from '../../assets/tests/personality-clay-serif.webp';
+import career from '../../assets/tests/career-clay-serif.webp';
 
 export const categoryBanners = {
   'Темперамент': { image: temperament, tree: 'Дуб' },

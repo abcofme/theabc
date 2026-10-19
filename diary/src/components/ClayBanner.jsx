@@ -1,7 +1,7 @@
 import { ArrowUpRight, ChevronDown, ChevronUp } from 'lucide-react';
 import './clay-banner.css';
 
-export default function ClayBanner({ id, title, description, image, expanded, onClick, controlsId, summary, kind, chevron = false }) {
+export default function ClayBanner({ id, title, description, image, expanded, onClick, controlsId, summary, kind, chevron = false, disabled = false }) {
   const interactive = typeof onClick === 'function';
   const Container = interactive ? 'button' : 'div';
   const Heading = interactive ? 'h3' : 'h2';
@@ -16,6 +16,7 @@ export default function ClayBanner({ id, title, description, image, expanded, on
       {...(interactive ? {
         type: 'button',
         onClick,
+        disabled,
         'aria-expanded': expanded,
         'aria-controls': controlsId,
         'aria-labelledby': titleId,
@@ -23,10 +24,8 @@ export default function ClayBanner({ id, title, description, image, expanded, on
       } : {})}
     >
       <img className="clay-banner__art" src={image} alt="" width="960" height="400" decoding="async" draggable="false" />
-      <Heading className="clay-banner__title" id={titleId}>
-        <span className="clay-banner__depth" aria-hidden="true">{title}</span>
-        <span className="clay-banner__face">{title}</span>
-      </Heading>
+      {/* The sculpted heading is baked into the art; retain one accessible text label. */}
+      <Heading className="sr-only" id={titleId}>{title}</Heading>
       <p className="sr-only" id={descriptionId}>
         {description}{summary ? `. ${summary}` : ''}
       </p>
