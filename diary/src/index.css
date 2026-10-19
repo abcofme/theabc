@@ -3,24 +3,24 @@
 @theme {
   --color-white: #F5E6D3;
 
-  /* The banner burgundy is also defined in index.html for the first paint and Telegram chrome. */
+  /* A muted burgundy surrounds the brighter banner artwork. Startup colors live in index.html. */
   --color-app: var(--app-background);
   --color-app-menu: var(--app-menu);
-  --color-rose-50: #FFF0EA;
-  --color-rose-100: #F8DAD3;
-  --color-rose-200: #EFBAB6;
-  --color-rose-300: #E39B9F;
-  --color-rose-400: #CF7482;
-  --color-rose-500: #B95268;
-  --color-rose-600: #AC354F;
-  --color-rose-700: #A02742;
-  --color-rose-800: #901A34;
-  --color-rose-900: #850F25;
-  --color-rose-950: #4D020D;
+  --color-rose-50: #F5E8DD;
+  --color-rose-100: #EAD7D0;
+  --color-rose-200: #DCC1C0;
+  --color-rose-300: #C7A3A8;
+  --color-rose-400: #AB7F89;
+  --color-rose-500: #8E6170;
+  --color-rose-600: #794D5B;
+  --color-rose-700: #68404D;
+  --color-rose-800: #58343F;
+  --color-rose-900: #482930;
+  --color-rose-950: #241318;
 
-  --color-primary: #9D1B36;
-  --color-primary-hover: #B22C47;
-  --color-primary-active: #841229;
+  --color-primary: #70404B;
+  --color-primary-hover: #80505B;
+  --color-primary-active: #60343F;
   --color-sand: #D9BD92;
 
   /* Muted sage remains for status indicators and botanical accents. */
@@ -50,7 +50,7 @@ html, body {
 }
 
 .app-shell {
-  background-image: radial-gradient(ellipse at 50% 0%, #790918, var(--app-background) 55%, #5A020D);
+  background-image: radial-gradient(ellipse at 50% 0%, #3B2028, var(--app-background) 55%, #2A171D);
 }
 
 button.bg-primary {
