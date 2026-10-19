@@ -2,7 +2,7 @@ import asyncio
 import os
 import uuid
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from fastapi import FastAPI, Depends, BackgroundTasks, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -234,16 +234,61 @@ async def check_access(user_id: int, session: AsyncSession):
         return
     raise HTTPException(status_code=403, detail="Для доступа к этой функции необходим Демо-доступ или Premium подписка.")
 
+async def has_access(user_id: int, session: AsyncSession) -> bool:
+    try:
+        await check_access(user_id, session)
+        return True
+    except HTTPException:
+        return False
+
+def _serialize_diary_entry(e: DiaryEntry, with_analysis: bool) -> dict:
+    return {
+        "id": e.id,
+        "date": e.date.isoformat(),
+        "event": e.event,
+        "reaction": e.reaction,
+        "rating": e.rating,
+        "portrait_match_score": e.portrait_match_score if with_analysis else None,
+        "portrait_match_explanation": e.portrait_match_explanation if with_analysis else None
+    }
+
+def _count_streak(dates, today):
+    """Сколько дней подряд есть записи. Если сегодня ещё не писали, серия считается до вчера — она ещё не прервана."""
+    days = set(dates)
+    day = today if today in days else today - timedelta(days=1)
+    streak = 0
+    while day in days:
+        streak += 1
+        day -= timedelta(days=1)
+    return streak
+
+# Ссылки на фоновые задачи, иначе сборщик мусора может прервать их до конца
+_background_tasks: set = set()
+
+async def _start_reaction_analysis(user_id: int, entry_id: int, session: AsyncSession) -> bool:
+    """Запускает разбор записи в фоне, если он вообще возможен. Фронт по ответу решает, ждать ли разбор."""
+    if not await has_access(user_id, session):
+        return False
+    portrait = (await session.execute(
+        select(PersonalityPortrait.id).where(PersonalityPortrait.user_id == user_id)
+    )).first()
+    if not portrait:
+        return False
+    task = asyncio.create_task(_analyze_reaction_bg(user_id, entry_id))
+    _background_tasks.add(task)
+    task.add_done_callback(_background_tasks.discard)
+    return True
+
 # Эндпоинт 2: Получение записей дневника за месяц
 @app.get("/api/diary")
 async def get_diary_entries(
-    year: int, 
+    year: int,
     month: int,
     user_data: dict = Depends(validate_twa_data),
     session: AsyncSession = Depends(get_session)
 ):
     user_id = user_data.get("id")
-    
+
     from sqlalchemy import extract
     query = select(DiaryEntry).where(
         DiaryEntry.user_id == user_id,
@@ -251,25 +296,58 @@ async def get_diary_entries(
         extract('month', DiaryEntry.date) == month
     )
     filtered = (await session.execute(query)).scalars().all()
-    
-    has_premium_access = True
+
+    with_analysis = await has_access(user_id, session)
+    return [_serialize_diary_entry(e, with_analysis) for e in filtered]
+
+# Эндпоинт 2.1: Экран «Сегодня» — записи за последние 7 дней и серия дней подряд.
+# Сегодняшнюю дату присылает клиент: день пользователя зависит от его часового пояса
+@app.get("/api/diary/overview")
+async def get_diary_overview(
+    today: str,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    user_id = user_data.get("id")
     try:
-        await check_access(user_id, session)
-    except:
-        has_premium_access = False
-    
-    return [
-        {
-            "id": e.id, 
-            "date": e.date.isoformat(), 
-            "event": e.event, 
-            "reaction": e.reaction, 
-            "rating": getattr(e, "rating", None), 
-            "portrait_match_score": getattr(e, "portrait_match_score", None) if has_premium_access else None,
-            "portrait_match_explanation": getattr(e, "portrait_match_explanation", None) if has_premium_access else None
-        }
-        for e in filtered
-    ]
+        today_date = datetime.strptime(today, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="today должен быть в формате YYYY-MM-DD")
+
+    week_start = today_date - timedelta(days=6)
+    entries = (await session.execute(
+        select(DiaryEntry)
+        .where(DiaryEntry.user_id == user_id, DiaryEntry.date >= week_start, DiaryEntry.date <= today_date)
+        .order_by(DiaryEntry.date, DiaryEntry.id)
+    )).scalars().all()
+
+    # Серия длиннее года не важна — дальше не смотрим
+    dates = (await session.execute(
+        select(DiaryEntry.date).distinct()
+        .where(DiaryEntry.user_id == user_id, DiaryEntry.date <= today_date,
+               DiaryEntry.date > today_date - timedelta(days=366))
+    )).scalars().all()
+
+    with_analysis = await has_access(user_id, session)
+    return {
+        "entries": [_serialize_diary_entry(e, with_analysis) for e in entries],
+        "streak": _count_streak(dates, today_date),
+    }
+
+# Эндпоинт 2.2: Одна запись — фронт опрашивает её, пока идёт разбор
+@app.get("/api/diary/{entry_id}")
+async def get_diary_entry(
+    entry_id: int,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    user_id = user_data.get("id")
+    entry = (await session.execute(
+        select(DiaryEntry).where(DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id)
+    )).scalars().first()
+    if not entry:
+        raise HTTPException(status_code=404, detail="Entry not found")
+    return _serialize_diary_entry(entry, await has_access(user_id, session))
 
 # Эндпоинт 3: Создание записи в дневнике
 @app.post("/api/diary")
@@ -280,7 +358,7 @@ async def create_diary_entry(
 ):
     user_id = user_data.get("id")
     entry_date = datetime.strptime(data["date"], "%Y-%m-%d").date()
-    
+
     new_entry = DiaryEntry(
         user_id=user_id,
         date=entry_date,
@@ -291,11 +369,40 @@ async def create_diary_entry(
     session.add(new_entry)
     await session.commit()
     await session.refresh(new_entry)
-    
-    # Запускаем анализ реакции в фоне
-    asyncio.create_task(_analyze_reaction_bg(user_id, new_entry.id))
-    
-    return {"id": new_entry.id, "status": "success"}
+
+    # Разбор запускается только здесь: фронт его не дублирует, а ждёт, опрашивая запись
+    analysis_started = await _start_reaction_analysis(user_id, new_entry.id, session)
+
+    return {"id": new_entry.id, "status": "success", "analysis_started": analysis_started}
+
+# Эндпоинт 3.1: Дописать запись (дневник попросил подробностей) — старый разбор сбрасывается, запускается новый
+@app.patch("/api/diary/{entry_id}")
+async def update_diary_entry(
+    entry_id: int,
+    data: dict, # {"event": "...", "reaction": "..."}
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    user_id = user_data.get("id")
+    entry = (await session.execute(
+        select(DiaryEntry).where(DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id)
+    )).scalars().first()
+    if not entry:
+        raise HTTPException(status_code=404, detail="Entry not found")
+
+    event = (data.get("event") or "").strip()
+    reaction = (data.get("reaction") or "").strip()
+    if not event or not reaction:
+        raise HTTPException(status_code=400, detail="Заполните событие и реакцию")
+
+    entry.event = event
+    entry.reaction = reaction
+    entry.portrait_match_score = None
+    entry.portrait_match_explanation = None
+    await session.commit()
+
+    analysis_started = await _start_reaction_analysis(user_id, entry.id, session)
+    return {"status": "success", "analysis_started": analysis_started}
 
 # Эндпоинт 4: Удаление записи из дневника
 @app.delete("/api/diary/{entry_id}")
@@ -995,17 +1102,19 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                     }
                 )
 
-                # Не используем raise_for_status() — обрабатываем явно
+                # Не используем raise_for_status() — обрабатываем явно.
+                # Сбой ИИ — не оценка: ничего не сохраняем, иначе в дневнике появится шкала 0%
                 if ai_response.status_code >= 400:
-                    error_body = ai_response.text[:500]
-                    print(f"AI API HTTP {ai_response.status_code}: {error_body}")
-                    await db.commit()
-                    return {"score": 0, "explanation": "", "debug_raw": f"HTTP {ai_response.status_code}: {error_body}"}
+                    print(f"AI API HTTP {ai_response.status_code}: {ai_response.text[:500]}")
+                    return None
 
                 ai_data = ai_response.json()
                 generated_text = (ai_data.get("choices", [{}])[0].get("message", {}).get("content") or "").strip()
                 print(f"AI response for entry {entry_id}: len={len(generated_text)}, first200=[{generated_text[:200]}]")
-                
+                if not generated_text:
+                    print(f"AI returned empty response for entry {entry_id}: {str(ai_data)[:500]}")
+                    return None
+
                 import json
                 score = 50
                 explanation = ""
@@ -1033,8 +1142,7 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                 entry.portrait_match_score = score
                 entry.portrait_match_explanation = explanation
                 await db.commit()
-                debug_info = generated_text[:500] if generated_text else f"EMPTY. HTTP {ai_response.status_code}. Body: {ai_data}"
-                return {"score": score, "explanation": explanation, "debug_raw": debug_info}
+                return {"score": score, "explanation": explanation}
                 
     except Exception as e:
         print("BG analyze reaction failed:", e)

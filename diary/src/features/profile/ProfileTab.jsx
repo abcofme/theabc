@@ -7,6 +7,7 @@ import qrCodeImg from '../../assets/qr-code.webp';
 import QRCode from 'react-qr-code';
 import GenerationProgress from '../../components/GenerationProgress';
 import Avatar from '../../components/Avatar';
+import { useProfile } from '../../context/profile';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
@@ -76,6 +77,7 @@ const PUBLIC_OFFER_TEXT = `# Публичная оферта на оказани
 **E-mail для связи и поддержки:** info@abcofme.ru`;
 
 export default function ProfileTab({ onOverlayOpen }) {
+  const { refreshProfile } = useProfile();
   const [categories, setCategories] = useState([]);
   const [totalTests, setTotalTests] = useState(0);
   const [passedTests, setPassedTests] = useState(0);
@@ -189,6 +191,7 @@ export default function ProfileTab({ onOverlayOpen }) {
         // Если вдруг вернул сразу
         setPortraitData(data.portrait);
         setIsGeneratingPortrait(false);
+        refreshProfile();
         WebApp.HapticFeedback.notificationOccurred('success');
       }
     } catch (error) {
@@ -211,6 +214,7 @@ export default function ProfileTab({ onOverlayOpen }) {
           if (data.portrait && data.portrait.tests_count === passedTests) {
             setPortraitData(data.portrait);
             setIsGeneratingPortrait(false);
+            refreshProfile();
             WebApp.HapticFeedback.notificationOccurred('success');
             clearInterval(interval);
           }
@@ -222,7 +226,7 @@ export default function ProfileTab({ onOverlayOpen }) {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isGeneratingPortrait, passedTests]);
+  }, [isGeneratingPortrait, passedTests, refreshProfile]);
 
   const handleClearPortrait = async () => {
     try {
@@ -232,6 +236,7 @@ export default function ProfileTab({ onOverlayOpen }) {
       });
       if (response.ok) {
         setPortraitData(null);
+        refreshProfile();
         WebApp.showAlert("Портрет успешно удален");
       }
     } catch (err) {

@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Repeat, Zap, ChevronLeft, ChevronDown, ChevronUp, Plus, Target, Sparkles, Calendar, FileText, Star, Trash2, Lock } from 'lucide-react';
+import { ChevronLeft, ChevronDown, Target, Sparkles, Calendar, FileText, Trash2, Lock } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import GenerationProgress from '../../components/GenerationProgress';
+import ReportBanner from './ReportBanner';
+import repeatingEventsImage from '../../assets/reports/repeating-events-v2.webp';
+import reactionsImage from '../../assets/reports/my-reactions-v2.webp';
+import energyImage from '../../assets/reports/energy-v2.webp';
+import competenceImage from '../../assets/reports/competence-v2.webp';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
 
-export default function ReportsTab({ onSwitchTab }) {
+export default function ReportsTab() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -82,41 +87,41 @@ export default function ReportsTab({ onSwitchTab }) {
         {
           id: 'repeating_events',
           title: 'Какие события чаще всего повторяются в моей жизни?',
+          shortTitle: 'Повторяющиеся события',
+          subtitle: 'Что снова и снова происходит в моей жизни',
+          image: repeatingEventsImage,
           desc: 'Любовь или зависимость, мудрость или глупость. Что чаще, такие и мы. Наша жизнь в привычках, а контроль над ними в анализе.',
-          icon: Repeat,
-          color: 'text-emerald-500',
-          bg: 'bg-emerald-800/20'
         },
         {
           id: 'effective_reactions',
           title: 'На какие ситуации я реагирую эффективно, а на какие нет?',
+          shortTitle: 'Мои реакции',
+          subtitle: 'Как мои реакции влияют на происходящее',
+          image: reactionsImage,
           desc: 'Эффективность в предсказуемости, а во внезапности не решение проблемы, а усугубление. Важно понимать что мы строим и почему ломаем.',
-          icon: Zap,
-          color: 'text-emerald-500',
-          bg: 'bg-emerald-800/20'
         }
       ]
     },
     {
       id: 'career',
       title: 'Профориентация',
-      desc: 'С результатами тестов по профориентации, активным ведением дневника и этих отчетов ты сможешь с полной точностью определить настоящую любовь к какой-либо деятельности',
+      desc: 'Исследуй, что даёт тебе силы и в чём твоя опора.',
       items: [
         {
           id: 'energy',
           title: 'Энергия',
+          shortTitle: 'Энергия',
+          subtitle: 'Что наполняет меня, а что забирает силы',
+          image: energyImage,
           desc: 'От каких задач я забываю про время, какие действия дают мне энергию, а какие забирают. Ты не ленивый, просто не знаешь точно где твоя энергия умножается.',
-          icon: Sparkles,
-          color: 'text-emerald-500',
-          bg: 'bg-emerald-800/20'
         },
         {
           id: 'competence',
           title: 'Чувство компетентности',
+          shortTitle: 'Чувство компетентности',
+          subtitle: 'На какой опыт и сильные стороны я могу опереться',
+          image: competenceImage,
           desc: 'Понимание в чем твоя стезя подавляет страх, тревогу, неготовность к ответственности. Это есть у всех, состоит из побед, даже маленьких, похвалы от людей и результатов, которые замечают. В этом твоя сила.',
-          icon: Target,
-          color: 'text-emerald-500',
-          bg: 'bg-emerald-800/20'
         }
       ]
     }
@@ -240,14 +245,9 @@ export default function ReportsTab({ onSwitchTab }) {
           <span className="font-medium">Назад</span>
         </button>
         
-        <div className="flex items-start gap-4 mb-6 px-4">
-          <div className={`p-3 rounded-xl shrink-0 mt-1 ${rType.bg}`}>
-            <rType.icon className={rType.color} size={24} />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold mb-2 leading-tight text-[#F5E6D3]">{rType.title}</h2>
-            <p className="text-sm text-[#F5E6D3] leading-relaxed">{rType.desc}</p>
-          </div>
+        <div className="mb-6 mx-2">
+          <ReportBanner report={rType} />
+          <p className="text-sm text-[#F5E6D3]/80 leading-relaxed mt-4 px-2">{rType.title}</p>
         </div>
 
         {isGenerating ? (
@@ -312,11 +312,11 @@ export default function ReportsTab({ onSwitchTab }) {
   }
 
   return (
-    <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-2xl mx-auto w-full pt-4 pb-20 overflow-y-scroll">
+    <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-2xl mx-auto w-full pt-4 pb-6" lang="ru">
       <h2 className="text-2xl font-bold text-[#F5E6D3] mb-2 px-4 text-center">Поведенческий код</h2>
       
-      <p className="text-sm text-[#F5E6D3] text-center px-4 mb-8 leading-relaxed">
-        Деструктивные сценарии, частые события, являющиеся основой жизни, успехи, провалы и их причины. Видеть это и многое другое в своей жизни - функция отчетов. Ведите активно дневник, отчитывайтесь перед собой, чтобы понимать, как можно жить лучше
+      <p className="text-sm text-[#F5E6D3]/75 text-center px-4 mb-7 leading-relaxed">
+        Замечай повторения, понимай свои реакции и находи опору в записях дневника.
       </p>
 
       {loading ? (
@@ -328,9 +328,9 @@ export default function ReportsTab({ onSwitchTab }) {
           {reportGroups.map((group, gIdx) => (
             <div key={group.id || gIdx} className="flex flex-col gap-4">
               {group.title && (
-                <div className="px-2 mt-2 text-center">
-                  <h2 className="text-2xl font-bold text-[#F5E6D3] mb-2 px-4 text-center">{group.title}</h2>
-                  {group.desc && <p className="text-sm text-[#F5E6D3] text-center px-4 mb-8 leading-relaxed">{group.desc}</p>}
+                <div className="px-1 mt-1">
+                  <h2 className="text-lg font-bold text-[#F5E6D3] mb-1">{group.title}</h2>
+                  {group.desc && <p className="text-xs text-[#F5E6D3]/70 leading-relaxed">{group.desc}</p>}
                 </div>
               )}
               <div className="flex flex-col gap-4">
@@ -345,24 +345,18 @@ export default function ReportsTab({ onSwitchTab }) {
                   const isOpen = openCategory === rtype.id;
                   
                   return (
-                    <div key={rtype.id} className="bg-rose-900/80 rounded-2xl overflow-hidden transition-all duration-300">
-                      <button 
+                    <div key={rtype.id}>
+                      <ReportBanner
+                        report={rtype}
+                        expanded={isOpen}
                         onClick={() => setOpenCategory(isOpen ? null : rtype.id)}
-                        className="w-full p-4 sm:p-5 text-center sm:text-left hover:bg-rose-800/80 transition-all flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3 sm:gap-4 relative"
-                      >
-                        <div className={`p-3 rounded-xl shrink-0 ${rtype.bg}`}>
-                          <rtype.icon className={rtype.color} size={24} />
-                        </div>
-                        <div className="flex-1 min-w-0 w-full px-6 sm:px-0">
-                          <h3 className="text-lg font-bold leading-tight text-[#F5E6D3] break-words hyphens-auto">{rtype.title}</h3>
-                        </div>
-                        <div className="absolute top-4 right-4 sm:relative sm:top-auto sm:right-auto text-[#F5E6D3] shrink-0 mt-0 sm:mt-2">
-                          {isOpen ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
-                        </div>
-                      </button>
+                        summary={typeReports.some(r => r.is_read === false) ? 'Готов новый отчёт' : undefined}
+                      />
                       
+                      <div id={`report-panel-${rtype.id}`} role="region" aria-labelledby={`report-banner-title-${rtype.id}`} hidden={!isOpen}>
                       {isOpen && (
-                        <div className="p-5 bg-rose-950/50 flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
+                        <div className="report-details p-5 bg-rose-900/60 flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
+                          <p className="text-sm text-[#F5E6D3]/80 leading-relaxed">{rtype.subtitle}</p>
                           {group.id === 'career' && !hasCareerAccess ? (
                             <div className="py-6 flex flex-col items-center justify-center text-center px-2">
                               <div className="w-12 h-12 rounded-full bg-rose-900/50 flex items-center justify-center mb-3">
@@ -443,6 +437,7 @@ export default function ReportsTab({ onSwitchTab }) {
                           )}
                         </div>
                       )}
+                      </div>
                     </div>
                   );
                 })}
@@ -452,16 +447,6 @@ export default function ReportsTab({ onSwitchTab }) {
         </div>
       )}
 
-      <div className="mt-10 mb-8 mx-4 p-5 bg-emerald-800 rounded-2xl text-center shadow-md">
-        <p className="text-sm font-medium text-[#F5E6D3] leading-relaxed">
-          Команда проекта «Азбука Я» регулярно добавляет новые отчеты.<br/>Следите за обновлениями!
-        </p>
-        <div className="flex items-center justify-center gap-2 mt-4 text-[#F5E6D3]/70">
-          <Star size={12} className="animate-pulse" />
-          <Star size={16} className="animate-pulse delay-75" />
-          <Star size={12} className="animate-pulse delay-150" />
-        </div>
-      </div>
     </div>
   );
 }

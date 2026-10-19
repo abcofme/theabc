@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Sparkles, User, Brain, ClipboardList } from 'lucide-react';
-import CalendarTab from './features/calendar/CalendarTab';
+import { NotebookPen, User, Brain, ClipboardList } from 'lucide-react';
+import DiaryTab from './features/diary/DiaryTab';
+import ProfileProvider from './context/ProfileProvider';
 import ProfileTab from './features/profile/ProfileTab';
 import ReportsTab from './features/reports/ReportsTab';
 import TestsTab from './features/tests/TestsTab';
@@ -77,6 +78,7 @@ export default function App() {
   }
 
   return (
+    <ProfileProvider>
     <div className="flex flex-col h-full font-sans bg-rose-950 relative">
       <div 
         className="fixed top-0 left-0 w-screen pointer-events-none z-0 transition-all duration-300"
@@ -92,9 +94,8 @@ export default function App() {
       <main
         className={`flex-1 flex flex-col overflow-y-auto p-4 relative z-10 ${isNavHidden ? '' : 'pb-24'}`}
       >
-        {/* Передаем функцию скрытия меню в CalendarTab */}
         <div className="flex-1 flex-col" style={{ display: activeTab === 'diary' ? 'flex' : 'none' }}>
-          <CalendarTab onSheetOpen={setIsNavHidden} />
+          <DiaryTab onSheetOpen={setIsNavHidden} onSwitchTab={setActiveTab} />
         </div>
         <div className="flex-1 flex-col" style={{ display: activeTab === 'tests' ? 'flex' : 'none' }}>
           <TestsTab onOverlayOpen={setIsNavHidden} />
@@ -116,7 +117,7 @@ export default function App() {
               activeTab === 'diary' ? 'text-[#F5E6D3] scale-110 drop-shadow-md' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
             }`}
           >
-            <CalendarIcon size={24} />
+            <NotebookPen size={24} />
             <span className={`text-[10px] mt-1 ${activeTab === 'diary' ? 'font-bold' : ''}`}>Дневник</span>
           </button>
           <button
@@ -149,5 +150,6 @@ export default function App() {
         </nav>
       )}
     </div>
+    </ProfileProvider>
   );
 }

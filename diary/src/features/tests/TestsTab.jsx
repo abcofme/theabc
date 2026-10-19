@@ -7,6 +7,7 @@ import iconSelfEsteem from '../../assets/icons/self_esteem.webp';
 import iconTemperament from '../../assets/icons/temperament.webp';
 import iconSociability from '../../assets/icons/sociability.webp';
 import iconCareer from '../../assets/icons/career.webp';
+import { useProfile } from '../../context/profile';
 
 const categoryIcons = {
   "Личность": iconPersonality,
@@ -20,6 +21,7 @@ const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
 
 export default function TestsTab({ onOverlayOpen }) {
+  const { refreshProfile } = useProfile();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openCategory, setOpenCategory] = useState(null);
@@ -193,6 +195,7 @@ export default function TestsTab({ onOverlayOpen }) {
           WebApp.HapticFeedback.notificationOccurred('success');
           // refresh categories
           fetchCategories();
+          refreshProfile();
         } catch (err) {
           WebApp.showAlert(`Ошибка сети или парсинга: ${err.message}`);
         } finally {
@@ -237,6 +240,7 @@ export default function TestsTab({ onOverlayOpen }) {
         const testToRetake = { ...selectedResult, passed: false };
         setSelectedResult(null);
         fetchCategories();
+        refreshProfile();
         openTest(testToRetake);
       } else {
         WebApp.showAlert("Ошибка при сбросе теста");

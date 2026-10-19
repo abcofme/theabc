@@ -1,0 +1,65 @@
+import { useState } from 'react';
+import { Lock, ChevronRight } from 'lucide-react';
+import EntryCard from './EntryCard';
+import EntryForm from './EntryForm';
+import { analysisState } from './utils';
+
+const WebApp = window.Telegram.WebApp;
+
+// Одна строка вместо замка на каждой записи: почему дневник молчит и что сделать
+export function AnalysisHint({ lock, onSwitchTab }) {
+  if (!lock?.text) return null;
+  return (
+    <button
+      onClick={() => onSwitchTab(lock.tab)}
+      className="w-full mt-3 flex items-center gap-2 text-left text-sm text-[#F5E6D3]/80 active:opacity-70"
+    >
+      <Lock size={14} className="shrink-0" />
+      <span className="flex-1">{lock.text}</span>
+      <ChevronRight size={16} className="shrink-0" />
+    </button>
+  );
+}
+
+export default function EntryList({ entries, diary, lock }) {
+  const [editingId, setEditingId] = useState(null);
+
+  const confirmDelete = (entry) => {
+    WebApp.showConfirm('Удалить запись? Её нельзя будет восстановить.', (confirmed) => {
+      if (!confirmed) return;
+      diary.deleteEntry(entry.id).catch(() => WebApp.showAlert('Не удалось удалить запись.'));
+    });
+  };
+
+  const retry = (entry) => {
+    diary.retryAnalysis(entry.id).catch(() => WebApp.showAlert('Дневник сейчас не смог ответить. Попробуйте чуть позже.'));
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+      {entries.map(entry => editingId === entry.id ? (
+        <div key={entry.id} className="bg-rose-950/50 rounded-2xl p-4">
+          <EntryForm
+            title="Дополни запись"
+            initial={entry}
+            submitLabel="Отправить дневнику"
+            onCancel={() => setEditingId(null)}
+            onSubmit={async (event, reaction) => {
+              await diary.updateEntry(entry, event, reaction);
+              setEditingId(null);
+            }}
+          />
+        </div>
+      ) : (
+        <EntryCard
+          key={entry.id}
+          entry={entry}
+          analysis={analysisState(entry, diary.isPending(entry.id), lock)}
+          onDelete={() => confirmDelete(entry)}
+          onRetry={() => retry(entry)}
+          onEdit={() => setEditingId(entry.id)}
+        />
+      ))}
+    </div>
+  );
+}
