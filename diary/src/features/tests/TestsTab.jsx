@@ -2,20 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, ChevronUp, Check, XCircle, X, Brain, ClipboardList, Lock, Sparkles, ArrowLeft, ArrowRight, Undo2 } from 'lucide-react';
 import bgLeaves from '../../assets/bg-leaves.webp';
 
-import iconPersonality from '../../assets/icons/personality.webp';
-import iconSelfEsteem from '../../assets/icons/self_esteem.webp';
-import iconTemperament from '../../assets/icons/temperament.webp';
-import iconSociability from '../../assets/icons/sociability.webp';
-import iconCareer from '../../assets/icons/career.webp';
+import ClayBanner from '../../components/ClayBanner';
+import { categoryBanners } from './categoryBanners';
 import { useProfile } from '../../context/profile';
-
-const categoryIcons = {
-  "Личность": iconPersonality,
-  "Самооценка": iconSelfEsteem,
-  "Темперамент": iconTemperament,
-  "Общительность": iconSociability,
-  "Профориентация": iconCareer
-};
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
@@ -335,13 +324,13 @@ export default function TestsTab({ onOverlayOpen }) {
 
   return (
 
-    <div className="flex flex-col relative select-none bg-transparent max-w-2xl mx-auto w-full pt-4 h-full overflow-y-scroll pb-16">
+    <div className="flex flex-col relative select-none bg-transparent max-w-2xl mx-auto w-full pt-4 pb-6" lang="ru">
       <div className="flex justify-center px-4 mb-8">
         <img src="/testy_title.webp" alt="Тесты" className="h-14 object-contain" />
       </div>
       
       {/* Список категорий */}
-      <div className="px-4 pb-6 space-y-3 animate-in fade-in duration-300 flex flex-col flex-1">
+      <div className="px-2 pb-6 space-y-4 animate-in fade-in duration-300 flex flex-col flex-1">
         {loading ? (
           <div className="flex justify-center items-center py-12 flex-1">
             <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#F5E6D3] border-t-transparent"></div>
@@ -351,22 +340,34 @@ export default function TestsTab({ onOverlayOpen }) {
             <p>Нет доступных тестов.</p>
           </div>
         ) : (
-          categories.map(cat => (
-            <div key={cat.id} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
+          categories.map(cat => {
+            const banner = categoryBanners[cat.name.trim()];
+            const isOpen = openCategory === cat.id;
+            return (
+            <div key={cat.id}>
+              {banner ? (
+                <ClayBanner
+                  id={`test-category-${cat.id}`}
+                  kind="test"
+                  title={cat.name}
+                  description={`Символ категории — ${banner.tree}. Открыть список тестов.`}
+                  image={banner.image}
+                  expanded={isOpen}
+                  onClick={() => toggleCategory(cat.id)}
+                  controlsId={`test-category-panel-${cat.id}`}
+                  chevron
+                />
+              ) : (
               <button
+                type="button"
                 onClick={() => toggleCategory(cat.id)}
-                className={`w-full relative flex items-center px-6 py-4 min-h-[80px] hover:bg-rose-800/70 transition-colors active:bg-rose-800 overflow-hidden isolate ${openCategory === cat.id ? 'rounded-t-2xl' : 'rounded-2xl'} justify-between`}
+                aria-expanded={isOpen}
+                aria-controls={`test-category-panel-${cat.id}`}
+                id={`clay-banner-title-test-category-${cat.id}`}
+                className="w-full relative flex items-center px-6 py-4 min-h-[80px] bg-rose-900 hover:bg-rose-800/70 transition-colors active:bg-rose-800 overflow-hidden isolate rounded-2xl justify-between"
               >
                 <div className="flex items-center justify-between gap-4 z-10 relative text-left w-full min-w-0">
                   <div className="flex items-center gap-3 min-w-0">
-                    {categoryIcons[cat.name.trim()] && (
-                      <img 
-                        src={categoryIcons[cat.name.trim()]} 
-                        alt="" 
-                        className="w-10 h-10 object-contain drop-shadow-md shrink-0"
-                        onError={(e) => { e.target.style.display = 'none'; }}
-                      />
-                    )}
                     <span className="font-semibold text-[#F5E6D3] text-xl sm:text-2xl leading-tight truncate">
                       {cat.name}
                     </span>
@@ -378,9 +379,11 @@ export default function TestsTab({ onOverlayOpen }) {
                   )}
                 </div>
               </button>
+              )}
 
-              {openCategory === cat.id && (
-                <div className="bg-rose-950/40 px-4 py-2 animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
+              <div id={`test-category-panel-${cat.id}`} role="region" aria-labelledby={`clay-banner-title-test-category-${cat.id}`} hidden={!isOpen}>
+              {isOpen && (
+                <div className="bg-rose-900/60 rounded-[22px] mt-2.5 px-4 py-2 animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
                   {cat.name === 'Профориентация' && !hasCareerAccess ? (
                     <div className="py-6 flex flex-col items-center justify-center text-center px-2">
                       <div className="w-12 h-12 rounded-full bg-rose-900/50 flex items-center justify-center mb-3">
@@ -424,8 +427,10 @@ export default function TestsTab({ onOverlayOpen }) {
                   )}
                 </div>
               )}
+              </div>
             </div>
-          ))
+            );
+          })
         )}
       </div>
 

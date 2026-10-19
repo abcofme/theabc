@@ -3,10 +3,10 @@ import { ChevronLeft, ChevronDown, Target, Sparkles, Calendar, FileText, Trash2,
 import ReactMarkdown from 'react-markdown';
 import GenerationProgress from '../../components/GenerationProgress';
 import ReportBanner from './ReportBanner';
-import repeatingEventsImage from '../../assets/reports/repeating-events-v2.webp';
-import reactionsImage from '../../assets/reports/my-reactions-v2.webp';
-import energyImage from '../../assets/reports/energy-v2.webp';
-import competenceImage from '../../assets/reports/competence-v2.webp';
+import repeatingEventsImage from '../../assets/reports/repeating-events-scene.webp';
+import reactionsImage from '../../assets/reports/my-reactions-scene.webp';
+import energyImage from '../../assets/reports/energy-scene.webp';
+import competenceImage from '../../assets/reports/competence-scene.webp';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
@@ -88,6 +88,7 @@ export default function ReportsTab() {
           id: 'repeating_events',
           title: 'Какие события чаще всего повторяются в моей жизни?',
           shortTitle: 'Повторяющиеся события',
+          bannerTitle: 'Повторяющиеся\nсобытия',
           subtitle: 'Что снова и снова происходит в моей жизни',
           image: repeatingEventsImage,
           desc: 'Любовь или зависимость, мудрость или глупость. Что чаще, такие и мы. Наша жизнь в привычках, а контроль над ними в анализе.',
@@ -96,6 +97,7 @@ export default function ReportsTab() {
           id: 'effective_reactions',
           title: 'На какие ситуации я реагирую эффективно, а на какие нет?',
           shortTitle: 'Мои реакции',
+          bannerTitle: 'Мои\nреакции',
           subtitle: 'Как мои реакции влияют на происходящее',
           image: reactionsImage,
           desc: 'Эффективность в предсказуемости, а во внезапности не решение проблемы, а усугубление. Важно понимать что мы строим и почему ломаем.',
@@ -119,6 +121,7 @@ export default function ReportsTab() {
           id: 'competence',
           title: 'Чувство компетентности',
           shortTitle: 'Чувство компетентности',
+          bannerTitle: 'Чувство\nкомпетентности',
           subtitle: 'На какой опыт и сильные стороны я могу опереться',
           image: competenceImage,
           desc: 'Понимание в чем твоя стезя подавляет страх, тревогу, неготовность к ответственности. Это есть у всех, состоит из побед, даже маленьких, похвалы от людей и результатов, которые замечают. В этом твоя сила.',
@@ -353,7 +356,7 @@ export default function ReportsTab() {
                         summary={typeReports.some(r => r.is_read === false) ? 'Готов новый отчёт' : undefined}
                       />
                       
-                      <div id={`report-panel-${rtype.id}`} role="region" aria-labelledby={`report-banner-title-${rtype.id}`} hidden={!isOpen}>
+                      <div id={`report-panel-${rtype.id}`} role="region" aria-labelledby={`clay-banner-title-report-${rtype.id}`} hidden={!isOpen}>
                       {isOpen && (
                         <div className="report-details p-5 bg-rose-900/60 flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
                           <p className="text-sm text-[#F5E6D3]/80 leading-relaxed">{rtype.subtitle}</p>
