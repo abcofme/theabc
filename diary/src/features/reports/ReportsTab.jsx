@@ -304,7 +304,7 @@ export default function ReportsTab() {
             <button 
               onClick={() => handleGenerate(activeForm)}
               disabled={isGenerating}
-              className="w-[calc(100%-1rem)] mx-2 bg-primary disabled:bg-rose-950/50 hover:bg-primary-hover text-[#F5E6D3] font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
+              className="w-[calc(100%-1rem)] mx-2 bg-emerald-800 disabled:bg-emerald-950/50 hover:bg-emerald-800 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
             >
               Проанализировать
             </button>
@@ -372,7 +372,7 @@ export default function ReportsTab() {
                               <button
                                 onClick={buyCareerGuidance}
                                 disabled={isBuyingCareer}
-                                className="w-full py-3.5 bg-primary hover:bg-primary-hover text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
+                                className="w-full py-3.5 bg-emerald-800 hover:bg-emerald-800 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
                               >
                                 {isBuyingCareer ? <span className="animate-spin text-xl">⏳</span> : "Купить за 1499 ₽"}
                               </button>
@@ -408,7 +408,7 @@ export default function ReportsTab() {
                                         <div className="text-[#F5E6D3] font-medium mb-1 flex items-center flex-wrap gap-2">
                                           <span className="truncate">Отчет от {new Date(r.created_at).toLocaleDateString('ru-RU')}</span>
                                           {r.is_read === false && (
-                                            <span className="text-[10px] font-bold text-white bg-primary px-2 py-0.5 rounded-full shadow-sm animate-pulse shrink-0">
+                                            <span className="text-[10px] font-bold text-white bg-emerald-800 px-2 py-0.5 rounded-full shadow-sm animate-pulse shrink-0">
                                               Отчет готов!
                                             </span>
                                           )}

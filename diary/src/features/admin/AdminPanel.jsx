@@ -378,7 +378,7 @@ export default function AdminPanel({ onBack }) {
           <button 
             onClick={handleCreateLink}
             disabled={!newLinkName || isCreatingLink}
-            className="bg-primary hover:bg-primary-hover disabled:opacity-50 text-white px-4 py-3 rounded-xl font-medium transition-colors"
+            className="bg-emerald-800 hover:bg-emerald-800 disabled:opacity-50 text-white px-4 py-3 rounded-xl font-medium transition-colors"
           >
             {isCreatingLink ? "..." : "Создать"}
           </button>
@@ -408,7 +408,7 @@ export default function AdminPanel({ onBack }) {
                       navigator.clipboard.writeText(`https://t.me/abcofmebot?start=tr_${link.code}`);
                       WebApp.showAlert("Ссылка скопирована!");
                     }}
-                    className="bg-rose-800/50 hover:bg-rose-700/50 text-[#F5E6D3] px-3 rounded-lg text-xs font-medium transition-colors"
+                    className="bg-blue-900/50 hover:bg-blue-800/50 text-blue-200 px-3 rounded-lg text-xs font-medium transition-colors"
                   >
                     Копировать
                   </button>
@@ -438,7 +438,7 @@ export default function AdminPanel({ onBack }) {
           
           <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Users className="text-sand" size={24} />
+              <Users className="text-purple-500" size={24} />
               <span className="text-[#F5E6D3] font-medium">Всего пользователей</span>
             </div>
             <span className="text-xl font-bold text-[#F5E6D3]">{stats.total_users || 0}</span>
@@ -537,7 +537,7 @@ export default function AdminPanel({ onBack }) {
             <button 
               onClick={handleGrantAccess}
               disabled={isGranting}
-              className="w-full bg-primary hover:bg-primary-hover disabled:opacity-50 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-sm"
+              className="w-full bg-emerald-800 hover:bg-emerald-800 disabled:opacity-50 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-sm"
             >
               {isGranting ? "Обработка..." : "Выдать права"}
             </button>
@@ -648,7 +648,7 @@ export default function AdminPanel({ onBack }) {
             <button
               onClick={handleAiImport}
               disabled={isAiImporting || !aiImportText.trim() || !aiImportCategoryId}
-              className="w-full py-3 bg-primary hover:bg-primary-hover disabled:bg-rose-950/40 disabled:text-[#F5E6D3]/40 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-3 bg-purple-800 hover:bg-purple-700 disabled:bg-purple-950/40 disabled:text-[#F5E6D3]/40 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
             >
               <Brain size={18} />
               {isAiImporting ? 'ИИ обрабатывает...' : 'Создать тест через ИИ'}
@@ -683,7 +683,7 @@ export default function AdminPanel({ onBack }) {
                       key={`exp-test-${test.id}`}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-rose-800/40 cursor-pointer transition-colors"
                     >
-                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${exportSelectedIds.includes(test.id) ? 'bg-primary border-sand' : 'border-[#F5E6D3]/40'}`}>
+                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${exportSelectedIds.includes(test.id) ? 'bg-emerald-700 border-emerald-600' : 'border-[#F5E6D3]/40'}`}>
                         {exportSelectedIds.includes(test.id) && <Check size={12} className="text-white" strokeWidth={3} />}
                       </div>
                       <input
@@ -702,7 +702,7 @@ export default function AdminPanel({ onBack }) {
             <button
               onClick={handleExport}
               disabled={isExporting || exportSelectedIds.length === 0}
-              className="w-full py-3 bg-primary hover:bg-primary-hover disabled:bg-rose-950/40 disabled:text-[#F5E6D3]/50 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-3 bg-emerald-800 hover:bg-emerald-700 disabled:bg-emerald-950/40 disabled:text-[#F5E6D3]/50 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
             >
               <Download size={18} />
               {isExporting ? 'Экспорт...' : `Скачать TXT${exportSelectedIds.length > 0 ? ` (${exportSelectedIds.length})` : ''}`}

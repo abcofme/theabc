@@ -24,7 +24,7 @@ export default function WeekStrip({ today, daysWithEntries, onSelect }) {
             <span className={`text-[11px] ${isToday ? 'font-bold' : 'opacity-70'}`}>{format(date, 'EEEEEE', { locale: ru })}</span>
             <span className="text-base font-bold leading-tight">{format(date, 'd')}</span>
             <span className={`w-1.5 h-1.5 mt-1 rounded-full ${
-              hasEntries ? (isToday ? 'bg-primary' : 'bg-emerald-500') : 'bg-transparent'
+              hasEntries ? (isToday ? 'bg-emerald-800' : 'bg-emerald-500') : 'bg-transparent'
             }`} />
           </button>
         );

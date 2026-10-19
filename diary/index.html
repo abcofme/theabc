@@ -1,17 +1,13 @@
 <!doctype html>
-<html lang="ru" style="background-color: #321B22;">
+<html lang="en" style="background-color: #2B0A0A;">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Личный дневник Азбука Я</title>
     <style>
-      :root {
-        --app-background: #321B22;
-        --app-menu: #29161C;
-      }
       html, body {
-        background-color: var(--app-background) !important;
+        background-color: #2B0A0A !important;
         margin: 0;
         padding: 0;
         height: 100%;
@@ -21,7 +17,7 @@
       #root {
         height: 100%;
         width: 100%;
-        background-color: var(--app-background) !important;
+        background-color: #2B0A0A !important;
       }
     </style>
     <!-- Копия с telegram.org: в РФ его домены замедляют. Обновляется workflow update-telegram-sdk -->
@@ -46,19 +42,13 @@
         } else {
           var tg = window.Telegram.WebApp;
           try {
-            var theme = getComputedStyle(document.documentElement);
-            var backgroundColor = theme.getPropertyValue('--app-background').trim();
-            var menuColor = theme.getPropertyValue('--app-menu').trim();
             tg.ready();
             tg.expand();
             if (typeof tg.setBackgroundColor === 'function') {
-              tg.setBackgroundColor(backgroundColor);
+              tg.setBackgroundColor('#2B0A0A');
             }
             if (typeof tg.setHeaderColor === 'function') {
-              tg.setHeaderColor(backgroundColor);
-            }
-            if (typeof tg.setBottomBarColor === 'function') {
-              tg.setBottomBarColor(menuColor);
+              tg.setHeaderColor('#541515');
             }
           } catch (e) {
             console.error("Error initializing Telegram WebApp", e);

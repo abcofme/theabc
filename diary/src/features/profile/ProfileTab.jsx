@@ -370,7 +370,7 @@ export default function ProfileTab({ onOverlayOpen }) {
           <span>{left} <span className="text-xs sm:text-sm font-medium opacity-70 ml-1">{Math.round(leftValue)}%</span></span>
         </div>
         <div className="h-4 w-full bg-rose-800 rounded-full overflow-hidden flex shadow-inner mb-3">
-          <div className="h-full bg-primary" style={{ width: `${leftValue}%` }}></div>
+          <div className="h-full bg-emerald-800" style={{ width: `${leftValue}%` }}></div>
           <div className="h-full bg-orange-500" style={{ width: `${rightValue}%` }}></div>
         </div>
         <div className="flex justify-end items-start text-base sm:text-lg font-bold text-[#F5E6D3] mb-4">
@@ -528,7 +528,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <button
                 onClick={() => setIsPremiumModalOpen(true)}
                 disabled={isBuying}
-                className="w-full py-3.5 bg-primary hover:bg-primary-hover text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
+                className="w-full py-3.5 bg-emerald-800 hover:bg-emerald-800 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
               >
                 {isBuying ? <span className="animate-spin text-xl">⏳</span> : <Sparkles size={18} />}
                 Оформить Premium (299 ₽ / мес)
@@ -627,7 +627,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <p className="text-[#F5E6D3]/70 text-sm mb-4">Отсканируйте QR-код, чтобы пригласить друзей или открыть приложение на другом устройстве</p>
               <div 
                 className="p-2 rounded-2xl shadow-lg cursor-pointer hover:scale-105 transition-transform" 
-                style={{backgroundColor: 'var(--color-rose-900)'}}
+                style={{backgroundColor: '#541515'}}
                 onClick={() => setIsQrExpanded(true)}
               >
                 <img src={qrCodeImg} alt="QR Code" className="w-36 h-36 object-contain rounded-xl" />
@@ -649,7 +649,7 @@ export default function ProfileTab({ onOverlayOpen }) {
             {['ingenfrid', 'key_crp', 'fondlife'].includes(tgUser.username) && (
               <button 
                 onClick={() => setActiveSubTab('admin')}
-                className="w-full py-3 bg-primary hover:bg-primary-hover text-[#F5E6D3] text-sm font-bold rounded-2xl transition-colors shadow-sm flex items-center justify-center gap-2 mt-4"
+                className="w-full py-3 bg-emerald-800 hover:bg-emerald-800 text-[#F5E6D3] text-sm font-bold rounded-2xl transition-colors shadow-sm flex items-center justify-center gap-2 mt-4"
               >
                 Админ-панель
               </button>
@@ -699,7 +699,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                       </div>
                     </button>
                   ) : (
-                    <button onClick={handleGeneratePortrait} className="w-full flex flex-col items-center justify-center text-center p-5 rounded-2xl bg-primary hover:bg-primary-hover text-[#F5E6D3] transition-colors active:scale-[0.98] shadow-lg shadow-rose-950/40">
+                    <button onClick={handleGeneratePortrait} className="w-full flex flex-col items-center justify-center text-center p-5 rounded-2xl bg-emerald-800 hover:bg-emerald-800 text-[#F5E6D3] transition-colors active:scale-[0.98] shadow-lg shadow-emerald-900/40">
                       <ClipboardList size={32} className="mb-2" />
                       <div>
                         <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Мой портрет личности</h3>
@@ -738,7 +738,7 @@ export default function ProfileTab({ onOverlayOpen }) {
 
                 {totalTests > 0 && passedTests === totalTests && !portraitData && (
                   <div className="mt-auto">
-                    <button onClick={handleGeneratePortrait} className="w-full flex flex-col items-center justify-center text-center p-5 rounded-2xl bg-primary hover:bg-primary-hover text-[#F5E6D3] transition-colors active:scale-[0.98] shadow-lg shadow-rose-950/40">
+                    <button onClick={handleGeneratePortrait} className="w-full flex flex-col items-center justify-center text-center p-5 rounded-2xl bg-emerald-800 hover:bg-emerald-800 text-[#F5E6D3] transition-colors active:scale-[0.98] shadow-lg shadow-emerald-900/40">
                       <ClipboardList size={32} className="mb-2" />
                       <div>
                         <h3 className="text-lg font-bold text-[#F5E6D3] mb-1">Мой портрет личности</h3>
@@ -776,7 +776,7 @@ export default function ProfileTab({ onOverlayOpen }) {
             </div>
             {/* Нижняя кнопка */}
             <div className="p-4 sm:p-5 bg-rose-950/50 rounded-b-[2rem]">
-              <button onClick={() => setSelectedResult(null)} className="w-full bg-primary hover:bg-primary-hover text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all active:bg-primary-active shadow-lg shadow-rose-950/20">
+              <button onClick={() => setSelectedResult(null)} className="w-full bg-emerald-800 hover:bg-emerald-800 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-all active:bg-emerald-900 shadow-lg shadow-emerald-950/20">
                 Отлично
               </button>
             </div>
@@ -797,7 +797,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <span className="font-medium text-lg">Закрыть</span>
               <X size={28} />
             </button>
-            <div className="p-4 rounded-3xl shadow-2xl bg-rose-900 w-full aspect-square">
+            <div className="p-4 rounded-3xl shadow-2xl bg-[#541515] w-full aspect-square">
               <img src={qrCodeImg} alt="QR Code Expanded" className="w-full h-full object-contain rounded-2xl" />
             </div>
           </div>
@@ -835,12 +835,12 @@ export default function ProfileTab({ onOverlayOpen }) {
                   placeholder="Ваш ИНН (10 или 12 цифр)" 
                   value={innInput}
                   onChange={(e) => setInnInput(e.target.value.replace(/\D/g, '').slice(0, 12))}
-                  className="w-full bg-rose-950 rounded-xl px-4 py-3 text-[#F5E6D3] placeholder:text-[#F5E6D3]/30 outline-none transition-colors"
+                  className="w-full bg-[#2B0A0A] rounded-xl px-4 py-3 text-[#F5E6D3] placeholder:text-[#F5E6D3]/30 outline-none transition-colors"
                 />
                 <button 
                   onClick={handleVerifyInn}
                   disabled={isVerifyingInn || innInput.length < 10}
-                  className="w-full bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:bg-rose-950/60 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-rose-950/20"
+                  className="w-full bg-emerald-800 hover:bg-emerald-800 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-emerald-950/20"
                 >
                   {isVerifyingInn ? "Проверка..." : "Проверить ИНН"}
                 </button>
@@ -850,14 +850,14 @@ export default function ProfileTab({ onOverlayOpen }) {
             <>
               <div className="bg-rose-900/80 backdrop-blur-sm rounded-3xl p-5 mb-6 shadow-lg">
                 <div className="flex flex-col gap-4">
-                  <div className="bg-rose-950 p-4 rounded-2xl flex justify-between items-center">
+                  <div className="bg-[#2B0A0A] p-4 rounded-2xl flex justify-between items-center">
                     <div>
                       <div className="text-[#F5E6D3]/70 text-sm mb-1">Сумма в ожидании</div>
                       <div className="text-[#F5E6D3] text-2xl font-bold">{referralInfo.pending} ₽</div>
                     </div>
                     <Activity className="text-emerald-600 opacity-50" size={32} />
                   </div>
-                  <div className="bg-rose-950 p-4 rounded-2xl flex justify-between items-center">
+                  <div className="bg-[#2B0A0A] p-4 rounded-2xl flex justify-between items-center">
                     <div>
                       <div className="text-[#F5E6D3]/70 text-sm mb-1">Доступно к выводу</div>
                       <div className="text-[#F5E6D3] text-2xl font-bold">{referralInfo.available} ₽</div>
@@ -885,14 +885,14 @@ export default function ProfileTab({ onOverlayOpen }) {
                       type="text" 
                       readOnly 
                       value={referralInfo.link} 
-                      className="flex-1 bg-rose-950 rounded-xl px-3 py-2 text-sm text-[#F5E6D3] outline-none"
+                      className="flex-1 bg-[#2B0A0A] rounded-xl px-3 py-2 text-sm text-[#F5E6D3] outline-none"
                     />
                     <button 
                       onClick={() => {
                         navigator.clipboard.writeText(referralInfo.link);
                         WebApp.showAlert("Ссылка скопирована!");
                       }}
-                      className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
+                      className="bg-emerald-800 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
                     >
                       Копировать
                     </button>
@@ -906,7 +906,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                   <button 
                     onClick={handleWithdraw}
                     disabled={isWithdrawing || referralInfo.available < 100}
-                    className="w-full bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:bg-rose-950/60 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-rose-950/20"
+                    className="w-full bg-emerald-800 hover:bg-emerald-800 disabled:opacity-50 disabled:bg-gray-600 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-emerald-950/20"
                   >
                     {isWithdrawing ? "Обработка..." : "Запросить вывод"}
                   </button>
@@ -945,7 +945,7 @@ export default function ProfileTab({ onOverlayOpen }) {
                 <div className="relative flex items-center justify-center mt-0.5">
                   <input 
                     type="checkbox" 
-                    className="peer appearance-none w-5 h-5 border-2 border-rose-800 rounded-md checked:bg-primary checked:border-sand transition-colors"
+                    className="peer appearance-none w-5 h-5 border-2 border-rose-800 rounded-md checked:bg-emerald-800 checked:border-emerald-800 transition-colors"
                     checked={isOfferAccepted}
                     onChange={(e) => setIsOfferAccepted(e.target.checked)}
                   />
@@ -968,8 +968,8 @@ export default function ProfileTab({ onOverlayOpen }) {
               disabled={isBuying}
               className={`w-full py-4 text-[#F5E6D3] font-bold rounded-xl shadow-lg transition-all flex justify-center items-center gap-2 ${
                 isOfferAccepted 
-                  ? "bg-primary hover:bg-primary-hover shadow-rose-950/30"
-                  : "bg-rose-950/40 text-[#F5E6D3]/40 cursor-not-allowed"
+                  ? "bg-emerald-800 hover:bg-emerald-800 shadow-emerald-900/30" 
+                  : "bg-emerald-900/40 text-[#F5E6D3]/40 cursor-not-allowed"
               }`}
             >
               {isBuying ? <span className="animate-spin text-xl">⏳</span> : <Sparkles size={18} />}
@@ -994,7 +994,7 @@ export default function ProfileTab({ onOverlayOpen }) {
               <ReactMarkdown>{PUBLIC_OFFER_TEXT}</ReactMarkdown>
             </div>
             <div className="p-5 border-t border-rose-800/50 bg-rose-950/30 rounded-b-[2rem]">
-              <button onClick={() => {setIsOfferAccepted(true); setIsOfferModalOpen(false);}} className="w-full py-3.5 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl transition-colors">
+              <button onClick={() => {setIsOfferAccepted(true); setIsOfferModalOpen(false);}} className="w-full py-3.5 bg-emerald-800 hover:bg-emerald-800 text-white font-bold rounded-xl transition-colors">
                 Принять и закрыть
               </button>
             </div>
