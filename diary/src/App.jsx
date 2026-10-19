@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { NotebookPen, User, Brain, ClipboardList } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import DiaryTab from './features/diary/DiaryTab';
 import ProfileProvider from './context/ProfileProvider';
 import ProfileTab from './features/profile/ProfileTab';
 import ReportsTab from './features/reports/ReportsTab';
 import TestsTab from './features/tests/TestsTab';
 import bgLeaves from './assets/bg-leaves.webp';
+import diaryIcon from './assets/navigation/diary-clay.webp';
+import testsIcon from './assets/navigation/tests-clay.webp';
+import reportsIcon from './assets/navigation/reports-clay.webp';
+import profileIcon from './assets/navigation/profile-clay.webp';
+import './components/clay-navigation.css';
 
 const WebApp = window.Telegram.WebApp;
 
@@ -42,9 +46,8 @@ export default function App() {
     };
   }, []);
 
-  const [bgHeight, setBgHeight] = useState('100vh');
+  const [bgHeight, setBgHeight] = useState(() => `${window.innerHeight}px`);
   useEffect(() => {
-    setBgHeight(`${window.innerHeight}px`);
     const handleResize = () => {
       // Ignore resize if keyboard is open
       if (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
@@ -110,41 +113,49 @@ export default function App() {
 
       {/* Отрисовываем меню только если isNavHidden === false и клавиатура не открыта */}
       {(!isNavHidden && !isKeyboardOpen) && (
-        <nav className="fixed bottom-0 left-0 w-full bg-rose-900 flex justify-between p-2 pb-safe z-50">
+        <nav aria-label="Главное меню" className="fixed bottom-0 left-0 w-full bg-rose-900 flex justify-between p-2 pb-safe z-50">
           <button
+            type="button"
+            aria-current={activeTab === 'diary' ? 'page' : undefined}
             onClick={() => setActiveTab('diary')}
-            className={`flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
-              activeTab === 'diary' ? 'text-[#F5E6D3] scale-110 drop-shadow-md' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
+            className={`clay-navigation__item flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
+              activeTab === 'diary' ? 'text-[#F5E6D3]' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
             }`}
           >
-            <NotebookPen size={24} />
+            <img src={diaryIcon} className="clay-navigation__icon" width="32" height="32" alt="" draggable="false" />
             <span className={`text-[10px] mt-1 ${activeTab === 'diary' ? 'font-bold' : ''}`}>Дневник</span>
           </button>
           <button
+            type="button"
+            aria-current={activeTab === 'tests' ? 'page' : undefined}
             onClick={() => setActiveTab('tests')}
-            className={`flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
-              activeTab === 'tests' ? 'text-[#F5E6D3] scale-110 drop-shadow-md' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
+            className={`clay-navigation__item flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
+              activeTab === 'tests' ? 'text-[#F5E6D3]' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
             }`}
           >
-            <ClipboardList size={24} />
+            <img src={testsIcon} className="clay-navigation__icon" width="32" height="32" alt="" draggable="false" />
             <span className={`text-[10px] mt-1 ${activeTab === 'tests' ? 'font-bold' : ''}`}>Тесты</span>
           </button>
           <button
+            type="button"
+            aria-current={activeTab === 'reports' ? 'page' : undefined}
             onClick={() => setActiveTab('reports')}
-            className={`flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
-              activeTab === 'reports' ? 'text-[#F5E6D3] scale-110 drop-shadow-md' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
+            className={`clay-navigation__item flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
+              activeTab === 'reports' ? 'text-[#F5E6D3]' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
             }`}
           >
-            <Brain size={24} />
+            <img src={reportsIcon} className="clay-navigation__icon" width="32" height="32" alt="" draggable="false" />
             <span className={`text-[10px] mt-1 ${activeTab === 'reports' ? 'font-bold' : ''}`}>Отчеты</span>
           </button>
           <button
+            type="button"
+            aria-current={activeTab === 'profile' ? 'page' : undefined}
             onClick={() => setActiveTab('profile')}
-            className={`flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
-              activeTab === 'profile' ? 'text-[#F5E6D3] scale-110 drop-shadow-md' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
+            className={`clay-navigation__item flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
+              activeTab === 'profile' ? 'text-[#F5E6D3]' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
             }`}
           >
-            <User size={24} />
+            <img src={profileIcon} className="clay-navigation__icon" width="32" height="32" alt="" draggable="false" />
             <span className={`text-[10px] mt-1 ${activeTab === 'profile' ? 'font-bold' : ''}`}>Профиль</span>
           </button>
         </nav>

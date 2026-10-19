@@ -324,10 +324,8 @@ export default function TestsTab({ onOverlayOpen }) {
 
   return (
 
-    <div className="flex flex-col relative select-none bg-transparent max-w-2xl mx-auto w-full pt-4 pb-6" lang="ru">
-      <div className="flex justify-center px-4 mb-8">
-        <img src="/testy_title.webp" alt="Тесты" className="h-14 object-contain" />
-      </div>
+    <div className="flex flex-col relative select-none bg-transparent max-w-2xl mx-auto w-full pt-2 pb-6" lang="ru">
+      <h1 className="sr-only">Тесты</h1>
       
       {/* Список категорий */}
       <div className="px-2 pb-6 space-y-4 animate-in fade-in duration-300 flex flex-col flex-1">

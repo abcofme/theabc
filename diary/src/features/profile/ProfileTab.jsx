@@ -10,7 +10,9 @@ import Avatar from '../../components/Avatar';
 import ClayBanner from '../../components/ClayBanner';
 import portraitBanner from '../../assets/profile/portrait-balanced.webp';
 import friendsBanner from '../../assets/profile/friends-balanced.webp';
+import headerVine from '../../assets/profile/header-vine-corner.webp';
 import { useProfile } from '../../context/profile';
+import './profile-header.css';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
@@ -474,33 +476,40 @@ export default function ProfileTab({ onOverlayOpen }) {
   return (
     <div className="flex flex-col relative select-none bg-transparent max-w-2xl mx-auto w-full">
       {/* 1. ШАПКА ПРОФИЛЯ (Аватар и Юзернейм) */}
-      <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-6 bg-rose-900/80 rounded-3xl mx-2 mt-2 mb-4 backdrop-blur-sm shadow-sm min-w-0">
-        <Avatar
-          src={tgUser.photo_url && tgUser.id ? `${API_URL}/api/avatar/${tgUser.id}` : null}
-          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg shrink-0"
-          fallback={
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-950/40 text-[#F5E6D3] rounded-full flex items-center justify-center font-bold text-2xl shadow-inner shrink-0">
-              {tgUser.first_name?.[0] || <User size={32} />}
+      <div className="profile-header bg-rose-900/80 rounded-3xl mx-2 mt-2 mb-4 backdrop-blur-sm min-w-0">
+        <img className="profile-header__vine profile-header__vine--top" src={headerVine} alt="" aria-hidden="true" width="512" height="512" draggable="false" />
+        <img className="profile-header__vine profile-header__vine--bottom" src={headerVine} alt="" aria-hidden="true" width="512" height="512" draggable="false" />
+        <div className="profile-header__content flex items-center gap-3 sm:gap-4 w-full min-w-0">
+          <Avatar
+            src={tgUser.photo_url && tgUser.id ? `${API_URL}/api/avatar/${tgUser.id}` : null}
+            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg shrink-0"
+            fallback={
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-950/40 text-[#F5E6D3] rounded-full flex items-center justify-center font-bold text-2xl shadow-inner shrink-0">
+                {tgUser.first_name?.[0] || <User size={32} />}
+              </div>
+            }
+          />
+          <div className="flex-1 min-w-0 flex flex-wrap items-center gap-3 justify-between">
+            <div className="min-w-[100px] flex-1">
+              <h2 className="text-lg sm:text-2xl font-bold text-[#F5E6D3] truncate">{tgUser.first_name}</h2>
+              <p className="text-xs sm:text-base text-[#F5E6D3] font-medium truncate">@{tgUser.username}</p>
             </div>
-          }
-        />
-        <div className="flex-1 min-w-0 flex flex-wrap items-center gap-3 justify-between">
-          <div className="min-w-[100px] flex-1">
-            <h2 className="text-lg sm:text-2xl font-bold text-[#F5E6D3] truncate">{tgUser.first_name}</h2>
-            <p className="text-xs sm:text-base text-[#F5E6D3] font-medium truncate">@{tgUser.username}</p>
-          </div>
-          <div 
-            className={`flex items-center gap-1 transition-transform shrink-0 ${accessLevel === 'Premium' ? 'cursor-pointer active:scale-95' : ''}`}
-            onClick={() => { if (accessLevel === 'Premium') setIsSubscriptionInfoModalOpen(true); }}
-          >
-            <div className={`font-bold px-3 py-1.5 rounded-xl text-sm sm:text-base text-center flex items-center gap-1.5 shadow-sm ${
-              accessLevel === 'Premium' ? 'bg-emerald-800 text-emerald-950' : 
-              accessLevel === 'Демо-доступ' ? 'bg-emerald-800/20 text-emerald-300' : 'bg-rose-950 text-[#F5E6D3]/60'
-            }`}>
-              {accessLevel === 'Premium' && <Sparkles size={16} />}
-              {accessLevel || 'Загрузка...'}
-            </div>
-            {accessLevel === 'Premium' && <ChevronRight size={20} className="text-[#F5E6D3]/60 shrink-0" />}
+            <button
+              type="button"
+              disabled={accessLevel !== 'Premium'}
+              aria-label={accessLevel === 'Premium' ? 'Управление подпиской Premium' : undefined}
+              className={`flex items-center gap-1 transition-transform shrink-0 ${accessLevel === 'Premium' ? 'cursor-pointer active:scale-95' : ''}`}
+              onClick={() => { if (accessLevel === 'Premium') setIsSubscriptionInfoModalOpen(true); }}
+            >
+              <div className={`font-bold px-3 py-1.5 rounded-xl text-sm sm:text-base text-center flex items-center gap-1.5 shadow-sm ${
+                accessLevel === 'Premium' ? 'profile-header__premium' :
+                accessLevel === 'Демо-доступ' ? 'bg-emerald-800/20 text-emerald-300' : 'bg-rose-950 text-[#F5E6D3]/60'
+              }`}>
+                {accessLevel === 'Premium' && <Sparkles size={16} />}
+                {accessLevel || 'Загрузка...'}
+              </div>
+              {accessLevel === 'Premium' && <ChevronRight size={20} className="text-[#F5E6D3]/60 shrink-0" />}
+            </button>
           </div>
         </div>
       </div>

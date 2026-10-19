@@ -1,0 +1,47 @@
+.profile-header {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 25px 22px;
+  border: 1px solid #d9b98a38;
+  box-shadow: inset 0 1px 0 #f5e6d30a, 0 5px 18px #16030526;
+}
+
+.profile-header__content {
+  position: relative;
+  z-index: 1;
+}
+
+.profile-header__vine {
+  position: absolute;
+  z-index: 0;
+  width: clamp(112px, 32%, 180px);
+  height: auto;
+  opacity: 0.82;
+  pointer-events: none;
+  user-select: none;
+}
+
+.profile-header__vine--top {
+  top: -11px;
+  right: -11px;
+}
+
+.profile-header__vine--bottom {
+  bottom: -15px;
+  left: -15px;
+  transform: rotate(180deg);
+  opacity: 0.7;
+}
+
+.profile-header__premium {
+  background: linear-gradient(145deg, #f1dfc1, #d9bd92);
+  color: #491815;
+  box-shadow: inset 0 1px 1px #fff3db99, 0 2px 3px #1e03082e;
+}
+
+@media (min-width: 640px) {
+  .profile-header {
+    padding: 28px;
+  }
+}
