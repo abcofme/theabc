@@ -8,8 +8,8 @@ import QRCode from 'react-qr-code';
 import GenerationProgress from '../../components/GenerationProgress';
 import Avatar from '../../components/Avatar';
 import ClayBanner from '../../components/ClayBanner';
-import portraitBanner from '../../assets/profile/portrait-fullbleed.webp';
-import friendsBanner from '../../assets/profile/friends-clay-serif.webp';
+import portraitBanner from '../../assets/profile/portrait-balanced.webp';
+import friendsBanner from '../../assets/profile/friends-balanced.webp';
 import { useProfile } from '../../context/profile';
 
 const WebApp = window.Telegram.WebApp;
