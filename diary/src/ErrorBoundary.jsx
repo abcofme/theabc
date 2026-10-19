@@ -21,7 +21,7 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '20px', backgroundColor: '#541515', color: '#F5E6D3', height: '100vh', overflow: 'auto', fontFamily: 'monospace' }}>
+        <div style={{ padding: '20px', backgroundColor: 'var(--app-background)', color: '#F5E6D3', height: '100vh', overflow: 'auto', fontFamily: 'monospace' }}>
           <h2 style={{ color: '#ff6b6b' }}>Что-то пошло не так.</h2>
           <p>Пожалуйста, сделайте скриншот этого экрана и отправьте разработчику:</p>
           <hr style={{ borderColor: '#ff6b6b', margin: '10px 0' }} />

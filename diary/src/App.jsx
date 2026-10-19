@@ -71,7 +71,7 @@ export default function App() {
   // Блокировка: если нет данных от Telegram, не пускаем
   if (!WebApp.initData) {
     return (
-      <div className="flex items-center justify-center h-screen bg-rose-950 text-center p-4">
+      <div className="flex items-center justify-center h-screen bg-app text-center p-4">
         <div>
           <h2 className="text-2xl font-bold text-[#F5E6D3] mb-2">Доступ запрещен</h2>
           <p className="text-[#F5E6D3]">Дневник можно открыть только через нашего Telegram-бота.</p>
@@ -82,7 +82,7 @@ export default function App() {
 
   return (
     <ProfileProvider>
-    <div className="flex flex-col h-full font-sans bg-rose-950 relative">
+    <div className="app-shell flex flex-col h-full font-sans bg-app relative">
       <div 
         className="fixed top-0 left-0 w-screen pointer-events-none z-0 transition-all duration-300"
         style={{
@@ -113,7 +113,7 @@ export default function App() {
 
       {/* Отрисовываем меню только если isNavHidden === false и клавиатура не открыта */}
       {(!isNavHidden && !isKeyboardOpen) && (
-        <nav aria-label="Главное меню" className="fixed bottom-0 left-0 w-full bg-rose-900 flex justify-between p-2 pb-safe z-50">
+        <nav aria-label="Главное меню" className="fixed bottom-0 left-0 w-full bg-app-menu border-t border-[#F5E6D3]/10 flex justify-between p-2 pb-safe z-50">
           <button
             type="button"
             aria-current={activeTab === 'diary' ? 'page' : undefined}

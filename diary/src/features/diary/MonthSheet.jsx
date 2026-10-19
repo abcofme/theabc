@@ -86,7 +86,7 @@ export default function MonthSheet({ today, daysWithEntries, onLoadMonth, onSele
           </div>
         </div>
 
-        <button onClick={onClose} className="mt-6 w-full py-3.5 bg-emerald-800 text-[#F5E6D3] font-bold rounded-xl active:scale-[0.98]">
+        <button onClick={onClose} className="mt-6 w-full py-3.5 bg-primary text-[#F5E6D3] font-bold rounded-xl active:scale-[0.98]">
           К сегодняшнему дню
         </button>
       </div>

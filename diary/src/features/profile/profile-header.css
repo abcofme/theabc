@@ -36,7 +36,7 @@
 
 .profile-header__premium {
   background: linear-gradient(145deg, #f1dfc1, #d9bd92);
-  color: #491815;
+  color: var(--color-rose-950);
   box-shadow: inset 0 1px 1px #fff3db99, 0 2px 3px #1e03082e;
 }
 

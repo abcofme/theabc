@@ -7,7 +7,7 @@
   overflow: hidden;
   border: 1px solid #f5e6d314;
   border-radius: 24px;
-  background: #481119;
+  background: var(--color-app);
   color: #f5e6d3;
   text-align: left;
   box-shadow: 0 5px 16px #16030524;
@@ -52,7 +52,7 @@ button.clay-banner:disabled {
   height: 27px;
   border: 1px solid #f5e6d324;
   border-radius: 50%;
-  background: #3b1015b3;
+  background: color-mix(in srgb, var(--color-rose-950) 72%, transparent);
   color: #f5e6d3;
 }
 

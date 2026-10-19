@@ -3,8 +3,8 @@ import { ChevronLeft } from 'lucide-react';
 
 const WebApp = window.Telegram.WebApp;
 
-const fieldClass = "w-full bg-rose-950 rounded-xl px-4 py-3 text-[#F5E6D3] placeholder:text-[#F5E6D3]/40 focus:outline-none focus:ring-2 focus:ring-emerald-700 resize-none";
-const primaryClass = "flex-1 bg-emerald-800 disabled:bg-emerald-950/40 disabled:text-[#F5E6D3]/50 text-[#F5E6D3] font-bold py-3 rounded-xl active:scale-[0.98]";
+const fieldClass = "w-full bg-rose-950 rounded-xl px-4 py-3 text-[#F5E6D3] placeholder:text-[#F5E6D3]/40 focus:outline-none focus:ring-2 focus:ring-sand resize-none";
+const primaryClass = "flex-1 bg-primary disabled:bg-rose-950/40 disabled:text-[#F5E6D3]/50 text-[#F5E6D3] font-bold py-3 rounded-xl active:scale-[0.98]";
 const secondaryClass = "px-4 bg-rose-800 text-[#F5E6D3] font-bold py-3 rounded-xl active:scale-[0.98]";
 
 // Запись в два шага: сначала событие, потом реакция — так проще начать и это похоже на разговор

@@ -24,9 +24,9 @@ const GenerationProgress = ({ text = "Генерация..." }) => {
         <span className="text-[#F5E6D3] font-medium text-sm">{text}</span>
         <span className="text-[#F5E6D3]/70 font-bold text-xs">{Math.floor(progress)}%</span>
       </div>
-      <div className="h-3 w-full bg-[#3D1418] rounded-full overflow-hidden shadow-inner">
+      <div className="h-3 w-full bg-rose-950 rounded-full overflow-hidden shadow-inner">
         <div 
-          className="h-full bg-gradient-to-r from-emerald-700 to-emerald-600 rounded-full transition-all duration-500 ease-out relative"
+          className="h-full bg-gradient-to-r from-sand to-white rounded-full transition-all duration-500 ease-out relative"
           style={{ width: `${progress}%` }}
         >
           {/* Блик на прогресс-баре для красоты */}

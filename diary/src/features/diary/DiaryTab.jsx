@@ -104,7 +104,7 @@ export default function DiaryTab({ onSheetOpen, onSwitchTab }) {
           <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-3xl font-bold text-[#F5E6D3]">Сегодня</h2>
             {streak >= 2 && (
-              <span className="flex items-center gap-1 bg-emerald-800 text-[#F5E6D3] text-xs font-bold px-2 py-1 rounded-lg">
+              <span className="flex items-center gap-1 bg-primary text-[#F5E6D3] text-xs font-bold px-2 py-1 rounded-lg">
                 <Flame size={14} /> {streak} {plural(streak, ['день', 'дня', 'дней'])} подряд
               </span>
             )}
