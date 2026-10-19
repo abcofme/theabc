@@ -8,7 +8,7 @@ import QRCode from 'react-qr-code';
 import GenerationProgress from '../../components/GenerationProgress';
 import Avatar from '../../components/Avatar';
 import ClayBanner from '../../components/ClayBanner';
-import portraitBanner from '../../assets/profile/portrait-clay-serif.webp';
+import portraitBanner from '../../assets/profile/portrait-fullbleed.webp';
 import friendsBanner from '../../assets/profile/friends-clay-serif.webp';
 import { useProfile } from '../../context/profile';
 
