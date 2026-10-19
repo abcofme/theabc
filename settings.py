@@ -6,7 +6,8 @@ load_dotenv()
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file='.env')
+    # extra='ignore': устаревшие переменные в .env (например, прежние TIMEWEB_AI_REPORTS_*) не роняют запуск
+    model_config = SettingsConfigDict(env_file='.env', extra='ignore')
 
     DEBUG: bool = False
     BOT_TOKEN: str
@@ -28,13 +29,9 @@ class Settings(BaseSettings):
     REDIS_PORT: int = None
     REDIS_PASSWORD: str = None
 
-    TIMEWEB_AI_TOKEN: str | None = None
+    # Агент Timeweb Cloud AI для всех функций с ИИ (см. ai_endpoint в backend/api/main.py)
     TIMEWEB_AI_URL: str | None = None
-    TIMEWEB_AI_PORTRAIT_URL: str | None = None
-    TIMEWEB_AI_REPORTS_URL: str | None = None
-    TIMEWEB_AI_REPORTS_TOKEN: str | None = None
-    TIMEWEB_AI_SCALE_URL: str | None = None
-    TIMEWEB_AI_SCALE_TOKEN: str | None = None
+    TIMEWEB_AI_TOKEN: str | None = None
 
     # Ретранслятор Bot API: из российского ДЦ api.telegram.org недоступен
     TELEGRAM_API_URL: str | None = None

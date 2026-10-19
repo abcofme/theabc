@@ -265,6 +265,18 @@ def _count_streak(dates, today):
 # Ссылки на фоновые задачи, иначе сборщик мусора может прервать их до конца
 _background_tasks: set = set()
 
+# Все функции с ИИ (портрет, отчёты, разбор записи, совместимость, импорт тестов) ходят к одному
+# агенту Timeweb Cloud AI. Модель задана в настройках агента (сейчас Claude Haiku 5.5): поле model в запросе он игнорирует
+AI_MODEL = "claude-haiku-5-5"
+
+
+def ai_endpoint() -> tuple[str | None, str | None]:
+    """URL chat/completions агента и его токен; None, если не настроены"""
+    url, token = _settings.TIMEWEB_AI_URL, _settings.TIMEWEB_AI_TOKEN
+    if url and not url.endswith("/chat/completions"):
+        url = url.rstrip("/") + "/chat/completions"
+    return url, token
+
 async def _start_reaction_analysis(user_id: int, entry_id: int, session: AsyncSession) -> bool:
     """Запускает разбор записи в фоне, если он вообще возможен. Фронт по ответу решает, ждать ли разбор."""
     if not await has_access(user_id, session):
@@ -484,7 +496,7 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
                 ai_url,
                 headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                 json={
-                    "model": "claude-3.5-sonnet",
+                    "model": AI_MODEL,
                     "messages": [{"role": "user", "content": prompt}]
                 }
             )
@@ -494,7 +506,7 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
                     ai_url,
                     headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                     json={
-                        "model": "claude-3.5-sonnet",
+                        "model": AI_MODEL,
                         "messages": [{"role": "user", "content": prompt}]
                     }
                 )
@@ -625,21 +637,10 @@ async def generate_personality_portrait(
 Вот результаты тестов пользователя:
 {test_results_text}"""
 
-    # 3. Запрос в Timeweb Cloud API (Claude 3.5 Sonnet)
-    # Используем TIMEWEB_AI_REPORTS_URL для генерации портрета как отчета
-    ai_token = os.getenv("TIMEWEB_AI_REPORTS_TOKEN", os.getenv("TIMEWEB_AI_TOKEN"))
-    ai_url = os.getenv("TIMEWEB_AI_REPORTS_URL", os.getenv("TIMEWEB_AI_URL"))
-    
-    if not ai_url:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=500, detail="AI URL not configured")
-        
-    if not ai_url.endswith("/chat/completions"):
-        ai_url = ai_url.rstrip("/") + "/chat/completions"
-    
-    if not ai_token:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=500, detail="TIMEWEB_AI_TOKEN is not set on the server")
+    # 3. Запрос к агенту Timeweb Cloud AI
+    ai_url, ai_token = ai_endpoint()
+    if not ai_url or not ai_token:
+        raise HTTPException(status_code=500, detail="AI сервис не настроен")
         
     # Запускаем генерацию в фоне и сразу возвращаем ответ
     background_tasks.add_task(_generate_portrait_bg, user_id, total_tests, prompt, ai_url, ai_token)
@@ -699,7 +700,7 @@ async def _generate_report_bg(user_id: int, report_title: str, report_prompt: st
     from backend.database.models import BehavioralReport
     try:
         payload = {
-            "model": "claude-3.5-sonnet",
+            "model": AI_MODEL,
             "messages": [{"role": "user", "content": report_prompt}]
         }
         print(f"--- Отправка запроса к ИИ ({payload['model']}) ---")
@@ -715,7 +716,7 @@ async def _generate_report_bg(user_id: int, report_title: str, report_prompt: st
             )
             
             if ai_response.status_code == 404:
-                payload["model"] = "claude-3.5-sonnet"
+                payload["model"] = AI_MODEL
                 ai_response = await client.post(
                     ai_url,
                     headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
@@ -958,19 +959,10 @@ async def generate_report(
         from fastapi import HTTPException
         raise HTTPException(status_code=400, detail="Неизвестный тип отчета.")
 
-    ai_token = os.getenv("TIMEWEB_AI_REPORTS_TOKEN", os.getenv("TIMEWEB_AI_TOKEN"))
-    ai_url = os.getenv("TIMEWEB_AI_REPORTS_URL", os.getenv("TIMEWEB_AI_URL"))
-    
-    if not ai_url:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=500, detail="AI URL not configured")
-        
-    if not ai_url.endswith("/chat/completions"):
-        ai_url = ai_url.rstrip("/") + "/chat/completions"
-        
-    if not ai_token:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=500, detail="AI token not configured")
+    ai_url, ai_token = ai_endpoint()
+    if not ai_url or not ai_token:
+        from fastapi import HTTPException  # в этой функции имя локальное: импорт есть выше по веткам
+        raise HTTPException(status_code=500, detail="AI сервис не настроен")
 
     task = asyncio.create_task(_generate_report_bg(user_id, report_title, report_prompt, start_d, end_d, ai_url, ai_token, len(entries)))
     
@@ -1045,18 +1037,9 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
     from sqlalchemy import select
     
     try:
-        # Анализ записей дневника — агент Timeweb Cloud AI (Gemini 3.8 Flash)
-        ai_token = os.getenv("TIMEWEB_AI_DIARY_TOKEN") or os.getenv("TIMEWEB_AI_SCALE_TOKEN") or os.getenv("TIMEWEB_AI_TOKEN")
-        ai_url = os.getenv(
-            "TIMEWEB_AI_DIARY_URL",
-            "https://agent.timeweb.cloud/api/v1/cloud-ai/agents/4adc43af-71a3-4290-85e0-9d629969609e/v1",
-        )
-            
-        if not ai_url.endswith("/chat/completions"):
-            ai_url = ai_url.rstrip("/") + "/chat/completions"
-            
-        if not ai_token:
-            print("TIMEWEB_AI_TOKEN is not set")
+        ai_url, ai_token = ai_endpoint()
+        if not ai_url or not ai_token:
+            print("TIMEWEB_AI_URL / TIMEWEB_AI_TOKEN не заданы")
             return
             
         async with async_session() as db:
@@ -1096,7 +1079,7 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int):
                         "Content-Type": "application/json"
                     },
                     json={
-                        "model": "gemini-3.8-flash",
+                        "model": AI_MODEL,
                         "max_tokens": 8192,
                         "messages": messages
                     }
@@ -1591,12 +1574,9 @@ async def ai_import_test(
     if not category_id:
         raise HTTPException(status_code=400, detail="category_id обязателен")
 
-    ai_token = os.getenv("TIMEWEB_AI_REPORTS_TOKEN", os.getenv("TIMEWEB_AI_TOKEN"))
-    ai_url = os.getenv("TIMEWEB_AI_REPORTS_URL", os.getenv("TIMEWEB_AI_URL", ""))
-    if not ai_token or not ai_url:
+    ai_url, ai_token = ai_endpoint()
+    if not ai_url or not ai_token:
         raise HTTPException(status_code=500, detail="AI сервис не настроен")
-    if not ai_url.endswith("/chat/completions"):
-        ai_url = ai_url.rstrip("/") + "/chat/completions"
 
     prompt = f"""Ты — ассистент по извлечению данных психологических тестов.
 Из сырого текста ниже извлеки структуру теста и верни ТОЛЬКО валидный JSON без каких-либо пояснений.
@@ -1638,7 +1618,7 @@ async def ai_import_test(
             resp = await client.post(
                 ai_url,
                 headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
-                json={"model": "gpt-4o-mini", "messages": [{"role": "user", "content": prompt}]}
+                json={"model": AI_MODEL, "messages": [{"role": "user", "content": prompt}]}
             )
             if resp.status_code != 200:
                 raise HTTPException(status_code=502, detail=f"AI ошибка {resp.status_code}: {resp.text[:300]}")
@@ -2337,7 +2317,7 @@ async def _generate_compatibility_bg(user_id: int, friend_id: int, compat_type: 
                 ai_url,
                 headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                 json={
-                    "model": "gpt-4o-mini",
+                    "model": AI_MODEL,
                     "messages": [{"role": "user", "content": prompt}]
                 }
             )
@@ -2346,7 +2326,7 @@ async def _generate_compatibility_bg(user_id: int, friend_id: int, compat_type: 
                     ai_url,
                     headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                     json={
-                        "model": "gpt-4o-mini",
+                        "model": AI_MODEL,
                         "messages": [{"role": "user", "content": prompt}]
                     }
                 )
@@ -2529,14 +2509,9 @@ async def generate_compatibility(
 
 Называй пользователей только по именам ({name_a} и {name_b}), не используй обозначения «А» и «Б». Используй красивое форматирование Markdown (заголовки, списки). Не используй никаких вступлений, сразу выдавай результат анализа. Сгенерируй ответ строго по четырём блокам."""
 
-        ai_token = os.getenv("TIMEWEB_AI_TOKEN", os.getenv("TIMEWEB_AI_REPORTS_TOKEN", os.getenv("TIMEWEB_AI_SCALE_TOKEN")))
-        ai_url = os.getenv("TIMEWEB_AI_URL", os.getenv("TIMEWEB_AI_REPORTS_URL", os.getenv("TIMEWEB_AI_SCALE_URL")))
-        
-        if not ai_token or not ai_url:
-            raise HTTPException(status_code=500, detail="AI service not configured")
-            
-        if not ai_url.endswith("/chat/completions"):
-            ai_url = ai_url.rstrip("/") + "/chat/completions"
+        ai_url, ai_token = ai_endpoint()
+        if not ai_url or not ai_token:
+            raise HTTPException(status_code=500, detail="AI сервис не настроен")
 
         task = asyncio.create_task(_generate_compatibility_bg(user_id, friend_id, req.type, req.my_gender, req.friend_gender, prompt, ai_url, ai_token))
         
