@@ -1,0 +1,28 @@
+/* Высота клетки спрайта подобрана так, что высота заглавной ≈ 0.72em, как у обычного шрифта. */
+.clay-text {
+  --clay-box: 1.14em;
+  display: inline;
+  color: #f3e2c6;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.clay-text__word {
+  white-space: nowrap;
+}
+
+.clay-text__glyph {
+  display: inline-block;
+  width: calc(var(--clay-w) * var(--clay-box));
+  height: var(--clay-box);
+  margin-inline: -0.01em;
+  vertical-align: calc(var(--clay-descent) * var(--clay-box) * -1);
+  background-image: var(--clay-sheet);
+  background-repeat: no-repeat;
+  background-size: calc(var(--clay-sheet-w) * var(--clay-box)) calc(var(--clay-sheet-h) * var(--clay-box));
+  background-position: calc(var(--clay-x) * var(--clay-box) * -1) calc(var(--clay-y) * var(--clay-box) * -1);
+}
+
+.clay-text__fallback {
+  font-size: 1.05em;
+}
