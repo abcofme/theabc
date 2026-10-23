@@ -12,6 +12,8 @@ from backend.integrations.payment.yoo import _create_recurring_payment, _check_p
 from backend.pricing import PREMIUM_PRICE
 from backend.telegram.bot import bot
 
+PREMIUM_RENEWED_TEXT = "💎 <b>Подписка Premium продлена ещё на месяц</b>\n\nВсе возможности «Азбуки Я» по-прежнему без ограничений."
+
 @scheduler.scheduled_job(IntervalTrigger(hours=1))
 async def process_recurring_subscriptions():
     """
@@ -52,7 +54,7 @@ async def process_recurring_subscriptions():
                     user.premium_until += timedelta(days=30)
 
                     try:
-                        await bot.send_message(user.id, "Ваша подписка Premium успешно продлена на месяц!")
+                        await bot.send_message(user.id, PREMIUM_RENEWED_TEXT)
                     except:
                         pass
                 else:
@@ -83,7 +85,7 @@ async def process_recurring_subscriptions():
                     user.premium_until += timedelta(days=30)
 
                     try:
-                        await bot.send_message(user.id, "Ваша подписка Premium успешно продлена на месяц!")
+                        await bot.send_message(user.id, PREMIUM_RENEWED_TEXT)
                     except:
                         pass
                         

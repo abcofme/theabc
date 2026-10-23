@@ -5,6 +5,7 @@ from aiogram import types
 from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InputMediaDocument, InputMediaPhoto, InputMediaAudio, InputMediaVideo
+from loguru import logger
 
 from backend.database.models import User
 from backend.redis_db.context import context_manager, DELETE_KEY, EDIT_KEY, PREVIOUS_KEY
@@ -90,7 +91,8 @@ async def edit_scheduled_message(
                                 chat_id=chat_id, message_id=message_id, media=media, reply_markup=kb
                             )
                         except Exception as e:
-                            await bot.send_message(chat_id=chat_id, text=f"🔧 Техническая ошибка при загрузке картинки: {e}")
+                            logger.error(f"edit_message_media failed: {e!r}")
+                            await bot.send_message(chat_id=chat_id, text="🔧 Не получилось загрузить картинку. Попробуй ещё раз чуть позже.")
                 elif text:
                     try:
                         msg = await bot.edit_message_text(

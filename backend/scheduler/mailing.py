@@ -41,7 +41,7 @@ async def mailings():
                 await dao.update_object(Mailing, mailing.id, dict(completed_at=datetime.now(), sent=results))
                 await bot.send_message(
                     chat_id=mailing.user_id,
-                    text="Рассылка успешно закончилась"
+                    text="✅ Рассылка завершена"
                 )
 
 

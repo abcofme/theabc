@@ -84,6 +84,6 @@ class AntiSpamMiddleware(BaseMiddleware):
         user_id = callback.from_user.id
         is_allowed = await self.anti_spam.is_action_allowed(user_id, "action", 0.8)
         if not is_allowed:
-            await callback.answer("Не нажимайте кнопки слишком часто!", show_alert=False)
+            await callback.answer("Не так быстро — подожди секунду", show_alert=False)
             raise CancelHandler()
         data['anti_spam'] = self.anti_spam

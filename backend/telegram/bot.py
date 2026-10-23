@@ -6,6 +6,7 @@ from aiogram.client.telegram import TelegramAPIServer
 from aiogram.fsm.storage.redis import RedisStorage
 
 from backend.redis_db import async_redis
+from backend.telegram.emoji import CustomEmojiMiddleware
 from settings import settings
 
 
@@ -21,4 +22,6 @@ def create_session() -> AiohttpSession | None:
 
 
 bot = Bot(token=settings.BOT_TOKEN, parse_mode=enums.ParseMode.HTML, session=create_session())
+# Кастомные эмодзи подставляются и в процессе бота, и в API (уведомления через notify)
+bot.session.middleware(CustomEmojiMiddleware())
 dp = Dispatcher(bot=bot, storage=RedisStorage(redis=async_redis))

@@ -68,10 +68,8 @@ async def get_avatar(user_id: int, session: AsyncSession = Depends(get_session))
 
 
 async def _greet_new_friends(user: User, inviter_id: int):
-    from backend.telegram.notify import notify
-    name = user.tg_first_name or (f"@{user.username}" if user.username else "Ваш друг")
-    await notify(inviter_id, f"{name} принял(а) приглашение — теперь вы друзья в «Азбуке Я».",
-                 "tab=reports&section=compatibility", "Открыть совместимость")
+    from backend.telegram.notify import greet_new_friend
+    await greet_new_friend(user, inviter_id)
 
 
 # Всё о пользователе для приложения: доступ, баланс и цены, тесты с прогрессом, портрет

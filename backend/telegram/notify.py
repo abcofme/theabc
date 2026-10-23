@@ -1,6 +1,9 @@
+import html
+
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from loguru import logger
 
+from backend.database.models import User
 from backend.telegram.bot import bot
 from settings import settings
 
@@ -16,3 +19,14 @@ async def notify(user_id: int, text: str, query: str = "", button: str = "Отк
     except Exception as e:
         logger.warning(f"Notify {user_id} failed: {e!r}")
         return False
+
+
+async def greet_new_friend(friend: User, inviter_id: int) -> bool:
+    """Пригласившему — что друг принял приглашение (из бота и из приложения)"""
+    name = html.escape(friend.tg_first_name or (f"@{friend.username}" if friend.username else "Твой друг"))
+    return await notify(
+        inviter_id,
+        f"🤝 <b>{name}</b> принял(а) приглашение — теперь вы друзья в «Азбуке Я».\n\n"
+        "Посмотри, насколько вы совместимы.",
+        "tab=reports&section=compatibility", "Открыть совместимость",
+    )

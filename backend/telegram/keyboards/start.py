@@ -34,7 +34,7 @@ psychologist_btn = InlineKeyboardButton(
 )
 
 main_menu_btn = InlineKeyboardButton(
-    text="Назад",
+    text="← Назад",
     callback_data=MainMenu().pack()
 )
 
@@ -66,7 +66,10 @@ def about_diary_kb() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 def categories_kb() -> InlineKeyboardMarkup:
-    categories = ["Личность", "Самооценка", "Темперамент", "Общительность", "Профориентация"]
+    # Символы категорий — деревья из концепции «Азбуки Я»
+    categories = {
+        "Личность": "🍁", "Самооценка": "🍇", "Темперамент": "🌳", "Общительность": "🫒", "Профориентация": "🌿"
+    }
     builder = InlineKeyboardBuilder()
     
     builder.row(InlineKeyboardButton(
@@ -74,8 +77,8 @@ def categories_kb() -> InlineKeyboardMarkup:
         web_app=WebAppInfo(url=settings.WEB_APP_URL + "?tab=tests")
     ))
     
-    for cat in categories:
-        builder.row(InlineKeyboardButton(text=cat, callback_data=TestCategoryDesc(name=cat).pack()))
+    for cat, icon in categories.items():
+        builder.row(InlineKeyboardButton(text=f"{icon} {cat}", callback_data=TestCategoryDesc(name=cat).pack()))
     
     builder.row(main_menu_btn)
     return builder.as_markup()
