@@ -8,9 +8,9 @@ import QRCode from 'react-qr-code';
 import GenerationProgress from '../../components/GenerationProgress';
 import Avatar from '../../components/Avatar';
 import ClayBanner from '../../components/ClayBanner';
-import portraitBanner from '../../assets/profile/portrait-balanced.webp';
-import friendsBanner from '../../assets/profile/friends-balanced.webp';
-import headerVine from '../../assets/profile/header-vine-corner.webp';
+import portraitBanner from '../../assets/profile/portrait-handmade.webp';
+import friendsBanner from '../../assets/profile/friends-handmade.webp';
+import headerVine from '../../assets/profile/header-vine-handmade.webp';
 import { useProfile } from '../../context/profile';
 import './profile-header.css';
 
