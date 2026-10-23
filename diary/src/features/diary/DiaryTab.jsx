@@ -11,13 +11,11 @@ import MonthSheet from './MonthSheet';
 import DaySheet from './DaySheet';
 import { dayKey, plural, analysisLock } from './utils';
 
-const WebApp = window.Telegram.WebApp;
-
 const byId = (a, b) => a.id - b.id;
 
 // Дневник открывается на сегодняшнем дне: что произошло сегодня, ответ дневника и неделя вокруг.
 // Месяц и прошлые дни — во всплывающих экранах
-export default function DiaryTab({ onSheetOpen, onSwitchTab }) {
+export default function DiaryTab() {
   const { profile } = useProfile();
   const [today, setToday] = useState(() => dayKey(new Date()));
   const [reloadTick, setReloadTick] = useState(0);
@@ -45,24 +43,6 @@ export default function DiaryTab({ onSheetOpen, onSwitchTab }) {
     loadOverview();
   }, [loadOverview, reloadTick]);
 
-  // Нижнее меню прячем, пока открыт календарь или день
-  useEffect(() => {
-    onSheetOpen?.(isMonthOpen || !!openDay);
-  }, [isMonthOpen, openDay, onSheetOpen]);
-
-  // Системная кнопка «Назад» Telegram закрывает верхний экран
-  useEffect(() => {
-    const back = WebApp.BackButton;
-    if (!back || (!isMonthOpen && !openDay)) return;
-    const onBack = () => (openDay ? setOpenDay(null) : setIsMonthOpen(false));
-    back.onClick(onBack);
-    back.show();
-    return () => {
-      back.offClick(onBack);
-      back.hide();
-    };
-  }, [isMonthOpen, openDay]);
-
   const entriesByDay = useMemo(() => {
     const map = new Map();
     entries.forEach(e => map.set(e.date, [...(map.get(e.date) || []), e]));
@@ -85,10 +65,10 @@ export default function DiaryTab({ onSheetOpen, onSwitchTab }) {
     }
   };
 
-  const switchTab = (tab) => {
+  // Подсказка ведёт на другую вкладку — закрываем открытые поверх дневника экраны
+  const closeSheets = () => {
     setOpenDay(null);
     setIsMonthOpen(false);
-    onSwitchTab(tab);
   };
 
   const addToday = async (event, reaction) => {
@@ -154,7 +134,7 @@ export default function DiaryTab({ onSheetOpen, onSwitchTab }) {
         ) : (
           <EntryForm title="Что сегодня произошло?" onSubmit={addToday} />
         )}
-        {overviewStatus === 'ready' && <AnalysisHint lock={lock} onSwitchTab={switchTab} />}
+        {overviewStatus === 'ready' && <AnalysisHint lock={lock} />}
       </section>
 
       {/* НЕДАВНИЕ ДНИ ИЛИ ПОДСКАЗКА ДЛЯ НОВИЧКА */}
@@ -206,7 +186,7 @@ export default function DiaryTab({ onSheetOpen, onSwitchTab }) {
           entries={entriesByDay.get(openDay) || []}
           diary={diary}
           lock={lock}
-          onSwitchTab={switchTab}
+          onNavigate={closeSheets}
           onClose={() => setOpenDay(null)}
         />
       )}

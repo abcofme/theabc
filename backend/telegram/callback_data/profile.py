@@ -17,9 +17,6 @@ class TechSupport(CallbackData, prefix="tech_support"):
     pass
 
 
-class Referal(CallbackData, prefix="referal"):
-    pass
-
 class AboutDiary(CallbackData, prefix="about_diary"):
     pass
 

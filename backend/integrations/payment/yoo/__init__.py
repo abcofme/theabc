@@ -112,27 +112,3 @@ async def _check_payment(payment_id):
         return payment.metadata, float(payment.amount.value), payment_method_id
     else:
         return False, 0.0, None
-
-async def _create_payout_self_employed(amount: float, inn: str, description: str):
-    import uuid
-    from yookassa import Payout
-    key = str(uuid.uuid4())
-    try:
-        payload = {
-            "amount": {
-                "value": str(amount),
-                "currency": "RUB"
-            },
-            "payout_destination_data": {
-                "type": "yoo_money",
-            },
-            "deal": {
-                "id": inn
-            },
-            "description": description
-        }
-        payout = await asyncio.to_thread(Payout.create, payload, key)
-        return payout.status, payout.id
-    except HTTPError as e:
-        logger.warning(f"PAYOUT_ERROR: {e.response.json()}")
-        raise e

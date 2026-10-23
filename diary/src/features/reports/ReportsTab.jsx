@@ -1,455 +1,180 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronDown, Target, Sparkles, Calendar, FileText, Trash2, Lock } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import GenerationProgress from '../../components/GenerationProgress';
+import { useEffect, useState } from 'react';
+import { ChevronRight, FileText, Trash2 } from 'lucide-react';
+import Spinner from '../../components/Spinner';
 import ReportBanner from './ReportBanner';
-import repeatingEventsImage from '../../assets/reports/repeating-events-handmade.webp';
-import reactionsImage from '../../assets/reports/my-reactions-handmade.webp';
-import energyImage from '../../assets/reports/energy-handmade.webp';
-import competenceImage from '../../assets/reports/competence-handmade.webp';
+import ReportFormPage from './ReportFormPage';
+import ReportViewPage from './ReportViewPage';
+import { REPORT_GROUPS, reportTypeOf } from './reportTypes';
+import { useProfile } from '../../context/profile';
+import { useAppNav, useErrorHandler } from '../../navigation/appNav';
+import { api } from '../../utils/api';
 
 const WebApp = window.Telegram.WebApp;
-const API_URL = window.location.origin;
 
-export default function ReportsTab() {
-  const [reports, setReports] = useState([]);
-  const [loading, setLoading] = useState(true);
-  
+const formatDate = (iso) => new Date(iso).toLocaleDateString('ru-RU');
+
+export default function ReportsTab({ request }) {
+  const { profile, isPremium } = useProfile();
+  const { navigate, openBilling } = useAppNav();
+  const handleError = useErrorHandler();
+  const [reports, setReports] = useState(null);
   const [openCategory, setOpenCategory] = useState(null);
-  const [activeForm, setActiveForm] = useState(null);
+  const [formType, setFormType] = useState(null);
   const [viewReport, setViewReport] = useState(null);
-  
-  const [selectedPeriod, setSelectedPeriod] = useState('all');
-  const [customStart, setCustomStart] = useState('');
-  const [customEnd, setCustomEnd] = useState('');
-  
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [hasCareerAccess, setHasCareerAccess] = useState(false);
-  const [accessLevel, setAccessLevel] = useState('');
-  const [isBuyingCareer, setIsBuyingCareer] = useState(false);
+  const [pendingReportId, setPendingReportId] = useState(null);
+  const [handledRequest, setHandledRequest] = useState(null);
 
   useEffect(() => {
-    if (WebApp.initData) {
-      Promise.all([
-        fetch(`${API_URL}/api/reports`, { headers: { "Authorization": `Bearer ${WebApp.initData}` } }).then(res => res.json()),
-        fetch(`${API_URL}/api/profile`, { headers: { "Authorization": `Bearer ${WebApp.initData}` } }).then(res => res.json())
-      ])
-      .then(([reportsData, profileData]) => {
-        setReports(Array.isArray(reportsData) ? reportsData : []);
-        setHasCareerAccess(profileData.has_career_access || false);
-        setAccessLevel(profileData.access_level || '');
-        setLoading(false);
-      })
+    api('/api/reports')
+      .then(data => setReports(Array.isArray(data) ? data : []))
       .catch(err => {
         console.error(err);
-        setLoading(false);
+        setReports([]);
       });
-    } else {
-      setLoading(false);
-    }
   }, []);
 
-  const handleDeleteReport = async (e, reportId) => {
-    e.stopPropagation();
-    if (!window.confirm("Удалить этот отчет?")) return;
-    try {
-      const res = await fetch(`${API_URL}/api/reports/${reportId}`, {
-        method: "DELETE",
-        headers: { "Authorization": `Bearer ${WebApp.initData}` }
-      });
-      if (!res.ok) throw new Error("Failed to delete");
-      setReports(prev => prev.filter(r => r.id !== reportId));
-    } catch (err) {
-      console.error(err);
-      WebApp.showAlert("Ошибка при удалении отчета");
-    }
-  };
+  // Ссылка из бота «Отчет готов»: ?tab=reports&report=12
+  if (request && request.id !== handledRequest) {
+    setHandledRequest(request.id);
+    setPendingReportId(request.report ? Number(request.report) : null);
+  }
 
-  const handleViewReport = async (report) => {
+  const openReport = (report) => {
     setViewReport(report);
-    if (!report.is_read) {
+    if (report.is_read) return;
+    setReports(prev => prev.map(r => (r.id === report.id ? { ...r, is_read: true } : r)));
+    api(`/api/reports/${report.id}/read`, { method: 'POST' }).catch(console.error);
+  };
+
+  if (pendingReportId && reports) {
+    const report = reports.find(r => r.id === pendingReportId);
+    setPendingReportId(null);
+    if (report) openReport(report);
+  }
+
+  const deleteReport = (report) => {
+    WebApp.showConfirm('Удалить этот отчет?', async (confirmed) => {
+      if (!confirmed) return;
       try {
-        await fetch(`${API_URL}/api/reports/${report.id}/read`, {
-          method: "POST",
-          headers: { "Authorization": `Bearer ${WebApp.initData}` }
-        });
-        setReports(prev => prev.map(r => r.id === report.id ? { ...r, is_read: true } : r));
+        await api(`/api/reports/${report.id}`, { method: 'DELETE' });
+        setReports(prev => prev.filter(r => r.id !== report.id));
       } catch (err) {
-        console.error(err);
+        handleError(err, 'Не удалось удалить отчет');
       }
-    }
+    });
   };
 
-  const reportGroups = [
-    {
-      id: 'general',
-      items: [
-        {
-          id: 'repeating_events',
-          title: 'Какие события чаще всего повторяются в моей жизни?',
-          shortTitle: 'Повторяющиеся события',
-          bannerTitle: 'Повторяющиеся\nсобытия',
-          subtitle: 'Что снова и снова происходит в моей жизни',
-          image: repeatingEventsImage,
-          desc: 'Любовь или зависимость, мудрость или глупость. Что чаще, такие и мы. Наша жизнь в привычках, а контроль над ними в анализе.',
-        },
-        {
-          id: 'effective_reactions',
-          title: 'На какие ситуации я реагирую эффективно, а на какие нет?',
-          shortTitle: 'Мои реакции',
-          bannerTitle: 'Мои\nреакции',
-          subtitle: 'Как мои реакции влияют на происходящее',
-          image: reactionsImage,
-          desc: 'Эффективность в предсказуемости, а во внезапности не решение проблемы, а усугубление. Важно понимать что мы строим и почему ломаем.',
-        }
-      ]
-    },
-    {
-      id: 'career',
-      title: 'Профориентация',
-      desc: 'Исследуй, что даёт тебе силы и в чём твоя опора.',
-      items: [
-        {
-          id: 'energy',
-          title: 'Энергия',
-          shortTitle: 'Энергия',
-          subtitle: 'Что наполняет меня, а что забирает силы',
-          image: energyImage,
-          desc: 'От каких задач я забываю про время, какие действия дают мне энергию, а какие забирают. Ты не ленивый, просто не знаешь точно где твоя энергия умножается.',
-        },
-        {
-          id: 'competence',
-          title: 'Чувство компетентности',
-          shortTitle: 'Чувство компетентности',
-          bannerTitle: 'Чувство\nкомпетентности',
-          subtitle: 'На какой опыт и сильные стороны я могу опереться',
-          image: competenceImage,
-          desc: 'Понимание в чем твоя стезя подавляет страх, тревогу, неготовность к ответственности. Это есть у всех, состоит из побед, даже маленьких, похвалы от людей и результатов, которые замечают. В этом твоя сила.',
-        }
-      ]
-    }
-  ];
-
-  const reportTypes = reportGroups.flatMap(g => g.items);
-
-  const handleGenerate = async (type) => {
-    if (selectedPeriod === 'custom' && !customStart) {
-      WebApp.showAlert("Пожалуйста, укажите начальную дату.");
-      return;
-    }
-    
-    setIsGenerating(true);
-    try {
-      const payload = {
-        report_type: type,
-        period: selectedPeriod,
-        start_date: selectedPeriod === 'custom' ? customStart : null,
-        end_date: selectedPeriod === 'custom' && customEnd ? customEnd : null
-      };
-      
-      const res = await fetch(`${API_URL}/api/reports/generate`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${WebApp.initData}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
-      
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Ошибка генерации");
-      if (data.detail) throw new Error(data.detail);
-      
-      setReports(prev => [data, ...prev]);
-      setActiveForm(null);
-      setViewReport(data);
-      WebApp.HapticFeedback.notificationOccurred('success');
-    } catch (e) {
-      WebApp.showAlert(e.message);
-    } finally {
-      setIsGenerating(false);
-    }
+  const onCreated = (report) => {
+    setReports(prev => [report, ...(prev || [])]);
+    setFormType(null);
+    setViewReport(report);
   };
 
-  const buyCareerGuidance = async () => {
-    if (accessLevel !== 'Premium') {
-      WebApp.showAlert("Для покупки блока 'Профориентация' необходимо сначала оформить Premium подписку в Профиле.");
-      return;
-    }
-    setIsBuyingCareer(true);
-    try {
-      const response = await fetch(`${API_URL}/api/career/buy`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${WebApp.initData}`,
-          "Content-Type": "application/json"
-        }
-      });
-      const data = await response.json();
-      if (response.ok) {
-        WebApp.openLink(data.url);
-      } else {
-        WebApp.showAlert(`Ошибка: ${data.detail || "Не удалось создать платеж"}`);
-      }
-    } catch (err) {
-      WebApp.showAlert(`Ошибка сети: ${err.message}`);
-    } finally {
-      setIsBuyingCareer(false);
-    }
-  };
-
-  const getMarkdownComponents = () => ({
-    h1: ({node, ...props}) => <h1 className="text-2xl sm:text-3xl font-black text-[#F5E6D3] text-center mb-8 mt-4 uppercase drop-shadow-sm break-words" {...props} />,
-    h2: ({node, ...props}) => <h2 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] mt-10 mb-6 flex items-center justify-center pb-4 break-words text-center"><Sparkles className="text-[#F5E6D3] inline mb-1 mr-3" size={24} /> {props.children}</h2>,
-    p: ({node, ...props}) => <p className="text-[#F5E6D3] leading-relaxed mb-6 text-base font-medium text-left break-words" {...props} />,
-    strong: ({node, ...props}) => <strong className="text-[#F5E6D3] font-bold text-lg break-words" {...props} />,
-    ul: ({node, ...props}) => <ul className="space-y-4 mb-8 mt-4 pl-1 w-full" {...props} />,
-    li: ({node, ...props}) => (
-      <li className="flex items-start text-base font-medium text-[#F5E6D3] break-words w-full">
-        <Target className="shrink-0 text-[#F5E6D3] mr-3 mt-1" size={20} />
-        <span className="flex-1 block">{props.children}</span>
-      </li>
-    ),
-  });
-
-  if (viewReport) {
-    return (
-      <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-right-8 duration-300 max-w-2xl mx-auto w-full pt-4 pb-safe">
-        <button 
-          onClick={() => setViewReport(null)}
-          className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-6 transition-colors self-start"
-        >
-          <ChevronLeft size={20} />
-          <span className="font-medium">Назад</span>
-        </button>
-        
-        <div className="bg-rose-900/80 rounded-3xl p-5 sm:p-8 mb-6 mx-2 shadow-xl backdrop-blur-sm">
-          <div className="flex items-center gap-2 text-[#F5E6D3] mb-6 pb-4">
-            <Calendar size={16} />
-            <span className="text-sm font-medium">Отчет от {new Date(viewReport.created_at).toLocaleDateString('ru-RU')}</span>
-          </div>
-          <ReactMarkdown components={getMarkdownComponents()}>
-            {viewReport.content}
-          </ReactMarkdown>
-        </div>
-      </div>
-    );
-  }
-
-  if (activeForm) {
-    const rType = reportTypes.find(r => r.id === activeForm);
-    return (
-      <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-right-8 duration-300 max-w-2xl mx-auto w-full pt-4">
-        <button 
-          onClick={() => setActiveForm(null)}
-          className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-6 transition-colors self-start"
-        >
-          <ChevronLeft size={20} />
-          <span className="font-medium">Назад</span>
-        </button>
-        
-        <div className="mb-6 mx-2">
-          <ReportBanner report={rType} />
-          <p className="text-sm text-[#F5E6D3]/80 leading-relaxed mt-4 px-2">{rType.title}</p>
-        </div>
-
-        {isGenerating ? (
-          <div className="px-4 mt-2 w-full">
-            <GenerationProgress text="Отчёт формируется..." />
-          </div>
-        ) : (
-          <>
-            <div className="bg-rose-900 rounded-2xl p-5 mb-6 mx-2">
-              <h3 className="text-sm font-bold text-[#F5E6D3] uppercase tracking-wider mb-4">Выбрать период</h3>
-              <div className="relative mb-4">
-                <select 
-                  value={selectedPeriod}
-                  onChange={(e) => setSelectedPeriod(e.target.value)}
-                  className="w-full appearance-none bg-rose-950 text-[#F5E6D3] text-base rounded-xl p-4 pr-10 focus:outline-none focus: transition-colors"
-                >
-                  <option value="week">За последнюю неделю</option>
-                  <option value="month">За последний месяц</option>
-                  <option value="3months">За последние 3 месяца</option>
-                  <option value="year">За год</option>
-                  <option value="all">За всё время</option>
-                  <option value="custom">Указать свой период</option>
-                </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-[#F5E6D3] pointer-events-none" size={20} />
-              </div>
-              
-              {selectedPeriod === 'custom' && (
-                <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div>
-                    <label className="text-xs text-[#F5E6D3] uppercase tracking-wider mb-1 block">От:</label>
-                    <input 
-                      type="date" 
-                      value={customStart}
-                      onChange={(e) => setCustomStart(e.target.value)}
-                      className="w-full bg-rose-950 text-[#F5E6D3] text-base rounded-xl p-3 focus:outline-none focus:"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-[#F5E6D3] uppercase tracking-wider mb-1 block">До (необязательно):</label>
-                    <input 
-                      type="date" 
-                      value={customEnd}
-                      onChange={(e) => setCustomEnd(e.target.value)}
-                      className="w-full bg-rose-950 text-[#F5E6D3] text-base rounded-xl p-3 focus:outline-none focus:"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <button 
-              onClick={() => handleGenerate(activeForm)}
-              disabled={isGenerating}
-              className="w-[calc(100%-1rem)] mx-2 bg-emerald-800 disabled:bg-emerald-950/50 hover:bg-emerald-800 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
-            >
-              Проанализировать
-            </button>
-          </>
-        )}
-      </div>
-    );
-  }
+  const careerTestsPassed = profile?.categories?.find(c => c.name === 'Профориентация')?.tests.some(t => t.passed);
+  const canAfford = isPremium || (profile && profile.balance >= profile.prices.report);
 
   return (
-    <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-2xl mx-auto w-full pt-4 pb-6" lang="ru">
+    <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full pt-4 pb-6" lang="ru">
       <h2 className="text-2xl font-bold text-[#F5E6D3] mb-2 px-4 text-center">Поведенческий код</h2>
-      
       <p className="text-sm text-[#F5E6D3]/75 text-center px-4 mb-7 leading-relaxed">
         Замечай повторения, понимай свои реакции и находи опору в записях дневника.
       </p>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="w-8 h-8 rounded-full animate-spin"></div>
-        </div>
-      ) : (
+      {!reports ? <Spinner /> : (
         <div className="flex flex-col gap-8 px-2">
-          {reportGroups.map((group, gIdx) => (
-            <div key={group.id || gIdx} className="flex flex-col gap-4">
+          {REPORT_GROUPS.map(group => (
+            <div key={group.id} className="flex flex-col gap-4">
               {group.title && (
                 <div className="px-1 mt-1">
                   <h2 className="text-lg font-bold text-[#F5E6D3] mb-1">{group.title}</h2>
                   {group.desc && <p className="text-xs text-[#F5E6D3]/70 leading-relaxed">{group.desc}</p>}
                 </div>
               )}
-              <div className="flex flex-col gap-4">
-                {group.items.map(rtype => {
-                  const typeReports = reports.filter(r => 
-                    r.title === rtype.title || 
-                    (rtype.id === 'repeating_events' && r.title.includes('Повторяющиеся')) || 
-                    (rtype.id === 'effective_reactions' && r.title.includes('эффективно')) ||
-                    (rtype.id === 'energy' && r.title.includes('Энергия')) ||
-                    (rtype.id === 'competence' && r.title.includes('компетентност'))
-                  );
-                  const isOpen = openCategory === rtype.id;
-                  
-                  return (
-                    <div key={rtype.id}>
-                      <ReportBanner
-                        report={rtype}
-                        expanded={isOpen}
-                        onClick={() => setOpenCategory(isOpen ? null : rtype.id)}
-                        summary={typeReports.some(r => r.is_read === false) ? 'Готов новый отчёт' : undefined}
-                      />
-                      
-                      <div id={`report-panel-${rtype.id}`} role="region" aria-labelledby={`clay-banner-title-report-${rtype.id}`} hidden={!isOpen}>
+              {group.items.map(type => {
+                const typeReports = reports.filter(r => reportTypeOf(r)?.id === type.id);
+                const isOpen = openCategory === type.id;
+                const needsCareerTests = group.id === 'career' && !careerTestsPassed;
+
+                return (
+                  <div key={type.id}>
+                    <ReportBanner
+                      report={type}
+                      expanded={isOpen}
+                      onClick={() => setOpenCategory(isOpen ? null : type.id)}
+                      hasNew={typeReports.some(r => r.is_read === false)}
+                    />
+                    <div id={`report-panel-${type.id}`} role="region" aria-labelledby={`clay-banner-title-report-${type.id}`} hidden={!isOpen}>
                       {isOpen && (
-                        <div className="report-details p-5 bg-rose-900/60 flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
-                          <p className="text-sm text-[#F5E6D3]/80 leading-relaxed">{rtype.subtitle}</p>
-                          {group.id === 'career' && !hasCareerAccess ? (
-                            <div className="py-6 flex flex-col items-center justify-center text-center px-2">
-                              <div className="w-12 h-12 rounded-full bg-rose-900/50 flex items-center justify-center mb-3">
-                                <span className="text-2xl"><Lock size={24} /></span>
-                              </div>
-                              <h3 className="text-[#F5E6D3] font-bold text-lg mb-2">Блок Профориентация</h3>
-                              <p className="text-[#F5E6D3]/70 text-sm mb-4">
-                                Для генерации отчетов по профориентации необходимо приобрести этот блок за 1499 ₽ (единоразово). Доступно только для Premium-пользователей.
-                              </p>
-                              <button
-                                onClick={buyCareerGuidance}
-                                disabled={isBuyingCareer}
-                                className="w-full py-3.5 bg-emerald-800 hover:bg-emerald-800 text-[#F5E6D3] font-bold rounded-2xl shadow-sm transition-colors flex justify-center items-center gap-2"
-                              >
-                                {isBuyingCareer ? <span className="animate-spin text-xl">⏳</span> : "Купить за 1499 ₽"}
+                        <div className="report-details p-5 bg-rose-900/60 flex flex-col gap-3">
+                          <p className="text-sm text-[#F5E6D3]/80 leading-relaxed">{type.subtitle}</p>
+
+                          {needsCareerTests ? (
+                            <>
+                              <p className="text-sm text-[#F5E6D3]/80">Отчет строится по тестам профориентации — сначала пройди их.</p>
+                              <button onClick={() => navigate({ tab: 'tests' })} className="w-full py-3 bg-rose-800 text-[#F5E6D3] font-bold rounded-xl">
+                                К тестам
                               </button>
-                            </div>
-                          ) : accessLevel === 'Free' ? (
-                            <div className="py-6 flex flex-col items-center justify-center text-center px-2">
-                              <div className="w-12 h-12 rounded-full bg-rose-900/50 flex items-center justify-center mb-3">
-                                <span className="text-2xl"><Lock size={24} /></span>
-                              </div>
-                              <h3 className="text-[#F5E6D3] font-bold text-lg mb-2">Генерация отчета доступна только с Premium</h3>
-                            </div>
+                            </>
                           ) : (
                             <>
-                              <button 
-                                onClick={() => setActiveForm(rtype.id)}
-                                className="w-full py-3 bg-rose-800 hover:bg-rose-700 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center transition-colors text-center"
+                              <button
+                                onClick={() => setFormType(type)}
+                                className="w-full py-3 bg-rose-800 hover:bg-rose-700 text-[#F5E6D3] font-bold rounded-xl"
                               >
                                 Сформировать новый отчет
                               </button>
-                          
+                              {!canAfford && (
+                                <button onClick={openBilling} className="text-xs text-[#F5E6D3]/70 text-center underline underline-offset-2">
+                                  Баланс расходуется по мере использования и сейчас закончился — пополнить или оформить Premium
+                                </button>
+                              )}
+                            </>
+                          )}
+
                           {typeReports.length > 0 ? (
                             <div className="mt-4 flex flex-col gap-2">
-                              <span className="text-xs font-bold text-[#F5E6D3] uppercase tracking-wider mb-2">История отчетов</span>
+                              <span className="text-xs font-bold text-[#F5E6D3] uppercase tracking-wider mb-1">История отчетов</span>
                               {typeReports.map(r => (
-                                <div key={r.id} className="relative group w-full">
-                                  <button
-                                    onClick={() => handleViewReport(r)}
-                                    className="w-full text-left bg-rose-900 py-4 pl-4 pr-16 rounded-xl hover:bg-rose-800/80 transition-colors flex items-center justify-between"
-                                  >
-                                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                                      <FileText className="text-[#F5E6D3] transition-colors shrink-0" size={20} />
-                                      <div className="min-w-0 flex-1">
-                                        <div className="text-[#F5E6D3] font-medium mb-1 flex items-center flex-wrap gap-2">
-                                          <span className="truncate">Отчет от {new Date(r.created_at).toLocaleDateString('ru-RU')}</span>
-                                          {r.is_read === false && (
-                                            <span className="text-[10px] font-bold text-white bg-emerald-800 px-2 py-0.5 rounded-full shadow-sm animate-pulse shrink-0">
-                                              Отчет готов!
-                                            </span>
-                                          )}
-                                        </div>
-                                        <div className="text-xs text-[#F5E6D3] truncate">
-                                          {r.period_start ? `${new Date(r.period_start).toLocaleDateString('ru-RU')} - ` : ''} 
-                                          {r.period_end ? new Date(r.period_end).toLocaleDateString('ru-RU') : 'За все время'}
-                                        </div>
+                                <div key={r.id} className="flex items-stretch gap-1 bg-rose-900 rounded-xl">
+                                  <button onClick={() => openReport(r)} className="flex-1 min-w-0 flex items-center gap-3 py-3.5 pl-4 text-left">
+                                    <FileText className="text-[#F5E6D3] shrink-0" size={20} />
+                                    <div className="min-w-0 flex-1">
+                                      <div className="text-[#F5E6D3] font-medium">Отчет от {formatDate(r.created_at)}</div>
+                                      <div className="text-xs text-[#F5E6D3]/70 mt-0.5">
+                                        {r.period_start ? `${formatDate(r.period_start)} — ${formatDate(r.period_end)}` : 'За все время'}
                                       </div>
+                                      {r.is_read === false && (
+                                        <span className="inline-block mt-1.5 text-[10px] font-bold text-rose-950 bg-[#e5c398] px-2 py-0.5 rounded-full">Новый</span>
+                                      )}
                                     </div>
-                                  <div className="shrink-0 flex items-center justify-center w-6 opacity-0 sm:opacity-100">
-                                    <ChevronLeft className="text-[#F5E6D3] rotate-180" size={16} />
-                                  </div>
-                                </button>
-                                <button
-                                  onClick={(e) => handleDeleteReport(e, r.id)}
-                                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-[#F5E6D3]/60 hover:text-[#F5E6D3] hover:bg-red-500/20 rounded-xl transition-colors active:scale-95"
-                                  title="Удалить отчет"
-                                >
-                                  <Trash2 size={18} />
-                                </button>
-                              </div>
+                                    <ChevronRight className="text-[#F5E6D3]/60 shrink-0" size={18} />
+                                  </button>
+                                  <button
+                                    onClick={() => deleteReport(r)}
+                                    aria-label="Удалить отчет"
+                                    className="px-3 text-[#F5E6D3]/60 hover:text-[#F5E6D3] rounded-r-xl active:scale-95"
+                                  >
+                                    <Trash2 size={18} />
+                                  </button>
+                                </div>
                               ))}
                             </div>
                           ) : (
-                            <p className="text-sm text-[#F5E6D3] text-center mt-4">Вы еще не формировали этот тип отчета.</p>
-                          )}
-                            </>
+                            <p className="text-sm text-[#F5E6D3]/70 text-center mt-2">Этот отчет ты еще не формировал(а).</p>
                           )}
                         </div>
                       )}
-                      </div>
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </div>
           ))}
         </div>
       )}
 
+      {formType && <ReportFormPage type={formType} onBack={() => setFormType(null)} onCreated={onCreated} />}
+      {viewReport && <ReportViewPage report={viewReport} onBack={() => setViewReport(null)} />}
     </div>
   );
 }

@@ -1,9 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
 import DiaryTab from './features/diary/DiaryTab';
 import ProfileProvider from './context/ProfileProvider';
+import BackStackProvider from './navigation/BackStackProvider';
+import { useBackDepth } from './navigation/backStack';
+import { AppNavContext } from './navigation/appNav';
 import ProfileTab from './features/profile/ProfileTab';
 import ReportsTab from './features/reports/ReportsTab';
 import TestsTab from './features/tests/TestsTab';
+import BillingPage from './features/billing/BillingPage';
 import bgLeaves from './assets/bg-leaves.webp';
 import diaryIcon from './assets/navigation/diary-clay.webp';
 import testsIcon from './assets/navigation/tests-clay.webp';
@@ -13,51 +17,28 @@ import './components/clay-navigation.css';
 
 const WebApp = window.Telegram.WebApp;
 
-export default function App() {
-  const getInitialTab = () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tab = urlParams.get('tab');
-    return ['diary', 'tests', 'reports', 'profile'].includes(tab) ? tab : 'diary';
+const TABS = [
+  { id: 'diary', label: 'Дневник', icon: diaryIcon },
+  { id: 'tests', label: 'Тесты', icon: testsIcon },
+  { id: 'reports', label: 'Отчеты', icon: reportsIcon },
+  { id: 'profile', label: 'Профиль', icon: profileIcon },
+];
+
+const isTextField = (el) => el?.tagName === 'INPUT' || el?.tagName === 'TEXTAREA';
+
+// Ссылки из бота открывают нужный экран: ?tab=reports&report=12, ?tab=profile&page=portrait, ?page=billing
+function readDeepLink() {
+  const params = new URLSearchParams(window.location.search);
+  const tab = params.get('tab');
+  return {
+    tab: TABS.some(t => t.id === tab) ? tab : 'diary',
+    page: params.get('page'),
+    report: params.get('report'),
+    id: 0,
   };
+}
 
-  const [activeTab, setActiveTab] = useState(getInitialTab());
-  const [isNavHidden, setIsNavHidden] = useState(false);
-  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
-
-  useEffect(() => {
-    const handleFocus = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        setIsKeyboardOpen(true);
-      }
-    };
-    const handleBlur = () => {
-      // Small timeout to prevent flickering if focus moves between inputs
-      setTimeout(() => {
-        if (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
-          setIsKeyboardOpen(false);
-        }
-      }, 50);
-    };
-    document.addEventListener('focusin', handleFocus);
-    document.addEventListener('focusout', handleBlur);
-    return () => {
-      document.removeEventListener('focusin', handleFocus);
-      document.removeEventListener('focusout', handleBlur);
-    };
-  }, []);
-
-  const [bgHeight, setBgHeight] = useState(() => `${window.innerHeight}px`);
-  useEffect(() => {
-    const handleResize = () => {
-      // Ignore resize if keyboard is open
-      if (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
-        setBgHeight(`${window.innerHeight}px`);
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
+export default function App() {
   // Сообщаем Telegram, что приложение готово (один раз, а не на каждый рендер)
   useEffect(() => {
     WebApp.ready();
@@ -82,85 +63,138 @@ export default function App() {
 
   return (
     <ProfileProvider>
-    <div className="flex flex-col h-full font-sans bg-rose-950 relative">
-      <div 
-        className="fixed top-0 left-0 w-screen pointer-events-none z-0 transition-all duration-300"
-        style={{
-          height: bgHeight,
-          backgroundImage: `url(${bgLeaves})`,
-          backgroundPosition: `right 0px bottom ${isNavHidden ? '-10px' : 'calc(45px + env(safe-area-inset-bottom))'}`,
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "60%"
-        }}
-      />
-
-      <main
-        className={`flex-1 flex flex-col overflow-y-auto p-4 relative z-10 ${isNavHidden ? '' : 'pb-24'}`}
-      >
-        <div className="flex-1 flex-col" style={{ display: activeTab === 'diary' ? 'flex' : 'none' }}>
-          <DiaryTab onSheetOpen={setIsNavHidden} onSwitchTab={setActiveTab} />
-        </div>
-        <div className="flex-1 flex-col" style={{ display: activeTab === 'tests' ? 'flex' : 'none' }}>
-          <TestsTab onOverlayOpen={setIsNavHidden} />
-        </div>
-        <div className="flex-1 flex-col" style={{ display: activeTab === 'reports' ? 'flex' : 'none' }}>
-          <ReportsTab onSwitchTab={setActiveTab} />
-        </div>
-        <div className="flex-1 flex-col" style={{ display: activeTab === 'profile' ? 'flex' : 'none' }}>
-          <ProfileTab onOverlayOpen={setIsNavHidden} />
-        </div>
-      </main>
-
-      {/* Отрисовываем меню только если isNavHidden === false и клавиатура не открыта */}
-      {(!isNavHidden && !isKeyboardOpen) && (
-        <nav aria-label="Главное меню" className="fixed bottom-0 left-0 w-full bg-rose-900 flex justify-between p-2 pb-safe z-50">
-          <button
-            type="button"
-            aria-current={activeTab === 'diary' ? 'page' : undefined}
-            onClick={() => setActiveTab('diary')}
-            className={`clay-navigation__item flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
-              activeTab === 'diary' ? 'text-[#F5E6D3]' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
-            }`}
-          >
-            <img src={diaryIcon} className="clay-navigation__icon" width="32" height="32" alt="" draggable="false" />
-            <span className={`text-[10px] mt-1 ${activeTab === 'diary' ? 'font-bold' : ''}`}>Дневник</span>
-          </button>
-          <button
-            type="button"
-            aria-current={activeTab === 'tests' ? 'page' : undefined}
-            onClick={() => setActiveTab('tests')}
-            className={`clay-navigation__item flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
-              activeTab === 'tests' ? 'text-[#F5E6D3]' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
-            }`}
-          >
-            <img src={testsIcon} className="clay-navigation__icon" width="32" height="32" alt="" draggable="false" />
-            <span className={`text-[10px] mt-1 ${activeTab === 'tests' ? 'font-bold' : ''}`}>Тесты</span>
-          </button>
-          <button
-            type="button"
-            aria-current={activeTab === 'reports' ? 'page' : undefined}
-            onClick={() => setActiveTab('reports')}
-            className={`clay-navigation__item flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
-              activeTab === 'reports' ? 'text-[#F5E6D3]' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
-            }`}
-          >
-            <img src={reportsIcon} className="clay-navigation__icon" width="32" height="32" alt="" draggable="false" />
-            <span className={`text-[10px] mt-1 ${activeTab === 'reports' ? 'font-bold' : ''}`}>Отчеты</span>
-          </button>
-          <button
-            type="button"
-            aria-current={activeTab === 'profile' ? 'page' : undefined}
-            onClick={() => setActiveTab('profile')}
-            className={`clay-navigation__item flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
-              activeTab === 'profile' ? 'text-[#F5E6D3]' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
-            }`}
-          >
-            <img src={profileIcon} className="clay-navigation__icon" width="32" height="32" alt="" draggable="false" />
-            <span className={`text-[10px] mt-1 ${activeTab === 'profile' ? 'font-bold' : ''}`}>Профиль</span>
-          </button>
-        </nav>
-      )}
-    </div>
+      <BackStackProvider>
+        <Shell />
+      </BackStackProvider>
     </ProfileProvider>
+  );
+}
+
+// Клавиатура открыта, пока фокус в поле ввода: прячем нижнее меню, чтобы оно не прыгало над ней
+function useKeyboardOpen() {
+  const [isOpen, setIsOpen] = useState(false);
+  useEffect(() => {
+    const onFocus = (e) => {
+      if (isTextField(e.target)) setIsOpen(true);
+    };
+    const onBlur = () => {
+      // Небольшая задержка, чтобы меню не мигало при переходе между полями
+      setTimeout(() => {
+        if (!isTextField(document.activeElement)) setIsOpen(false);
+      }, 50);
+    };
+    document.addEventListener('focusin', onFocus);
+    document.addEventListener('focusout', onBlur);
+    return () => {
+      document.removeEventListener('focusin', onFocus);
+      document.removeEventListener('focusout', onBlur);
+    };
+  }, []);
+  return isOpen;
+}
+
+// Высота фона без учёта клавиатуры: иначе листья подпрыгивают при вводе текста
+function useBackgroundHeight() {
+  const [height, setHeight] = useState(() => `${window.innerHeight}px`);
+  useEffect(() => {
+    const onResize = () => {
+      if (!isTextField(document.activeElement)) setHeight(`${window.innerHeight}px`);
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return height;
+}
+
+function Shell() {
+  const [request, setRequest] = useState(readDeepLink);
+  const [activeTab, setActiveTab] = useState(request.tab);
+  const [isBillingOpen, setIsBillingOpen] = useState(request.page === 'billing');
+  const depth = useBackDepth();
+  const isKeyboardOpen = useKeyboardOpen();
+  const isNavHidden = depth > 0 || isKeyboardOpen;
+  const bgHeight = useBackgroundHeight();
+
+  // У каждой вкладки своя позиция прокрутки: переход между вкладками её не переносит
+  const mainRef = useRef(null);
+  const scrollTops = useRef({});
+
+  const selectTab = useCallback((tab) => {
+    const main = mainRef.current;
+    if (tab === activeTab) {
+      main?.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    if (main) scrollTops.current[activeTab] = main.scrollTop;
+    setActiveTab(tab);
+  }, [activeTab]);
+
+  useLayoutEffect(() => {
+    if (mainRef.current) mainRef.current.scrollTop = scrollTops.current[activeTab] || 0;
+  }, [activeTab]);
+
+  const navigate = useCallback((target) => {
+    selectTab(target.tab);
+    setRequest({ ...target, id: Date.now() });
+  }, [selectTab]);
+  const openBilling = useCallback(() => setIsBillingOpen(true), []);
+  const nav = useMemo(() => ({ navigate, openBilling }), [navigate, openBilling]);
+
+  const requestFor = (tab) => (request.tab === tab ? request : null);
+
+  return (
+    <AppNavContext.Provider value={nav}>
+      <div className="flex flex-col h-full font-sans bg-rose-950 relative">
+        <div
+          className="fixed top-0 left-0 w-screen pointer-events-none z-0 transition-all duration-300"
+          style={{
+            height: bgHeight,
+            backgroundImage: `url(${bgLeaves})`,
+            backgroundPosition: `right 0px bottom ${isNavHidden ? '-10px' : 'calc(45px + env(safe-area-inset-bottom))'}`,
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "60%"
+          }}
+        />
+
+        <main ref={mainRef} className={`flex-1 flex flex-col overflow-y-auto p-4 relative z-10 ${isNavHidden ? '' : 'pb-24'}`}>
+          <div className="flex-1 flex-col" style={{ display: activeTab === 'diary' ? 'flex' : 'none' }}>
+            <DiaryTab />
+          </div>
+          <div className="flex-1 flex-col" style={{ display: activeTab === 'tests' ? 'flex' : 'none' }}>
+            <TestsTab />
+          </div>
+          <div className="flex-1 flex-col" style={{ display: activeTab === 'reports' ? 'flex' : 'none' }}>
+            <ReportsTab request={requestFor('reports')} />
+          </div>
+          <div className="flex-1 flex-col" style={{ display: activeTab === 'profile' ? 'flex' : 'none' }}>
+            <ProfileTab request={requestFor('profile')} />
+          </div>
+        </main>
+
+        {!isNavHidden && (
+          <nav aria-label="Главное меню" className="fixed bottom-0 left-0 w-full bg-rose-900 flex justify-between p-2 pb-safe z-50">
+            {TABS.map(tab => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  aria-current={isActive ? 'page' : undefined}
+                  onClick={() => selectTab(tab.id)}
+                  className={`clay-navigation__item flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
+                    isActive ? 'text-[#F5E6D3]' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
+                  }`}
+                >
+                  <img src={tab.icon} className="clay-navigation__icon" width="32" height="32" alt="" draggable="false" />
+                  <span className={`text-[10px] mt-1 ${isActive ? 'font-bold' : ''}`}>{tab.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        )}
+
+        {isBillingOpen && <BillingPage onBack={() => setIsBillingOpen(false)} />}
+      </div>
+    </AppNavContext.Provider>
   );
 }

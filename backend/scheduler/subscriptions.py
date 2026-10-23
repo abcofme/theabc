@@ -9,6 +9,7 @@ from backend.database import engine
 from backend.database.models import User, Payment
 from backend.scheduler import scheduler
 from backend.integrations.payment.yoo import _create_recurring_payment, _check_payment
+from backend.pricing import PREMIUM_PRICE
 from backend.telegram.bot import bot
 
 @scheduler.scheduled_job(IntervalTrigger(hours=1))
@@ -45,20 +46,11 @@ async def process_recurring_subscriptions():
             
             if pending:
                 # Check status
-                meta, amount, _ = await _check_payment(pending.uuid)
+                meta, _, _ = await _check_payment(pending.uuid)
                 if meta is not False: # succeeded
                     pending.success = True
                     user.premium_until += timedelta(days=30)
-                    
-                    if user.invited_id:
-                        try:
-                            inviter_id = int(user.invited_id)
-                            inviter = await session.get(User, inviter_id)
-                            if inviter:
-                                inviter.referral_balance_pending += int(amount / 2)
-                        except ValueError:
-                            pass
-                    
+
                     try:
                         await bot.send_message(user.id, "Ваша подписка Premium успешно продлена на месяц!")
                     except:
@@ -71,7 +63,7 @@ async def process_recurring_subscriptions():
             # Create a new recurring payment
             try:
                 status, payment_id = await _create_recurring_payment(
-                    amount=149,
+                    amount=PREMIUM_PRICE,
                     chat_id=str(user.id),
                     description="Продление Premium подписки",
                     email="",
@@ -89,15 +81,7 @@ async def process_recurring_subscriptions():
                 
                 if status == "succeeded":
                     user.premium_until += timedelta(days=30)
-                    if user.invited_id:
-                        try:
-                            inviter_id = int(user.invited_id)
-                            inviter = await session.get(User, inviter_id)
-                            if inviter:
-                                inviter.referral_balance_pending += int(149 / 2)
-                        except ValueError:
-                            pass
-                            
+
                     try:
                         await bot.send_message(user.id, "Ваша подписка Premium успешно продлена на месяц!")
                     except:

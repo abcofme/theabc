@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { format, parseISO, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, addMonths, subMonths } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Page from '../../components/Page';
 import { dayKey } from './utils';
 
 const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -31,65 +32,56 @@ export default function MonthSheet({ today, daysWithEntries, onLoadMonth, onSele
   });
 
   return (
-    <div className="fixed inset-0 z-50 bg-rose-950 flex flex-col">
-      <div className="flex-1 w-full max-w-2xl mx-auto p-4 flex flex-col overflow-y-auto">
-        <div className="flex items-center justify-between mb-6 pt-4">
-          <h3 className="text-2xl font-bold text-[#F5E6D3]">Календарь</h3>
-          <button onClick={onClose} aria-label="Закрыть" className="p-2 bg-rose-900 rounded-xl text-[#F5E6D3]">
-            <X size={24} />
-          </button>
-        </div>
-
-        <div className="flex items-center justify-between mb-3">
-          <button onClick={() => changeMonth(subMonths(month, 1))} aria-label="Предыдущий месяц" className="p-2 bg-rose-900 rounded-xl text-[#F5E6D3]">
-            <ChevronLeft size={20} />
-          </button>
-          <span className={`text-lg font-bold text-[#F5E6D3] capitalize ${isLoading ? 'opacity-60' : ''}`}>
-            {format(month, 'LLLL yyyy', { locale: ru })}
-          </span>
-          <button
-            onClick={() => changeMonth(addMonths(month, 1))}
-            disabled={isCurrentMonth}
-            aria-label="Следующий месяц"
-            className="p-2 bg-rose-900 rounded-xl text-[#F5E6D3] disabled:opacity-30"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
-
-        <div className="bg-rose-900/40 rounded-3xl p-2">
-          <div className="grid grid-cols-7 mb-1 text-center">
-            {weekDays.map(day => (
-              <div key={day} className="text-xs font-semibold text-[#F5E6D3]/70 uppercase py-1">{day}</div>
-            ))}
-          </div>
-          <div className="grid grid-cols-7 gap-1">
-            {days.map(date => {
-              const key = dayKey(date);
-              const inMonth = isSameMonth(date, month);
-              const isToday = key === today;
-              const isFuture = key > today;
-              const hasEntries = daysWithEntries.has(key);
-              return (
-                <button
-                  key={key}
-                  disabled={isFuture}
-                  onClick={() => onSelectDay(key)}
-                  className={`aspect-square flex items-center justify-center rounded-xl text-sm font-bold ${
-                    !inMonth ? 'text-[#F5E6D3]/40' : hasEntries ? 'bg-emerald-800/60 text-[#F5E6D3]' : 'bg-rose-900/80 text-[#F5E6D3]'
-                  } ${isToday ? 'ring-2 ring-[#F5E6D3]' : ''} ${isFuture ? 'opacity-30' : 'active:scale-95'}`}
-                >
-                  {format(date, 'd')}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <button onClick={onClose} className="mt-6 w-full py-3.5 bg-emerald-800 text-[#F5E6D3] font-bold rounded-xl active:scale-[0.98]">
-          К сегодняшнему дню
+    <Page title="Календарь" onBack={onClose}>
+      <div className="flex items-center justify-between mb-3">
+        <button onClick={() => changeMonth(subMonths(month, 1))} aria-label="Предыдущий месяц" className="p-2 bg-rose-900 rounded-xl text-[#F5E6D3]">
+          <ChevronLeft size={20} />
+        </button>
+        <span className={`text-lg font-bold text-[#F5E6D3] capitalize ${isLoading ? 'opacity-60' : ''}`}>
+          {format(month, 'LLLL yyyy', { locale: ru })}
+        </span>
+        <button
+          onClick={() => changeMonth(addMonths(month, 1))}
+          disabled={isCurrentMonth}
+          aria-label="Следующий месяц"
+          className="p-2 bg-rose-900 rounded-xl text-[#F5E6D3] disabled:opacity-30"
+        >
+          <ChevronRight size={20} />
         </button>
       </div>
-    </div>
+
+      <div className="bg-rose-900/40 rounded-3xl p-2">
+        <div className="grid grid-cols-7 mb-1 text-center">
+          {weekDays.map(day => (
+            <div key={day} className="text-xs font-semibold text-[#F5E6D3]/70 uppercase py-1">{day}</div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {days.map(date => {
+            const key = dayKey(date);
+            const inMonth = isSameMonth(date, month);
+            const isToday = key === today;
+            const isFuture = key > today;
+            const hasEntries = daysWithEntries.has(key);
+            return (
+              <button
+                key={key}
+                disabled={isFuture}
+                onClick={() => onSelectDay(key)}
+                className={`aspect-square flex items-center justify-center rounded-xl text-sm font-bold ${
+                  !inMonth ? 'text-[#F5E6D3]/40' : hasEntries ? 'bg-emerald-800/60 text-[#F5E6D3]' : 'bg-rose-900/80 text-[#F5E6D3]'
+                } ${isToday ? 'ring-2 ring-[#F5E6D3]' : ''} ${isFuture ? 'opacity-30' : 'active:scale-95'}`}
+              >
+                {format(date, 'd')}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <button onClick={onClose} className="mt-6 w-full py-3.5 bg-emerald-800 text-[#F5E6D3] font-bold rounded-xl active:scale-[0.98]">
+        К сегодняшнему дню
+      </button>
+    </Page>
   );
 }

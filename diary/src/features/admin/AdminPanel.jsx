@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, Check, Trash2, Edit, Plus, Heart, Gift, Link2, Download } from 'lucide-react';
+import { ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, Check, Trash2, Edit, Plus, Heart, Link2, Download } from 'lucide-react';
 import AdminTestEditor from './AdminTestEditor';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
 
-export default function AdminPanel({ onBack }) {
+export default function AdminPanel() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [isUnique, setIsUnique] = useState(false);
@@ -317,16 +317,7 @@ export default function AdminPanel({ onBack }) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 pb-6 animate-in fade-in slide-in-from-right-8 duration-300 flex flex-col w-full">
-      <button 
-        onClick={onBack}
-        className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-6 transition-colors self-start"
-      >
-        <ChevronLeft size={20} />
-        <span className="font-medium">Назад в профиль</span>
-      </button>
-
-      <h2 className="text-2xl font-bold text-[#F5E6D3] mb-6">Админ-панель</h2>
+    <div className="flex flex-col w-full">
 
       <div className="bg-rose-900 p-5 rounded-3xl mb-6 flex flex-col gap-4">
         <div>
@@ -502,14 +493,6 @@ export default function AdminPanel({ onBack }) {
             <span className="text-xl font-bold text-[#F5E6D3]">{stats.compat_reports_generated || 0}</span>
           </div>
 
-          <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Gift className="text-yellow-500" size={24} />
-              <span className="text-[#F5E6D3] font-medium">Реферальная программа</span>
-            </div>
-            <span className="text-xl font-bold text-[#F5E6D3]">{stats.referral_users || 0}</span>
-          </div>
-
           <h3 className="text-xl font-bold text-[#F5E6D3] mt-8 mb-4">Управление доступом</h3>
           <div className="bg-rose-900 p-5 rounded-2xl flex flex-col gap-4 shadow-sm">
             <div>
@@ -530,8 +513,7 @@ export default function AdminPanel({ onBack }) {
                 className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
               >
                 <option value="premium">Вечный Premium</option>
-                <option value="demo_7_days">Демо-доступ (7 дней)</option>
-                <option value="career">Блок Профориентация</option>
+                <option value="demo_7_days">Premium на 7 дней</option>
               </select>
             </div>
             <button 
@@ -562,7 +544,6 @@ export default function AdminPanel({ onBack }) {
                 className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
               >
                 <option value="premium">Premium</option>
-                <option value="career">Блок Профориентация</option>
               </select>
             </div>
             <button 

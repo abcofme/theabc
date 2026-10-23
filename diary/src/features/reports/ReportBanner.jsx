@@ -1,7 +1,7 @@
 import ClayBanner from '../../components/ClayBanner';
 import './reports.css';
 
-export default function ReportBanner({ report, expanded, onClick, summary }) {
+export default function ReportBanner({ report, expanded, onClick, hasNew }) {
   return (
     <ClayBanner
       id={`report-${report.id}`}
@@ -12,7 +12,9 @@ export default function ReportBanner({ report, expanded, onClick, summary }) {
       expanded={expanded}
       onClick={onClick}
       controlsId={`report-panel-${report.id}`}
-      summary={summary}
+      badge={hasNew ? 'Новый отчет' : undefined}
+      badgeAccent
+      chevron
     />
   );
 }

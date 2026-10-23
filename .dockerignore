@@ -3,6 +3,9 @@
 .env
 .env.*
 diary
+design
+output
+materials
 deploy/systemd
 node_modules
 **/__pycache__

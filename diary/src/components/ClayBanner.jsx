@@ -1,13 +1,14 @@
-import { ArrowUpRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react';
 import './clay-banner.css';
 
-export default function ClayBanner({ id, title, description, image, expanded, onClick, controlsId, summary, kind, chevron = false, disabled = false }) {
+// badge — короткая метка поверх картинки: прогресс «1/2» или «Новый отчет» (accent — выделить ярче)
+export default function ClayBanner({ id, title, description, image, expanded, onClick, controlsId, badge, badgeAccent = false, kind, chevron = false, disabled = false }) {
   const interactive = typeof onClick === 'function';
   const Container = interactive ? 'button' : 'div';
   const Heading = interactive ? 'h3' : 'h2';
   const titleId = `clay-banner-title-${id}`;
   const descriptionId = `clay-banner-description-${id}`;
-  const ActionIcon = expanded ? ChevronUp : chevron ? ChevronDown : ArrowUpRight;
+  const ActionIcon = expanded ? ChevronUp : chevron ? ChevronDown : ChevronRight;
 
   return (
     <Container
@@ -27,14 +28,12 @@ export default function ClayBanner({ id, title, description, image, expanded, on
       {/* The sculpted heading is baked into the art; retain one accessible text label. */}
       <Heading className="sr-only" id={titleId}>{title}</Heading>
       <p className="sr-only" id={descriptionId}>
-        {description}{summary ? `. ${summary}` : ''}
+        {description}{badge ? `. ${badge}` : ''}
       </p>
-      {interactive && (
-        <>
-          {summary && <span className="clay-banner__new" aria-hidden="true" />}
-          <span className="clay-banner__action" aria-hidden="true"><ActionIcon size={17} /></span>
-        </>
+      {badge && (
+        <span className={`clay-banner__badge ${badgeAccent ? 'clay-banner__badge--accent' : ''}`} aria-hidden="true">{badge}</span>
       )}
+      {interactive && <span className="clay-banner__action" aria-hidden="true"><ActionIcon size={17} /></span>}
     </Container>
   );
 }

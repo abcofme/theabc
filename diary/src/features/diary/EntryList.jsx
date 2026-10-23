@@ -3,15 +3,22 @@ import { Lock, ChevronRight } from 'lucide-react';
 import EntryCard from './EntryCard';
 import EntryForm from './EntryForm';
 import { analysisState } from './utils';
+import { useAppNav, useErrorHandler } from '../../navigation/appNav';
 
 const WebApp = window.Telegram.WebApp;
 
 // Одна строка вместо замка на каждой записи: почему дневник молчит и что сделать
-export function AnalysisHint({ lock, onSwitchTab }) {
+export function AnalysisHint({ lock, onNavigate }) {
+  const { navigate, openBilling } = useAppNav();
   if (!lock?.text) return null;
+  const go = () => {
+    onNavigate?.();
+    if (lock.action === 'billing') openBilling();
+    else navigate({ tab: lock.action });
+  };
   return (
     <button
-      onClick={() => onSwitchTab(lock.tab)}
+      onClick={go}
       className="w-full mt-3 flex items-center gap-2 text-left text-sm text-[#F5E6D3]/80 active:opacity-70"
     >
       <Lock size={14} className="shrink-0" />
@@ -23,6 +30,7 @@ export function AnalysisHint({ lock, onSwitchTab }) {
 
 export default function EntryList({ entries, diary, lock }) {
   const [editingId, setEditingId] = useState(null);
+  const handleError = useErrorHandler();
 
   const confirmDelete = (entry) => {
     WebApp.showConfirm('Удалить запись? Её нельзя будет восстановить.', (confirmed) => {
@@ -32,7 +40,7 @@ export default function EntryList({ entries, diary, lock }) {
   };
 
   const retry = (entry) => {
-    diary.retryAnalysis(entry.id).catch(() => WebApp.showAlert('Дневник сейчас не смог ответить. Попробуйте чуть позже.'));
+    diary.retryAnalysis(entry.id).catch(err => handleError(err, 'Дневник сейчас не смог ответить. Попробуйте чуть позже.'));
   };
 
   return (

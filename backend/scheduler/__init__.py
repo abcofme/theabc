@@ -4,6 +4,6 @@ scheduler = AsyncIOScheduler()
 
 from . import (
     mailing,
-    referrals,
+    diary_reminders,
 )
 from .subscriptions import *

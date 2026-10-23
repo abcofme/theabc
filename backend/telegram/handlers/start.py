@@ -9,9 +9,11 @@ from aiogram.types.web_app_info import WebAppInfo
 from backend.database.models import User, TrackingLink
 from sqlalchemy import select
 from backend.database.patterns.dao import DataAccessObject
+from backend.friends import befriend, inviter_from_payload
+from backend.telegram.notify import notify
 from backend.database.patterns.user import UserDAO
 from backend.telegram.bot import dp, bot
-from backend.telegram.callback_data.profile import Psychologist, TechSupport, MainMenu, Referal, AboutDiary, AboutTests, TestCategoryDesc
+from backend.telegram.callback_data.profile import Psychologist, TechSupport, MainMenu, AboutDiary, AboutTests, TestCategoryDesc
 from backend.telegram.filters.invite import InvitedFilter
 from backend.telegram.keyboards.base import back_kb
 from backend.telegram.keyboards.start import start_kb, main_menu_btn, menu_kb, categories_kb, about_diary_kb
@@ -32,13 +34,19 @@ START_TEXT = "Вот что такое “Азбука Я”. Узнай сво�
 async def start_handler(
         message: Message, user: User, state: FSMContext, dao: DataAccessObject
 ):
-    if user.tracking_link_id is None and message.text and message.text.startswith("/start "):
-        payload = message.text.split(" ")[-1]
-        if payload.startswith("tr_"):
-            code = payload[3:]
-            link = await dao.session.scalar(select(TrackingLink).where(TrackingLink.code == code))
-            if link:
-                await dao.update_object(User, user.id, dict(tracking_link_id=link.id))
+    payload = message.text.split(" ")[-1] if message.text and message.text.startswith("/start ") else None
+    if user.tracking_link_id is None and payload and payload.startswith("tr_"):
+        code = payload[3:]
+        link = await dao.session.scalar(select(TrackingLink).where(TrackingLink.code == code))
+        if link:
+            await dao.update_object(User, user.id, dict(tracking_link_id=link.id))
+
+    # Личная ссылка-приглашение друга: дружба сразу принята, пригласившему — сообщение
+    inviter_id = inviter_from_payload(payload)
+    if inviter_id and await befriend(dao.session, user.id, inviter_id):
+        name = user.tg_first_name or (f"@{user.username}" if user.username else "Ваш друг")
+        await notify(inviter_id, f"{name} принял(а) приглашение — теперь вы друзья в «Азбуке Я».",
+                     "tab=profile&page=friends", "Открыть друзей")
 
     await delete_pending_messages(user)
     await delete_editing_message(user)

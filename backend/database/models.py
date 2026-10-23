@@ -32,8 +32,11 @@ class User(BaseModel):
     invited_id: Mapped[str] = mapped_column(String(64), nullable=True)
     discount_pct: Mapped[int] = mapped_column(Integer(), nullable=True, default=0)
 
-    referral_balance_pending: Mapped[int] = mapped_column(Integer(), default=0, server_default="0")
-    referral_balance_available: Mapped[int] = mapped_column(Integer(), default=0, server_default="0")
+    # Рубли на функции с ИИ для тех, у кого нет Premium (цены — backend/pricing.py)
+    balance: Mapped[int] = mapped_column(Integer(), default=0, server_default="0", nullable=False)
+    # Пол для анализа совместимости: спрашиваем один раз
+    gender: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    diary_reminders: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true", nullable=False)
 
     admin: Mapped[bool] = mapped_column(Boolean, nullable=True, default=False)
     banned: Mapped[bool] = mapped_column(Boolean, nullable=True, default=False)
@@ -42,9 +45,6 @@ class User(BaseModel):
     premium_until: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     yookassa_payment_method_id: Mapped[str] = mapped_column(String(100), nullable=True)
     has_career_access: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
-    
-    inn: Mapped[str] = mapped_column(String(12), nullable=True)
-    inn_verified: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
 
     tracking_link_id: Mapped[Optional[int]] = mapped_column(ForeignKey("tracking_links.id", ondelete="SET NULL"), nullable=True)
     tracking_link: Mapped[Optional["TrackingLink"]] = relationship("TrackingLink")
@@ -198,6 +198,9 @@ class Payment(BaseModel):
     
     is_premium_subscription: Mapped[bool] = mapped_column(Boolean, default=False)
     is_recurring: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Пополнение баланса: сумма зачисляется после подтверждения оплаты
+    is_topup: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false", nullable=False)
+    amount: Mapped[Optional[int]] = mapped_column(Integer(), nullable=True)
 
     category_id: Mapped[Optional[int]] = mapped_column(ForeignKey("categories.id"))
     category: Mapped[Optional["Category"]] = relationship(
