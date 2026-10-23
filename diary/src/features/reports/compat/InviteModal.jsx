@@ -1,6 +1,6 @@
 import QRCode from 'react-qr-code';
 import { Copy, Send } from 'lucide-react';
-import Modal from '../../components/Modal';
+import Modal from '../../../components/Modal';
 
 const WebApp = window.Telegram.WebApp;
 

@@ -1,9 +1,7 @@
 import ReactMarkdown from 'react-markdown';
 import { Sparkles, Target } from 'lucide-react';
 import Page from '../../components/Page';
-import { reportTypeOf } from './reportTypes';
-
-const formatDate = (iso) => new Date(iso).toLocaleDateString('ru-RU');
+import { reportTypeOf, formatDay, periodLabel } from './reportTypes';
 
 const markdownComponents = {
   h1: ({ children }) => <h1 className="text-2xl sm:text-3xl font-black text-[#F5E6D3] text-center mb-8 mt-4 uppercase drop-shadow-sm break-words">{children}</h1>,
@@ -24,10 +22,7 @@ export default function ReportViewPage({ report, onBack }) {
   return (
     <Page title={type?.shortTitle || 'Отчет'} onBack={onBack}>
       <p className="text-sm text-[#F5E6D3]/70 mb-4 px-1">
-        Отчет от {formatDate(report.created_at)}
-        {' · '}
-        {report.period_start ? `${formatDate(report.period_start)} — ` : 'за все время до '}
-        {report.period_end ? formatDate(report.period_end) : ''}
+        Отчет от {formatDay(report.created_at)} · {periodLabel(report)}
       </p>
       <div className="bg-rose-900/80 rounded-3xl p-5 sm:p-8 shadow-xl">
         <ReactMarkdown components={markdownComponents}>{report.content}</ReactMarkdown>

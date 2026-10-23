@@ -26,16 +26,23 @@ const TABS = [
 
 const isTextField = (el) => el?.tagName === 'INPUT' || el?.tagName === 'TEXTAREA';
 
-// Ссылки из бота открывают нужный экран: ?tab=reports&report=12, ?tab=profile&page=portrait, ?page=billing
+// Ссылки из бота открывают нужный экран: ?tab=reports&report=12, ?tab=reports&section=compatibility,
+// ?tab=profile&page=portrait, ?page=billing
 function readDeepLink() {
   const params = new URLSearchParams(window.location.search);
   const tab = params.get('tab');
-  return {
+  const link = {
     tab: TABS.some(t => t.id === tab) ? tab : 'diary',
     page: params.get('page'),
+    section: params.get('section'),
     report: params.get('report'),
     id: 0,
   };
+  // Друзья раньше были в профиле: старые сообщения бота ведут туда
+  if (link.tab === 'profile' && link.page === 'friends') {
+    return { ...link, tab: 'reports', page: null, section: 'compatibility' };
+  }
+  return link;
 }
 
 export default function App() {

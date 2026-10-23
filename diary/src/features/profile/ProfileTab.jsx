@@ -6,9 +6,7 @@ import Page from '../../components/Page';
 import AdminPanel from '../admin/AdminPanel';
 import OfferPage from '../legal/OfferPage';
 import PortraitPage from './PortraitPage';
-import FriendsPage from './FriendsPage';
 import portraitBanner from '../../assets/profile/portrait-woman-handmade.webp';
-import friendsBanner from '../../assets/profile/friends-handmade.webp';
 import headerVine from '../../assets/profile/header-vine-handmade.webp';
 import { useProfile, portraitState } from '../../context/profile';
 import { useAppNav, useErrorHandler } from '../../navigation/appNav';
@@ -18,7 +16,7 @@ import './profile-header.css';
 const API_URL = window.location.origin;
 const WebApp = window.Telegram.WebApp;
 
-const PAGES = ['portrait', 'friends', 'offer', 'admin'];
+const PAGES = ['portrait', 'offer', 'admin'];
 
 const PORTRAIT_CAPTIONS = {
   tests: (p) => `Пройдено ${p.passed_tests} из ${p.total_tests} тестов`,
@@ -134,15 +132,6 @@ export default function ProfileTab({ request }) {
           )}
         </div>
 
-        <ClayBanner
-          id="profile-friends"
-          kind="profile"
-          title="Друзья"
-          description="Пригласите друга и узнайте совместимость"
-          image={friendsBanner}
-          onClick={() => setPage('friends')}
-        />
-
         <div className="bg-rose-900/60 rounded-3xl divide-y divide-[#F5E6D3]/10 overflow-hidden">
           <MenuRow
             icon={Wallet}
@@ -169,7 +158,6 @@ export default function ProfileTab({ request }) {
       </div>
 
       {page === 'portrait' && <PortraitPage onBack={closePage} />}
-      {page === 'friends' && <FriendsPage onBack={closePage} />}
       {page === 'offer' && <OfferPage onBack={closePage} />}
       {page === 'admin' && (
         <Page title="Админ-панель" onBack={closePage}>

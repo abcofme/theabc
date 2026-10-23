@@ -46,7 +46,7 @@ async def start_handler(
     if inviter_id and await befriend(dao.session, user.id, inviter_id):
         name = user.tg_first_name or (f"@{user.username}" if user.username else "Ваш друг")
         await notify(inviter_id, f"{name} принял(а) приглашение — теперь вы друзья в «Азбуке Я».",
-                     "tab=profile&page=friends", "Открыть друзей")
+                     "tab=reports&section=compatibility", "Открыть совместимость")
 
     await delete_pending_messages(user)
     await delete_editing_message(user)

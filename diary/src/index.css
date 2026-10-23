@@ -50,6 +50,23 @@ button, a, input, textarea, select, .transition-all {
   }
 }
 
+/* Подсказка на первом вопросе теста: карточка слегка покачивается вправо и влево */
+@keyframes swipeHint {
+  0%, 50%, 100% { transform: translateX(0) rotate(0); }
+  25% { transform: translateX(28px) rotate(2deg); }
+  75% { transform: translateX(-28px) rotate(-2deg); }
+}
+
+.animate-swipe-hint {
+  animation: swipeHint 1.6s ease-in-out 0.4s 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-swipe-hint {
+    animation: none;
+  }
+}
+
 .animate-slide-down {
   animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

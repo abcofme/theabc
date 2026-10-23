@@ -71,7 +71,7 @@ async def _greet_new_friends(user: User, inviter_id: int):
     from backend.telegram.notify import notify
     name = user.tg_first_name or (f"@{user.username}" if user.username else "Ваш друг")
     await notify(inviter_id, f"{name} принял(а) приглашение — теперь вы друзья в «Азбуке Я».",
-                 "tab=profile&page=friends", "Открыть друзей")
+                 "tab=reports&section=compatibility", "Открыть совместимость")
 
 
 # Всё о пользователе для приложения: доступ, баланс и цены, тесты с прогрессом, портрет

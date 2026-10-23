@@ -80,20 +80,12 @@ export default function TestRunner({ test, onClose }) {
     }
   }, [test.id, index, answers, isStarted, isSubmitting, result]);
 
+  // Подсказка про свайпы — только на первом тесте, до первого касания или ответа
   const dismissTutorial = () => {
+    if (!showTutorial) return;
     setShowTutorial(false);
     storage(s => s.setItem(TUTORIAL_KEY, '1'));
   };
-
-  // Подсказка про свайпы — только в первый раз и сама пропадает
-  useEffect(() => {
-    if (!isStarted || !showTutorial) return;
-    const t = setTimeout(() => {
-      setShowTutorial(false);
-      storage(s => s.setItem(TUTORIAL_KEY, '1'));
-    }, 3500);
-    return () => clearTimeout(t);
-  }, [isStarted, showTutorial]);
 
   const exit = () => onClose();
   useBackHandler(true, exit);
@@ -130,6 +122,7 @@ export default function TestRunner({ test, onClose }) {
   };
 
   const handleTouchStart = (e) => {
+    dismissTutorial();
     startXRef.current = e.touches[0].clientX;
     currentXRef.current = startXRef.current;
     setIsDragging(true);
@@ -167,6 +160,7 @@ export default function TestRunner({ test, onClose }) {
 
   const triggerSwipe = (direction) => {
     if (swipingOut) return;
+    dismissTutorial();
     setIsDragging(false);
     setDragOffset(direction === 'right' ? 300 : -300);
     executeSwipe(direction);
@@ -262,6 +256,11 @@ export default function TestRunner({ test, onClose }) {
           </div>
         ) : (
           <div className="flex-1 flex flex-col max-w-md mx-auto w-full relative">
+            {showTutorial && index === 0 && (
+              <p className="flex items-center justify-center gap-2 text-sm text-[#F5E6D3]/70 mb-1">
+                <ArrowLeft size={16} /> Нет · смахни карточку · Да <ArrowRight size={16} />
+              </p>
+            )}
             <div className="relative flex-1 flex flex-col w-full min-h-[400px] mb-8">
               {/* Следующая карточка — под текущей */}
               {index + 1 < questions.length && (
@@ -277,6 +276,7 @@ export default function TestRunner({ test, onClose }) {
                 onTouchEnd={handleTouchEnd}
                 className={`absolute inset-2 bg-rose-900/80 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 shadow-2xl flex flex-col items-center justify-center text-center overflow-hidden cursor-grab active:cursor-grabbing select-none
                   ${isDragging ? 'transition-none' : 'transition-all duration-500 ease-out'}
+                  ${showTutorial && index === 0 && !isDragging && !swipingOut ? 'animate-swipe-hint' : ''}
                   ${swipingOut === 'right' ? 'translate-x-[150%] rotate-[10deg] opacity-0' : ''}
                   ${swipingOut === 'left' ? '-translate-x-[150%] -rotate-[10deg] opacity-0' : ''}
                 `}
@@ -284,8 +284,8 @@ export default function TestRunner({ test, onClose }) {
               >
                 {/* Подсветка направления свайпа */}
                 <div
-                  className={`absolute inset-0 transition-opacity duration-200 ${dragOffset > 0 ? 'bg-emerald-800' : 'bg-red-500'}`}
-                  style={{ opacity: Math.min(Math.abs(dragOffset) / 300, 0.4) }}
+                  className="absolute inset-0 bg-[#F5E6D3] transition-opacity duration-200"
+                  style={{ opacity: Math.min(Math.abs(dragOffset) / 300, 0.08) }}
                 />
 
                 <div className="flex-1 flex flex-col justify-center w-full relative z-10 overflow-y-auto overflow-x-hidden mb-16 pointer-events-auto px-2">
@@ -296,52 +296,30 @@ export default function TestRunner({ test, onClose }) {
                   </div>
                 </div>
 
-                {showTutorial && index === 0 && (
-                  <div
-                    className="absolute inset-0 z-50 rounded-[2rem] bg-rose-950/90 backdrop-blur-md flex flex-col items-center justify-center cursor-pointer shadow-inner"
-                    onClick={dismissTutorial}
-                  >
-                    <div className="flex flex-col items-center text-[#F5E6D3] px-6 text-center">
-                      <h3 className="text-2xl sm:text-3xl font-black uppercase tracking-widest drop-shadow-xl mb-12">Свайпай<br />карточку</h3>
-                      <div className="flex items-center justify-between w-full max-w-[320px] gap-8">
-                        <div className="flex flex-col items-center gap-4">
-                          <div className="bg-red-500/20 text-red-500 p-5 rounded-full animate-pulse"><ArrowLeft size={48} strokeWidth={3.5} /></div>
-                          <span className="text-red-500 font-black text-2xl tracking-widest uppercase">Нет</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-4">
-                          <div className="bg-emerald-500/20 text-emerald-500 p-5 rounded-full animate-pulse"><ArrowRight size={48} strokeWidth={3.5} /></div>
-                          <span className="text-emerald-500 font-black text-2xl tracking-widest uppercase">Да</span>
-                        </div>
-                      </div>
-                      <p className="text-base sm:text-lg text-[#F5E6D3]/60 font-medium mt-16 animate-pulse">(Нажми, чтобы начать)</p>
-                    </div>
-                  </div>
-                )}
-
                 <div className="absolute bottom-6 inset-x-6 flex justify-between items-center z-20">
                   <button
                     onClick={(e) => { e.stopPropagation(); triggerSwipe('left'); }}
                     onTouchEnd={(e) => e.stopPropagation()}
-                    className="flex items-center gap-2 bg-red-800/90 text-[#F5E6D3] font-bold tracking-wider uppercase px-5 py-3.5 rounded-xl active:scale-95"
+                    className="flex items-center gap-2 bg-rose-950/60 border border-[#F5E6D3]/25 text-[#F5E6D3] font-bold px-6 py-3.5 rounded-xl active:scale-95"
                   >
                     <ArrowLeft size={20} /> Нет
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); triggerSwipe('right'); }}
                     onTouchEnd={(e) => e.stopPropagation()}
-                    className="flex items-center gap-2 bg-emerald-800/90 text-[#F5E6D3] font-bold tracking-wider uppercase px-5 py-3.5 rounded-xl active:scale-95"
+                    className="flex items-center gap-2 bg-rose-950/60 border border-[#F5E6D3]/25 text-[#F5E6D3] font-bold px-6 py-3.5 rounded-xl active:scale-95"
                   >
                     Да <ArrowRight size={20} />
                   </button>
                 </div>
 
-                {/* «ДА» / «НЕТ» по краям карточки при свайпе */}
-                <div className="absolute top-8 left-6 border-4 border-emerald-500 text-emerald-500 font-black text-3xl px-4 py-1 rounded-xl -rotate-12 pointer-events-none transition-opacity duration-200" style={{ opacity: dragOffset > 30 ? Math.min(dragOffset / 100, 1) : 0 }}>
-                  ДА
-                </div>
-                <div className="absolute top-8 right-6 border-4 border-red-500 text-red-500 font-black text-3xl px-4 py-1 rounded-xl rotate-12 pointer-events-none transition-opacity duration-200" style={{ opacity: dragOffset < -30 ? Math.min(-dragOffset / 100, 1) : 0 }}>
-                  НЕТ
-                </div>
+                {/* Какой ответ выбирается свайпом — одинаковыми метками, без оценки цветом */}
+                <span className="absolute top-6 left-6 bg-[#F5E6D3] text-rose-950 font-bold text-base px-4 py-1.5 rounded-full pointer-events-none transition-opacity duration-200" style={{ opacity: dragOffset > 30 ? Math.min(dragOffset / 100, 1) : 0 }}>
+                  Да
+                </span>
+                <span className="absolute top-6 right-6 bg-[#F5E6D3] text-rose-950 font-bold text-base px-4 py-1.5 rounded-full pointer-events-none transition-opacity duration-200" style={{ opacity: dragOffset < -30 ? Math.min(-dragOffset / 100, 1) : 0 }}>
+                  Нет
+                </span>
               </div>
             </div>
           </div>

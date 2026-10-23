@@ -6,6 +6,8 @@ import competenceImage from '../../assets/reports/competence-handmade.webp';
 export const REPORT_GROUPS = [
   {
     id: 'general',
+    title: 'По дневнику',
+    desc: 'Строятся по записям дневника и портрету личности.',
     items: [
       {
         id: 'repeating_events',
@@ -30,7 +32,7 @@ export const REPORT_GROUPS = [
   {
     id: 'career',
     title: 'Профориентация',
-    desc: 'Исследуй, что дает тебе силы и в чем твоя опора.',
+    desc: 'Что дает тебе силы и в чем твоя опора — по дневнику и тестам профориентации.',
     items: [
       {
         id: 'energy',
@@ -69,3 +71,10 @@ export const PERIODS = [
 
 // Меньше записей — отчет получается неточным
 export const FEW_ENTRIES = 5;
+
+export const formatDay = (iso) => new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+
+// «12 сент. — 12 окт.» или «за все время»
+export const periodLabel = (report) => (report.period_start
+  ? `${formatDay(report.period_start)} — ${formatDay(report.period_end)}`
+  : 'за все время');
