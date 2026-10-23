@@ -154,7 +154,7 @@ function Shell() {
             <ReportsTab request={requestFor('reports')} active={activeTab === 'reports'} />
           </div>
           <div className="flex-1 flex-col" style={{ display: activeTab === 'profile' ? 'flex' : 'none' }}>
-            <ProfileTab request={requestFor('profile')} />
+            <ProfileTab request={requestFor('profile')} active={activeTab === 'profile'} />
           </div>
           </>}
         </main>

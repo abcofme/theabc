@@ -2,12 +2,12 @@ import { useRef, useState } from 'react';
 import { User, Sparkles, Wallet, Bell, FileText, Shield, ChevronRight, Users, Leaf } from '../../components/ClayIcon';
 import Avatar from '../../components/Avatar';
 import ClayBanner from '../../components/ClayBanner';
-import ClayText from '../../components/ClayText';
 import Switch from '../../components/Switch';
 import Page from '../../components/Page';
 import AdminPanel from '../admin/AdminPanel';
 import OfferPage from '../legal/OfferPage';
 import PortraitPage from './PortraitPage';
+import ProfileStats from './ProfileStats';
 import portraitBanner from '../../assets/profile/portrait-woman-handmade.webp';
 import headerVine from '../../assets/profile/header-vine-simple.webp';
 import { useProfile, portraitState } from '../../context/profile';
@@ -42,7 +42,7 @@ function MenuRow({ icon: Icon, label, hint, onClick, children }) {
   );
 }
 
-export default function ProfileTab({ request }) {
+export default function ProfileTab({ request, active }) {
   const { theme, toggleTheme } = useTheme();
   const { profile, isPremium, refreshProfile, isGeneratingPortrait } = useProfile();
   const { navigate, openBilling } = useAppNav();
@@ -85,37 +85,38 @@ export default function ProfileTab({ request }) {
 
   return (
     <div className="app-screen ui-stack">
-      <h1 className="screen-title"><ClayText text="Профиль" /></h1>
+      <h1 className="sr-only">Профиль</h1>
 
       {/* ШАПКА: АВАТАР, ИМЯ И СТАТУС */}
-      <div className="vine-card ui-card min-w-0">
-        <img className="vine-card__vine" src={headerVine} alt="" aria-hidden="true" width="512" height="512" draggable="false" />
-        <div className="vine-card__content flex items-start gap-4 w-full min-w-0">
+      <div className="profile-header min-w-0">
+        <img className="profile-header__vine profile-header__vine--top" src={headerVine} alt="" aria-hidden="true" width="512" height="512" draggable="false" />
+        <img className="profile-header__vine profile-header__vine--bottom" src={headerVine} alt="" aria-hidden="true" width="512" height="512" draggable="false" />
+        <div className="profile-header__content flex flex-col items-center text-center w-full min-w-0">
           <Avatar
             src={tgUser.photo_url && tgUser.id ? `${API_URL}/api/avatar/${tgUser.id}` : null}
-            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg shrink-0"
+            className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover shadow-lg shrink-0"
             fallback={
-              <div className="w-16 h-16 sm:w-20 sm:h-20 ui-avatar text-[var(--ui-text)] rounded-full flex items-center justify-center font-bold text-2xl shadow-inner shrink-0">
-                {tgUser.first_name?.[0] || <User size={32} />}
+              <div className="w-20 h-20 sm:w-24 sm:h-24 ui-avatar text-[var(--ui-text)] rounded-full flex items-center justify-center font-bold text-3xl shadow-inner shrink-0">
+                {tgUser.first_name?.[0] || <User size={36} />}
               </div>
             }
           />
-          <div className="flex-1 min-w-0">
-            <div className="min-w-0 pr-14">
-              <h2 className="text-lg sm:text-2xl font-bold text-[var(--ui-text)] truncate">{tgUser.first_name}</h2>
-              {tgUser.username && <p className="text-xs sm:text-base text-[var(--ui-text)] font-medium truncate">@{tgUser.username}</p>}
-            </div>
-            <button type="button" onClick={openBilling} className="flex items-center gap-1 min-h-11 mt-2 active:scale-95" aria-label="Подписка и баланс">
-              <span className={`font-bold px-3 py-1.5 rounded-xl text-sm sm:text-base flex items-center gap-1.5 shadow-sm ${
-                isPremium ? 'profile-header__premium' : 'bg-rose-950 text-[var(--ui-text)]'
-              }`}>
-                {!profile ? '…' : isPremium ? <><Sparkles size={16} /> Premium</> : <><Wallet size={16} /> {profile.balance} ₽</>}
-              </span>
-              <ChevronRight size={20} className="text-[var(--ui-muted)] shrink-0" />
-            </button>
+          <div className="w-full min-w-0 mt-3">
+            <h2 className="text-xl sm:text-2xl font-bold text-[var(--ui-text)] truncate">{tgUser.first_name}</h2>
+            {tgUser.username && <p className="text-sm sm:text-base text-[var(--ui-secondary)] font-medium truncate">@{tgUser.username}</p>}
           </div>
+          <button type="button" onClick={openBilling} className="flex items-center gap-1 min-h-11 mt-2 active:scale-95" aria-label="Подписка и баланс">
+            <span className={`font-bold px-3 py-1.5 rounded-xl text-sm sm:text-base flex items-center gap-1.5 shadow-sm ${
+              isPremium ? 'profile-header__premium' : 'bg-rose-900 border border-[var(--ui-border)] text-[var(--ui-text)]'
+            }`}>
+              {!profile ? '…' : isPremium ? <><Sparkles size={16} /> Premium</> : <><Wallet size={16} /> {profile.balance} ₽</>}
+            </span>
+            <ChevronRight size={20} className="text-[var(--ui-muted)] shrink-0" />
+          </button>
         </div>
       </div>
+
+      <ProfileStats active={active} />
 
       <div className="flex flex-col gap-6">
         <div>

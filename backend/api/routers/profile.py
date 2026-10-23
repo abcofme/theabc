@@ -1,15 +1,19 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from backend.api.common import get_session, is_admin, run_in_background
+from backend.api.routers.diary import _count_streak
 from backend.api.security import validate_twa_data
 from backend.billing import is_premium
-from backend.database.models import User, Category, Progress, Result, PersonalityPortrait
+from backend.database.models import (
+    User, Category, Progress, Result, PersonalityPortrait,
+    DiaryEntry, BehavioralReport, CompatibilityReport, Friendship,
+)
 from backend.friends import befriend, inviter_from_payload
 from backend.pricing import AI_PRICES, DEMO_BALANCE, MAX_TOPUP, MIN_TOPUP, PREMIUM_PRICE
 
@@ -203,6 +207,61 @@ async def get_profile(
         },
         "diary_reminders": db_user.diary_reminders if db_user else True,
         "is_admin": is_admin(db_user, user_data.get("username")),
+    }
+
+
+def _longest_streak(dates) -> int:
+    """Самая длинная серия дней подряд с записями за всё время."""
+    best = run = 0
+    prev = None
+    for day in sorted(dates):
+        run = run + 1 if prev and day - prev == timedelta(days=1) else 1
+        best = max(best, run)
+        prev = day
+    return best
+
+
+# Статистика для профиля: сколько пользователь с нами и что успел сделать.
+# Сегодняшнюю дату присылает клиент, как и для дневника: день зависит от часового пояса
+@router.get("/api/profile/stats")
+async def get_profile_stats(
+    today: str,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    user_id = user_data.get("id")
+    try:
+        today_date = datetime.strptime(today, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="today должен быть в формате YYYY-MM-DD")
+
+    db_user = await session.get(User, user_id)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    async def count(query) -> int:
+        return (await session.execute(query)).scalar_one()
+
+    entries = await count(select(func.count(DiaryEntry.id)).where(DiaryEntry.user_id == user_id))
+    dates = (await session.execute(
+        select(DiaryEntry.date).distinct()
+        .where(DiaryEntry.user_id == user_id, DiaryEntry.date <= today_date)
+    )).scalars().all()
+    reports = await count(select(func.count(BehavioralReport.id)).where(BehavioralReport.user_id == user_id))
+    compatibility = await count(select(func.count(CompatibilityReport.id)).where(CompatibilityReport.user_id == user_id))
+    friends = await count(select(func.count(Friendship.id)).where(
+        Friendship.status == "accepted",
+        or_(Friendship.user_id == user_id, Friendship.friend_id == user_id),
+    ))
+
+    joined = (db_user.first_opened_at or db_user.created_at).date()
+    return {
+        "days_with_us": max((today_date - joined).days + 1, 1),
+        "diary_entries": entries,
+        "streak": _count_streak(dates, today_date),
+        "best_streak": _longest_streak(dates),
+        "reports": reports + compatibility,
+        "friends": friends,
     }
 
 
