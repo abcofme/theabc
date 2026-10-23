@@ -31,7 +31,7 @@ export default function DaySheet({ day, entries, diary, lock, onNavigate, onClos
           <AnalysisHint lock={lock} onNavigate={onNavigate} />
         </section>
       ) : (
-        <p className="text-[#F5E6D3]/70 text-center py-6">В этот день записей нет</p>
+        <p className="text-[var(--ui-secondary)] text-center py-6">В этот день записей нет</p>
       )}
 
     </Page>

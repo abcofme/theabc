@@ -96,8 +96,8 @@ export default function FriendPage({ friend, myGender: knownMyGender, myPortrait
       <div className="ui-stack">
         {!canCompare && !friend.has_compatibility ? (
           <section className="ui-card flex gap-3">
-            <Lock size={18} className="shrink-0 mt-0.5 text-[#F5E6D3]/70" />
-            <p className="text-sm text-[#F5E6D3]/80 leading-relaxed">
+            <Lock size={18} className="shrink-0 mt-0.5 text-[var(--ui-secondary)]" />
+            <p className="text-sm text-[var(--ui-secondary)] leading-relaxed">
               {myPortrait
                 ? `Совместимость откроется, когда у ${name} появится портрет личности.`
                 : 'Совместимость откроется, когда у вас обоих будет портрет личности.'}
@@ -123,18 +123,18 @@ export default function FriendPage({ friend, myGender: knownMyGender, myPortrait
         ) : (
           <section className="ui-card flex flex-col gap-5">
             <div>
-              <p className="text-[#F5E6D3] font-bold mb-3">Какая совместимость?</p>
+              <p className="text-[var(--ui-text)] font-bold mb-3">Какая совместимость?</p>
               <Choice options={[['friendly', 'Дружеская'], ['partner', 'Партнерская']]} value={type} onChange={setType} />
             </div>
             {needsGender && !knownMyGender && (
               <div>
-                <p className="text-[#F5E6D3]/80 text-sm mb-2">Ваш пол (спросим один раз):</p>
+                <p className="text-[var(--ui-secondary)] text-sm mb-2">Ваш пол (спросим один раз):</p>
                 <Choice options={GENDERS.map(g => [g, g])} value={myGender} onChange={setMyGender} />
               </div>
             )}
             {needsGender && !friend.gender && (
               <div>
-                <p className="text-[#F5E6D3]/80 text-sm mb-2">Пол: {name}</p>
+                <p className="text-[var(--ui-secondary)] text-sm mb-2">Пол: {name}</p>
                 <Choice options={GENDERS.map(g => [g, g])} value={friendGender} onChange={setFriendGender} />
               </div>
             )}

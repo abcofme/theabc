@@ -1,3 +1,4 @@
+import Select from '../../components/Select';
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, Check, Trash2, Edit, Plus, Heart, Link2, Download, LoaderCircle, X } from '../../components/ClayIcon';
 import AdminTestEditor from './AdminTestEditor';
@@ -299,40 +300,40 @@ export default function AdminPanel() {
 
       <div className="ui-card mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
-          <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">С:</label>
+          <label className="text-[var(--ui-text)] text-sm font-medium mb-1 block">С:</label>
           <input 
             type="datetime-local" 
             value={startDate} 
             onChange={(e) => setStartDate(e.target.value)}
-            className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
+            className="w-full bg-rose-950/50 text-[var(--ui-text)] p-3 rounded-xl focus:outline-none"
           />
         </div>
         <div>
-          <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">По:</label>
+          <label className="text-[var(--ui-text)] text-sm font-medium mb-1 block">По:</label>
           <input 
             type="datetime-local" 
             value={endDate} 
             onChange={(e) => setEndDate(e.target.value)}
-            className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
+            className="w-full bg-rose-950/50 text-[var(--ui-text)] p-3 rounded-xl focus:outline-none"
           />
         </div>
         <div>
-          <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Режим:</label>
-          <select 
+          <label className="text-[var(--ui-text)] text-sm font-medium mb-1 block">Режим:</label>
+          <Select
             value={isUnique ? 'unique' : 'total'}
             onChange={(e) => setIsUnique(e.target.value === 'unique')}
-            className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
+            className="w-full bg-rose-950/50 text-[var(--ui-text)] p-3 rounded-xl focus:outline-none"
           >
             <option value="total">Общее</option>
             <option value="unique">Уникальное</option>
-          </select>
+          </Select>
         </div>
       </div>
 
       {/* НОВЫЙ БЛОК: ССЫЛКИ */}
       <div className="ui-card mb-6">
-        <h3 className="text-xl font-bold text-[#F5E6D3] mb-4 flex items-center gap-2">
-          <Link2 size={24} className="text-[#F5E6D3]/75" />
+        <h3 className="text-xl font-bold text-[var(--ui-text)] mb-4 flex items-center gap-2">
+          <Link2 size={24} className="text-[var(--ui-secondary)]" />
           Ссылки
         </h3>
         
@@ -342,26 +343,26 @@ export default function AdminPanel() {
             placeholder="Название ссылки"
             value={newLinkName}
             onChange={(e) => setNewLinkName(e.target.value)}
-            className="min-w-0 flex-1 bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
+            className="min-w-0 flex-1 bg-rose-950/50 text-[var(--ui-text)] p-3 rounded-xl focus:outline-none"
           />
           <button 
             onClick={handleCreateLink}
             disabled={!newLinkName || isCreatingLink}
-            className="bg-emerald-800 hover:bg-emerald-800 disabled:opacity-50 text-white px-4 py-3 rounded-xl font-medium transition-colors"
+            className="ui-action-surface disabled:opacity-50  px-4 py-3 rounded-xl font-medium transition-colors"
           >
             {isCreatingLink ? "..." : "Создать"}
           </button>
         </div>
 
         {linksError ? <ScreenState error title="Не удалось загрузить ссылки" onRetry={fetchTrackingLinks} /> : isLoadingLinks ? (
-          <div className="text-[#F5E6D3]/60 text-center py-4">Загрузка ссылок...</div>
+          <div className="text-[var(--ui-muted)] text-center py-4">Загрузка ссылок...</div>
         ) : trackingLinks.length > 0 ? (
           <div className="flex flex-col gap-3">
             {trackingLinks.map(link => (
               <div key={link.id} className="bg-rose-950/40 p-4 rounded-xl flex flex-col gap-2 relative">
                 <div className="flex justify-between items-start pr-8">
-                  <div className="font-medium text-[#F5E6D3]">{link.name}</div>
-                  <div className="flex items-center gap-1 text-[#7BA887] bg-emerald-900/30 px-2 py-1 rounded-lg text-sm font-bold">
+                  <div className="font-medium text-[var(--ui-text)]">{link.name}</div>
+                  <div className="flex items-center gap-1 text-[var(--ui-sage)] bg-emerald-900/30 px-2 py-1 rounded-lg text-sm font-bold">
                     <Users size={14} /> {link.clicks_count}
                   </div>
                 </div>
@@ -370,14 +371,14 @@ export default function AdminPanel() {
                     type="text" 
                     readOnly 
                     value={`https://t.me/abcofmebot?start=tr_${link.code}`}
-                    className="min-w-0 flex-1 bg-rose-950 text-[#F5E6D3]/70 text-xs p-2 rounded-lg outline-none"
+                    className="min-w-0 flex-1 bg-rose-950 text-[var(--ui-secondary)] text-xs p-2 rounded-lg outline-none"
                   />
                   <button 
                     onClick={() => {
                       navigator.clipboard.writeText(`https://t.me/abcofmebot?start=tr_${link.code}`);
                       WebApp.showAlert("Ссылка скопирована!");
                     }}
-                    className="bg-rose-800 hover:bg-rose-700 text-[#F5E6D3] px-3 rounded-lg text-xs font-medium transition-colors"
+                    className="bg-rose-800 hover:bg-rose-700 text-[var(--ui-text)] px-3 rounded-lg text-xs font-medium transition-colors"
                   >
                     Копировать
                   </button>
@@ -392,7 +393,7 @@ export default function AdminPanel() {
             ))}
           </div>
         ) : (
-          <div className="text-[#F5E6D3]/50 text-sm text-center py-4 bg-rose-950/20 rounded-xl">
+          <div className="text-[var(--ui-muted)] text-sm text-center py-4 bg-rose-950/20 rounded-xl">
             Нет созданных ссылок
           </div>
         )}
@@ -408,48 +409,48 @@ export default function AdminPanel() {
           <div className="admin-metrics">
           <div className="ui-card flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Users className="text-[#F5E6D3]/75" size={24} />
-              <span className="text-[#F5E6D3] font-medium">Всего пользователей</span>
+              <Users className="text-[var(--ui-secondary)]" size={24} />
+              <span className="text-[var(--ui-text)] font-medium">Всего пользователей</span>
             </div>
-            <span className="text-xl font-bold text-[#F5E6D3]">{stats.total_users || 0}</span>
+            <span className="text-xl font-bold text-[var(--ui-text)]">{stats.total_users || 0}</span>
           </div>
 
           <div className="ui-card flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Check className="text-[#7BA887]" size={24} />
-              <span className="text-[#F5E6D3] font-medium">Активных пользователей</span>
+              <Check className="text-[var(--ui-sage)]" size={24} />
+              <span className="text-[var(--ui-text)] font-medium">Активных пользователей</span>
             </div>
-            <span className="text-xl font-bold text-[#F5E6D3]">{stats.active_users || 0}</span>
+            <span className="text-xl font-bold text-[var(--ui-text)]">{stats.active_users || 0}</span>
           </div>
           
           <div className="ui-card flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Calendar className="text-[#7BA887]" size={24} />
-              <span className="text-[#F5E6D3] font-medium">Записи дневника</span>
+              <Calendar className="text-[var(--ui-sage)]" size={24} />
+              <span className="text-[var(--ui-text)] font-medium">Записи дневника</span>
             </div>
-            <span className="text-xl font-bold text-[#F5E6D3]">{stats.diary_entries || 0}</span>
+            <span className="text-xl font-bold text-[var(--ui-text)]">{stats.diary_entries || 0}</span>
           </div>
 
-          <div className="bg-rose-900 border border-[#F5E6D3]/10 rounded-3xl overflow-hidden shadow-sm transition-all duration-300">
+          <div className="bg-rose-900 border border-[var(--ui-text)]/10 rounded-3xl overflow-hidden shadow-sm transition-all duration-300">
             <button
               onClick={() => setOpenReports(!openReports)}
               className="w-full flex items-center justify-between p-5 hover:bg-rose-800/70 transition-colors active:bg-rose-800"
             >
               <div className="flex items-center gap-3">
                 <Brain className="text-orange-500" size={24} />
-                <span className="text-[#F5E6D3] font-medium">Отчеты</span>
+                <span className="text-[var(--ui-text)] font-medium">Отчеты</span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-xl font-bold text-[#F5E6D3]">{stats.reports_generated || 0}</span>
-                {openReports ? <ChevronUp size={22} className="text-[#F5E6D3]" /> : <ChevronDown size={22} className="text-[#F5E6D3]" />}
+                <span className="text-xl font-bold text-[var(--ui-text)]">{stats.reports_generated || 0}</span>
+                {openReports ? <ChevronUp size={22} className="text-[var(--ui-text)]" /> : <ChevronDown size={22} className="text-[var(--ui-text)]" />}
               </div>
             </button>
             {openReports && stats.reports_by_type && stats.reports_by_type.length > 0 && (
               <div className="bg-rose-950/30 px-5 py-3 flex flex-col gap-3 border-t border-rose-800/50">
                 {stats.reports_by_type.map(rt => (
                   <div key={rt.type} className="flex justify-between items-center text-sm">
-                    <span className="text-[#F5E6D3]/80">{rt.name}</span>
-                    <span className="font-bold text-[#F5E6D3]">{rt.count}</span>
+                    <span className="text-[var(--ui-secondary)]">{rt.name}</span>
+                    <span className="font-bold text-[var(--ui-text)]">{rt.count}</span>
                   </div>
                 ))}
               </div>
@@ -458,48 +459,48 @@ export default function AdminPanel() {
 
           <div className="ui-card flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <FileText className="text-[#7BA887]" size={24} />
-              <span className="text-[#F5E6D3] font-medium">Портреты личности</span>
+              <FileText className="text-[var(--ui-sage)]" size={24} />
+              <span className="text-[var(--ui-text)] font-medium">Портреты личности</span>
             </div>
-            <span className="text-xl font-bold text-[#F5E6D3]">{stats.portraits_generated || 0}</span>
+            <span className="text-xl font-bold text-[var(--ui-text)]">{stats.portraits_generated || 0}</span>
           </div>
 
           <div className="ui-card flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Heart className="text-[#D0B8A5]" size={24} />
-              <span className="text-[#F5E6D3] font-medium">Отчеты совместимости</span>
+              <span className="text-[var(--ui-text)] font-medium">Отчеты совместимости</span>
             </div>
-            <span className="text-xl font-bold text-[#F5E6D3]">{stats.compat_reports_generated || 0}</span>
+            <span className="text-xl font-bold text-[var(--ui-text)]">{stats.compat_reports_generated || 0}</span>
           </div>
 
           </div>
-          <h3 className="text-xl font-bold text-[#F5E6D3] mt-8 mb-4">Управление доступом</h3>
+          <h3 className="text-xl font-bold text-[var(--ui-text)] mt-8 mb-4">Управление доступом</h3>
           <div className="ui-card flex flex-col gap-4 shadow-sm">
             <div>
-              <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Telegram @username пользователя:</label>
+              <label className="text-[var(--ui-text)] text-sm font-medium mb-1 block">Telegram @username пользователя:</label>
               <input 
                 type="text" 
                 value={grantTargetUsername} 
                 onChange={(e) => setGrantTargetUsername(e.target.value)}
                 placeholder="Например, @username"
-                className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
+                className="w-full bg-rose-950/50 text-[var(--ui-text)] p-3 rounded-xl focus:outline-none"
               />
             </div>
             <div>
-              <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Что выдать:</label>
-              <select 
+              <label className="text-[var(--ui-text)] text-sm font-medium mb-1 block">Что выдать:</label>
+              <Select
                 value={grantType}
                 onChange={(e) => setGrantType(e.target.value)}
-                className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
+                className="w-full bg-rose-950/50 text-[var(--ui-text)] p-3 rounded-xl focus:outline-none"
               >
                 <option value="premium">Вечный Premium</option>
                 <option value="demo_7_days">Premium на 7 дней</option>
-              </select>
+              </Select>
             </div>
             <button 
               onClick={handleGrantAccess}
               disabled={isGranting}
-              className="w-full bg-emerald-800 hover:bg-emerald-800 disabled:opacity-50 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-sm"
+              className="w-full ui-action-surface disabled:opacity-50  font-bold py-3.5 rounded-xl transition-colors shadow-sm"
             >
               {isGranting ? "Обработка..." : "Выдать права"}
             </button>
@@ -507,62 +508,62 @@ export default function AdminPanel() {
 
           <div className="ui-card flex flex-col gap-4 shadow-sm mt-4">
             <div>
-              <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Забрать права у @username:</label>
+              <label className="text-[var(--ui-text)] text-sm font-medium mb-1 block">Забрать права у @username:</label>
               <input 
                 type="text" 
                 value={revokeTargetUsername} 
                 onChange={(e) => setRevokeTargetUsername(e.target.value)}
                 placeholder="Например, @username"
-                className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
+                className="w-full bg-rose-950/50 text-[var(--ui-text)] p-3 rounded-xl focus:outline-none"
               />
             </div>
             <div>
-              <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Что забрать:</label>
-              <select 
+              <label className="text-[var(--ui-text)] text-sm font-medium mb-1 block">Что забрать:</label>
+              <Select
                 value={revokeType}
                 onChange={(e) => setRevokeType(e.target.value)}
-                className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
+                className="w-full bg-rose-950/50 text-[var(--ui-text)] p-3 rounded-xl focus:outline-none"
               >
                 <option value="premium">Premium</option>
-              </select>
+              </Select>
             </div>
             <button 
               onClick={handleRevokeAccess}
               disabled={isRevoking}
-              className="w-full bg-rose-800 hover:bg-rose-700 disabled:opacity-50 text-[#F5E6D3] font-bold py-3.5 rounded-xl transition-colors shadow-sm"
+              className="w-full bg-rose-800 hover:bg-rose-700 disabled:opacity-50 text-[var(--ui-text)] font-bold py-3.5 rounded-xl transition-colors shadow-sm"
             >
               {isRevoking ? "Обработка..." : "Забрать права"}
             </button>
           </div>
 
-          <h3 className="text-xl font-bold text-[#F5E6D3] mt-8 mb-2">Статистика по тестам</h3>
+          <h3 className="text-xl font-bold text-[var(--ui-text)] mt-8 mb-2">Статистика по тестам</h3>
           {(stats.tests || []).map(cat => (
-            <div key={cat.id} className="bg-rose-900 border border-[#F5E6D3]/10 rounded-3xl overflow-hidden shadow-sm transition-all duration-300">
+            <div key={cat.id} className="bg-rose-900 border border-[var(--ui-text)]/10 rounded-3xl overflow-hidden shadow-sm transition-all duration-300">
               <button
                 onClick={() => toggleCategory(cat.id)}
                 className="w-full flex items-center justify-between p-4 hover:bg-rose-800/70 transition-colors active:bg-rose-800"
               >
-                <span className="font-semibold text-[#F5E6D3] text-left text-base sm:text-lg pr-4 leading-tight">
+                <span className="font-semibold text-[var(--ui-text)] text-left text-base sm:text-lg pr-4 leading-tight">
                   {cat.name}
                 </span>
                 {openCategory === cat.id ? (
-                  <ChevronUp size={22} className="text-[#F5E6D3] shrink-0" />
+                  <ChevronUp size={22} className="text-[var(--ui-text)] shrink-0" />
                 ) : (
-                  <ChevronDown size={22} className="text-[#F5E6D3] shrink-0" />
+                  <ChevronDown size={22} className="text-[var(--ui-text)] shrink-0" />
                 )}
               </button>
 
               {openCategory === cat.id && (
                 <div className="bg-rose-950/40 px-4 py-2 animate-in fade-in slide-in-from-top-2 duration-300">
                   {cat.tests.length === 0 ? (
-                    <div className="text-[#F5E6D3] text-sm py-3 italic">В этой категории пока нет тестов.</div>
+                    <div className="text-[var(--ui-text)] text-sm py-3 italic">В этой категории пока нет тестов.</div>
                   ) : (
                     cat.tests.map(test => (
                       <div key={test.id} className="flex items-center justify-between py-3.5">
-                        <span className="text-sm sm:text-base font-medium pr-3 text-[#F5E6D3]">
+                        <span className="text-sm sm:text-base font-medium pr-3 text-[var(--ui-text)]">
                           {test.name}
                         </span>
-                        <span className="text-[#F5E6D3] font-bold">{test.count}</span>
+                        <span className="text-[var(--ui-text)] font-bold">{test.count}</span>
                       </div>
                     ))
                   )}
@@ -573,30 +574,30 @@ export default function AdminPanel() {
 
 
           <div className="flex items-center justify-between mt-8 mb-4">
-            <h3 className="text-xl font-bold text-[#F5E6D3]">ИИ-импорт теста</h3>
+            <h3 className="text-xl font-bold text-[var(--ui-text)]">ИИ-импорт теста</h3>
           </div>
           <div className="bg-rose-900/40 p-4 rounded-3xl mb-2">
             <div className="mb-3">
-              <label className="text-[#F5E6D3]/70 text-xs font-bold uppercase tracking-wider mb-1.5 block">Категория</label>
-              <select
+              <label className="text-[var(--ui-secondary)] text-xs font-bold uppercase tracking-wider mb-1.5 block">Категория</label>
+              <Select
                 value={aiImportCategoryId}
                 onChange={e => setAiImportCategoryId(e.target.value)}
-                className="w-full bg-rose-950/60 text-[#F5E6D3] p-3 rounded-xl focus:outline-none text-sm"
+                className="w-full bg-rose-950/60 text-[var(--ui-text)] p-3 rounded-xl focus:outline-none text-sm"
               >
                 <option value="">— выберите категорию —</option>
                 {(stats.tests || []).map(cat => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
-              </select>
+              </Select>
             </div>
             <div className="mb-3">
-              <label className="text-[#F5E6D3]/70 text-xs font-bold uppercase tracking-wider mb-1.5 block">Сырой текст теста</label>
+              <label className="text-[var(--ui-secondary)] text-xs font-bold uppercase tracking-wider mb-1.5 block">Сырой текст теста</label>
               <textarea
                 value={aiImportText}
                 onChange={e => setAiImportText(e.target.value)}
                 placeholder="Вставьте текст теста: вопросы, варианты ответов с баллами, интерпретации..."
                 rows={8}
-                className="w-full bg-rose-950/60 text-[#F5E6D3] p-3 rounded-xl focus:outline-none text-sm resize-none placeholder:text-[#F5E6D3]/30"
+                className="w-full bg-rose-950/60 text-[var(--ui-text)] p-3 rounded-xl focus:outline-none text-sm resize-none placeholder:text-[var(--ui-muted)]"
               />
             </div>
             {aiImportResult && (
@@ -609,7 +610,7 @@ export default function AdminPanel() {
             <button
               onClick={handleAiImport}
               disabled={isAiImporting || !aiImportText.trim() || !aiImportCategoryId}
-              className="w-full py-3 bg-emerald-800 hover:bg-emerald-700 disabled:bg-emerald-950/40 disabled:text-[#F5E6D3]/40 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-3 ui-action-surface disabled:bg-rose-800 disabled:text-[var(--ui-muted)]  font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
             >
               <Brain size={18} />
               {isAiImporting ? 'ИИ обрабатывает...' : 'Создать тест через ИИ'}
@@ -617,19 +618,19 @@ export default function AdminPanel() {
           </div>
 
           <div className="flex items-center justify-between mt-8 mb-4">
-            <h3 className="text-xl font-bold text-[#F5E6D3]">Экспорт тестов</h3>
+            <h3 className="text-xl font-bold text-[var(--ui-text)]">Экспорт тестов</h3>
           </div>
           <div className="bg-rose-900/40 p-4 rounded-3xl mb-2">
             <div className="flex gap-2 mb-3">
               <button
                 onClick={handleSelectAllExport}
-                className="flex-1 py-2 bg-rose-800/60 hover:bg-rose-800 text-[#F5E6D3] text-sm font-bold rounded-xl transition-colors"
+                className="flex-1 py-2 bg-rose-800/60 hover:bg-rose-800 text-[var(--ui-text)] text-sm font-bold rounded-xl transition-colors"
               >
                 Выбрать все
               </button>
               <button
                 onClick={handleDeselectAllExport}
-                className="flex-1 py-2 bg-rose-800/60 hover:bg-rose-800 text-[#F5E6D3] text-sm font-bold rounded-xl transition-colors"
+                className="flex-1 py-2 bg-rose-800/60 hover:bg-rose-800 text-[var(--ui-text)] text-sm font-bold rounded-xl transition-colors"
               >
                 Снять все
               </button>
@@ -638,14 +639,14 @@ export default function AdminPanel() {
             <div className="flex flex-col gap-1 mb-4 max-h-64 overflow-y-auto pr-1">
               {(stats.tests || []).map(cat => (
                 <div key={`exp-cat-${cat.id}`}>
-                  <div className="text-xs font-bold text-[#F5E6D3]/60 uppercase tracking-wider px-1 py-1.5">{cat.name}</div>
+                  <div className="text-xs font-bold text-[var(--ui-muted)] uppercase tracking-wider px-1 py-1.5">{cat.name}</div>
                   {cat.tests.map(test => (
                     <label
                       key={`exp-test-${test.id}`}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-rose-800/40 cursor-pointer transition-colors"
                     >
-                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${exportSelectedIds.includes(test.id) ? 'bg-emerald-700 border-emerald-600' : 'border-[#F5E6D3]/40'}`}>
-                        {exportSelectedIds.includes(test.id) && <Check size={12} className="text-white" strokeWidth={3} />}
+                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${exportSelectedIds.includes(test.id) ? 'ui-action-surface border-[var(--ui-sage)]' : 'border-[var(--ui-text)]/40'}`}>
+                        {exportSelectedIds.includes(test.id) && <Check size={12} className="text-[var(--ui-text)]" strokeWidth={3} />}
                       </div>
                       <input
                         type="checkbox"
@@ -653,7 +654,7 @@ export default function AdminPanel() {
                         checked={exportSelectedIds.includes(test.id)}
                         onChange={() => toggleExportTest(test.id)}
                       />
-                      <span className="text-sm text-[#F5E6D3] leading-tight">{test.name}</span>
+                      <span className="text-sm text-[var(--ui-text)] leading-tight">{test.name}</span>
                     </label>
                   ))}
                 </div>
@@ -663,7 +664,7 @@ export default function AdminPanel() {
             <button
               onClick={handleExport}
               disabled={isExporting || exportSelectedIds.length === 0}
-              className="w-full py-3 bg-emerald-800 hover:bg-emerald-700 disabled:bg-emerald-950/40 disabled:text-[#F5E6D3]/50 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-3 ui-action-surface disabled:bg-rose-800 disabled:text-[var(--ui-muted)]  font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
             >
               <Download size={18} />
               {isExporting ? 'Экспорт...' : `Скачать TXT${exportSelectedIds.length > 0 ? ` (${exportSelectedIds.length})` : ''}`}
@@ -671,45 +672,45 @@ export default function AdminPanel() {
           </div>
 
           <div className="flex items-center justify-between mt-8 mb-4">
-            <h3 className="text-xl font-bold text-[#F5E6D3]">Управление тестами</h3>
+            <h3 className="text-xl font-bold text-[var(--ui-text)]">Управление тестами</h3>
             <button 
               onClick={() => setEditingTestId(null)}
-              className="p-2 px-3 bg-emerald-800/20 text-[#7BA887] hover:bg-emerald-800/30 rounded-xl transition-colors flex items-center gap-1 text-sm font-bold"
+              className="p-2 px-3 bg-emerald-800/20 text-[var(--ui-sage)] hover:bg-emerald-800/30 rounded-xl transition-colors flex items-center gap-1 text-sm font-bold"
             >
               <Plus size={16} /> Создать тест
             </button>
           </div>
           <div className="bg-rose-900/40 p-4 rounded-3xl">
             {(stats.tests || []).map(cat => (
-              <div key={`edit-cat-${cat.id}`} className="bg-rose-900 border border-[#F5E6D3]/10 rounded-3xl overflow-hidden shadow-sm transition-all duration-300 mb-3 last:mb-0">
+              <div key={`edit-cat-${cat.id}`} className="bg-rose-900 border border-[var(--ui-text)]/10 rounded-3xl overflow-hidden shadow-sm transition-all duration-300 mb-3 last:mb-0">
                 <button
                   onClick={() => setOpenDeleteCategory(openDeleteCategory === cat.id ? null : cat.id)}
                   className="w-full flex items-center justify-between p-4 hover:bg-rose-800/70 transition-colors active:bg-rose-800"
                 >
-                  <span className="font-semibold text-[#F5E6D3] text-left text-base sm:text-lg pr-4 leading-tight">
+                  <span className="font-semibold text-[var(--ui-text)] text-left text-base sm:text-lg pr-4 leading-tight">
                     {cat.name}
                   </span>
                   {openDeleteCategory === cat.id ? (
-                    <ChevronUp size={22} className="text-[#F5E6D3] shrink-0" />
+                    <ChevronUp size={22} className="text-[var(--ui-text)] shrink-0" />
                   ) : (
-                    <ChevronDown size={22} className="text-[#F5E6D3] shrink-0" />
+                    <ChevronDown size={22} className="text-[var(--ui-text)] shrink-0" />
                   )}
                 </button>
 
                 {openDeleteCategory === cat.id && (
                   <div className="bg-rose-950/40 px-4 py-2 animate-in fade-in slide-in-from-top-2 duration-300">
                     {cat.tests.length === 0 ? (
-                      <div className="text-[#F5E6D3] text-sm py-3 italic">В этой категории нет тестов.</div>
+                      <div className="text-[var(--ui-text)] text-sm py-3 italic">В этой категории нет тестов.</div>
                     ) : (
                       cat.tests.map(test => (
                         <div key={`edit-test-${test.id}`} className="flex items-center justify-between py-3.5 last:">
-                          <span className="text-sm sm:text-base font-medium pr-3 text-[#F5E6D3] flex-1">
+                          <span className="text-sm sm:text-base font-medium pr-3 text-[var(--ui-text)] flex-1">
                             {test.name}
                           </span>
                           <div className="flex items-center gap-1">
                             <button 
                               onClick={() => setEditingTestId(test.id)}
-                              className="p-2 text-emerald-600 hover:text-[#7BA887] hover:bg-emerald-800/10 rounded-lg transition-colors"
+                              className="p-2 text-emerald-600 hover:text-[var(--ui-sage)] hover:bg-emerald-800/10 rounded-lg transition-colors"
                             >
                               <Edit size={20} />
                             </button>

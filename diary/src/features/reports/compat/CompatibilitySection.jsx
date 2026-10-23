@@ -21,7 +21,7 @@ function FriendAvatar({ user }) {
       src={user.photo_url}
       className="w-11 h-11 rounded-full object-cover shrink-0"
       fallback={
-        <span className="w-11 h-11 shrink-0 rounded-full bg-rose-800 flex items-center justify-center text-lg font-bold text-[#F5E6D3]">
+        <span className="w-11 h-11 shrink-0 rounded-full bg-rose-800 flex items-center justify-center text-lg font-bold text-[var(--ui-text)]">
           {(user.first_name || user.username)?.[0]?.toUpperCase() || <User size={22} />}
         </span>
       }
@@ -36,7 +36,7 @@ function FriendRow({ user, caption, onClick, children }) {
     <Tag onClick={onClick} className="w-full flex items-center gap-3 px-4 py-3 text-left">
       <FriendAvatar user={user} />
       <span className="flex-1 min-w-0">
-        <span className="block text-[#F5E6D3] font-bold truncate">{friendName(user)}</span>
+        <span className="block text-[var(--ui-text)] font-bold truncate">{friendName(user)}</span>
         {caption}
       </span>
       {children}
@@ -72,7 +72,7 @@ export default function CompatibilitySection() {
 
   const hasContacts = hasRequests || data.friends.length > 0;
   const portraitHint = !myPortrait && (
-    <button type="button" onClick={() => navigate({ tab: 'tests' })} className="w-full min-h-11 text-sm text-[#F5E6D3]/75 underline underline-offset-2">
+    <button type="button" onClick={() => navigate({ tab: 'tests' })} className="w-full min-h-11 text-sm text-[var(--ui-secondary)] underline underline-offset-2">
       Для совместимости нужен твой портрет личности — к тестам
     </button>
   );
@@ -88,7 +88,7 @@ export default function CompatibilitySection() {
       />
       <div className="p-5 flex flex-col gap-4">
         <div>
-          <h2 className="font-bold text-[#F5E6D3] text-lg">Совместимость с друзьями</h2>
+          <h2 className="font-bold text-[var(--ui-text)] text-lg">Совместимость с друзьями</h2>
           <p className="ui-secondary mt-1">
             Сравним ваши портреты личности: в чем вы дополняете друг друга, где нужно терпение и что помогает мириться.
           </p>
@@ -108,10 +108,10 @@ export default function CompatibilitySection() {
       {hasRequests && (
         <section className="flex flex-col gap-2">
           <SectionLabel>Заявки</SectionLabel>
-          <div className="bg-rose-900 rounded-3xl divide-y divide-[#F5E6D3]/10 overflow-hidden">
+          <div className="bg-rose-900 rounded-3xl divide-y divide-[var(--ui-text)]/10 overflow-hidden">
             {data.incoming_requests.map(req => (
-              <FriendRow key={req.request_id} user={req} caption={<span className="block text-xs text-[#F5E6D3]/60">Хочет дружить</span>}>
-                <button onClick={() => act(`/api/friends/accept/${req.request_id}`)} aria-label="Принять" className="ui-icon-button bg-[#F5E6D3] text-rose-950!">
+              <FriendRow key={req.request_id} user={req} caption={<span className="block text-xs text-[var(--ui-muted)]">Хочет дружить</span>}>
+                <button onClick={() => act(`/api/friends/accept/${req.request_id}`)} aria-label="Принять" className="ui-icon-button ui-inverse-surface bg-[var(--ui-text)] text-rose-950!">
                   <Check size={18} className="clay-icon--dark" />
                 </button>
                 <button onClick={() => act(`/api/friends/reject/${req.request_id}`)} aria-label="Отклонить" className="ui-icon-button">
@@ -120,8 +120,8 @@ export default function CompatibilitySection() {
               </FriendRow>
             ))}
             {data.outgoing_requests.map(req => (
-              <FriendRow key={req.request_id} user={req} caption={<span className="block text-xs text-[#F5E6D3]/60">Ждет ответа</span>}>
-                <button onClick={() => act(`/api/friends/reject/${req.request_id}`)} className="min-h-11 px-3 text-sm font-medium text-[#F5E6D3]/75 bg-rose-950 rounded-xl">
+              <FriendRow key={req.request_id} user={req} caption={<span className="block text-xs text-[var(--ui-muted)]">Ждет ответа</span>}>
+                <button onClick={() => act(`/api/friends/reject/${req.request_id}`)} className="min-h-11 px-3 text-sm font-medium text-[var(--ui-secondary)] bg-rose-950 rounded-xl">
                   Отменить
                 </button>
               </FriendRow>
@@ -138,11 +138,11 @@ export default function CompatibilitySection() {
           </button>
         </div>
         {data.friends.length === 0 ? (
-          <p className="text-sm text-[#F5E6D3]/70 text-center py-6 px-4 leading-relaxed bg-rose-900/40 rounded-3xl">
+          <p className="text-sm text-[var(--ui-secondary)] text-center py-6 px-4 leading-relaxed bg-rose-900/40 rounded-3xl">
             Пока никого. Отправь другу личную ссылку — он появится здесь, как только ее откроет.
           </p>
         ) : (
-          <div className="bg-rose-900 rounded-3xl divide-y divide-[#F5E6D3]/10 overflow-hidden">
+          <div className="bg-rose-900 rounded-3xl divide-y divide-[var(--ui-text)]/10 overflow-hidden">
             {[...data.friends].sort((a, b) => Number(b.has_compatibility) - Number(a.has_compatibility)).map(friend => {
               const status = compatStatus(friend, myPortrait);
               return (
@@ -150,9 +150,9 @@ export default function CompatibilitySection() {
                   key={friend.id}
                   user={friend}
                   onClick={() => setOpenFriend(friend)}
-                  caption={<span className={`block text-xs ${status.ready ? 'text-[#F5E6D3]/80' : 'text-[#F5E6D3]/75'}`}>{status.text}</span>}
+                  caption={<span className={`block text-xs ${status.ready ? 'text-[var(--ui-secondary)]' : 'text-[var(--ui-secondary)]'}`}>{status.text}</span>}
                 >
-                  <ChevronRight size={18} className="shrink-0 text-[#F5E6D3]/60" />
+                  <ChevronRight size={18} className="shrink-0 text-[var(--ui-muted)]" />
                 </FriendRow>
               );
             })}

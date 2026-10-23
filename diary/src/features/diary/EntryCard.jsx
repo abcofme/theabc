@@ -32,7 +32,7 @@ function MatchScale({ score }) {
       <div className="h-1.5 flex-1 bg-rose-950 rounded-full overflow-hidden relative">
         <div className={`absolute inset-y-0 left-0 ${scoreColor(score)}`} style={{ width: `${shown}%` }} />
       </div>
-      <span className="text-sm font-bold text-[#F5E6D3] min-w-[4ch] text-right">{Math.round(shown)}%</span>
+      <span className="text-sm font-bold text-[var(--ui-text)] min-w-[4ch] text-right">{Math.round(shown)}%</span>
     </div>
   );
 }
@@ -41,7 +41,7 @@ function MatchScale({ score }) {
 function Reply({ text }) {
   return (
     <div className="diary-reply">
-      <p className="diary-reply__head"><Leaf size={16} className="text-[#7BA887]" aria-hidden="true" /> Ответ дневника</p>
+      <p className="diary-reply__head"><Leaf size={16} className="text-[var(--ui-sage)]" aria-hidden="true" /> Ответ дневника</p>
       <ResultContent content={text} contents={false} compact variant="reply" />
     </div>
   );
@@ -70,7 +70,7 @@ export default function EntryCard({ entry, analysis, onDelete, onRetry, onEdit }
       </div>
 
       {analysis === 'pending' && (
-        <div className="mt-4 flex items-center gap-2 text-sm text-[#F5E6D3]/80">
+        <div className="mt-4 flex items-center gap-2 text-sm text-[var(--ui-secondary)]">
           <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
           Дневник читает запись…
         </div>

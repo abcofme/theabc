@@ -138,7 +138,7 @@ export default function ReportTypePage({ type, reports, onOpenReport, onCreated,
 
         {lock ? (
           <section className="ui-card flex gap-3">
-            <Lock size={18} className="shrink-0 mt-1 text-[#F5E6D3]/75" />
+            <Lock size={18} className="shrink-0 mt-1 text-[var(--ui-secondary)]" />
             <div className="flex-1 min-w-0">
               <h3 className="text-lg font-semibold mb-1"><ClayText text={lock.label} /></h3>
               <p className="ui-secondary mb-4">{lock.text}</p>
@@ -153,7 +153,7 @@ export default function ReportTypePage({ type, reports, onOpenReport, onCreated,
           <h3 className="text-lg font-semibold mb-2"><ClayText text="История" /></h3>
           {earlier.map(report => (
             <button key={report.id} type="button" onClick={() => onOpenReport(report)} className="ui-row">
-              <FileText size={20} className="shrink-0 text-[#F5E6D3]/75" />
+              <FileText size={20} className="shrink-0 text-[var(--ui-secondary)]" />
               <span className="flex-1 min-w-0"><span className="flex flex-wrap gap-2 items-center font-medium">Отчет от {formatDay(report.created_at)}{report.is_read === false && <span className="ui-badge">Новый</span>}</span><span className="ui-muted block mt-1">{periodLabel(report)}</span></span>
               <ChevronRight size={20} className="shrink-0" />
             </button>

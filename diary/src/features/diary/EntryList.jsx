@@ -20,7 +20,7 @@ export function AnalysisHint({ lock, onNavigate }) {
   return (
     <button
       onClick={go}
-      className="w-full mt-3 flex items-center gap-2 text-left text-sm text-[#F5E6D3]/80 active:opacity-70"
+      className="w-full mt-3 flex items-center gap-2 text-left text-sm text-[var(--ui-secondary)] active:opacity-70"
     >
       <Lock size={14} className="shrink-0" />
       <span className="flex-1">{lock.text}</span>

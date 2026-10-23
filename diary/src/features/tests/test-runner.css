@@ -3,7 +3,7 @@
 .test-question-card {
   min-height: 324px;
   isolation: isolate;
-  border: 1px solid #F5E6D31A;
+  border: 1px solid var(--ui-track);
   background: var(--color-rose-900);
   padding: calc(var(--question-art-top, 0%) + 14px) 24px calc(var(--question-art-bottom, 0%) + 14px);
 }

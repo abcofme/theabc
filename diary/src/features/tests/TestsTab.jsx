@@ -77,7 +77,7 @@ export default function TestsTab({ request }) {
                     const saved = readTestProgress(test.id);
                     return <button type="button" key={test.id} onClick={() => openTest(test)} className="ui-row">
                       <span className="flex-1 min-w-0"><span className="font-medium leading-6 block">{test.name}</span>{!test.passed && saved.index > 0 && <span className="ui-muted block mt-1">{saved.total ? `Пройдено ${saved.index} из ${saved.total} вопросов` : 'Есть сохраненный прогресс'}</span>}</span>
-                      <span className="flex items-center gap-1 text-sm font-semibold shrink-0">{test.passed ? <><Check size={20} className="text-[#7BA887]" /> Результат</> : <>{saved.index > 0 ? 'Продолжить' : 'Пройти'}<ChevronRight size={20} /></>}</span>
+                      <span className="flex items-center gap-1 text-sm font-semibold shrink-0">{test.passed ? <><Check size={20} className="text-[var(--ui-sage)]" /> Результат</> : <>{saved.index > 0 ? 'Продолжить' : 'Пройти'}<ChevronRight size={20} /></>}</span>
                     </button>;
                   })}
                 </div>}

@@ -6,11 +6,11 @@
 }
 
 .clay-navigation__item[aria-current='page'] {
-  background: #f5e6d310;
+  background: var(--ui-hover);
 }
 
 .clay-navigation__item:focus-visible {
-  outline: 2px solid #ead2ae;
+  outline: 2px solid var(--ui-gold);
   outline-offset: -2px;
 }
 

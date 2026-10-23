@@ -63,8 +63,8 @@ export default function App() {
     return (
       <div className="flex items-center justify-center h-screen bg-rose-950 text-center p-4">
         <div>
-          <h2 className="text-2xl font-bold text-[#F5E6D3] mb-2">Доступ запрещен</h2>
-          <p className="text-[#F5E6D3]">Дневник можно открыть только через нашего Telegram-бота.</p>
+          <h2 className="text-2xl font-bold text-[var(--ui-text)] mb-2">Доступ запрещен</h2>
+          <p className="text-[var(--ui-text)]">Дневник можно открыть только через нашего Telegram-бота.</p>
         </div>
       </div>
     );
@@ -141,7 +141,7 @@ function Shell() {
 
   return (
     <AppNavContext.Provider value={nav}>
-      <div className="flex flex-col h-full font-sans bg-rose-950 relative">
+      <div className="app-shell flex flex-col h-full font-sans bg-rose-950 relative">
         <main ref={mainRef} className={`app-main ${isNavHidden ? '' : 'app-main--with-nav'}`}>
           {!profile ? <ScreenState loading={!profileError} error={!!profileError} title={profileError ? 'Не удалось загрузить приложение' : 'Загружаем твои данные…'} onRetry={profileError ? refreshProfile : undefined} /> : <>
           <div className="flex-1 flex-col" style={{ display: activeTab === 'diary' ? 'flex' : 'none' }}>
@@ -160,7 +160,7 @@ function Shell() {
         </main>
 
         {!isNavHidden && (
-          <nav aria-label="Главное меню" className="fixed bottom-0 left-0 w-full bg-rose-900 border-t border-[#F5E6D3]/10 p-2 pb-safe z-50">
+          <nav aria-label="Главное меню" className="fixed bottom-0 left-0 w-full bg-rose-900 border-t border-[var(--ui-text)]/10 p-2 pb-safe z-50">
             <div className="flex max-w-2xl mx-auto gap-1">
             {TABS.map(tab => {
               const isActive = activeTab === tab.id;
@@ -171,7 +171,7 @@ function Shell() {
                   aria-current={isActive ? 'page' : undefined}
                   onClick={() => selectTab(tab.id)}
                   className={`clay-navigation__item flex-1 flex flex-col items-center justify-center py-2 transition-all duration-300 ${
-                    isActive ? 'text-[#F5E6D3]' : 'text-[#F5E6D3]/60 hover:text-[#F5E6D3]/80'
+                    isActive ? 'text-[var(--ui-text)]' : 'text-[var(--ui-muted)] hover:text-[var(--ui-secondary)]'
                   }`}
                 >
                   <img src={tab.icon} className="clay-navigation__icon" width="32" height="32" alt="" draggable="false" />

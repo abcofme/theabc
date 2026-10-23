@@ -1,3 +1,4 @@
+import Select from '../../components/Select';
 import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Plus, Trash2, Save, X, LoaderCircle } from '../../components/ClayIcon';
 import { useBackHandler } from '../../navigation/backStack';
@@ -171,40 +172,40 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
 
   return (
     <div ref={editorRef} className="admin-content flex flex-col w-full min-w-0 pb-8">
-      <h2 className="text-2xl font-bold text-[#F5E6D3] mb-6">
+      <h2 className="text-2xl font-bold text-[var(--ui-text)] mb-6">
         {testId ? "Редактирование теста" : "Создание теста"}
       </h2>
 
       {/* Basic Info */}
       <div className="ui-card mb-6 flex flex-col gap-4">
         <div>
-          <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Категория:</label>
-          <select 
+          <label className="text-[var(--ui-text)] text-sm font-medium mb-1 block">Категория:</label>
+          <Select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
+            className="w-full bg-rose-950/50 text-[var(--ui-text)] p-3 rounded-xl focus:outline-none"
           >
             <option value="">Выберите категорию...</option>
             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          </Select>
         </div>
         <div>
-          <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Название:</label>
+          <label className="text-[var(--ui-text)] text-sm font-medium mb-1 block">Название:</label>
           <input 
             type="text" 
             value={name} 
             onChange={(e) => setName(e.target.value)}
             placeholder="Название"
-            className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none placeholder:text-[#F5E6D3]/60"
+            className="w-full bg-rose-950/50 text-[var(--ui-text)] p-3 rounded-xl focus:outline-none placeholder:text-[var(--ui-muted)]"
           />
         </div>
         <div>
-          <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Описание теста:</label>
+          <label className="text-[var(--ui-text)] text-sm font-medium mb-1 block">Описание теста:</label>
           <textarea 
             value={description} 
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Описание"
-            className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none placeholder:text-[#F5E6D3]/60 min-h-[80px]"
+            className="w-full bg-rose-950/50 text-[var(--ui-text)] p-3 rounded-xl focus:outline-none placeholder:text-[var(--ui-muted)] min-h-[80px]"
           />
         </div>
       </div>
@@ -212,11 +213,11 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
       {/* Results / Interpretations */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xl font-bold text-[#F5E6D3]">Результаты</h3>
+          <h3 className="text-xl font-bold text-[var(--ui-text)]">Результаты</h3>
         </div>
         
         <div className="space-y-4">
-          {results.length === 0 && <p className="text-[#F5E6D3]/60 text-sm">Нет результатов</p>}
+          {results.length === 0 && <p className="text-[var(--ui-muted)] text-sm">Нет результатов</p>}
           {results.map((r, idx) => (
             <div key={idx} className="ui-card p-4! relative">
               <button onClick={() => removeResult(idx)} className="absolute top-4 right-4 text-red-400 p-1 hover:bg-red-400/10 rounded-lg">
@@ -224,23 +225,23 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
               </button>
               
               <div className="mb-3 pr-8">
-                <label className="text-[#F5E6D3]/70 text-xs mb-2 block font-medium">Интервалы баллов:</label>
+                <label className="text-[var(--ui-secondary)] text-xs mb-2 block font-medium">Интервалы баллов:</label>
                 <div className="space-y-2">
                   {r.intervals.map((inv, intIdx) => (
                     <div key={intIdx} className="flex gap-2 items-center bg-rose-950/30 p-2 rounded-lg">
                       <div className="flex-1">
-                        <label className="text-[#F5E6D3]/60 text-xs mb-1 block">От (включительно):</label>
+                        <label className="text-[var(--ui-muted)] text-xs mb-1 block">От (включительно):</label>
                         <input 
                           type="number" value={inv.range_from} onChange={(e) => updateInterval(idx, intIdx, 'range_from', e.target.value)}
-                          className="w-full bg-rose-950/50 text-[#F5E6D3] p-1.5 text-sm rounded focus:outline-none"
+                          className="w-full bg-rose-950/50 text-[var(--ui-text)] p-1.5 text-sm rounded focus:outline-none"
                         />
                       </div>
                       <div className="flex-1">
-                        <label className="text-[#F5E6D3]/60 text-xs mb-1 block">До (не включительно):</label>
+                        <label className="text-[var(--ui-muted)] text-xs mb-1 block">До (не включительно):</label>
                         <input 
                           type="number" value={inv.range_to ?? ''} onChange={(e) => updateInterval(idx, intIdx, 'range_to', e.target.value)}
                           placeholder="бескон."
-                          className="w-full bg-rose-950/50 text-[#F5E6D3] p-1.5 text-sm rounded focus:outline-none placeholder:text-[#F5E6D3]/60"
+                          className="w-full bg-rose-950/50 text-[var(--ui-text)] p-1.5 text-sm rounded focus:outline-none placeholder:text-[var(--ui-muted)]"
                         />
                       </div>
                       <button onClick={() => removeInterval(idx, intIdx)} disabled={r.intervals.length === 1} className="mt-4 text-red-400/70 hover:text-red-400 p-1 disabled:opacity-30">
@@ -249,16 +250,16 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
                     </div>
                   ))}
                 </div>
-                <button onClick={() => addInterval(idx)} className="mt-2 text-[#7BA887] text-xs flex items-center gap-1 hover:text-emerald-300">
+                <button onClick={() => addInterval(idx)} className="mt-2 text-[var(--ui-sage)] text-xs flex items-center gap-1 hover:text-emerald-300">
                   <Plus size={14} /> Добавить интервал
                 </button>
               </div>
 
               <div>
-                <label className="text-[#F5E6D3]/70 text-xs mb-1 block">Текст результата (общий для всех интервалов):</label>
+                <label className="text-[var(--ui-secondary)] text-xs mb-1 block">Текст результата (общий для всех интервалов):</label>
                 <textarea 
                   value={r.name} onChange={(e) => updateResult(idx, 'name', e.target.value)}
-                  className="w-full bg-rose-950/50 text-[#F5E6D3] p-2 rounded-lg focus:outline-none min-h-[60px]"
+                  className="w-full bg-rose-950/50 text-[var(--ui-text)] p-2 rounded-lg focus:outline-none min-h-[60px]"
                 />
               </div>
             </div>
@@ -272,21 +273,21 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
       {/* Questions */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xl font-bold text-[#F5E6D3]">Вопросы</h3>
+          <h3 className="text-xl font-bold text-[var(--ui-text)]">Вопросы</h3>
         </div>
         
         <div className="space-y-6">
-          {questions.length === 0 && <p className="text-[#F5E6D3]/60 text-sm">Нет вопросов</p>}
+          {questions.length === 0 && <p className="text-[var(--ui-muted)] text-sm">Нет вопросов</p>}
           {questions.map((q, qIdx) => (
             <div key={qIdx} className="ui-card p-4!">
               <div className="flex gap-2 items-start mb-4">
-                <span className="bg-rose-950/80 text-[#F5E6D3]/60 px-2 py-1.5 rounded-lg text-sm font-bold mt-1">
+                <span className="bg-rose-950/80 text-[var(--ui-muted)] px-2 py-1.5 rounded-lg text-sm font-bold mt-1">
                   {qIdx + 1}
                 </span>
                 <textarea 
                   value={q.name} onChange={(e) => updateQuestion(qIdx, e.target.value)}
                   placeholder="Текст вопроса..."
-                  className="min-w-0 flex-1 bg-rose-950/50 text-[#F5E6D3] p-2 rounded-lg focus:outline-none min-h-[60px]"
+                  className="min-w-0 flex-1 bg-rose-950/50 text-[var(--ui-text)] p-2 rounded-lg focus:outline-none min-h-[60px]"
                 />
                 <button onClick={() => removeQuestion(qIdx)} className="text-red-400 p-2 hover:bg-red-400/10 rounded-lg mt-1 shrink-0">
                   <Trash2 size={18} />
@@ -294,25 +295,25 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
               </div>
               
               <div className="space-y-2">
-                <p className="text-[#F5E6D3]/70 text-xs uppercase tracking-wider font-bold mb-2">Варианты ответов:</p>
+                <p className="text-[var(--ui-secondary)] text-xs uppercase tracking-wider font-bold mb-2">Варианты ответов:</p>
                 {q.answers.map((a, aIdx) => (
                   <div key={aIdx} className="admin-answer grid grid-cols-[minmax(0,1fr)_44px] gap-2 items-center">
                     <input 
                       type="text" value={a.name} onChange={(e) => updateAnswer(qIdx, aIdx, 'name', e.target.value)}
                       placeholder="Ответ..."
-                      className="col-span-2 w-full bg-rose-950 text-[#F5E6D3] p-3 rounded-xl"
+                      className="col-span-2 w-full bg-rose-950 text-[var(--ui-text)] p-3 rounded-xl"
                     />
                     <input 
                       type="number" value={a.value} onChange={(e) => updateAnswer(qIdx, aIdx, 'value', e.target.value)}
                       placeholder="Балл" aria-label="Баллы за этот ответ" title="Баллы за этот ответ"
-                      className="w-full bg-rose-950 text-[#F5E6D3] p-3 rounded-xl"
+                      className="w-full bg-rose-950 text-[var(--ui-text)] p-3 rounded-xl"
                     />
-                    <button onClick={() => removeAnswer(qIdx, aIdx)} className="text-[#F5E6D3]/40 hover:text-red-400 p-1 rounded-lg">
+                    <button onClick={() => removeAnswer(qIdx, aIdx)} className="text-[var(--ui-muted)] hover:text-red-400 p-1 rounded-lg">
                       <XIcon />
                     </button>
                   </div>
                 ))}
-                <button onClick={() => addAnswer(qIdx)} className="text-[#7BA887] text-sm flex items-center gap-1 hover:text-emerald-500 mt-2 px-2 py-1">
+                <button onClick={() => addAnswer(qIdx)} className="text-[var(--ui-sage)] text-sm flex items-center gap-1 hover:text-emerald-500 mt-2 px-2 py-1">
                   <Plus size={14} /> Добавить ответ
                 </button>
               </div>

@@ -52,7 +52,7 @@ export default function ReportsCatalog({ reports, jobs, active, onOpenType, onOp
         <div className="flex flex-col gap-2">
           {generating.map(type => (
             <button key={type.id} type="button" onClick={() => onOpenType(type)} className="report-strip">
-              <LoaderCircle size={20} className="shrink-0 animate-spin text-[#E5C398]" aria-hidden="true" />
+              <LoaderCircle size={20} className="shrink-0 animate-spin text-[var(--ui-gold)]" aria-hidden="true" />
               <span className="flex-1 min-w-0">
                 <span className="report-strip__label">Отчет формируется</span>
                 <span className="block font-semibold">{type.shortTitle}</span>
@@ -62,7 +62,7 @@ export default function ReportsCatalog({ reports, jobs, active, onOpenType, onOp
           ))}
           {unread.map(report => (
             <button key={report.id} type="button" onClick={() => onOpenReport(report)} className="report-strip">
-              <FileText size={20} className="shrink-0 text-[#E5C398]" aria-hidden="true" />
+              <FileText size={20} className="shrink-0 text-[var(--ui-gold)]" aria-hidden="true" />
               <span className="flex-1 min-w-0">
                 <span className="report-strip__label">Готов новый отчет</span>
                 <span className="block font-semibold">{reportTypeOf(report).shortTitle}</span>

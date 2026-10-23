@@ -1,0 +1,120 @@
+:root {
+  --ui-line: #71352D;
+  --ui-inset: #3D1010;
+  --ui-table-alt: #481313;
+  --ui-quote: #24362A;
+  --ui-quote-border: #4D6955;
+  --ui-stroke: #F5E6D340;
+  --ui-stroke-strong: #F5E6D366;
+  --ui-hover: #F5E6D30A;
+  --ui-subtle: #F5E6D308;
+  --ui-track: #F5E6D31A;
+  --ui-accent-border: #E5C39859;
+  --ui-on-action: #F5E6D3;
+  --ui-action-hover: #096D50;
+  --ui-scrim: #170505CC;
+  --ui-soft-green: #163D2D;
+  --clay-filter: none;
+  --clay-inverse-filter: brightness(.48) sepia(.3);
+  --clay-action-filter: none;
+  --clay-texture-wash: #2B0A0A73;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-rose-300: #AC776D;
+  --color-rose-500: #A87569;
+  --color-rose-700: #D4B9A1;
+  --color-rose-800: #E8D7C2;
+  --color-rose-900: #FFF8EE;
+  --color-rose-950: #F4ECDF;
+  --color-emerald-300: #416746;
+  --color-emerald-600: #527450;
+  --color-emerald-700: #D2DFC7;
+  --color-emerald-800: #D7E0CA;
+  --color-emerald-900: #C7D7BC;
+  --color-emerald-950: #C8D8BE;
+  --color-red-300: #8B3236;
+  --color-red-400: #963F43;
+  --color-red-900: #EDCFC8;
+  --ui-text: #5C2029;
+  --ui-secondary: #754B49;
+  --ui-muted: #80625A;
+  --ui-border: #5C202926;
+  --ui-gold: #7F5236;
+  --ui-sage: #4D7151;
+  --ui-line: #DBC4B1;
+  --ui-inset: #F1E5D6;
+  --ui-table-alt: #F8EFE3;
+  --ui-quote: #E6EBD9;
+  --ui-quote-border: #A9BC98;
+  --ui-stroke: #B59A86;
+  --ui-stroke-strong: #A18573;
+  --ui-hover: #5C20290A;
+  --ui-subtle: #5C202908;
+  --ui-track: #5C20291A;
+  --ui-accent-border: #B99A76;
+  --ui-action: #D7E0CA;
+  --ui-action-hover: #C8D6B8;
+  --ui-on-action: #5C2029;
+  --ui-soft-green: #E5EAD8;
+  --clay-filter: brightness(.2) sepia(1) saturate(4) hue-rotate(300deg);
+  --clay-inverse-filter: none;
+  --clay-action-filter: var(--clay-filter);
+  --clay-texture-wash: #F4ECDF9C;
+}
+
+/* Нейтральная карта рельефа сохраняет цвет темы и мягкие следы лепки. */
+.app-shell, .app-overlay:not(.app-overlay--modal) {
+  background-image: linear-gradient(var(--clay-texture-wash), var(--clay-texture-wash)), url('./assets/textures/clay-relief.webp');
+  background-blend-mode: normal, soft-light;
+  background-size: auto, 560px 560px;
+}
+.app-overlay--modal { background: var(--ui-scrim); }
+.clay-text { color: var(--ui-text); }
+.clay-text__glyph, .clay-icon, .clay-navigation__icon, .clay-leaf,
+.ui-disclosure > summary::after, .result-reader--document .result-points > li::before {
+  filter: var(--clay-filter);
+}
+.clay-icon--dark, .billing-premium__icon > .clay-icon, .profile-header__premium .clay-icon { filter: brightness(.48) sepia(.3); }
+:root[data-theme='light'] .clay-icon--dark,
+:root[data-theme='light'] .billing-premium__icon > .clay-icon,
+:root[data-theme='light'] .profile-header__premium .clay-icon { filter: var(--clay-filter); }
+.ui-segmented > button[aria-selected='true'] .clay-icon,
+.ui-segmented > button[aria-pressed='true'] .clay-icon,
+.ui-inverse-surface .clay-icon { filter: var(--clay-inverse-filter); }
+:root[data-theme='light'] .ui-segmented > button[aria-selected='true'],
+:root[data-theme='light'] .ui-segmented > button[aria-pressed='true'] { background: var(--color-rose-800); color: var(--ui-text); }
+:root[data-theme='light'] .ui-segmented .clay-icon { filter: var(--clay-filter); }
+:root[data-theme='light'] .ui-inverse-surface { background: var(--ui-action); }
+:root[data-theme='light'] .ui-inverse-surface .clay-icon { filter: var(--clay-filter); }
+input[type='date']::-webkit-calendar-picker-indicator { filter: var(--clay-filter); }
+.ui-select { position: relative; display: block; width: 100%; min-width: 0; }
+.ui-select > select { background-image: none; padding-right: 40px; }
+.ui-select__arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); }
+.ui-checkbox { display: grid; place-content: center; }
+.ui-checkbox:checked { background-image: none; }
+.ui-checkbox:checked::after { content: ''; width: 16px; height: 16px; background: url('./assets/icons/check.webp') center / contain no-repeat; filter: var(--clay-action-filter); }
+.ui-action-surface, .ui-button--primary { background-color: var(--ui-action); color: var(--ui-on-action); }
+.ui-action-surface .clay-icon, .ui-button--primary .clay-icon { filter: var(--clay-action-filter); }
+.ui-button--primary:hover:not(:disabled), .ui-action-surface:hover:not(:disabled) { background: var(--ui-action-hover); }
+.ui-action-surface:disabled { background: var(--color-rose-800); color: var(--ui-muted); opacity: .65; }
+.ui-action-surface:disabled .clay-icon { opacity: .5; }
+.ui-avatar { background: var(--ui-soft-green); }
+:root[data-theme='light'] .clay-banner, :root[data-theme='light'] .clay-group { box-shadow: 0 4px 12px #6639230A; }
+:root[data-theme='light'] .test-retake-button { background: #E6CEAE; color: var(--ui-text); box-shadow: inset 0 2px 1px #FFF8EFBF, inset 0 -3px 1px #B4916D66, 0 3px 0 #C9B398; }
+:root[data-theme='light'] .test-retake-button:hover:not(:disabled) { background: #EEDBC0; }
+:root[data-theme='light'] .test-retake-button:active:not(:disabled) { background: #DCC19E; box-shadow: inset 0 2px 3px #B4916D66; }
+
+.ui-switch { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; width: 52px; min-height: 44px; padding: 0; border-radius: 14px; }
+.ui-switch__track { position: relative; display: block; width: 48px; height: 28px; border-radius: 99px; background: var(--color-rose-950); box-shadow: inset 0 1px 3px #16050540; transition: background-color 180ms ease; }
+.ui-switch__thumb { position: absolute; top: 4px; left: 4px; width: 20px; height: 20px; border-radius: 50%; background: #F5E6D3; box-shadow: inset 0 1px 2px #FFF8EFB3, inset 0 -2px 2px #B4937266, 0 1px 3px #1605054D; transition: transform 180ms ease; }
+.ui-switch[aria-checked='true'] .ui-switch__track { background: #006045; }
+.ui-switch[aria-checked='true'] .ui-switch__thumb { transform: translateX(20px); }
+.ui-switch:disabled { opacity: .45; }
+:root[data-theme='light'] .ui-switch__track { background: #D7C5B2; box-shadow: inset 0 1px 3px #70472B33; }
+:root[data-theme='light'] .ui-switch[aria-checked='true'] .ui-switch__track { background: #762C38; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-switch__track, .ui-switch__thumb { transition: none; }
+}

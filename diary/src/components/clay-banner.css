@@ -5,10 +5,10 @@
   width: 100%;
   padding: 0;
   overflow: hidden;
-  border: 1px solid #f5e6d314;
+  border: 1px solid var(--ui-border);
   border-radius: 24px;
   background: var(--color-rose-900);
-  color: #f5e6d3;
+  color: var(--ui-text);
   text-align: left;
   box-shadow: 0 5px 16px #16030524;
 }
@@ -20,12 +20,12 @@ button.clay-banner {
 
 button.clay-banner:hover:not(:disabled),
 button.clay-banner[aria-expanded='true'] {
-  border-color: #d8b38c66;
+  border-color: var(--ui-accent-border);
   box-shadow: 0 8px 24px #16030540;
 }
 
 button.clay-banner:focus-visible {
-  outline: 2px solid #e0be8c;
+  outline: 2px solid var(--ui-gold);
   outline-offset: 4px;
 }
 
@@ -42,8 +42,8 @@ button.clay-banner:disabled .clay-banner__badge {
   display: inline-block;
   padding: 3px 8px;
   border-radius: 999px;
-  background: #2b0a0a;
-  color: #f5e6d3;
+  background: var(--color-rose-950);
+  color: var(--ui-text);
   font-size: 12px;
   font-weight: 600;
   line-height: 1.35;
@@ -51,8 +51,8 @@ button.clay-banner:disabled .clay-banner__badge {
 
 .clay-banner__badge--accent {
   border-color: transparent;
-  background: #e5c398;
-  color: #2b0a0a;
+  background: var(--ui-gold);
+  color: var(--color-rose-950);
 }
 
 .clay-banner__art {
@@ -81,8 +81,8 @@ button.clay-banner:disabled .clay-banner__badge {
   gap: 12px;
   min-height: 44px;
   padding: 10px 14px;
-  border-top: 1px solid #f5e6d314;
-  color: #f5e6d3bf;
+  border-top: 1px solid var(--ui-border);
+  color: var(--ui-secondary);
   font-size: 12px;
   line-height: 1.4;
 }
@@ -115,8 +115,8 @@ button.clay-banner:disabled .clay-banner__badge {
   flex-shrink: 0;
   padding: 3px 8px;
   border-radius: 999px;
-  background: #2b0a0a;
-  color: #e5c398;
+  background: var(--color-rose-950);
+  color: var(--ui-gold);
   font-size: 12px;
   font-weight: 600;
   line-height: 1.35;
@@ -126,7 +126,7 @@ button.clay-banner:disabled .clay-banner__badge {
 /* Обложка и ее содержимое — одна карточка: обложка сверху, список или текст под ней */
 .clay-group {
   overflow: hidden;
-  border: 1px solid #f5e6d314;
+  border: 1px solid var(--ui-border);
   border-radius: 24px;
   background: var(--color-rose-900);
   box-shadow: 0 5px 16px #16030524;
@@ -145,12 +145,12 @@ button.clay-banner:disabled .clay-banner__badge {
 
 .clay-group:has(> button.clay-banner:hover:not(:disabled)),
 .clay-group:has(> button.clay-banner[aria-expanded='true']) {
-  border-color: #d8b38c66;
+  border-color: var(--ui-accent-border);
 }
 
 .clay-group__body {
   padding: 4px 20px 16px;
-  border-top: 1px solid #f5e6d314;
+  border-top: 1px solid var(--ui-border);
 }
 
 @media (prefers-reduced-motion: reduce) {

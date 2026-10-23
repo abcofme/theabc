@@ -89,12 +89,12 @@ export default function DiaryTab() {
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="screen-title"><ClayText text="Сегодня" /></h1>
             {streak >= 2 && (
-              <span className="flex items-center gap-1 bg-emerald-800 text-[#F5E6D3] text-xs font-bold px-2 py-1 rounded-lg">
+              <span className="flex items-center gap-1 ui-action-surface text-xs font-bold px-2 py-1 rounded-lg">
                 <Flame size={14} /> {streak} {plural(streak, ['день', 'дня', 'дней'])} подряд
               </span>
             )}
           </div>
-          <p className="text-sm text-[#F5E6D3]/70 mt-0.5">{format(parseISO(today), 'EEEE, d MMMM', { locale: ru })}</p>
+          <p className="text-sm text-[var(--ui-secondary)] mt-0.5">{format(parseISO(today), 'EEEE, d MMMM', { locale: ru })}</p>
         </div>
         <button
           onClick={() => setIsMonthOpen(true)}
@@ -148,22 +148,22 @@ export default function DiaryTab() {
                 <button
                   key={key}
                   onClick={() => setOpenDay(key)}
-                  className="w-full flex items-center gap-3 bg-rose-900 rounded-2xl px-4 py-3 text-left text-[#F5E6D3] active:scale-[0.98]"
+                  className="w-full flex items-center gap-3 bg-rose-900 rounded-2xl px-4 py-3 text-left text-[var(--ui-text)] active:scale-[0.98]"
                 >
-                  <span className="text-xs text-[#F5E6D3]/70 shrink-0 whitespace-nowrap first-letter:uppercase">
+                  <span className="text-xs text-[var(--ui-secondary)] shrink-0 whitespace-nowrap first-letter:uppercase">
                     {format(parseISO(key), 'EEEEEE, d MMM', { locale: ru })}
                   </span>
                   <span className="flex-1 min-w-0 truncate">{dayEntries[0].event}</span>
-                  {dayEntries.length > 1 && <span className="text-xs text-[#F5E6D3]/70 shrink-0">+{dayEntries.length - 1}</span>}
+                  {dayEntries.length > 1 && <span className="text-xs text-[var(--ui-secondary)] shrink-0">+{dayEntries.length - 1}</span>}
                   {hasReply && <MessageCircle size={16} className="shrink-0 text-emerald-500" aria-label="Есть ответ дневника" />}
-                  <ChevronRight size={16} className="shrink-0 text-[#F5E6D3]/60" />
+                  <ChevronRight size={16} className="shrink-0 text-[var(--ui-muted)]" />
                 </button>
               );
             })}
           </div>
         </section>
       ) : overviewStatus === 'ready' && todayEntries.length === 0 && !showPath && (
-        <p className="mt-6 px-2 text-sm text-[#F5E6D3]/80 text-center leading-relaxed">
+        <p className="mt-6 px-2 text-sm text-[var(--ui-secondary)] text-center leading-relaxed">
           Записывай, что произошло и как ты отреагировал(а). Дневник знает твои сильные и слабые стороны,
           сверит реакцию с портретом личности и ответит — без искажений.
         </p>

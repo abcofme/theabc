@@ -16,7 +16,7 @@ export default function ReportViewPage({ report, onBack, onUpdate, onDelete }) {
           <p className="ui-secondary mt-2 px-1">Отчет от {formatDay(report.created_at)} · {periodLabel(report)}</p>
         </header>
         <ResultContent content={report.content} titles={[report.title, type?.shortTitle]} contents={false} variant="document" clayHeadings />
-        <div className="flex flex-col gap-2 border-t border-[#F5E6D3]/10 pt-6">
+        <div className="flex flex-col gap-2 border-t border-[var(--ui-text)]/10 pt-6">
           {type && <button type="button" onClick={onUpdate} className="ui-button ui-button--outline"><RefreshCw size={20} /> Обновить отчет</button>}
           <button type="button" onClick={onDelete} className="ui-button ui-button--quiet"><Trash2 size={20} /> Удалить отчет</button>
         </div>

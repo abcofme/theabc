@@ -190,9 +190,9 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
       <header className={`relative z-10 shrink-0 w-full mx-auto flex items-center gap-2 px-4 pt-3 pb-2 ${result ? 'max-w-2xl' : 'max-w-md'}`}>
         {isStarted && !result && details ? (
           <>
-            <span className="text-[#F5E6D3]/70 font-semibold text-sm whitespace-nowrap">Вопрос {index + 1} из {questions.length}</span>
+            <span className="text-[var(--ui-secondary)] font-semibold text-sm whitespace-nowrap">Вопрос {index + 1} из {questions.length}</span>
             <div className="flex-1 h-2 bg-rose-900/50 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-800 transition-all duration-500 ease-out" style={{ width: `${((index + 1) / questions.length) * 100}%` }} />
+              <div className="h-full bg-[var(--ui-sage)] transition-all duration-500 ease-out" style={{ width: `${((index + 1) / questions.length) * 100}%` }} />
             </div>
             <button
               onClick={handleGoBack}
@@ -204,7 +204,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
             </button>
           </>
         ) : (
-          <h2 className="page-title text-[#F5E6D3] min-w-0 break-words">{result ? <ClayText text={test.name} /> : test.name}</h2>
+          <h2 className="page-title text-[var(--ui-text)] min-w-0 break-words">{result ? <ClayText text={test.name} /> : test.name}</h2>
         )}
       </header>
 
@@ -217,8 +217,8 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
           <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
             <ResultContent content={result} titles={[test.name, 'Результат']} contents={false} variant="document" clayHeadings testResult />
               {portraitState(profile) === 'ready' ? (
-                <div className="mt-6 border-t border-[#F5E6D3]/10 pt-6">
-                  <p className="text-sm text-[#F5E6D3]/80 mt-2">Все тесты пройдены — можно сформировать портрет личности.</p>
+                <div className="mt-6 border-t border-[var(--ui-text)]/10 pt-6">
+                  <p className="text-sm text-[var(--ui-secondary)] mt-2">Все тесты пройдены — можно сформировать портрет личности.</p>
                   <button onClick={makePortrait} disabled={isGeneratingPortrait} className="ui-button ui-button--primary mt-4">
                     <Wand2 size={20} /> {isGeneratingPortrait ? 'Портрет формируется…' : 'Сформировать портрет'}
                   </button>
@@ -228,7 +228,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
         ) : isSubmitting ? (
           <div className="flex-1 flex flex-col justify-center items-center text-center space-y-4">
             <LoaderCircle size={48} className="animate-spin" aria-hidden="true" />
-            <p className="text-[#F5E6D3] font-medium text-lg">Обработка результатов...</p>
+            <p className="text-[var(--ui-text)] font-medium text-lg">Обработка результатов...</p>
           </div>
         ) : submitError ? (
           <div className="ui-card w-full max-w-md mx-auto" role="alert">
@@ -256,7 +256,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
         ) : (
           <div className="flex-1 flex flex-col max-w-md mx-auto w-full relative">
             {showTutorial && index === 0 && (
-              <p className="flex items-center justify-center gap-2 text-sm text-[#F5E6D3]/70 mb-1">
+              <p className="flex items-center justify-center gap-2 text-sm text-[var(--ui-secondary)] mb-1">
                 <ArrowLeft size={16} /> Нет · смахни карточку · Да <ArrowRight size={16} />
               </p>
             )}
@@ -287,23 +287,23 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
                 </div>}
                 {/* Подсветка направления свайпа */}
                 <div
-                  className="absolute inset-0 bg-[#F5E6D3] transition-opacity duration-200"
+                  className="absolute inset-0 bg-[var(--ui-text)] transition-opacity duration-200"
                   style={{ opacity: Math.min(Math.abs(dragOffset) / 300, 0.08) }}
                 />
 
                 <div className="test-question-card__content flex-1 flex flex-col justify-center w-full relative z-10 pointer-events-auto px-2">
                   <div className="flex items-center min-h-full">
-                    <h4 className="text-[22px] leading-[30px] sm:text-[26px] sm:leading-[34px] font-bold text-[#F5E6D3] mx-auto w-full max-h-full text-balance">
+                    <h4 className="text-[22px] leading-[30px] sm:text-[26px] sm:leading-[34px] font-bold text-[var(--ui-text)] mx-auto w-full max-h-full text-balance">
                       {questions[index]?.name || 'Вопрос загружается...'}
                     </h4>
                   </div>
                 </div>
 
                 {/* Какой ответ выбирается свайпом — одинаковыми метками, без оценки цветом */}
-                <span className="absolute top-6 left-6 bg-[#F5E6D3] text-rose-950 font-bold text-base px-4 py-1.5 rounded-full pointer-events-none transition-opacity duration-200" style={{ opacity: dragOffset > 30 ? Math.min(dragOffset / 100, 1) : 0 }}>
+                <span className="absolute top-6 left-6 bg-[var(--ui-text)] text-rose-950 font-bold text-base px-4 py-1.5 rounded-full pointer-events-none transition-opacity duration-200" style={{ opacity: dragOffset > 30 ? Math.min(dragOffset / 100, 1) : 0 }}>
                   Да
                 </span>
-                <span className="absolute top-6 right-6 bg-[#F5E6D3] text-rose-950 font-bold text-base px-4 py-1.5 rounded-full pointer-events-none transition-opacity duration-200" style={{ opacity: dragOffset < -30 ? Math.min(-dragOffset / 100, 1) : 0 }}>
+                <span className="absolute top-6 right-6 bg-[var(--ui-text)] text-rose-950 font-bold text-base px-4 py-1.5 rounded-full pointer-events-none transition-opacity duration-200" style={{ opacity: dragOffset < -30 ? Math.min(-dragOffset / 100, 1) : 0 }}>
                   Нет
                 </span>
               </div>

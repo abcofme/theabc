@@ -11,13 +11,13 @@ export default function Modal({ title, onClose, children, footer }) {
       <div className="absolute inset-0" onClick={onClose} />
       <div role="dialog" aria-modal="true" aria-label={title} className="relative bg-rose-900 rounded-[2rem] w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl">
         <div className="flex items-start justify-between gap-3 p-5 pb-3">
-          <h3 className="text-lg font-bold text-[#F5E6D3] leading-snug">{title}</h3>
+          <h3 className="text-lg font-bold text-[var(--ui-text)] leading-snug">{title}</h3>
           <button type="button" onClick={onClose} aria-label="Закрыть" className="ui-icon-button -m-1 shrink-0">
             <X size={20} />
           </button>
         </div>
         <div className="px-5 pb-5 overflow-y-auto min-h-0">{children}</div>
-        {footer && <div className="p-5 border-t border-[#F5E6D3]/10 rounded-b-[2rem] flex flex-col gap-3 shrink-0">{footer}</div>}
+        {footer && <div className="p-5 border-t border-[var(--ui-text)]/10 rounded-b-[2rem] flex flex-col gap-3 shrink-0">{footer}</div>}
       </div>
     </div>,
     document.body,

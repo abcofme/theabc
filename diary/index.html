@@ -1,12 +1,17 @@
 <!doctype html>
-<html lang="ru" style="background-color: #2B0A0A;">
+<html lang="ru" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Личный дневник Азбука Я</title>
+    <script>
+      try { document.documentElement.dataset.theme = localStorage.getItem('azbuka-theme') === 'light' ? 'light' : 'dark'; } catch (e) {}
+    </script>
     <style>
+      html { --app-bg: #2B0A0A; }
+      html[data-theme='light'] { --app-bg: #F4ECDF; }
       html, body {
-        background-color: #2B0A0A !important;
+        background-color: var(--app-bg);
         margin: 0;
         padding: 0;
         height: 100%;
@@ -16,7 +21,7 @@
       #root {
         height: 100%;
         width: 100%;
-        background-color: #2B0A0A !important;
+        background-color: var(--app-bg);
       }
     </style>
     <!-- Копия с telegram.org: в РФ его домены замедляют. Обновляется workflow update-telegram-sdk -->
@@ -44,10 +49,10 @@
             tg.ready();
             tg.expand();
             if (typeof tg.setBackgroundColor === 'function') {
-              tg.setBackgroundColor('#2B0A0A');
+              tg.setBackgroundColor(document.documentElement.dataset.theme === 'light' ? '#F4ECDF' : '#2B0A0A');
             }
             if (typeof tg.setHeaderColor === 'function') {
-              tg.setHeaderColor('#541515');
+              tg.setHeaderColor(document.documentElement.dataset.theme === 'light' ? '#F4ECDF' : '#2B0A0A');
             }
           } catch (e) {
             console.error("Error initializing Telegram WebApp", e);

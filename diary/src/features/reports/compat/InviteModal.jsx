@@ -37,13 +37,13 @@ export default function InviteModal({ link, onClose }) {
         </>
       }
     >
-      <p className="text-sm text-[#F5E6D3]/80 leading-relaxed mb-4">
+      <p className="text-sm text-[var(--ui-secondary)] leading-relaxed mb-4">
         Друг откроет ссылку — и вы появитесь друг у друга в друзьях. Совместимость откроется, когда у обоих будет портрет личности.
       </p>
       <div className="bg-[#F5E6D3] p-4 rounded-2xl w-fit mx-auto">
         <QRCode value={link} size={168} level="M" bgColor="#F5E6D3" fgColor="#2B0A0A" />
       </div>
-      <p className="text-xs text-[#F5E6D3]/60 text-center mt-3">QR-код — чтобы пригласить, когда вы рядом</p>
+      <p className="text-xs text-[var(--ui-muted)] text-center mt-3">QR-код — чтобы пригласить, когда вы рядом</p>
     </Modal>
   );
 }

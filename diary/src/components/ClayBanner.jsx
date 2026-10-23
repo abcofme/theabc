@@ -1,10 +1,17 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronRight, ChevronUp } from './ClayIcon';
+import { useTheme } from '../context/theme';
 import './clay-banner.css';
+
+const artwork = import.meta.glob('../assets/{profile,reports,tests}/*-handmade*.webp', { eager: true, query: '?url', import: 'default' });
+const lightArtwork = Object.fromEntries(Object.entries(artwork)
+  .filter(([path]) => path.endsWith('-handmade.webp'))
+  .map(([path, url]) => [url, artwork[path.replace('.webp', '-light.webp')]]));
 
 // У отчетов и портрета остаются обложка и стрелка; подписи категорий тестов — под артом.
 // meta и aside заменяют стандартную строку под артом (слева и справа от стрелки)
 export default function ClayBanner({ id, title, description, image, expanded, onClick, controlsId, badge, badgeAccent = false, kind, chevron = false, disabled = false, locked = false, meta, aside }) {
+  const { theme } = useTheme();
   const [isLoaded, setIsLoaded] = useState(false);
   const interactive = typeof onClick === 'function';
   const minimal = kind === 'report' || kind === 'profile';
@@ -35,7 +42,7 @@ export default function ClayBanner({ id, title, description, image, expanded, on
         className={`clay-banner__art ${isLoaded ? 'is-loaded' : ''}`}
         ref={img => { if (img?.complete && img.naturalWidth && !isLoaded) setIsLoaded(true); }}
         onLoad={() => setIsLoaded(true)}
-        src={image} alt="" width="960" height="400" decoding="async" draggable="false"
+        src={theme === 'light' ? lightArtwork[image] || image : image} alt="" width="960" height="400" decoding="async" draggable="false"
       />
       {/* The sculpted heading is baked into the art; retain one accessible text label. */}
       <Heading className="sr-only" id={titleId}>{title}</Heading>
