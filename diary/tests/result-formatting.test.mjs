@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { formatResultText, remarkResultLabels, remarkResultLayout } from '../src/components/resultFormatting.js';
+import { formatResultText, remarkTestProse, remarkResultLabels, remarkResultLayout } from '../src/components/resultFormatting.js';
 
 const render = content => renderToStaticMarkup(createElement(ReactMarkdown, {
   remarkPlugins: [remarkGfm, [remarkResultLabels, { blocks: true }], [remarkResultLayout, { sections: true }]],
@@ -53,7 +54,7 @@ test('Старые пронумерованные разделы отчета и
 });
 
 const renderTest = content => renderToStaticMarkup(createElement(ReactMarkdown, {
-  remarkPlugins: [remarkGfm, [remarkResultLabels, { blocks: true }], [remarkResultLayout, { sections: true, wrapIntro: true }]],
+  remarkPlugins: [remarkGfm, remarkTestProse, [remarkResultLabels, { blocks: true }], [remarkResultLayout, { sections: true, wrapIntro: true }]],
 }, formatResultText(content, [], { testResult: true })));
 
 test('Шкалы Стреляу и типы Белова получают такие же разделы, как отчеты', () => {
@@ -93,4 +94,42 @@ test('Распознавание тестов не затрагивает обы
   const formatted = formatResultText(text, [], { testResult: true });
   assert.equal(formatted, text);
   assert.doesNotMatch(formatResultText('• Холерик. Описание.'), /##/);
+});
+
+test('Результат ОСТ со скриншота получает заголовок, смысловые абзацы и выделенный вывод', () => {
+  const text = readFileSync(new URL('./fixtures/rusalov-result.txt', import.meta.url), 'utf8');
+  const html = renderTest(text);
+  assert.match(html, /<h2[^>]*>Высокая предметная \+ низкая социальная активность<\/h2>/);
+  assert.doesNotMatch(html, /result-section--intro/);
+  assert.match(html, /<p class="result-lead">Вы выносливы[^<]+усидчивости\.<\/p>/);
+  assert.match(html, /<p>Однако социальные контакты[^<]+самостоятельную работу\.<\/p>/);
+  assert.match(html, /<p><strong>Вам подходят профессии<\/strong>,[^<]+взаимодействовать с людьми\.<\/p>/);
+  assert.match(html, /<aside class="result-detail">\s*<h3>Ваша главная профессиональная черта<\/h3>\s*<p>надёжность и способность долго держать концентрацию\.<\/p>/);
+  assert.equal((html.match(/<section /g) || []).length, 1);
+});
+
+test('Отдельные заголовки произвольных результатов распознаются без списка названий тестов', () => {
+  const html = renderTest('Умеренно выраженная самостоятельность\nТы принимаешь решения после обсуждения с близкими.\n\nРекомендации для повседневной жизни:\nОставляй время на обдумывание решения.');
+  assert.match(html, />Умеренно выраженная самостоятельность<\/h2>/);
+  assert.match(html, />Рекомендации для повседневной жизни<\/h2>/);
+  assert.equal((html.match(/<section /g) || []).length, 2);
+});
+
+test('Длинное описание разбивается без потери предложений, чисел и сокращений', () => {
+  const text = 'Ты предпочитаешь работать спокойно и последовательно, внимательно проверять детали и оставлять время на завершение каждой задачи. В среднем на проверку уходит 3.5 минуты, т. е. достаточно короткой паузы. Однако изменения планов могут отвлекать, поэтому заранее обозначай свои приоритеты и обсуждай сроки с коллегами. Врач И. П. Павлов изучал нервные процессы; его имя в тексте должно сохраниться.';
+  const html = renderTest(text);
+  assert.ok((html.match(/<p[ >]/g) || []).length >= 3);
+  assert.equal(html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(), text);
+  assert.doesNotMatch(html, /<h[1-6]/);
+});
+
+test('Разметка, таблицы, ссылки и JSON шкал сохраняются в результатах тестов', () => {
+  const text = '## Показатели\n\nПодробности в [описании](https://example.com/test).\n\n| Шкала | Балл |\n| --- | --- |\n| Активность | 12 |\n\n```json\n{"title":"Высокая предметная активность","value":3.5}\n```\n\n- Проверить данные.\n- Отдохнуть.';
+  const html = renderTest(text);
+  assert.match(html, /<a href="https:\/\/example.com\/test">описании<\/a>/);
+  assert.match(html, /<td>12<\/td>/);
+  assert.match(html, /&quot;value&quot;:3.5/);
+  assert.match(html, /<ul class="result-points">/);
+  assert.match(html, /Проверить данные\./);
+  assert.equal((html.match(/<section /g) || []).length, 1);
 });

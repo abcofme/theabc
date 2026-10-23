@@ -19,14 +19,25 @@ const testTypes = new Set([
   'Эмотивный тип', 'Циклотимный тип',
 ]);
 
+function isStandaloneTestHeading(lines, index) {
+  const line = lines[index];
+  const title = line.trim().replace(/:$/, '');
+  if (!title || title.length > 160 || title.split(/\s+/).length > 18 ||
+    /^\s/.test(line) || /[.!?…;,]$/.test(title) || /[*`|]/.test(title) ||
+    /^(?:[#>•●+-]|\d+[.)]\s)/.test(title) || (index > 0 && lines[index - 1].trim())) return false;
+  const body = lines.slice(index + 1).find(item => item.trim())?.trim();
+  return !!body && !/^(?:[#>•●+*-]|\d+[.)]\s|`{3,}|~{3,})/.test(body) && /[.!?…]/.test(body);
+}
+
 // Сохраненные ответы могут содержать обычные строки вместо Markdown-заголовков.
-// Меняем только известные названия разделов и явные отдельные жирные заголовки.
+// В тестах также распознаём отдельную строку заголовка перед описанием.
 export function formatResultText(content, titles = [], { testResult = false } = {}) {
   let text = String(content ?? '').replace(/\r\n?/g, '\n').trim();
   const wrapped = /^```(?:markdown|md)\s*\n([\s\S]*?)\n```$/.exec(text);
   if (wrapped) text = wrapped[1];
   let fence = null;
-  const formatted = text.split('\n').map(line => {
+  const lines = text.split('\n');
+  const formatted = lines.map((line, index) => {
     const marker = /^\s*(`{3,}|~{3,})/.exec(line);
     if (marker) {
       if (!fence) fence = marker[1];
@@ -40,6 +51,7 @@ export function formatResultText(content, titles = [], { testResult = false } = 
       if (testHeadings.has(plain.replace(/:$/, ''))) return `\n## ${plain.replace(/:$/, '')}\n`;
       const typed = /^([^.!?]+)\.\s+(.+)$/.exec(plain);
       if (typed && testTypes.has(typed[1])) return `\n## ${typed[1]}\n\n${typed[2]}\n`;
+      if (isStandaloneTestHeading(lines, index)) return `\n## ${plain.replace(/:$/, '')}\n`;
     }
     const labeled = /^(?:\d+[.)]\s+)?(?:\*\*(.+?)\*\*\s*[:—–-]?\s+|([^:*]+?)\s*[:—–-]\s+)(.+)$/.exec(line.trim());
     if (labeled) {
@@ -58,6 +70,49 @@ export function formatResultText(content, titles = [], { testResult = false } = 
     return formatted.slice(firstHeading[0].length).trim();
   }
   return formatted;
+}
+
+const sentenceSegmenter = typeof Intl.Segmenter === 'function' ? new Intl.Segmenter('ru', { granularity: 'sentence' }) : null;
+const newTopic = /^(?:Однако|При этом|Вместе с тем|В то же время|Вам |Тебе |Для вас |Для тебя |Ваш[а-яё]* (?:главн|основн|ключев)|Тво[а-яё]* (?:главн|основн|ключев)|Рекоменд|Совет)/i;
+
+// Обычные сохранённые результаты тоже получают абзацы и акценты.
+// Работаем с текстовыми узлами Markdown: ссылки, списки, код и таблицы не меняем.
+export function remarkTestProse() {
+  return tree => {
+    tree.children = tree.children.flatMap(node => {
+      if (node.type !== 'paragraph' || node.children.length !== 1 || node.children[0].type !== 'text') return node;
+      const value = node.children[0].value;
+      const sentences = sentenceSegmenter
+        ? Array.from(sentenceSegmenter.segment(value), item => item.segment.trim())
+        : value.replace(/([.!?][»”"')\]]*)\s+(?=[А-ЯЁA-Z«“„"])/g, '$1\n').split('\n').map(item => item.trim());
+      const paragraphs = [];
+      let current = '';
+      let count = 0;
+      for (const sentence of sentences) {
+        if (value.length >= 260 && current && (newTopic.test(sentence) || count >= 2 || current.length + sentence.length > 240)) {
+          paragraphs.push(current);
+          current = '';
+          count = 0;
+        }
+        current += (current ? ' ' : '') + sentence;
+        count += 1;
+      }
+      if (current) paragraphs.push(current);
+      return paragraphs.map(text => {
+        const summary = /^((?:(?:Ваш[а-яё]*|Тво[а-яё]*)\s+)?(?:главн[а-яё]*|основн[а-яё]*|ключев[а-яё]*)\s+[^.!?—–:\n]{1,70})\s*([—–:])\s+(.+)$/iu.exec(text);
+        const recommendation = /^((?:Вам|Тебе)\s+(?:подходят|подойдут|полезны|помогут)[^,.:!?]{0,55})(?=[,:])/i.exec(text);
+        const label = (summary?.[1] || recommendation?.[1])?.trimEnd();
+        return {
+          ...node,
+          ...(paragraphs.length > 1 ? { position: undefined } : {}),
+          children: label ? [
+            { type: 'strong', children: [{ type: 'text', value: label }] },
+            { type: 'text', value: text.slice(label.length) },
+          ] : [{ type: 'text', value: text }],
+        };
+      });
+    });
+  };
 }
 
 // «**Реакция на стресс** — пояснение» становится заметным подписанным абзацем.

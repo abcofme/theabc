@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import ClayText from './ClayText';
 import ClayLeaf from './ClayLeaf';
-import { formatResultText, remarkResultLabels, remarkResultLayout } from './resultFormatting';
+import { formatResultText, remarkTestProse, remarkResultLabels, remarkResultLayout } from './resultFormatting';
 
 function headingsOf(content) {
   let fence = null;
@@ -33,8 +33,9 @@ export default function ResultContent({ content = '', components = {}, contents 
   const mainHeadings = allHeadings.filter(item => item.depth <= 2);
   const headings = rich && mainHeadings.length > 1 ? mainHeadings : allHeadings;
   const heading = (Tag) => function Heading({ node, children, className }) {
+    const generatedId = useId();
     const number = node.properties?.['data-section-number'] ?? node.properties?.dataSectionNumber;
-    return <Tag id={`${prefix}-${node.position?.start.line}`} className={`result-heading ${className || ''}`}>
+    return <Tag id={node.position ? `${prefix}-${node.position.start.line}` : generatedId} className={`result-heading ${className || ''}`}>
       {number && (botanical ? <ClayLeaf index={Number(number) - 1} className="result-heading__leaf" /> : <span className="result-section-number" aria-hidden="true">{number}</span>)}
       {clayHeadings ? <ClayText text={nodeText(node)} /> : <span className="result-heading__text">{children}</span>}
     </Tag>;
@@ -54,7 +55,7 @@ export default function ResultContent({ content = '', components = {}, contents 
         </details>
       )}
       <div className={`result-content${compact ? ' result-content--compact' : ''}`}>
-        <ReactMarkdown remarkPlugins={[remarkGfm, [remarkResultLabels, { blocks: rich }], ...(rich ? [[remarkResultLayout, { sections: true, wrapIntro: botanical }]] : [])]} components={{
+        <ReactMarkdown remarkPlugins={[remarkGfm, ...(testResult ? [remarkTestProse] : []), [remarkResultLabels, { blocks: rich }], ...(rich ? [[remarkResultLayout, { sections: true, wrapIntro: botanical }]] : [])]} components={{
           h1: heading('h1'), h2: heading('h2'), h3: heading('h3'), h4: heading('h4'), h5: heading('h5'), h6: heading('h6'),
           section: ({ children, className = '' }) => <section className={className}>
             {botanical && className.split(' ').includes('result-section--intro') && <ClayLeaf className="result-intro-leaf" />}
