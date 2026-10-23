@@ -2,6 +2,7 @@ import { createContext, useContext } from 'react';
 
 export const ProfileContext = createContext({
   profile: null,
+  profileError: null,
   refreshProfile: () => {},
   isPremium: false,
   generatePortrait: async () => {},

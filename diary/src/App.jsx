@@ -8,7 +8,8 @@ import ProfileTab from './features/profile/ProfileTab';
 import ReportsTab from './features/reports/ReportsTab';
 import TestsTab from './features/tests/TestsTab';
 import BillingPage from './features/billing/BillingPage';
-import bgLeaves from './assets/bg-leaves.webp';
+import ScreenState from './components/ScreenState';
+import { useProfile } from './context/profile';
 import diaryIcon from './assets/navigation/diary-clay.webp';
 import testsIcon from './assets/navigation/tests-clay.webp';
 import reportsIcon from './assets/navigation/reports-clay.webp';
@@ -100,27 +101,14 @@ function useKeyboardOpen() {
   return isOpen;
 }
 
-// Высота фона без учёта клавиатуры: иначе листья подпрыгивают при вводе текста
-function useBackgroundHeight() {
-  const [height, setHeight] = useState(() => `${window.innerHeight}px`);
-  useEffect(() => {
-    const onResize = () => {
-      if (!isTextField(document.activeElement)) setHeight(`${window.innerHeight}px`);
-    };
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
-  return height;
-}
-
 function Shell() {
+  const { profile, profileError, refreshProfile } = useProfile();
   const [request, setRequest] = useState(readDeepLink);
   const [activeTab, setActiveTab] = useState(request.tab);
   const [isBillingOpen, setIsBillingOpen] = useState(request.page === 'billing');
   const depth = useBackDepth();
   const isKeyboardOpen = useKeyboardOpen();
   const isNavHidden = depth > 0 || isKeyboardOpen;
-  const bgHeight = useBackgroundHeight();
 
   // У каждой вкладки своя позиция прокрутки: переход между вкладками её не переносит
   const mainRef = useRef(null);
@@ -142,8 +130,8 @@ function Shell() {
 
   const navigate = useCallback((target) => {
     selectTab(target.tab);
-    setRequest({ ...target, id: Date.now() });
-  }, [selectTab]);
+    setRequest({ ...target, returnTo: target.page && target.tab !== activeTab ? activeTab : null, id: Date.now() });
+  }, [selectTab, activeTab]);
   const openBilling = useCallback(() => setIsBillingOpen(true), []);
   const nav = useMemo(() => ({ navigate, openBilling }), [navigate, openBilling]);
 
@@ -152,34 +140,26 @@ function Shell() {
   return (
     <AppNavContext.Provider value={nav}>
       <div className="flex flex-col h-full font-sans bg-rose-950 relative">
-        <div
-          className="fixed top-0 left-0 w-screen pointer-events-none z-0 transition-all duration-300"
-          style={{
-            height: bgHeight,
-            backgroundImage: `url(${bgLeaves})`,
-            backgroundPosition: `right 0px bottom ${isNavHidden ? '-10px' : 'calc(45px + env(safe-area-inset-bottom))'}`,
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "60%"
-          }}
-        />
-
-        <main ref={mainRef} className={`flex-1 flex flex-col overflow-y-auto p-4 relative z-10 ${isNavHidden ? '' : 'pb-24'}`}>
+        <main ref={mainRef} className={`app-main ${isNavHidden ? '' : 'app-main--with-nav'}`}>
+          {!profile ? <ScreenState loading={!profileError} error={!!profileError} title={profileError ? 'Не удалось загрузить приложение' : 'Загружаем твои данные…'} onRetry={profileError ? refreshProfile : undefined} /> : <>
           <div className="flex-1 flex-col" style={{ display: activeTab === 'diary' ? 'flex' : 'none' }}>
             <DiaryTab />
           </div>
           <div className="flex-1 flex-col" style={{ display: activeTab === 'tests' ? 'flex' : 'none' }}>
-            <TestsTab />
+            <TestsTab request={requestFor('tests')} />
           </div>
           <div className="flex-1 flex-col" style={{ display: activeTab === 'reports' ? 'flex' : 'none' }}>
-            <ReportsTab request={requestFor('reports')} />
+            <ReportsTab request={requestFor('reports')} active={activeTab === 'reports'} />
           </div>
           <div className="flex-1 flex-col" style={{ display: activeTab === 'profile' ? 'flex' : 'none' }}>
             <ProfileTab request={requestFor('profile')} />
           </div>
+          </>}
         </main>
 
         {!isNavHidden && (
-          <nav aria-label="Главное меню" className="fixed bottom-0 left-0 w-full bg-rose-900 flex justify-between p-2 pb-safe z-50">
+          <nav aria-label="Главное меню" className="fixed bottom-0 left-0 w-full bg-rose-900 border-t border-[#F5E6D3]/10 p-2 pb-safe z-50">
+            <div className="flex max-w-2xl mx-auto gap-1">
             {TABS.map(tab => {
               const isActive = activeTab === tab.id;
               return (
@@ -193,14 +173,15 @@ function Shell() {
                   }`}
                 >
                   <img src={tab.icon} className="clay-navigation__icon" width="32" height="32" alt="" draggable="false" />
-                  <span className={`text-[10px] mt-1 ${isActive ? 'font-bold' : ''}`}>{tab.label}</span>
+                  <span className={`text-[11px] leading-4 mt-1 ${isActive ? 'font-bold' : ''}`}>{tab.label}</span>
                 </button>
               );
             })}
+            </div>
           </nav>
         )}
 
-        {isBillingOpen && <BillingPage onBack={() => setIsBillingOpen(false)} />}
+        {isBillingOpen && profile && <BillingPage onBack={() => setIsBillingOpen(false)} />}
       </div>
     </AppNavContext.Provider>
   );

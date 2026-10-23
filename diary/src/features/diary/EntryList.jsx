@@ -14,6 +14,7 @@ export function AnalysisHint({ lock, onNavigate }) {
   const go = () => {
     onNavigate?.();
     if (lock.action === 'billing') openBilling();
+    else if (lock.action === 'portrait') navigate({ tab: 'profile', page: 'portrait' });
     else navigate({ tab: lock.action });
   };
   return (
@@ -46,10 +47,11 @@ export default function EntryList({ entries, diary, lock }) {
   return (
     <div className="flex flex-col gap-3">
       {entries.map(entry => editingId === entry.id ? (
-        <div key={entry.id} className="bg-rose-950/50 rounded-2xl p-4">
+        <div key={entry.id} className="ui-card">
           <EntryForm
             title="Дополни запись"
             initial={entry}
+            draftKey={`edit:${entry.id}`}
             submitLabel="Отправить дневнику"
             onCancel={() => setEditingId(null)}
             onSubmit={async (event, reaction) => {

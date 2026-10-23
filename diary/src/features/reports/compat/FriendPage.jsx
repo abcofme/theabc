@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import { Heart, Lock, Sparkles, UserMinus } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import ResultContent from '../../../components/ResultContent';
+import ScreenState from '../../../components/ScreenState';
+import { useProfile } from '../../../context/profile';
+import { Lock, UserMinus } from 'lucide-react';
 import Page from '../../../components/Page';
 import Spinner from '../../../components/Spinner';
 import GenerationProgress from '../../../components/GenerationProgress';
@@ -12,29 +14,16 @@ const WebApp = window.Telegram.WebApp;
 
 const GENDERS = ['Мужской', 'Женский'];
 
-const markdownComponents = {
-  h1: ({ children }) => <h1 className="text-2xl sm:text-3xl font-black text-[#F5E6D3] text-center mb-8 mt-4 uppercase drop-shadow-sm break-words">{children}</h1>,
-  h2: ({ children }) => <h2 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] mt-10 mb-6 flex items-center justify-center pb-4 break-words text-center"><Sparkles className="text-[#F5E6D3] inline mb-1 mr-3" size={24} /> {children}</h2>,
-  h3: ({ children }) => <h3 className="text-lg sm:text-xl font-bold text-[#F5E6D3] mt-8 mb-4 break-words text-left">{children}</h3>,
-  p: ({ children }) => <p className="text-[#F5E6D3] leading-relaxed mb-6 text-base font-medium text-left break-words">{children}</p>,
-  strong: ({ children }) => <strong className="text-[#F5E6D3] font-bold break-words">{children}</strong>,
-  ul: ({ children }) => <ul className="space-y-4 mb-8 mt-4 pl-1 w-full">{children}</ul>,
-  li: ({ children }) => (
-    <li className="flex items-start text-base font-medium text-[#F5E6D3] break-words w-full">
-      <Heart className="shrink-0 text-[#F5E6D3] mr-3 mt-1" size={20} />
-      <span className="flex-1 block">{children}</span>
-    </li>
-  ),
-};
-
 function Choice({ options, value, onChange }) {
   return (
-    <div className="flex gap-2">
+    <div className="ui-segmented">
       {options.map(([id, label]) => (
         <button
           key={id}
+          type="button"
+          aria-pressed={value === id}
           onClick={() => onChange(id)}
-          className={`flex-1 py-3 rounded-xl font-medium ${value === id ? 'bg-[#F5E6D3] text-rose-950' : 'bg-rose-950/60 text-[#F5E6D3]/80'}`}
+
         >
           {label}
         </button>
@@ -47,6 +36,9 @@ function Choice({ options, value, onChange }) {
 // Пол спрашиваем, только если он нужен (партнерская совместимость) и еще не известен
 export default function FriendPage({ friend, myGender: knownMyGender, myPortrait, onBack, onChanged }) {
   const handleError = useErrorHandler();
+  const { profile, isPremium, refreshProfile } = useProfile();
+  const generating = useRef(false);
+  const [retry, setRetry] = useState(0);
   const name = friendName(friend);
   const canCompare = myPortrait && friend.has_portrait;
   const [mode, setMode] = useState(friend.has_compatibility ? 'loading' : 'form'); // loading | view | form | generating
@@ -59,13 +51,15 @@ export default function FriendPage({ friend, myGender: knownMyGender, myPortrait
     if (!friend.has_compatibility) return;
     api(`/api/friends/compatibility/${friend.id}`)
       .then(data => { setContent(data.content); setMode('view'); })
-      .catch(() => setMode('form'));
-  }, [friend]);
+      .catch(() => setMode('error'));
+  }, [friend, retry]);
 
   const needsGender = type === 'partner';
   const canSubmit = !needsGender || (myGender && friendGender);
 
   const generate = async () => {
+    if (generating.current) return;
+    generating.current = true;
     setMode('generating');
     try {
       const data = await apiStream('/api/friends/compatibility', {
@@ -77,10 +71,11 @@ export default function FriendPage({ friend, myGender: knownMyGender, myPortrait
       setContent(data.content);
       setMode('view');
       onChanged?.();
+      refreshProfile();
     } catch (err) {
       setMode('form');
       handleError(err);
-    }
+    } finally { generating.current = false; }
   };
 
   const remove = () => {
@@ -98,9 +93,9 @@ export default function FriendPage({ friend, myGender: knownMyGender, myPortrait
 
   return (
     <Page title={name} onBack={onBack}>
-      <div className="flex flex-col gap-4">
+      <div className="ui-stack">
         {!canCompare && !friend.has_compatibility ? (
-          <section className="bg-rose-900/80 rounded-3xl p-5 flex gap-3">
+          <section className="ui-card flex gap-3">
             <Lock size={18} className="shrink-0 mt-0.5 text-[#F5E6D3]/70" />
             <p className="text-sm text-[#F5E6D3]/80 leading-relaxed">
               {myPortrait
@@ -110,23 +105,23 @@ export default function FriendPage({ friend, myGender: knownMyGender, myPortrait
           </section>
         ) : mode === 'loading' ? (
           <Spinner />
+        ) : mode === 'error' ? (
+          <ScreenState error title="Не удалось загрузить совместимость" onRetry={() => { setMode('loading'); setRetry(value => value + 1); }} />
         ) : mode === 'generating' ? (
-          <section className="bg-rose-900/80 rounded-3xl px-5 py-2">
+          <section className="ui-card">
             <GenerationProgress text="Анализ совместимости..." />
           </section>
         ) : mode === 'view' && content ? (
           <>
-            <section className="bg-rose-900/80 rounded-3xl p-5 sm:p-8 overflow-x-hidden">
-              <ReactMarkdown components={markdownComponents}>{content}</ReactMarkdown>
-            </section>
+            <ResultContent content={content} />
             {canCompare && (
-              <button onClick={() => setMode('form')} className="w-full py-3.5 border border-[#F5E6D3]/40 text-[#F5E6D3] font-bold rounded-2xl active:scale-[0.98]">
+              <button onClick={() => setMode('form')} className="ui-button ui-button--outline">
                 Пересчитать совместимость
               </button>
             )}
           </>
         ) : (
-          <section className="bg-rose-900/80 rounded-3xl p-5 flex flex-col gap-5">
+          <section className="ui-card flex flex-col gap-5">
             <div>
               <p className="text-[#F5E6D3] font-bold mb-3">Какая совместимость?</p>
               <Choice options={[['friendly', 'Дружеская'], ['partner', 'Партнерская']]} value={type} onChange={setType} />
@@ -146,14 +141,14 @@ export default function FriendPage({ friend, myGender: knownMyGender, myPortrait
             <button
               onClick={generate}
               disabled={!canSubmit}
-              className="w-full bg-emerald-800 disabled:bg-emerald-950/40 disabled:text-[#F5E6D3]/50 text-[#F5E6D3] font-bold py-3.5 rounded-2xl active:scale-[0.98]"
+              className="ui-button ui-button--primary"
             >
-              Узнать совместимость
+              Узнать совместимость{isPremium ? '' : ` · ${profile.prices.compatibility} ₽`}
             </button>
           </section>
         )}
 
-        <button onClick={remove} className="mt-2 flex items-center justify-center gap-2 w-full py-3 text-sm text-[#F5E6D3]/60">
+        <button onClick={remove} className="ui-button ui-button--quiet">
           <UserMinus size={16} /> Удалить из друзей
         </button>
       </div>

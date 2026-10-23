@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { User, Sparkles, Wallet, Bell, FileText, Shield, ChevronRight } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { User, Sparkles, Wallet, Bell, FileText, Shield, ChevronRight, Users } from 'lucide-react';
 import Avatar from '../../components/Avatar';
 import ClayBanner from '../../components/ClayBanner';
 import Page from '../../components/Page';
@@ -28,67 +28,63 @@ const PORTRAIT_CAPTIONS = {
 function MenuRow({ icon: Icon, label, hint, onClick, children }) {
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag onClick={onClick} className="w-full flex items-center gap-3 px-4 py-3.5 text-left text-[#F5E6D3]">
+    <Tag onClick={onClick} className="w-full flex items-center gap-3 py-3.5 text-left text-[#F5E6D3]">
       <Icon size={20} className="shrink-0 text-[#F5E6D3]/80" />
       <span className="flex-1 min-w-0">
         <span className="block font-medium">{label}</span>
         {hint && <span className="block text-xs text-[#F5E6D3]/60 mt-0.5">{hint}</span>}
       </span>
-      {children ?? <ChevronRight size={18} className="shrink-0 text-[#F5E6D3]/60" />}
+      {children ?? <ChevronRight size={20} className="shrink-0 text-[#F5E6D3]/60" />}
     </Tag>
   );
 }
 
 export default function ProfileTab({ request }) {
-  const { profile, isPremium, refreshProfile, generatePortrait, isGeneratingPortrait } = useProfile();
+  const { profile, isPremium, refreshProfile, isGeneratingPortrait } = useProfile();
   const { navigate, openBilling } = useAppNav();
   const handleError = useErrorHandler();
   const [page, setPage] = useState(null);
+  const [isSavingReminder, setIsSavingReminder] = useState(false);
+  const reminderRequest = useRef(false);
+  const [pageOrigin, setPageOrigin] = useState(null);
   const [handledRequest, setHandledRequest] = useState(null);
 
   // Переход из другой вкладки или ссылка из бота: ?tab=profile&page=portrait
   if (request && request.id !== handledRequest) {
     setHandledRequest(request.id);
     setPage(PAGES.includes(request.page) ? request.page : null);
+    setPageOrigin(request.returnTo || null);
   }
 
   const tgUser = WebApp.initDataUnsafe?.user || { first_name: 'Пользователь', username: '' };
   const state = portraitState(profile);
 
-  const openPortrait = async () => {
-    if (state === 'tests') {
-      navigate({ tab: 'tests' });
-      return;
-    }
-    if (state === 'ready' && !isGeneratingPortrait) {
-      try {
-        await generatePortrait();
-      } catch (err) {
-        handleError(err);
-        return;
-      }
-    }
-    setPage('portrait');
-  };
+  const openPortrait = () => { setPageOrigin(null); setPage('portrait'); };
 
   const toggleReminders = async () => {
+    if (reminderRequest.current) return;
+    reminderRequest.current = true;
+    setIsSavingReminder(true);
     try {
       await api('/api/settings', { method: 'PATCH', body: { diary_reminders: !profile.diary_reminders } });
       await refreshProfile();
     } catch (err) {
       handleError(err, 'Не удалось сохранить настройку');
-    }
+    } finally { reminderRequest.current = false; setIsSavingReminder(false); }
   };
 
-  const closePage = () => setPage(null);
+  const closePage = () => {
+    setPage(null);
+    setPageOrigin(null);
+    if (pageOrigin) navigate({ tab: pageOrigin });
+  };
 
   return (
-    <div className="flex flex-col relative select-none bg-transparent max-w-2xl mx-auto w-full">
+    <div className="app-screen ui-stack">
       {/* ШАПКА: АВАТАР, ИМЯ И СТАТУС */}
-      <div className="profile-header bg-rose-900/80 rounded-3xl mx-2 mt-2 mb-4 backdrop-blur-sm min-w-0">
+      <div className="profile-header ui-card min-w-0">
         <img className="profile-header__vine profile-header__vine--top" src={headerVine} alt="" aria-hidden="true" width="512" height="512" draggable="false" />
-        <img className="profile-header__vine profile-header__vine--bottom" src={headerVine} alt="" aria-hidden="true" width="512" height="512" draggable="false" />
-        <div className="profile-header__content flex items-center gap-3 sm:gap-4 w-full min-w-0">
+        <div className="profile-header__content flex items-start gap-4 w-full min-w-0">
           <Avatar
             src={tgUser.photo_url && tgUser.id ? `${API_URL}/api/avatar/${tgUser.id}` : null}
             className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg shrink-0"
@@ -98,12 +94,12 @@ export default function ProfileTab({ request }) {
               </div>
             }
           />
-          <div className="flex-1 min-w-0 flex flex-wrap items-center gap-3 justify-between">
-            <div className="min-w-[100px] flex-1">
+          <div className="flex-1 min-w-0">
+            <div className="min-w-0">
               <h2 className="text-lg sm:text-2xl font-bold text-[#F5E6D3] truncate">{tgUser.first_name}</h2>
               {tgUser.username && <p className="text-xs sm:text-base text-[#F5E6D3] font-medium truncate">@{tgUser.username}</p>}
             </div>
-            <button type="button" onClick={openBilling} className="flex items-center gap-1 shrink-0 active:scale-95" aria-label="Подписка и баланс">
+            <button type="button" onClick={openBilling} className="flex items-center gap-1 min-h-11 mt-2 active:scale-95" aria-label="Подписка и баланс">
               <span className={`font-bold px-3 py-1.5 rounded-xl text-sm sm:text-base flex items-center gap-1.5 shadow-sm ${
                 isPremium ? 'profile-header__premium' : 'bg-rose-950 text-[#F5E6D3]'
               }`}>
@@ -115,24 +111,21 @@ export default function ProfileTab({ request }) {
         </div>
       </div>
 
-      <div className="mx-2 mb-4 flex flex-col gap-4">
+      <div className="flex flex-col gap-6">
         <div>
           <ClayBanner
             id="profile-portrait"
             kind="profile"
             title="Мой портрет личности"
-            description={state ? PORTRAIT_CAPTIONS[state](profile) : ''}
+            description={isGeneratingPortrait ? 'Портрет формируется…' : state ? PORTRAIT_CAPTIONS[state](profile) : ''}
             image={portraitBanner}
             onClick={openPortrait}
           />
-          {state && state !== 'done' && (
-            <p className="text-sm text-[#F5E6D3]/80 text-center mt-2 px-2" aria-live="polite">
-              {isGeneratingPortrait ? 'Портрет формируется…' : PORTRAIT_CAPTIONS[state](profile)}
-            </p>
-          )}
+
         </div>
 
-        <div className="bg-rose-900/60 rounded-3xl divide-y divide-[#F5E6D3]/10 overflow-hidden">
+        <div className="ui-card py-1! divide-y divide-[#F5E6D3]/10">
+          <MenuRow icon={Users} label="Друзья и совместимость" onClick={() => navigate({ tab: 'reports', section: 'compatibility' })} />
           <MenuRow
             icon={Wallet}
             label="Подписка и баланс"
@@ -146,14 +139,16 @@ export default function ProfileTab({ request }) {
               aria-checked={!!profile?.diary_reminders}
               aria-label="Напоминания о дневнике"
               onClick={toggleReminders}
-              disabled={!profile}
-              className={`relative w-12 h-7 rounded-full shrink-0 transition-colors ${profile?.diary_reminders ? 'bg-emerald-700' : 'bg-rose-950'}`}
+              disabled={!profile || isSavingReminder}
+              className="relative w-12 min-h-11 shrink-0 disabled:opacity-50"
             >
-              <span className={`absolute top-1 w-5 h-5 rounded-full bg-[#F5E6D3] transition-all ${profile?.diary_reminders ? 'left-6' : 'left-1'}`} />
+              <span aria-hidden="true" className={`absolute inset-x-0 top-2 h-7 rounded-full transition-colors ${profile?.diary_reminders ? 'bg-emerald-700' : 'bg-rose-950'}`}>
+                <span className={`absolute top-1 w-5 h-5 rounded-full bg-[#F5E6D3] transition-[left] ${profile?.diary_reminders ? 'left-6' : 'left-1'}`} />
+              </span>
             </button>
           </MenuRow>
-          <MenuRow icon={FileText} label="Публичная оферта" onClick={() => setPage('offer')} />
-          {profile?.is_admin && <MenuRow icon={Shield} label="Админ-панель" onClick={() => setPage('admin')} />}
+          <MenuRow icon={FileText} label="Публичная оферта" onClick={() => { setPageOrigin(null); setPage('offer'); }} />
+          {profile?.is_admin && <MenuRow icon={Shield} label="Админ-панель" onClick={() => { setPageOrigin(null); setPage('admin'); }} />}
         </div>
       </div>
 

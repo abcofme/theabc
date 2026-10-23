@@ -26,7 +26,7 @@ export function analysisLock(profile) {
         action: 'tests',
       };
     }
-    return { text: 'Все тесты пройдены — сформируй портрет личности, и дневник начнет отвечать', action: 'tests' };
+    return { text: 'Все тесты пройдены — сформируй портрет личности, и дневник начнет отвечать', action: 'portrait' };
   }
   if (profile.access_level !== 'Premium' && profile.balance < profile.prices.diary_answer) {
     return { text: 'Баланс закончился — пополни его или оформи Premium, и дневник снова будет отвечать', action: 'billing' };
@@ -44,8 +44,8 @@ export function analysisState(entry, isPending, lock) {
 }
 
 export function scoreColor(score) {
-  if (score <= 25) return 'bg-red-500';
-  if (score <= 50) return 'bg-orange-500';
-  if (score <= 75) return 'bg-yellow-400';
-  return 'bg-emerald-800';
+  if (score <= 25) return 'bg-[#B46F65]';
+  if (score <= 50) return 'bg-[#B88A4E]';
+  if (score <= 75) return 'bg-[#D6AE68]';
+  return 'bg-[#7BA887]';
 }

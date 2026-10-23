@@ -9,6 +9,7 @@ import EntryList, { AnalysisHint } from './EntryList';
 import EntryForm from './EntryForm';
 import MonthSheet from './MonthSheet';
 import DaySheet from './DaySheet';
+import ScreenState from '../../components/ScreenState';
 import { dayKey, plural, analysisLock } from './utils';
 
 const byId = (a, b) => a.id - b.id;
@@ -77,12 +78,12 @@ export default function DiaryTab() {
   };
 
   return (
-    <div className="flex flex-col flex-1 w-full max-w-2xl mx-auto">
+    <div className="app-screen flex flex-col flex-1">
       {/* ШАПКА: СЕГОДНЯШНИЙ ДЕНЬ И СЕРИЯ */}
-      <div className="flex items-start justify-between gap-3 mt-2 mb-4">
+      <div className="flex items-start justify-between gap-3 mb-5">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h2 className="text-3xl font-bold text-[#F5E6D3]">Сегодня</h2>
+            <h1 className="screen-title">Сегодня</h1>
             {streak >= 2 && (
               <span className="flex items-center gap-1 bg-emerald-800 text-[#F5E6D3] text-xs font-bold px-2 py-1 rounded-lg">
                 <Flame size={14} /> {streak} {plural(streak, ['день', 'дня', 'дней'])} подряд
@@ -94,53 +95,45 @@ export default function DiaryTab() {
         <button
           onClick={() => setIsMonthOpen(true)}
           aria-label="Открыть календарь"
-          className="p-2.5 bg-rose-900/80 rounded-xl text-[#F5E6D3] shrink-0 active:scale-95"
+          className="ui-icon-button bg-rose-900 shrink-0"
         >
-          <CalendarDays size={22} />
+          <CalendarDays size={24} />
         </button>
       </div>
 
       <WeekStrip today={today} daysWithEntries={daysWithEntries} onSelect={selectDay} />
 
-      {/* КАРТОЧКА СЕГОДНЯШНЕГО ДНЯ */}
-      <section className="bg-rose-900/80 rounded-3xl p-4 backdrop-blur-sm">
-        {overviewStatus === 'loading' ? (
-          <div className="flex justify-center py-10">
-            <div className="animate-spin rounded-full h-8 w-8 border-4 border-[#F5E6D3] border-t-transparent" />
-          </div>
-        ) : overviewStatus === 'error' ? (
-          <div className="text-center py-6">
-            <p className="text-[#F5E6D3] mb-3">Не удалось загрузить дневник</p>
-            <button onClick={() => setReloadTick(t => t + 1)} className="px-5 py-2.5 bg-rose-800 text-[#F5E6D3] font-bold rounded-xl">
-              Повторить
+      {overviewStatus === 'loading' ? (
+        <ScreenState loading title="Загружаем записи…" />
+      ) : overviewStatus === 'error' ? (
+        <ScreenState error title="Не удалось загрузить дневник" onRetry={() => setReloadTick(t => t + 1)} />
+      ) : (
+        <div className="flex flex-col gap-4">
+          {todayEntries.length > 0 && !isComposerOpen && (
+            <button type="button" onClick={() => setIsComposerOpen(true)} className="ui-button ui-button--primary">
+              <Plus size={20} /> Записать событие
             </button>
-          </div>
-        ) : todayEntries.length > 0 ? (
-          <>
-            <EntryList entries={todayEntries} diary={diary} lock={lock} />
-            {isComposerOpen ? (
-              <div className="mt-4">
-                <EntryForm title="Что ещё произошло?" onSubmit={addToday} onCancel={() => setIsComposerOpen(false)} />
-              </div>
-            ) : (
-              <button
-                onClick={() => setIsComposerOpen(true)}
-                className="mt-3 w-full py-3 border border-[#F5E6D3]/40 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 active:scale-[0.98]"
-              >
-                <Plus size={18} /> Ещё событие
-              </button>
-            )}
-          </>
-        ) : (
-          <EntryForm title="Что сегодня произошло?" onSubmit={addToday} />
-        )}
-        {overviewStatus === 'ready' && <AnalysisHint lock={lock} />}
-      </section>
+          )}
+          {(todayEntries.length === 0 || isComposerOpen) && (
+            <div className="ui-card">
+              <EntryForm
+                key={today}
+                draftKey={`new:${today}`}
+                title={todayEntries.length > 0 ? 'Что ещё произошло?' : 'Что сегодня произошло?'}
+                onSubmit={addToday}
+                onCancel={todayEntries.length > 0 ? () => setIsComposerOpen(false) : undefined}
+              />
+            </div>
+          )}
+          <EntryList entries={todayEntries} diary={diary} lock={lock} />
+          <AnalysisHint lock={lock} />
+        </div>
+      )}
 
       {/* НЕДАВНИЕ ДНИ ИЛИ ПОДСКАЗКА ДЛЯ НОВИЧКА */}
       {recentDays.length > 0 ? (
         <section className="mt-6">
-          <h3 className="text-xs font-bold text-[#F5E6D3]/70 uppercase tracking-wider mb-2 px-1">Недавние</h3>
+          <h3 className="ui-section-label mb-3">Недавние</h3>
           <div className="flex flex-col gap-2">
             {recentDays.map(key => {
               const dayEntries = entriesByDay.get(key);
@@ -149,7 +142,7 @@ export default function DiaryTab() {
                 <button
                   key={key}
                   onClick={() => setOpenDay(key)}
-                  className="w-full flex items-center gap-3 bg-rose-900/60 rounded-2xl px-4 py-3 text-left text-[#F5E6D3] active:scale-[0.98]"
+                  className="w-full flex items-center gap-3 bg-rose-900 rounded-2xl px-4 py-3 text-left text-[#F5E6D3] active:scale-[0.98]"
                 >
                   <span className="text-xs text-[#F5E6D3]/70 shrink-0 whitespace-nowrap first-letter:uppercase">
                     {format(parseISO(key), 'EEEEEE, d MMM', { locale: ru })}
@@ -182,6 +175,7 @@ export default function DiaryTab() {
 
       {openDay && (
         <DaySheet
+          key={openDay}
           day={openDay}
           entries={entriesByDay.get(openDay) || []}
           diary={diary}

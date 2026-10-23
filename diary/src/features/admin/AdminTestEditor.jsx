@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Plus, Trash2, Save, GripVertical } from 'lucide-react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import { ChevronLeft, Plus, Trash2, Save } from 'lucide-react';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
 
 export default function AdminTestEditor({ testId, categories, onClose }) {
+  const editorRef = useRef(null);
   const [loading, setLoading] = useState(!!testId);
   const [saving, setSaving] = useState(false);
   
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [categoryId, setCategoryId] = useState(categories.length > 0 ? categories[0].id : '');
+  const initialCategoryId = categories[0]?.id || '';
+  const [categoryId, setCategoryId] = useState(initialCategoryId);
   
   const [results, setResults] = useState([]); 
   const [questions, setQuestions] = useState([]);
@@ -24,7 +26,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
       .then(data => {
         setName(data.name || '');
         setDescription(data.description || '');
-        setCategoryId(data.category_id || (categories.length > 0 ? categories[0].id : ''));
+        setCategoryId(data.category_id || initialCategoryId);
         let groupedResults = [];
         (data.results || []).forEach(r => {
           let g = groupedResults.find(g => g.name === r.name);
@@ -46,7 +48,9 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
       })
       .finally(() => setLoading(false));
     }
-  }, [testId]);
+  }, [testId, initialCategoryId]);
+
+  useLayoutEffect(() => { editorRef.current?.scrollIntoView({ block: 'start', behavior: 'auto' }); }, [loading]);
 
   const handleSave = async () => {
     if (!name || !categoryId) {
@@ -164,7 +168,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 pb-24 animate-in fade-in slide-in-from-right-8 duration-300 flex flex-col w-full relative">
+    <div ref={editorRef} className="admin-content flex flex-col w-full min-w-0 pb-8">
       <button 
         onClick={onClose}
         className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-6 transition-colors self-start"
@@ -178,7 +182,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
       </h2>
 
       {/* Basic Info */}
-      <div className="bg-rose-900 p-5 rounded-3xl mb-6 flex flex-col gap-4">
+      <div className="ui-card mb-6 flex flex-col gap-4">
         <div>
           <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Категория:</label>
           <select 
@@ -197,7 +201,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
             value={name} 
             onChange={(e) => setName(e.target.value)}
             placeholder="Название"
-            className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none placeholder:text-[#F5E6D3]/30"
+            className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none placeholder:text-[#F5E6D3]/60"
           />
         </div>
         <div>
@@ -206,7 +210,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
             value={description} 
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Описание"
-            className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none placeholder:text-[#F5E6D3]/30 min-h-[80px]"
+            className="w-full bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none placeholder:text-[#F5E6D3]/60 min-h-[80px]"
           />
         </div>
       </div>
@@ -220,7 +224,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
         <div className="space-y-4">
           {results.length === 0 && <p className="text-[#F5E6D3]/60 text-sm">Нет результатов</p>}
           {results.map((r, idx) => (
-            <div key={idx} className="bg-rose-900 p-4 rounded-2xl relative">
+            <div key={idx} className="ui-card p-4! relative">
               <button onClick={() => removeResult(idx)} className="absolute top-4 right-4 text-red-400 p-1 hover:bg-red-400/10 rounded-lg">
                 <Trash2 size={18} />
               </button>
@@ -231,18 +235,18 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
                   {r.intervals.map((inv, intIdx) => (
                     <div key={intIdx} className="flex gap-2 items-center bg-rose-950/30 p-2 rounded-lg">
                       <div className="flex-1">
-                        <label className="text-[#F5E6D3]/60 text-[10px] mb-1 block">От (включительно):</label>
+                        <label className="text-[#F5E6D3]/60 text-xs mb-1 block">От (включительно):</label>
                         <input 
                           type="number" value={inv.range_from} onChange={(e) => updateInterval(idx, intIdx, 'range_from', e.target.value)}
                           className="w-full bg-rose-950/50 text-[#F5E6D3] p-1.5 text-sm rounded focus:outline-none"
                         />
                       </div>
                       <div className="flex-1">
-                        <label className="text-[#F5E6D3]/60 text-[10px] mb-1 block">До (не включительно):</label>
+                        <label className="text-[#F5E6D3]/60 text-xs mb-1 block">До (не включительно):</label>
                         <input 
                           type="number" value={inv.range_to ?? ''} onChange={(e) => updateInterval(idx, intIdx, 'range_to', e.target.value)}
                           placeholder="бескон."
-                          className="w-full bg-rose-950/50 text-[#F5E6D3] p-1.5 text-sm rounded focus:outline-none placeholder:text-[#F5E6D3]/20"
+                          className="w-full bg-rose-950/50 text-[#F5E6D3] p-1.5 text-sm rounded focus:outline-none placeholder:text-[#F5E6D3]/60"
                         />
                       </div>
                       <button onClick={() => removeInterval(idx, intIdx)} disabled={r.intervals.length === 1} className="mt-4 text-red-400/70 hover:text-red-400 p-1 disabled:opacity-30">
@@ -251,7 +255,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
                     </div>
                   ))}
                 </div>
-                <button onClick={() => addInterval(idx)} className="mt-2 text-emerald-400 text-xs flex items-center gap-1 hover:text-emerald-300">
+                <button onClick={() => addInterval(idx)} className="mt-2 text-[#7BA887] text-xs flex items-center gap-1 hover:text-emerald-300">
                   <Plus size={14} /> Добавить интервал
                 </button>
               </div>
@@ -265,7 +269,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
               </div>
             </div>
           ))}
-          <button onClick={addResult} className="w-full mt-2 py-3 bg-emerald-800 hover:bg-emerald-800 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
+          <button onClick={addResult} className="ui-button ui-button--outline mt-3">
             <Plus size={18} /> Результат
           </button>
         </div>
@@ -280,7 +284,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
         <div className="space-y-6">
           {questions.length === 0 && <p className="text-[#F5E6D3]/60 text-sm">Нет вопросов</p>}
           {questions.map((q, qIdx) => (
-            <div key={qIdx} className="bg-rose-900 p-4 rounded-2xl">
+            <div key={qIdx} className="ui-card p-4!">
               <div className="flex gap-2 items-start mb-4">
                 <span className="bg-rose-950/80 text-[#F5E6D3]/60 px-2 py-1.5 rounded-lg text-sm font-bold mt-1">
                   {qIdx + 1}
@@ -288,49 +292,49 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
                 <textarea 
                   value={q.name} onChange={(e) => updateQuestion(qIdx, e.target.value)}
                   placeholder="Текст вопроса..."
-                  className="flex-1 bg-rose-950/50 text-[#F5E6D3] p-2 rounded-lg focus:outline-none min-h-[60px]"
+                  className="min-w-0 flex-1 bg-rose-950/50 text-[#F5E6D3] p-2 rounded-lg focus:outline-none min-h-[60px]"
                 />
                 <button onClick={() => removeQuestion(qIdx)} className="text-red-400 p-2 hover:bg-red-400/10 rounded-lg mt-1 shrink-0">
                   <Trash2 size={18} />
                 </button>
               </div>
               
-              <div className="pl-2 sm:pl-10 space-y-2">
+              <div className="space-y-2">
                 <p className="text-[#F5E6D3]/70 text-xs uppercase tracking-wider font-bold mb-2">Варианты ответов:</p>
                 {q.answers.map((a, aIdx) => (
-                  <div key={aIdx} className="flex gap-2 items-center bg-rose-950/30 p-2 rounded-xl">
+                  <div key={aIdx} className="admin-answer grid grid-cols-[minmax(0,1fr)_44px] gap-2 items-center">
                     <input 
                       type="text" value={a.name} onChange={(e) => updateAnswer(qIdx, aIdx, 'name', e.target.value)}
                       placeholder="Ответ..."
-                      className="flex-1 bg-rose-950/50 text-[#F5E6D3] text-sm p-2 rounded-lg focus:outline-none"
+                      className="col-span-2 w-full bg-rose-950 text-[#F5E6D3] p-3 rounded-xl"
                     />
                     <input 
                       type="number" value={a.value} onChange={(e) => updateAnswer(qIdx, aIdx, 'value', e.target.value)}
-                      placeholder="Балл" title="Баллы за этот ответ"
-                      className="w-16 bg-rose-950/50 text-emerald-400 font-bold text-center p-2 rounded-lg focus:outline-none"
+                      placeholder="Балл" aria-label="Баллы за этот ответ" title="Баллы за этот ответ"
+                      className="w-full bg-rose-950 text-[#F5E6D3] p-3 rounded-xl"
                     />
                     <button onClick={() => removeAnswer(qIdx, aIdx)} className="text-[#F5E6D3]/40 hover:text-red-400 p-1 rounded-lg">
                       <XIcon />
                     </button>
                   </div>
                 ))}
-                <button onClick={() => addAnswer(qIdx)} className="text-emerald-600 text-sm flex items-center gap-1 hover:text-emerald-500 mt-2 px-2 py-1">
+                <button onClick={() => addAnswer(qIdx)} className="text-[#7BA887] text-sm flex items-center gap-1 hover:text-emerald-500 mt-2 px-2 py-1">
                   <Plus size={14} /> Добавить ответ
                 </button>
               </div>
             </div>
           ))}
-          <button onClick={addQuestion} className="w-full py-3 bg-emerald-800 hover:bg-emerald-800 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
+          <button onClick={addQuestion} className="ui-button ui-button--outline">
             <Plus size={18} /> Вопрос
           </button>
         </div>
       </div>
 
-      <div className="mt-8 pt-4">
+      <div className="sticky bottom-0 bg-rose-950 pt-4 pb-2 mt-4">
         <button 
           onClick={handleSave} 
           disabled={saving}
-          className="w-full bg-emerald-800 hover:bg-emerald-800 disabled:opacity-50 text-[#F5E6D3] font-bold py-4 rounded-2xl transition-all active:scale-[0.98] shadow-lg flex justify-center items-center gap-2"
+          className="ui-button ui-button--primary"
         >
           {saving ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div> : <Save size={20} />}
           {saving ? 'Сохранение...' : 'Сохранить тест'}

@@ -3,85 +3,67 @@ import { format, parseISO, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eac
 import { ru } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Page from '../../components/Page';
+import ScreenState from '../../components/ScreenState';
 import { dayKey } from './utils';
 
 const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
-// Полный календарь — теперь навигация по прошлым дням, а не главный экран
 export default function MonthSheet({ today, daysWithEntries, onLoadMonth, onSelectDay, onClose }) {
   const [month, setMonth] = useState(() => startOfMonth(parseISO(today)));
-  const [isLoading, setIsLoading] = useState(true);
+  const [selectedDay, setSelectedDay] = useState(today);
+  const [status, setStatus] = useState('loading');
+  const [retry, setRetry] = useState(0);
   const isCurrentMonth = isSameMonth(month, parseISO(today));
 
   useEffect(() => {
     let cancelled = false;
     onLoadMonth(month.getFullYear(), month.getMonth() + 1)
-      .catch(err => console.error('Ошибка загрузки месяца:', err))
-      .finally(() => { if (!cancelled) setIsLoading(false); });
+      .then(() => { if (!cancelled) setStatus('ready'); })
+      .catch(() => { if (!cancelled) setStatus('error'); });
     return () => { cancelled = true; };
-  }, [month, onLoadMonth]);
+  }, [month, onLoadMonth, retry]);
 
-  const changeMonth = (next) => {
-    setIsLoading(true);
-    setMonth(next);
+  const changeMonth = (next) => { setStatus('loading'); setMonth(next); };
+  const selectDay = async (date) => {
+    const key = dayKey(date);
+    if (!isSameMonth(date, month)) {
+      setStatus('loading');
+      try { await onLoadMonth(date.getFullYear(), date.getMonth() + 1); }
+      catch { setStatus('error'); return; }
+      setStatus('ready');
+    }
+    setSelectedDay(key);
+    onSelectDay(key);
   };
-
-  const days = eachDayOfInterval({
-    start: startOfWeek(startOfMonth(month), { weekStartsOn: 1 }),
-    end: endOfWeek(endOfMonth(month), { weekStartsOn: 1 }),
-  });
+  const days = eachDayOfInterval({ start: startOfWeek(startOfMonth(month), { weekStartsOn: 1 }), end: endOfWeek(endOfMonth(month), { weekStartsOn: 1 }) });
 
   return (
     <Page title="Календарь" onBack={onClose}>
-      <div className="flex items-center justify-between mb-3">
-        <button onClick={() => changeMonth(subMonths(month, 1))} aria-label="Предыдущий месяц" className="p-2 bg-rose-900 rounded-xl text-[#F5E6D3]">
-          <ChevronLeft size={20} />
-        </button>
-        <span className={`text-lg font-bold text-[#F5E6D3] capitalize ${isLoading ? 'opacity-60' : ''}`}>
-          {format(month, 'LLLL yyyy', { locale: ru })}
-        </span>
-        <button
-          onClick={() => changeMonth(addMonths(month, 1))}
-          disabled={isCurrentMonth}
-          aria-label="Следующий месяц"
-          className="p-2 bg-rose-900 rounded-xl text-[#F5E6D3] disabled:opacity-30"
-        >
-          <ChevronRight size={20} />
-        </button>
-      </div>
-
-      <div className="bg-rose-900/40 rounded-3xl p-2">
-        <div className="grid grid-cols-7 mb-1 text-center">
-          {weekDays.map(day => (
-            <div key={day} className="text-xs font-semibold text-[#F5E6D3]/70 uppercase py-1">{day}</div>
-          ))}
+      <div className="calendar-grid">
+        <div className="flex items-center justify-between mb-4">
+          <button type="button" onClick={() => changeMonth(subMonths(month, 1))} aria-label="Предыдущий месяц" className="ui-icon-button bg-rose-900"><ChevronLeft size={20} /></button>
+          <h3 className="text-lg font-semibold capitalize">{format(month, 'LLLL yyyy', { locale: ru })}</h3>
+          <button type="button" onClick={() => changeMonth(addMonths(month, 1))} disabled={isCurrentMonth} aria-label="Следующий месяц" className="ui-icon-button bg-rose-900 disabled:opacity-35"><ChevronRight size={20} /></button>
         </div>
-        <div className="grid grid-cols-7 gap-1">
-          {days.map(date => {
-            const key = dayKey(date);
-            const inMonth = isSameMonth(date, month);
-            const isToday = key === today;
-            const isFuture = key > today;
-            const hasEntries = daysWithEntries.has(key);
-            return (
-              <button
-                key={key}
-                disabled={isFuture}
-                onClick={() => onSelectDay(key)}
-                className={`aspect-square flex items-center justify-center rounded-xl text-sm font-bold ${
-                  !inMonth ? 'text-[#F5E6D3]/40' : hasEntries ? 'bg-emerald-800/60 text-[#F5E6D3]' : 'bg-rose-900/80 text-[#F5E6D3]'
-                } ${isToday ? 'ring-2 ring-[#F5E6D3]' : ''} ${isFuture ? 'opacity-30' : 'active:scale-95'}`}
-              >
-                {format(date, 'd')}
-              </button>
-            );
-          })}
-        </div>
+        {status === 'error' ? <ScreenState error title="Не удалось загрузить записи" onRetry={() => { setStatus('loading'); setRetry(t => t + 1); }} /> : (
+          <div className="ui-card p-3!" aria-busy={status === 'loading'}>
+            <div className="grid grid-cols-7 text-center mb-2">{weekDays.map(day => <span key={day} className="ui-muted py-2">{day}</span>)}</div>
+            <div className="grid grid-cols-7 gap-1">
+              {days.map(date => {
+                const key = dayKey(date);
+                return (
+                  <button key={key} type="button" disabled={key > today || status === 'loading'} onClick={() => selectDay(date)} aria-current={key === today ? 'date' : undefined} aria-label={`${format(date, 'd MMMM', { locale: ru })}${daysWithEntries.has(key) ? ', есть записи' : ''}`} className={`calendar-day ${key === selectedDay ? 'is-selected' : ''} ${!isSameMonth(date, month) ? 'opacity-60' : ''}`}>
+                    {format(date, 'd')}
+                    <span className="calendar-dot" style={{ visibility: daysWithEntries.has(key) ? 'visible' : 'hidden' }} />
+                  </button>
+                );
+              })}
+            </div>
+            {status === 'loading' && <p className="ui-muted text-center mt-3" role="status">Загружаем записи…</p>}
+          </div>
+        )}
+        <button type="button" onClick={onClose} className="ui-button ui-button--outline mt-6">К сегодняшнему дню</button>
       </div>
-
-      <button onClick={onClose} className="mt-6 w-full py-3.5 bg-emerald-800 text-[#F5E6D3] font-bold rounded-xl active:scale-[0.98]">
-        К сегодняшнему дню
-      </button>
     </Page>
   );
 }

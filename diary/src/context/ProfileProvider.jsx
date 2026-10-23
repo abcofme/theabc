@@ -13,9 +13,14 @@ const PORTRAIT_POLL_TIMEOUT = 180000;
 // и когда пользователь возвращается в приложение, например после оплаты в ЮKassa
 export default function ProfileProvider({ children }) {
   const [profile, setProfile] = useState(null);
+  const [profileError, setProfileError] = useState(null);
+  const [isStartingPortrait, setIsStartingPortrait] = useState(false);
+  const portraitRequest = useRef(false);
   const [portraitJob, setPortraitJob] = useState(null); // { since, previous } — пока строится портрет
 
-  const refreshProfile = useCallback(() => api('/api/profile').then(setProfile).catch(console.error), []);
+  const refreshProfile = useCallback(() => api('/api/profile')
+    .then(data => { setProfile(data); setProfileError(null); return data; })
+    .catch(err => { setProfileError(err); console.error(err); return null; }), []);
 
   useEffect(() => {
     refreshProfile();
@@ -28,10 +33,18 @@ export default function ProfileProvider({ children }) {
 
   // Запуск генерации портрета. Ошибку (например, 402 — не хватает баланса) получает вызывающий
   const generatePortrait = useCallback(async () => {
-    await api('/api/portrait/generate', { method: 'POST' });
-    setPortraitJob({ since: Date.now(), previous: profile?.portrait?.updated_at ?? null });
-    refreshProfile(); // баланс уже списан
-  }, [profile, refreshProfile]);
+    if (portraitRequest.current || portraitJob) return;
+    portraitRequest.current = true;
+    setIsStartingPortrait(true);
+    try {
+      await api('/api/portrait/generate', { method: 'POST' });
+      setPortraitJob({ since: Date.now(), previous: profile?.portrait?.updated_at ?? null });
+      refreshProfile();
+    } finally {
+      portraitRequest.current = false;
+      setIsStartingPortrait(false);
+    }
+  }, [profile, portraitJob, refreshProfile]);
 
   const jobRef = useRef(portraitJob);
   useEffect(() => { jobRef.current = portraitJob; }, [portraitJob]);
@@ -61,11 +74,12 @@ export default function ProfileProvider({ children }) {
 
   const value = useMemo(() => ({
     profile,
+    profileError,
     refreshProfile,
     isPremium: profile?.access_level === 'Premium',
     generatePortrait,
-    isGeneratingPortrait: !!portraitJob,
-  }), [profile, refreshProfile, generatePortrait, portraitJob]);
+    isGeneratingPortrait: !!portraitJob || isStartingPortrait,
+  }), [profile, profileError, refreshProfile, generatePortrait, portraitJob, isStartingPortrait]);
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
 }

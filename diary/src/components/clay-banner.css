@@ -34,22 +34,18 @@ button.clay-banner:disabled {
 }
 
 button.clay-banner:disabled .clay-banner__art,
-button.clay-banner:disabled .clay-banner__action,
 button.clay-banner:disabled .clay-banner__badge {
   opacity: 0.65;
 }
 
 .clay-banner__badge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  padding: 3px 10px;
-  border: 1px solid #f5e6d324;
+  display: inline-block;
+  padding: 3px 8px;
   border-radius: 999px;
-  background: #2b0a0ad9;
+  background: #2b0a0a;
   color: #f5e6d3;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.35;
 }
 
@@ -67,18 +63,21 @@ button.clay-banner:disabled .clay-banner__badge {
   user-select: none;
 }
 
-.clay-banner__action {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
-  display: grid;
-  place-items: center;
-  width: 27px;
-  height: 27px;
-  border: 1px solid #f5e6d324;
-  border-radius: 50%;
-  background: #2b0a0ab3;
-  color: #f5e6d3;
+.clay-banner__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-top: 1px solid #f5e6d314;
+  color: #f5e6d3bf;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.clay-banner__caption {
+  min-width: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

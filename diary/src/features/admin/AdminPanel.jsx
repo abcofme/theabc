@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, Check, Trash2, Edit, Plus, Heart, Link2, Download } from 'lucide-react';
 import AdminTestEditor from './AdminTestEditor';
+import ScreenState from '../../components/ScreenState';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
@@ -10,6 +11,8 @@ export default function AdminPanel() {
   const [endDate, setEndDate] = useState('');
   const [isUnique, setIsUnique] = useState(false);
   const [stats, setStats] = useState(null);
+  const [statsError, setStatsError] = useState(false);
+  const [linksError, setLinksError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [openCategory, setOpenCategory] = useState(null);
   const [openReports, setOpenReports] = useState(false);
@@ -25,7 +28,7 @@ export default function AdminPanel() {
   const [isRevoking, setIsRevoking] = useState(false);
   const [trackingLinks, setTrackingLinks] = useState([]);
   const [newLinkName, setNewLinkName] = useState('');
-  const [isLoadingLinks, setIsLoadingLinks] = useState(false);
+  const [isLoadingLinks, setIsLoadingLinks] = useState(true);
   const [isCreatingLink, setIsCreatingLink] = useState(false);
   const [exportSelectedIds, setExportSelectedIds] = useState([]);
   const [isExporting, setIsExporting] = useState(false);
@@ -33,30 +36,17 @@ export default function AdminPanel() {
   const [aiImportCategoryId, setAiImportCategoryId] = useState('');
   const [isAiImporting, setIsAiImporting] = useState(false);
   const [aiImportResult, setAiImportResult] = useState(null); // {test_name, questions_count, results_count} or error string
-  useEffect(() => {
-    fetchStats();
-  }, [startDate, endDate, isUnique]);
-
-  useEffect(() => {
-    fetchTrackingLinks();
-  }, []);
-
-  const fetchTrackingLinks = async () => {
-    if (!WebApp.initData) return;
-    setIsLoadingLinks(true);
-    try {
-      const response = await fetch(`${API_URL}/api/admin/tracking_links`, {
-        headers: { "Authorization": `Bearer ${WebApp.initData}` }
-      });
-      if (response.ok) {
+  const fetchTrackingLinks = useCallback(() => {
+    if (!WebApp.initData) return Promise.resolve();
+    return fetch(`${API_URL}/api/admin/tracking_links`, { headers: { Authorization: `Bearer ${WebApp.initData}` } })
+      .then(async response => {
+        if (!response.ok) throw new Error('Не удалось загрузить ссылки');
         setTrackingLinks(await response.json());
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoadingLinks(false);
-    }
-  };
+        setLinksError(false);
+      })
+      .catch(error => { setLinksError(true); console.error(error); })
+      .finally(() => setIsLoadingLinks(false));
+  }, []);
 
   const handleCreateLink = async () => {
     if (!newLinkName) return;
@@ -101,36 +91,24 @@ export default function AdminPanel() {
     });
   };
 
-  const fetchStats = async () => {
-    if (!WebApp.initData) {
-      setLoading(false);
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (startDate) params.append('start_date', startDate);
-      if (endDate) params.append('end_date', endDate);
-      if (isUnique) params.append('unique', 'true');
+  const fetchStats = useCallback(() => {
+    if (!WebApp.initData) return Promise.resolve();
+    const params = new URLSearchParams();
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    if (isUnique) params.append('unique', 'true');
+    return fetch(`${API_URL}/api/admin/stats?${params}`, { headers: { Authorization: `Bearer ${WebApp.initData}` } })
+      .then(async response => {
+        if (!response.ok) throw new Error(`Ошибка ${response.status}: ${await response.text()}`);
+        setStats(await response.json());
+        setStatsError(false);
+      })
+      .catch(error => { console.error(error); setStatsError(true); })
+      .finally(() => setLoading(false));
+  }, [startDate, endDate, isUnique]);
 
-      const response = await fetch(`${API_URL}/api/admin/stats?${params.toString()}`, {
-        headers: { "Authorization": `Bearer ${WebApp.initData}` }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Ошибка ${response.status}: ${await response.text()}`);
-      }
-      
-      const data = await response.json();
-      setStats(data);
-    } catch (error) {
-      console.error(error);
-      WebApp.showAlert(error.message || "Ошибка при загрузке статистики");
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => { fetchStats(); }, [fetchStats]);
+  useEffect(() => { fetchTrackingLinks(); }, [fetchTrackingLinks]);
 
   const handleGrantAccess = async () => {
     if (!grantTargetUsername) {
@@ -317,9 +295,9 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="admin-content flex flex-col w-full">
 
-      <div className="bg-rose-900 p-5 rounded-3xl mb-6 flex flex-col gap-4">
+      <div className="ui-card mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
           <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">С:</label>
           <input 
@@ -352,19 +330,19 @@ export default function AdminPanel() {
       </div>
 
       {/* НОВЫЙ БЛОК: ССЫЛКИ */}
-      <div className="bg-rose-900 p-5 rounded-3xl mb-6">
+      <div className="ui-card mb-6">
         <h3 className="text-xl font-bold text-[#F5E6D3] mb-4 flex items-center gap-2">
-          <Link2 size={24} className="text-blue-400" />
+          <Link2 size={24} className="text-[#F5E6D3]/75" />
           Ссылки
         </h3>
         
-        <div className="flex gap-2 mb-4">
+        <div className="flex flex-wrap gap-2 mb-4">
           <input 
             type="text" 
             placeholder="Название ссылки"
             value={newLinkName}
             onChange={(e) => setNewLinkName(e.target.value)}
-            className="flex-1 bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
+            className="min-w-0 flex-1 bg-rose-950/50 text-[#F5E6D3] p-3 rounded-xl focus:outline-none"
           />
           <button 
             onClick={handleCreateLink}
@@ -375,7 +353,7 @@ export default function AdminPanel() {
           </button>
         </div>
 
-        {isLoadingLinks ? (
+        {linksError ? <ScreenState error title="Не удалось загрузить ссылки" onRetry={fetchTrackingLinks} /> : isLoadingLinks ? (
           <div className="text-[#F5E6D3]/60 text-center py-4">Загрузка ссылок...</div>
         ) : trackingLinks.length > 0 ? (
           <div className="flex flex-col gap-3">
@@ -383,7 +361,7 @@ export default function AdminPanel() {
               <div key={link.id} className="bg-rose-950/40 p-4 rounded-xl flex flex-col gap-2 relative">
                 <div className="flex justify-between items-start pr-8">
                   <div className="font-medium text-[#F5E6D3]">{link.name}</div>
-                  <div className="flex items-center gap-1 text-emerald-400 bg-emerald-900/30 px-2 py-1 rounded-lg text-sm font-bold">
+                  <div className="flex items-center gap-1 text-[#7BA887] bg-emerald-900/30 px-2 py-1 rounded-lg text-sm font-bold">
                     <Users size={14} /> {link.clicks_count}
                   </div>
                 </div>
@@ -392,14 +370,14 @@ export default function AdminPanel() {
                     type="text" 
                     readOnly 
                     value={`https://t.me/abcofmebot?start=tr_${link.code}`}
-                    className="flex-1 bg-black/20 text-[#F5E6D3]/70 text-xs p-2 rounded-lg outline-none"
+                    className="min-w-0 flex-1 bg-rose-950 text-[#F5E6D3]/70 text-xs p-2 rounded-lg outline-none"
                   />
                   <button 
                     onClick={() => {
                       navigator.clipboard.writeText(`https://t.me/abcofmebot?start=tr_${link.code}`);
                       WebApp.showAlert("Ссылка скопирована!");
                     }}
-                    className="bg-blue-900/50 hover:bg-blue-800/50 text-blue-200 px-3 rounded-lg text-xs font-medium transition-colors"
+                    className="bg-rose-800 hover:bg-rose-700 text-[#F5E6D3] px-3 rounded-lg text-xs font-medium transition-colors"
                   >
                     Копировать
                   </button>
@@ -420,38 +398,39 @@ export default function AdminPanel() {
         )}
       </div>
 
+      {statsError && <ScreenState error title="Не удалось обновить статистику" onRetry={fetchStats} />}
       {loading && !stats ? (
         <div className="flex justify-center items-center py-12">
           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-white"></div>
         </div>
       ) : stats ? (
         <div className="flex flex-col gap-4">
-          
-          <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
+          <div className="admin-metrics">
+          <div className="ui-card flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Users className="text-purple-500" size={24} />
+              <Users className="text-[#F5E6D3]/75" size={24} />
               <span className="text-[#F5E6D3] font-medium">Всего пользователей</span>
             </div>
             <span className="text-xl font-bold text-[#F5E6D3]">{stats.total_users || 0}</span>
           </div>
 
-          <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
+          <div className="ui-card flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Check className="text-emerald-500" size={24} />
+              <Check className="text-[#7BA887]" size={24} />
               <span className="text-[#F5E6D3] font-medium">Активных пользователей</span>
             </div>
             <span className="text-xl font-bold text-[#F5E6D3]">{stats.active_users || 0}</span>
           </div>
           
-          <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
+          <div className="ui-card flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Calendar className="text-emerald-700" size={24} />
+              <Calendar className="text-[#7BA887]" size={24} />
               <span className="text-[#F5E6D3] font-medium">Записи дневника</span>
             </div>
             <span className="text-xl font-bold text-[#F5E6D3]">{stats.diary_entries || 0}</span>
           </div>
 
-          <div className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
+          <div className="bg-rose-900 border border-[#F5E6D3]/10 rounded-3xl overflow-hidden shadow-sm transition-all duration-300">
             <button
               onClick={() => setOpenReports(!openReports)}
               className="w-full flex items-center justify-between p-5 hover:bg-rose-800/70 transition-colors active:bg-rose-800"
@@ -477,24 +456,25 @@ export default function AdminPanel() {
             )}
           </div>
 
-          <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
+          <div className="ui-card flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <FileText className="text-emerald-500" size={24} />
+              <FileText className="text-[#7BA887]" size={24} />
               <span className="text-[#F5E6D3] font-medium">Портреты личности</span>
             </div>
             <span className="text-xl font-bold text-[#F5E6D3]">{stats.portraits_generated || 0}</span>
           </div>
 
-          <div className="bg-rose-900 p-5 rounded-2xl flex items-center justify-between">
+          <div className="ui-card flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Heart className="text-rose-500" size={24} />
+              <Heart className="text-[#D0B8A5]" size={24} />
               <span className="text-[#F5E6D3] font-medium">Отчеты совместимости</span>
             </div>
             <span className="text-xl font-bold text-[#F5E6D3]">{stats.compat_reports_generated || 0}</span>
           </div>
 
+          </div>
           <h3 className="text-xl font-bold text-[#F5E6D3] mt-8 mb-4">Управление доступом</h3>
-          <div className="bg-rose-900 p-5 rounded-2xl flex flex-col gap-4 shadow-sm">
+          <div className="ui-card flex flex-col gap-4 shadow-sm">
             <div>
               <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Telegram @username пользователя:</label>
               <input 
@@ -525,7 +505,7 @@ export default function AdminPanel() {
             </button>
           </div>
 
-          <div className="bg-rose-900 p-5 rounded-2xl flex flex-col gap-4 shadow-sm mt-4">
+          <div className="ui-card flex flex-col gap-4 shadow-sm mt-4">
             <div>
               <label className="text-[#F5E6D3] text-sm font-medium mb-1 block">Забрать права у @username:</label>
               <input 
@@ -557,7 +537,7 @@ export default function AdminPanel() {
 
           <h3 className="text-xl font-bold text-[#F5E6D3] mt-8 mb-2">Статистика по тестам</h3>
           {(stats.tests || []).map(cat => (
-            <div key={cat.id} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
+            <div key={cat.id} className="bg-rose-900 border border-[#F5E6D3]/10 rounded-3xl overflow-hidden shadow-sm transition-all duration-300">
               <button
                 onClick={() => toggleCategory(cat.id)}
                 className="w-full flex items-center justify-between p-4 hover:bg-rose-800/70 transition-colors active:bg-rose-800"
@@ -629,7 +609,7 @@ export default function AdminPanel() {
             <button
               onClick={handleAiImport}
               disabled={isAiImporting || !aiImportText.trim() || !aiImportCategoryId}
-              className="w-full py-3 bg-purple-800 hover:bg-purple-700 disabled:bg-purple-950/40 disabled:text-[#F5E6D3]/40 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-3 bg-emerald-800 hover:bg-emerald-700 disabled:bg-emerald-950/40 disabled:text-[#F5E6D3]/40 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 transition-colors"
             >
               <Brain size={18} />
               {isAiImporting ? 'ИИ обрабатывает...' : 'Создать тест через ИИ'}
@@ -694,14 +674,14 @@ export default function AdminPanel() {
             <h3 className="text-xl font-bold text-[#F5E6D3]">Управление тестами</h3>
             <button 
               onClick={() => setEditingTestId(null)}
-              className="p-2 px-3 bg-emerald-800/20 text-emerald-400 hover:bg-emerald-800/30 rounded-xl transition-colors flex items-center gap-1 text-sm font-bold"
+              className="p-2 px-3 bg-emerald-800/20 text-[#7BA887] hover:bg-emerald-800/30 rounded-xl transition-colors flex items-center gap-1 text-sm font-bold"
             >
               <Plus size={16} /> Создать тест
             </button>
           </div>
           <div className="bg-rose-900/40 p-4 rounded-3xl">
             {(stats.tests || []).map(cat => (
-              <div key={`edit-cat-${cat.id}`} className="bg-rose-900 rounded-2xl overflow-hidden shadow-sm transition-all duration-300 mb-3 last:mb-0">
+              <div key={`edit-cat-${cat.id}`} className="bg-rose-900 border border-[#F5E6D3]/10 rounded-3xl overflow-hidden shadow-sm transition-all duration-300 mb-3 last:mb-0">
                 <button
                   onClick={() => setOpenDeleteCategory(openDeleteCategory === cat.id ? null : cat.id)}
                   className="w-full flex items-center justify-between p-4 hover:bg-rose-800/70 transition-colors active:bg-rose-800"
@@ -729,7 +709,7 @@ export default function AdminPanel() {
                           <div className="flex items-center gap-1">
                             <button 
                               onClick={() => setEditingTestId(test.id)}
-                              className="p-2 text-emerald-600 hover:text-emerald-500 hover:bg-emerald-800/10 rounded-lg transition-colors"
+                              className="p-2 text-emerald-600 hover:text-[#7BA887] hover:bg-emerald-800/10 rounded-lg transition-colors"
                             >
                               <Edit size={20} />
                             </button>

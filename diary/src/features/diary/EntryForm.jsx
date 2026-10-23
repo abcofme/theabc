@@ -1,89 +1,98 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useId } from 'react';
 import { ChevronLeft } from 'lucide-react';
+import { readDraft, saveDraft, clearDraft } from './drafts';
 
 const WebApp = window.Telegram.WebApp;
 
-const fieldClass = "w-full bg-rose-950 rounded-xl px-4 py-3 text-[#F5E6D3] placeholder:text-[#F5E6D3]/40 focus:outline-none focus:ring-2 focus:ring-emerald-700 resize-none";
-const primaryClass = "flex-1 bg-emerald-800 disabled:bg-emerald-950/40 disabled:text-[#F5E6D3]/50 text-[#F5E6D3] font-bold py-3 rounded-xl active:scale-[0.98]";
-const secondaryClass = "px-4 bg-rose-800 text-[#F5E6D3] font-bold py-3 rounded-xl active:scale-[0.98]";
-
-// Запись в два шага: сначала событие, потом реакция — так проще начать и это похоже на разговор
-export default function EntryForm({ title, initial, submitLabel = 'Сохранить', onSubmit, onCancel }) {
-  const [step, setStep] = useState('event');
-  const [event, setEvent] = useState(initial?.event || '');
-  const [reaction, setReaction] = useState(initial?.reaction || '');
+// Запись в два шага. Черновик принадлежит пользователю и дате/редактируемой записи.
+export default function EntryForm({ title, initial, draftKey, submitLabel = 'Сохранить', onSubmit, onCancel }) {
+  const owner = WebApp.initDataUnsafe?.user?.id || 'current';
+  const [draft] = useState(() => readDraft(owner, draftKey, initial));
+  const [step, setStep] = useState(draft.step);
+  const [event, setEvent] = useState(draft.event);
+  const [reaction, setReaction] = useState(draft.reaction);
+  const [draftSaved, setDraftSaved] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const reactionRef = useRef(null);
+  const fieldRef = useRef(null);
+  const submittingRef = useRef(false);
+  const fieldId = useId();
+  const value = step === 'event' ? event : reaction;
 
-  // На шаге реакции курсор — в конец текста, чтобы при «Дописать» продолжать, а не вставлять в начало
+  const persist = (changes = {}) => setDraftSaved(saveDraft(owner, draftKey, { event, reaction, step, ...changes }));
+  const changeStep = next => { persist({ step: next }); setStep(next); };
+
+
+  useLayoutEffect(() => {
+    const field = fieldRef.current;
+    if (!field) return;
+    field.style.height = 'auto';
+    field.style.height = `${Math.min(Math.max(field.scrollHeight, 120), 320)}px`;
+  }, [value, step]);
+
   useEffect(() => {
-    const field = reactionRef.current;
+    const field = fieldRef.current;
     if (step !== 'reaction' || !field) return;
     field.focus();
     field.setSelectionRange(field.value.length, field.value.length);
   }, [step]);
 
+  const cancel = () => {
+    saveDraft(owner, draftKey, { event, reaction, step });
+    onCancel();
+  };
+
   const handleSubmit = async () => {
+    if (submittingRef.current || !event.trim() || !reaction.trim()) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
       await onSubmit(event.trim(), reaction.trim());
+      clearDraft(owner, draftKey);
       setEvent('');
       setReaction('');
       setStep('event');
-      WebApp.HapticFeedback.notificationOccurred('success');
+      WebApp.HapticFeedback?.notificationOccurred('success');
     } catch (err) {
       WebApp.showAlert(err.message || 'Не удалось сохранить запись. Попробуйте ещё раз.');
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   };
 
-  if (step === 'event') {
-    return (
-      <div className="flex flex-col gap-3">
-        {title && <h3 className="text-lg font-bold text-[#F5E6D3]">{title}</h3>}
-        <textarea
-          rows="3"
-          value={event}
-          onChange={(e) => setEvent(e.target.value)}
-          placeholder="Например: начальник отчитал меня при всех"
-          className={fieldClass}
-        />
-        <div className="flex gap-2">
-          {onCancel && <button type="button" onClick={onCancel} className={secondaryClass}>Отмена</button>}
-          <button type="button" disabled={!event.trim()} onClick={() => setStep('reaction')} className={primaryClass}>
-            Дальше
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col gap-3">
-      <button
-        type="button"
-        onClick={() => setStep('event')}
-        className="flex items-start gap-1.5 text-left text-sm text-[#F5E6D3]/70"
-      >
-        <ChevronLeft size={16} className="shrink-0 mt-0.5" />
-        <span className="line-clamp-2">{event}</span>
-      </button>
-      <h3 className="text-lg font-bold text-[#F5E6D3]">Как ты отреагировал(а)?</h3>
+    <div className="flex flex-col gap-4">
+      <p className="ui-muted">{step === 'event' ? 'Событие · шаг 1 из 2' : 'Реакция · шаг 2 из 2'}</p>
+      {step === 'reaction' && (
+        <button type="button" onClick={() => changeStep('event')} disabled={isSubmitting} className="flex gap-2 text-left ui-secondary py-2">
+          <ChevronLeft size={20} className="shrink-0" />
+          <span><span className="line-clamp-3">{event}</span><span className="block underline underline-offset-4 mt-1">Изменить событие</span></span>
+        </button>
+      )}
+      <label htmlFor={fieldId} className="text-lg leading-6 font-semibold">
+        {step === 'event' ? title || 'Что произошло?' : 'Как ты отреагировал(а)?'}
+      </label>
       <textarea
-        rows="3"
-        ref={reactionRef}
-        value={reaction}
-        onChange={(e) => setReaction(e.target.value)}
-        placeholder="Что ты сделал(а), что почувствовал(а)…"
-        className={fieldClass}
+        key={step}
+        id={fieldId}
+        ref={fieldRef}
+        rows={4}
+        value={value}
+        disabled={isSubmitting}
+        onChange={(e) => {
+          if (step === 'event') { setEvent(e.target.value); persist({ event: e.target.value }); }
+          else { setReaction(e.target.value); persist({ reaction: e.target.value }); }
+        }}
+        placeholder={step === 'event' ? 'Например: начальник отчитал меня при всех' : 'Что ты сделал(а), что почувствовал(а)…'}
+        className="ui-input resize-none"
       />
-      <div className="flex gap-2">
-        {onCancel && <button type="button" onClick={onCancel} className={secondaryClass}>Отмена</button>}
-        <button type="button" disabled={!reaction.trim() || isSubmitting} onClick={handleSubmit} className={primaryClass}>
-          {isSubmitting ? 'Сохраняю…' : submitLabel}
+      <div className="flex gap-3">
+        {onCancel && <button type="button" onClick={cancel} disabled={isSubmitting} className="ui-button ui-button--outline w-auto!">Позже</button>}
+        <button type="button" disabled={!value.trim() || isSubmitting} onClick={step === 'event' ? () => changeStep('reaction') : handleSubmit} className="ui-button ui-button--primary flex-1">
+          {step === 'event' ? 'Дальше' : isSubmitting ? 'Сохраняю…' : submitLabel}
         </button>
       </div>
+      {draftKey && draftSaved && (event || reaction) && <p className="ui-muted">Черновик сохранен на этом устройстве</p>}
     </div>
   );
 }

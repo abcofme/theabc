@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Check, ChevronRight } from 'lucide-react';
 import ClayBanner from '../../components/ClayBanner';
 import Modal from '../../components/Modal';
@@ -6,157 +6,92 @@ import Spinner from '../../components/Spinner';
 import PortraitProgress from './PortraitProgress';
 import TestRunner from './TestRunner';
 import { categoryBanners } from './categoryBanners';
+import { readTestProgress, clearTestProgress } from './testProgress';
 import { useProfile } from '../../context/profile';
 import { useErrorHandler } from '../../navigation/appNav';
 import { api } from '../../utils/api';
 
 const WebApp = window.Telegram.WebApp;
 
-export default function TestsTab() {
+export default function TestsTab({ request }) {
   const { profile, refreshProfile } = useProfile();
   const handleError = useErrorHandler();
   const [openCategory, setOpenCategory] = useState(null);
-  const [selectedResult, setSelectedResult] = useState(null); // пройденный тест — его результат в окне
+  const [selectedResult, setSelectedResult] = useState(null);
   const [runningTest, setRunningTest] = useState(null);
-
+  const [handledRequest, setHandledRequest] = useState(null);
+  const [, updateProgress] = useState(0);
   const categories = profile?.categories || [];
-
-  const openTest = (test) => {
-    if (test.passed) {
-      setSelectedResult(test);
-      WebApp.HapticFeedback?.selectionChanged();
-      return;
-    }
-    WebApp.HapticFeedback?.impactOccurred('light');
-    setRunningTest(test);
+  useEffect(() => {
+    const update = () => updateProgress(value => value + 1);
+    window.addEventListener('test-progress:changed', update);
+    return () => window.removeEventListener('test-progress:changed', update);
+  }, []);
+  if (request && request.id !== handledRequest) {
+    setHandledRequest(request.id);
+    if (request.category) setOpenCategory(categories.find(c => c.name === request.category || c.id === request.category)?.id || null);
+  }
+  const requestedCategoryId = categories.find(category => category.name === request?.category || category.id === request?.category)?.id;
+  useEffect(() => {
+    if (request?.category && requestedCategoryId) document.getElementById(`test-category-panel-${requestedCategoryId}`)?.parentElement?.scrollIntoView({ block: 'start', behavior: 'auto' });
+  }, [request?.id, request?.category, requestedCategoryId]);
+  const remaining = categories.filter(c => c.name !== 'Профориентация').flatMap(c => c.tests).filter(test => !test.passed);
+  const nextTest = remaining.find(test => readTestProgress(test.id).index > 0) || remaining[0];
+  const openTest = test => {
+    if (test.passed) { setSelectedResult(test); WebApp.HapticFeedback?.selectionChanged(); }
+    else { WebApp.HapticFeedback?.impactOccurred('light'); setRunningTest(test); }
   };
-
   const closeTest = useCallback(() => setRunningTest(null), []);
-
   const retake = () => {
     const test = selectedResult;
-    WebApp.showConfirm('Пройти тест заново? Текущий результат удалится. Если портрет уже сформирован, его можно будет обновить.', async (confirmed) => {
+    WebApp.showConfirm('Пройти тест заново? Текущий результат удалится. Если портрет уже сформирован, его можно будет обновить.', async confirmed => {
       if (!confirmed) return;
       try {
         await api(`/api/tests/${test.id}/progress`, { method: 'DELETE' });
+        clearTestProgress(test.id);
         setSelectedResult(null);
         refreshProfile();
         setRunningTest({ ...test, passed: false });
-      } catch (err) {
-        handleError(err, 'Не удалось сбросить результат теста');
-      }
+      } catch (err) { handleError(err, 'Не удалось сбросить результат теста'); }
     });
   };
-
   return (
-    <div className="flex flex-col relative select-none bg-transparent max-w-2xl mx-auto w-full pt-2 pb-6" lang="ru">
-      <h1 className="text-3xl font-bold text-[#F5E6D3] px-3 mb-4">Тесты</h1>
-
-      {!profile ? (
-        <Spinner />
-      ) : categories.length === 0 ? (
-        <p className="text-[#F5E6D3] text-center py-12">Нет доступных тестов.</p>
-      ) : (
+    <div className="app-screen ui-stack" lang="ru">
+      <h1 className="screen-title">Тесты</h1>
+      {!profile ? <Spinner /> : categories.length === 0 ? <p className="ui-secondary py-8">Нет доступных тестов.</p> : <>
+        <PortraitProgress nextTest={nextTest} onContinue={() => openTest(nextTest)} />
         <div className="flex flex-col gap-4">
-          <PortraitProgress />
-
-          <div className="px-2 flex flex-col gap-4">
-            {categories.map(cat => {
-              const banner = categoryBanners[cat.name.trim()];
-              const isOpen = openCategory === cat.id;
-              const passed = cat.tests.filter(t => t.passed).length;
-              const badge = cat.tests.length > 0 ? `${passed}/${cat.tests.length}` : undefined;
-              const toggle = () => setOpenCategory(isOpen ? null : cat.id);
-              return (
-                <div key={cat.id}>
-                  {banner ? (
-                    <ClayBanner
-                      id={`test-category-${cat.id}`}
-                      kind="test"
-                      title={cat.name}
-                      description={`Символ категории — ${banner.tree}. Пройдено ${passed} из ${cat.tests.length}`}
-                      image={banner.image}
-                      expanded={isOpen}
-                      onClick={toggle}
-                      controlsId={`test-category-panel-${cat.id}`}
-                      badge={badge}
-                      badgeAccent={cat.tests.length > 0 && passed === cat.tests.length}
-                      chevron
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={toggle}
-                      aria-expanded={isOpen}
-                      aria-controls={`test-category-panel-${cat.id}`}
-                      id={`clay-banner-title-test-category-${cat.id}`}
-                      className="w-full flex items-center justify-between gap-4 px-6 py-4 min-h-[80px] bg-rose-900 rounded-2xl text-left"
-                    >
-                      <span className="font-semibold text-[#F5E6D3] text-xl truncate">{cat.name}</span>
-                      {badge && <span className="text-sm font-bold text-[#F5E6D3]/80 shrink-0">{badge}</span>}
-                    </button>
-                  )}
-
-                  <div id={`test-category-panel-${cat.id}`} role="region" aria-labelledby={`clay-banner-title-test-category-${cat.id}`} hidden={!isOpen}>
-                    {isOpen && (
-                      <div className="bg-rose-900/60 rounded-[22px] mt-2.5 px-4 py-3">
-                        {banner?.description && (
-                          <p className="text-sm text-[#F5E6D3]/80 leading-relaxed py-2">{banner.description}</p>
-                        )}
-                        {banner?.note && <p className="text-xs text-[#F5E6D3]/60 leading-relaxed pb-2">{banner.note}</p>}
-                        {cat.tests.length === 0 ? (
-                          <p className="text-[#F5E6D3] text-sm py-3 italic">В этой категории пока нет тестов.</p>
-                        ) : cat.tests.map(test => (
-                          <button
-                            key={test.id}
-                            onClick={() => openTest(test)}
-                            className="w-full flex items-center justify-between gap-3 py-3.5 -mx-4 px-4 text-left hover:bg-rose-800/40 active:bg-rose-800"
-                            style={{ width: 'calc(100% + 2rem)' }}
-                          >
-                            <span className="text-sm sm:text-base font-medium text-[#F5E6D3] flex-1 leading-snug">{test.name}</span>
-                            {test.passed ? (
-                              <span className="flex items-center gap-1 text-emerald-500 text-sm font-medium shrink-0">
-                                <Check size={18} strokeWidth={3} /> Результат
-                              </span>
-                            ) : (
-                              <span className="flex items-center gap-0.5 text-[#F5E6D3] text-sm font-bold shrink-0">
-                                Пройти <ChevronRight size={18} />
-                              </span>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <h2 className="ui-section-label">Категории</h2>
+          {categories.map(cat => {
+            const banner = categoryBanners[cat.name.trim()];
+            const isOpen = openCategory === cat.id;
+            const passed = cat.tests.filter(test => test.passed).length;
+            const toggle = () => setOpenCategory(isOpen ? null : cat.id);
+            return <section key={cat.id}>
+              {banner ? <ClayBanner id={`test-category-${cat.id}`} kind="test" title={cat.name} description={cat.name === 'Профориентация' ? 'Отдельные тесты для отчетов о работе' : `Символ категории — ${banner.tree}`} image={banner.image} expanded={isOpen} onClick={toggle} controlsId={`test-category-panel-${cat.id}`} badge={cat.tests.length ? `Пройдено ${passed} из ${cat.tests.length}` : undefined} badgeAccent={cat.tests.length > 0 && passed === cat.tests.length} chevron /> : <button type="button" onClick={toggle} aria-expanded={isOpen} aria-controls={`test-category-panel-${cat.id}`} id={`clay-banner-title-test-category-${cat.id}`} className="ui-card w-full flex items-center justify-between gap-3 text-left"><span className="text-lg font-semibold">{cat.name}</span><span className="ui-muted">{passed}/{cat.tests.length}</span></button>}
+              <div id={`test-category-panel-${cat.id}`} role="region" aria-labelledby={`clay-banner-title-test-category-${cat.id}`} hidden={!isOpen}>
+                {isOpen && <div className="px-1 pt-2">
+                  {banner?.description && <details className="ui-secondary"><summary className="py-3 font-medium">О категории</summary><p className="pb-4">{banner.description}</p></details>}
+                  {banner?.note && <p className="ui-secondary py-3">{banner.note}</p>}
+                  {cat.tests.length === 0 ? <p className="ui-secondary py-4">В этой категории пока нет тестов.</p> : cat.tests.map(test => {
+                    const saved = readTestProgress(test.id);
+                    return <button type="button" key={test.id} onClick={() => openTest(test)} className="ui-row">
+                      <span className="flex-1 min-w-0"><span className="font-medium leading-6 block">{test.name}</span>{!test.passed && saved.index > 0 && <span className="ui-muted block mt-1">{saved.total ? `Пройдено ${saved.index} из ${saved.total} вопросов` : 'Есть сохраненный прогресс'}</span>}</span>
+                      <span className="flex items-center gap-1 text-sm font-semibold shrink-0">{test.passed ? <><Check size={20} className="text-[#7BA887]" /> Результат</> : <>{saved.index > 0 ? 'Продолжить' : 'Пройти'}<ChevronRight size={20} /></>}</span>
+                    </button>;
+                  })}
+                </div>}
+              </div>
+            </section>;
+          })}
         </div>
-      )}
-
-      {selectedResult && (
-        <Modal
-          title={selectedResult.name}
-          onClose={() => setSelectedResult(null)}
-          footer={
-            <>
-              <button onClick={() => setSelectedResult(null)} className="w-full bg-emerald-800 text-[#F5E6D3] font-bold py-3.5 rounded-xl">
-                Закрыть
-              </button>
-              <button onClick={retake} className="w-full bg-rose-800 text-[#F5E6D3] font-bold py-3 rounded-xl">
-                Пройти тест заново
-              </button>
-            </>
-          }
-        >
-          <p className="text-[#F5E6D3] text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
-            {selectedResult.result_text || 'Нет детального описания результата.'}
-          </p>
-        </Modal>
-      )}
-
-      {runningTest && <TestRunner test={runningTest} onClose={closeTest} />}
+      </>}
+      {selectedResult && <Modal title={selectedResult.name} onClose={() => setSelectedResult(null)} footer={<>
+        {nextTest && <button type="button" onClick={() => { setSelectedResult(null); openTest(nextTest); }} className="ui-button ui-button--primary">Продолжить тесты</button>}
+        <button type="button" onClick={retake} className="ui-button ui-button--outline">Пройти тест заново</button>
+        <button type="button" onClick={() => setSelectedResult(null)} className="ui-button ui-button--quiet">Закрыть</button>
+      </>}><p className="text-base leading-[26px] whitespace-pre-wrap">{selectedResult.result_text || 'Нет детального описания результата.'}</p></Modal>}
+      {runningTest && <TestRunner key={runningTest.id} test={runningTest} onClose={closeTest} />}
     </div>
   );
 }

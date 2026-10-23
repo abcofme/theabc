@@ -3,6 +3,7 @@ import { Check, ChevronRight, User, UserPlus, X } from 'lucide-react';
 import Avatar from '../../../components/Avatar';
 import ClayBanner from '../../../components/ClayBanner';
 import Spinner from '../../../components/Spinner';
+import ScreenState from '../../../components/ScreenState';
 import InviteModal from './InviteModal';
 import FriendPage from './FriendPage';
 import { friendName, compatStatus } from './friends';
@@ -11,7 +12,7 @@ import { api } from '../../../utils/api';
 import friendsImage from '../../../assets/reports/friends-handmade.webp';
 
 const SectionLabel = ({ children }) => (
-  <h3 className="text-xs font-bold text-[#F5E6D3]/70 uppercase tracking-wider px-1">{children}</h3>
+  <h3 className="ui-section-label">{children}</h3>
 );
 
 function FriendAvatar({ user }) {
@@ -48,12 +49,13 @@ export default function CompatibilitySection() {
   const { navigate } = useAppNav();
   const handleError = useErrorHandler();
   const [data, setData] = useState(null);
+  const [loadError, setLoadError] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [openFriend, setOpenFriend] = useState(null);
 
   const load = useCallback(
-    () => api('/api/friends').then(setData).catch(err => handleError(err, 'Не удалось загрузить друзей')),
-    [handleError],
+    () => api('/api/friends').then(value => { setData(value); setLoadError(false); }).catch(() => setLoadError(true)),
+    [],
   );
 
   useEffect(() => {
@@ -62,13 +64,14 @@ export default function CompatibilitySection() {
 
   const act = (path) => api(path, { method: 'POST' }).then(load).catch(err => handleError(err));
 
+  if (loadError) return <ScreenState error title="Не удалось загрузить друзей" onRetry={load} />;
   if (!data) return <Spinner />;
 
   const myPortrait = data.current_user_has_portrait;
   const hasRequests = data.incoming_requests.length > 0 || data.outgoing_requests.length > 0;
 
-  return (
-    <div className="flex flex-col gap-6">
+  const hasContacts = hasRequests || data.friends.length > 0;
+  const introduction = (
       <div className="flex flex-col gap-3">
         <ClayBanner
           id="compatibility"
@@ -77,14 +80,14 @@ export default function CompatibilitySection() {
           description="Совместимость с друзьями"
           image={friendsImage}
         />
-        <section className="bg-rose-900/80 rounded-3xl p-5">
+        <section className="ui-card">
           <h2 className="font-bold text-[#F5E6D3] text-lg">Совместимость с друзьями</h2>
           <p className="text-sm text-[#F5E6D3]/75 leading-relaxed mt-1 mb-4">
             Сравним ваши портреты личности: в чем вы дополняете друг друга, где нужно терпение и что помогает мириться.
           </p>
           <button
             onClick={() => setIsInviteOpen(true)}
-            className="w-full py-3.5 bg-emerald-800 text-[#F5E6D3] font-bold rounded-2xl flex items-center justify-center gap-2 active:scale-[0.98]"
+            className="ui-button ui-button--primary"
           >
             <UserPlus size={20} /> Пригласить друга
           </button>
@@ -95,24 +98,29 @@ export default function CompatibilitySection() {
           )}
         </section>
       </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-6">
+      {!hasContacts && introduction}
 
       {hasRequests && (
         <section className="flex flex-col gap-2">
           <SectionLabel>Заявки</SectionLabel>
-          <div className="bg-rose-900/60 rounded-3xl divide-y divide-[#F5E6D3]/10 overflow-hidden">
+          <div className="bg-rose-900 rounded-3xl divide-y divide-[#F5E6D3]/10 overflow-hidden">
             {data.incoming_requests.map(req => (
               <FriendRow key={req.request_id} user={req} caption={<span className="block text-xs text-[#F5E6D3]/60">Хочет дружить</span>}>
-                <button onClick={() => act(`/api/friends/accept/${req.request_id}`)} aria-label="Принять" className="p-2 rounded-lg bg-[#F5E6D3] text-rose-950">
+                <button onClick={() => act(`/api/friends/accept/${req.request_id}`)} aria-label="Принять" className="ui-icon-button bg-[#F5E6D3] text-rose-950!">
                   <Check size={18} />
                 </button>
-                <button onClick={() => act(`/api/friends/reject/${req.request_id}`)} aria-label="Отклонить" className="p-2 rounded-lg bg-rose-950/60 text-[#F5E6D3]/70">
+                <button onClick={() => act(`/api/friends/reject/${req.request_id}`)} aria-label="Отклонить" className="ui-icon-button">
                   <X size={18} />
                 </button>
               </FriendRow>
             ))}
             {data.outgoing_requests.map(req => (
               <FriendRow key={req.request_id} user={req} caption={<span className="block text-xs text-[#F5E6D3]/60">Ждет ответа</span>}>
-                <button onClick={() => act(`/api/friends/reject/${req.request_id}`)} className="px-3 py-1.5 text-sm font-medium text-[#F5E6D3]/70 bg-rose-950/60 rounded-lg">
+                <button onClick={() => act(`/api/friends/reject/${req.request_id}`)} className="min-h-11 px-3 text-sm font-medium text-[#F5E6D3]/75 bg-rose-950 rounded-xl">
                   Отменить
                 </button>
               </FriendRow>
@@ -122,21 +130,21 @@ export default function CompatibilitySection() {
       )}
 
       <section className="flex flex-col gap-2">
-        <SectionLabel>Друзья</SectionLabel>
+        <SectionLabel>Мои друзья</SectionLabel>
         {data.friends.length === 0 ? (
           <p className="text-sm text-[#F5E6D3]/70 text-center py-6 px-4 leading-relaxed bg-rose-900/40 rounded-3xl">
             Пока никого. Отправь другу личную ссылку — он появится здесь, как только ее откроет.
           </p>
         ) : (
-          <div className="bg-rose-900/60 rounded-3xl divide-y divide-[#F5E6D3]/10 overflow-hidden">
-            {data.friends.map(friend => {
+          <div className="bg-rose-900 rounded-3xl divide-y divide-[#F5E6D3]/10 overflow-hidden">
+            {[...data.friends].sort((a, b) => Number(b.has_compatibility) - Number(a.has_compatibility)).map(friend => {
               const status = compatStatus(friend, myPortrait);
               return (
                 <FriendRow
                   key={friend.id}
                   user={friend}
                   onClick={() => setOpenFriend(friend)}
-                  caption={<span className={`block text-xs ${status.ready ? 'text-[#F5E6D3]/80' : 'text-[#F5E6D3]/50'}`}>{status.text}</span>}
+                  caption={<span className={`block text-xs ${status.ready ? 'text-[#F5E6D3]/80' : 'text-[#F5E6D3]/75'}`}>{status.text}</span>}
                 >
                   <ChevronRight size={18} className="shrink-0 text-[#F5E6D3]/60" />
                 </FriendRow>
@@ -145,6 +153,8 @@ export default function CompatibilitySection() {
           </div>
         )}
       </section>
+
+      {hasContacts && introduction}
 
       {isInviteOpen && <InviteModal link={data.invite_link} onClose={() => setIsInviteOpen(false)} />}
       {openFriend && (

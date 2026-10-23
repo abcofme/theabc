@@ -2,6 +2,11 @@
   min-width: 0;
   min-height: 60px;
   border-radius: 14px;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.clay-navigation__item[aria-current='page'] {
+  background: #f5e6d310;
 }
 
 .clay-navigation__item:focus-visible {

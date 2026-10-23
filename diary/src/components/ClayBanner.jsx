@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react';
 import './clay-banner.css';
 
-// badge — короткая метка поверх картинки: прогресс «1/2» или «Новый отчет» (accent — выделить ярче)
+// Художественная надпись остается в изображении; статус и управление — под ним.
 export default function ClayBanner({ id, title, description, image, expanded, onClick, controlsId, badge, badgeAccent = false, kind, chevron = false, disabled = false }) {
   const interactive = typeof onClick === 'function';
   const Container = interactive ? 'button' : 'div';
@@ -30,10 +30,12 @@ export default function ClayBanner({ id, title, description, image, expanded, on
       <p className="sr-only" id={descriptionId}>
         {description}{badge ? `. ${badge}` : ''}
       </p>
-      {badge && (
-        <span className={`clay-banner__badge ${badgeAccent ? 'clay-banner__badge--accent' : ''}`} aria-hidden="true">{badge}</span>
+      {(interactive || badge) && (
+        <span className="clay-banner__meta" aria-hidden="true">
+          {badge ? <span className={`clay-banner__badge ${badgeAccent ? 'clay-banner__badge--accent' : ''}`}>{badge}</span> : <span className="clay-banner__caption">{description}</span>}
+          {interactive && <ActionIcon size={20} className="shrink-0" />}
+        </span>
       )}
-      {interactive && <span className="clay-banner__action" aria-hidden="true"><ActionIcon size={17} /></span>}
     </Container>
   );
 }

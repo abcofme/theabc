@@ -49,6 +49,7 @@ export default function useDiary(today) {
   const addEntry = useCallback(async (date, event, reaction) => {
     const res = await api('/api/diary', { method: 'POST', body: { date, event, reaction } });
     upsert([{ id: res.id, date, event, reaction, rating: null, portrait_match_score: null, portrait_match_explanation: null }]);
+    window.dispatchEvent(new Event('diary:changed'));
     if (res.analysis_started) startWaiting(res.id);
     loadOverview(); // серия дней могла вырасти
   }, [upsert, startWaiting, loadOverview]);
@@ -62,6 +63,7 @@ export default function useDiary(today) {
   const deleteEntry = useCallback(async (id) => {
     await api(`/api/diary/${id}`, { method: 'DELETE' });
     setEntriesById(prev => withoutKey(prev, id));
+    window.dispatchEvent(new Event('diary:changed'));
     stopWaiting(id);
     loadOverview();
   }, [stopWaiting, loadOverview]);

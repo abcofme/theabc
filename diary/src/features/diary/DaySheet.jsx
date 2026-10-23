@@ -11,7 +11,7 @@ export default function DaySheet({ day, entries, diary, lock, onNavigate, onClos
   return (
     <Page title={format(date, 'd MMMM yyyy, EEEEEE', { locale: ru })} onBack={onClose}>
       {entries.length > 0 ? (
-        <section className="bg-rose-900/80 rounded-3xl p-4">
+        <section>
           <EntryList entries={entries} diary={diary} lock={lock} />
           <AnalysisHint lock={lock} onNavigate={onNavigate} />
         </section>
@@ -19,8 +19,8 @@ export default function DaySheet({ day, entries, diary, lock, onNavigate, onClos
         <p className="text-[#F5E6D3]/70 text-center py-6">В этот день записей нет</p>
       )}
 
-      <div className="mt-6 bg-rose-900/80 rounded-3xl p-4">
-        <EntryForm title="Что произошло в этот день?" onSubmit={(event, reaction) => diary.addEntry(day, event, reaction)} />
+      <div className="ui-card mt-6">
+        <EntryForm draftKey={`new:${day}`} title="Что произошло в этот день?" onSubmit={(event, reaction) => diary.addEntry(day, event, reaction)} />
       </div>
     </Page>
   );

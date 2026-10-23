@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ArrowLeft, ArrowRight, Undo2, Wand2 } from 'lucide-react';
-import bgLeaves from '../../assets/bg-leaves.webp';
 import Spinner from '../../components/Spinner';
+import ScreenState from '../../components/ScreenState';
+import { readTestProgress, saveTestProgress, clearTestProgress, resumeTestProgress } from './testProgress';
 import { useBackHandler } from '../../navigation/backStack';
 import { useAppNav, useErrorHandler } from '../../navigation/appNav';
 import { useProfile, portraitState } from '../../context/profile';
@@ -14,17 +15,6 @@ const TUTORIAL_KEY = 'swipe_tutorial_seen';
 // Примерно столько уходит на один ответ свайпом
 const SECONDS_PER_QUESTION = 5;
 
-const progressKey = (testId) => `test_progress_${testId}`;
-
-function readSaved(testId) {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(progressKey(testId)));
-    return { answers: parsed?.answers || [], index: parsed?.index || 0 };
-  } catch {
-    return { answers: [], index: 0 };
-  }
-}
-
 function storage(action) {
   try {
     return action(localStorage);
@@ -35,15 +25,17 @@ function storage(action) {
 
 // Прохождение теста отдельной страницей: старт, карточки-свайпы «да/нет», результат
 export default function TestRunner({ test, onClose }) {
-  const { profile, refreshProfile, generatePortrait } = useProfile();
+  const { profile, refreshProfile, generatePortrait, isGeneratingPortrait, isPremium } = useProfile();
   const { navigate } = useAppNav();
   const handleError = useErrorHandler();
-  const [saved] = useState(() => readSaved(test.id));
+  const [saved] = useState(() => readTestProgress(test.id));
   const [details, setDetails] = useState(null);
   const [index, setIndex] = useState(saved.index);
   const [answers, setAnswers] = useState(saved.answers);
   const [isStarted, setIsStarted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const submissionLock = useRef(false);
   const [result, setResult] = useState(null);
   const [showTutorial, setShowTutorial] = useState(() => !storage(s => s.getItem(TUTORIAL_KEY)));
 
@@ -63,22 +55,23 @@ export default function TestRunner({ test, onClose }) {
       .then(data => {
         setDetails(data);
         // Вопросы могли измениться с прошлого раза: сохранённый прогресс не должен выйти за их число
-        const last = Math.max((data.questions?.length || 1) - 1, 0);
-        setIndex(i => Math.min(i, last));
-        setAnswers(a => a.slice(0, last));
+        const restored = resumeTestProgress(saved, data.questions?.length || 0);
+        setIndex(restored.index);
+        setAnswers(restored.answers);
+        if (restored.pending) { setIsStarted(true); setSubmitError('Ответы сохранены. Повтори отправку результата.'); }
       })
       .catch(err => {
         handleError(err, 'Не удалось загрузить тест');
         onCloseRef.current();
       });
-  }, [test.id, handleError]);
+  }, [test.id, handleError, saved]);
 
   // Прогресс сохраняется, чтобы продолжить с того же вопроса
   useEffect(() => {
     if (isStarted && !isSubmitting && !result) {
-      storage(s => s.setItem(progressKey(test.id), JSON.stringify({ answers, index })));
+      saveTestProgress(test.id, { answers, index, total: details?.questions?.length });
     }
-  }, [test.id, index, answers, isStarted, isSubmitting, result]);
+  }, [test.id, index, answers, isStarted, isSubmitting, result, details]);
 
   // Подсказка про свайпы — только на первом тесте, до первого касания или ответа
   const dismissTutorial = () => {
@@ -90,27 +83,33 @@ export default function TestRunner({ test, onClose }) {
   const exit = () => onClose();
   useBackHandler(true, exit);
 
-  const handleAnswerClick = async (answerId) => {
-    WebApp.HapticFeedback?.selectionChanged();
-    const newAnswers = [...answers, answerId];
-    setAnswers(newAnswers);
-
-    if (index < details.questions.length - 1) {
-      setIndex(prev => prev + 1);
-      return;
-    }
+  const submitAnswers = async (submittedAnswers) => {
+    if (submissionLock.current) return;
+    submissionLock.current = true;
     setIsSubmitting(true);
-    storage(s => s.removeItem(progressKey(test.id)));
+    setSubmitError(null);
     try {
-      const data = await api(`/api/tests/${details.id}/submit`, { method: 'POST', body: { answer_ids: newAnswers } });
+      const data = await api(`/api/tests/${details.id}/submit`, { method: 'POST', body: { answer_ids: submittedAnswers } });
       setResult(data.result);
+      clearTestProgress(test.id);
       WebApp.HapticFeedback?.notificationOccurred('success');
       refreshProfile();
     } catch (err) {
-      handleError(err, 'Не удалось сохранить результат теста. Попробуйте ещё раз.');
+      setSubmitError(err.message || 'Не удалось сохранить результат. Ответы сохранены на устройстве.');
     } finally {
+      submissionLock.current = false;
       setIsSubmitting(false);
     }
+  };
+
+  const handleAnswerClick = (answerId) => {
+    if (submissionLock.current || submitError || result) return;
+    WebApp.HapticFeedback?.selectionChanged();
+    const newAnswers = [...answers, answerId];
+    setAnswers(newAnswers);
+    if (index < details.questions.length - 1) { setIndex(previous => previous + 1); return; }
+    saveTestProgress(test.id, { answers: newAnswers, index, total: details.questions.length });
+    submitAnswers(newAnswers);
   };
 
   const handleGoBack = () => {
@@ -181,14 +180,11 @@ export default function TestRunner({ test, onClose }) {
 
   return createPortal(
     <div className="fixed inset-0 z-[60] flex flex-col bg-rose-950">
-      <div
-        className="absolute inset-0 pointer-events-none z-0"
-        style={{ backgroundImage: `url(${bgLeaves})`, backgroundPosition: 'bottom right', backgroundRepeat: 'no-repeat', backgroundSize: '60%' }}
-      />
+
 
       <header className="relative z-10 shrink-0 w-full max-w-md mx-auto flex items-center gap-2 px-2 pt-3 pb-2">
-        <button onClick={exit} aria-label="Назад" className="p-2 rounded-xl text-[#F5E6D3] active:scale-95 shrink-0">
-          <ChevronLeft size={26} />
+        <button onClick={exit} aria-label="Назад" className="ui-icon-button shrink-0">
+          <ChevronLeft size={24} />
         </button>
         {isStarted && !result && details ? (
           <>
@@ -198,11 +194,11 @@ export default function TestRunner({ test, onClose }) {
             </div>
             <button
               onClick={handleGoBack}
-              disabled={index === 0}
+              disabled={index === 0 || isSubmitting || !!submitError}
               aria-label="Предыдущий вопрос"
-              className="p-2 text-[#F5E6D3]/70 disabled:opacity-30 active:scale-95 shrink-0"
+              className="ui-icon-button disabled:opacity-35 shrink-0"
             >
-              <Undo2 size={22} />
+              <Undo2 size={20} />
             </button>
           </>
         ) : (
@@ -210,24 +206,26 @@ export default function TestRunner({ test, onClose }) {
         )}
       </header>
 
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col relative z-10">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-8 pt-2 flex flex-col relative z-10">
         {!details ? (
           <Spinner className="flex-1" />
+        ) : questions.length === 0 ? (
+          <ScreenState title="В этом тесте пока нет вопросов" />
         ) : result ? (
           <div className="flex-1 flex flex-col max-w-md mx-auto w-full">
-            <div className="flex-1 bg-rose-900 rounded-[2rem] p-6 shadow-xl flex flex-col">
+            <div className="ui-card flex flex-col">
               <p className="text-xs font-bold text-[#F5E6D3]/70 uppercase tracking-wider mb-3">Результат</p>
-              <div className="text-[#F5E6D3] text-base leading-relaxed whitespace-pre-wrap flex-1 overflow-y-auto pb-4">{result}</div>
+              <div className="text-base leading-[26px] whitespace-pre-wrap pb-4">{result}</div>
               {portraitState(profile) === 'ready' ? (
                 <>
                   <p className="text-sm text-[#F5E6D3]/80 mt-2">Все тесты пройдены — можно сформировать портрет личности.</p>
-                  <button onClick={makePortrait} className="w-full mt-4 bg-emerald-800 text-[#F5E6D3] font-bold py-4 rounded-xl flex items-center justify-center gap-2 active:scale-[0.98]">
-                    <Wand2 size={18} /> Сформировать портрет
+                  <button onClick={makePortrait} disabled={isGeneratingPortrait} className="ui-button ui-button--primary mt-4">
+                    <Wand2 size={20} /> {isGeneratingPortrait ? 'Портрет формируется…' : `Сформировать портрет${isPremium ? '' : ` · ${profile.prices.portrait} ₽`}`}
                   </button>
                   <button onClick={exit} className="w-full mt-2 py-3 text-[#F5E6D3]/70 font-medium">Позже</button>
                 </>
               ) : (
-                <button onClick={exit} className="w-full mt-4 bg-emerald-800 text-[#F5E6D3] font-bold py-4 rounded-xl active:scale-[0.98]">
+                <button onClick={exit} className="ui-button ui-button--outline mt-4">
                   Вернуться к тестам
                 </button>
               )}
@@ -238,18 +236,24 @@ export default function TestRunner({ test, onClose }) {
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#F5E6D3] border-t-transparent"></div>
             <p className="text-[#F5E6D3] font-medium text-lg">Обработка результатов...</p>
           </div>
+        ) : submitError ? (
+          <div className="ui-card w-full max-w-md mx-auto" role="alert">
+            <h3 className="text-lg font-semibold mb-3">Ответы сохранены</h3>
+            <p className="ui-secondary mb-5">{submitError}</p>
+            <button type="button" onClick={() => submitAnswers(answers)} className="ui-button ui-button--primary">Повторить отправку</button>
+          </div>
         ) : !isStarted ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto w-full">
-            <div className="bg-rose-900 rounded-[2rem] p-6 sm:p-8 shadow-xl mb-6 w-full">
+            <div className="ui-card mb-4 w-full">
               <h3 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] leading-snug mb-4">{details.name}</h3>
               {details.description && <p className="text-[#F5E6D3]/70 text-sm mb-4">{details.description}</p>}
-              <p className="text-[#F5E6D3]/50 text-xs font-bold uppercase tracking-widest">
+              <p className="ui-secondary">
                 Вопросов: {questions.length} · около {minutes} мин
               </p>
             </div>
             <button
               onClick={() => setIsStarted(true)}
-              className="w-full bg-emerald-800 text-[#F5E6D3] font-bold py-4 rounded-xl shadow-lg active:scale-[0.98]"
+              className="ui-button ui-button--primary"
             >
               {index > 0 ? 'Продолжить тест' : 'Пройти тест'}
             </button>
@@ -263,18 +267,14 @@ export default function TestRunner({ test, onClose }) {
             )}
             <div className="relative flex-1 flex flex-col w-full min-h-[400px] mb-8">
               {/* Следующая карточка — под текущей */}
-              {index + 1 < questions.length && (
-                <div className="absolute inset-2 bg-rose-900/80 rounded-[2rem] p-6 sm:p-8 shadow-sm flex items-center justify-center text-center opacity-70 blur-[3px] select-none">
-                  <h4 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] leading-snug">{questions[index + 1].name}</h4>
-                </div>
-              )}
+              {index + 1 < questions.length && <div className="absolute inset-x-1 top-0 bottom-4 rounded-3xl bg-rose-800/30" aria-hidden="true" />}
 
               <div
                 key={index}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
-                className={`absolute inset-2 bg-rose-900/80 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 shadow-2xl flex flex-col items-center justify-center text-center overflow-hidden cursor-grab active:cursor-grabbing select-none
+                className={`absolute inset-2 bg-rose-900 rounded-3xl border border-[#F5E6D3]/10 p-6 sm:p-8 flex flex-col items-center justify-center text-center overflow-hidden cursor-grab active:cursor-grabbing select-none
                   ${isDragging ? 'transition-none' : 'transition-all duration-500 ease-out'}
                   ${showTutorial && index === 0 && !isDragging && !swipingOut ? 'animate-swipe-hint' : ''}
                   ${swipingOut === 'right' ? 'translate-x-[150%] rotate-[10deg] opacity-0' : ''}
@@ -300,14 +300,14 @@ export default function TestRunner({ test, onClose }) {
                   <button
                     onClick={(e) => { e.stopPropagation(); triggerSwipe('left'); }}
                     onTouchEnd={(e) => e.stopPropagation()}
-                    className="flex items-center gap-2 bg-rose-950/60 border border-[#F5E6D3]/25 text-[#F5E6D3] font-bold px-6 py-3.5 rounded-xl active:scale-95"
+                    className="ui-button ui-button--outline w-auto! px-5!"
                   >
                     <ArrowLeft size={20} /> Нет
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); triggerSwipe('right'); }}
                     onTouchEnd={(e) => e.stopPropagation()}
-                    className="flex items-center gap-2 bg-rose-950/60 border border-[#F5E6D3]/25 text-[#F5E6D3] font-bold px-6 py-3.5 rounded-xl active:scale-95"
+                    className="ui-button ui-button--outline w-auto! px-5!"
                   >
                     Да <ArrowRight size={20} />
                   </button>

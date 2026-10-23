@@ -28,10 +28,10 @@ export default function InviteModal({ link, onClose }) {
       onClose={onClose}
       footer={
         <>
-          <button onClick={share} className="w-full py-3.5 bg-emerald-800 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 active:scale-[0.98]">
+          <button onClick={share} className="ui-button ui-button--primary">
             <Send size={18} /> Отправить в Telegram
           </button>
-          <button onClick={copy} className="w-full py-3 bg-rose-800 text-[#F5E6D3] font-bold rounded-xl flex items-center justify-center gap-2 active:scale-[0.98]">
+          <button onClick={copy} className="ui-button ui-button--outline">
             <Copy size={18} /> Скопировать ссылку
           </button>
         </>
