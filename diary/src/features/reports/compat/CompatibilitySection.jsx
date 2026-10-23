@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Check, ChevronRight, User, UserPlus, X } from 'lucide-react';
 import Avatar from '../../../components/Avatar';
+import ClayBanner from '../../../components/ClayBanner';
 import Spinner from '../../../components/Spinner';
 import InviteModal from './InviteModal';
 import FriendPage from './FriendPage';
@@ -68,9 +69,15 @@ export default function CompatibilitySection() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="bg-rose-900/80 rounded-3xl overflow-hidden">
-        <img src={friendsImage} alt="" className="w-full aspect-[12/5] object-cover pointer-events-none select-none" draggable="false" />
-        <div className="p-5 pt-3">
+      <div className="flex flex-col gap-3">
+        <ClayBanner
+          id="compatibility"
+          kind="report"
+          title="Друзья"
+          description="Совместимость с друзьями"
+          image={friendsImage}
+        />
+        <section className="bg-rose-900/80 rounded-3xl p-5">
           <h2 className="font-bold text-[#F5E6D3] text-lg">Совместимость с друзьями</h2>
           <p className="text-sm text-[#F5E6D3]/75 leading-relaxed mt-1 mb-4">
             Сравним ваши портреты личности: в чем вы дополняете друг друга, где нужно терпение и что помогает мириться.
@@ -86,8 +93,8 @@ export default function CompatibilitySection() {
               Для совместимости нужен твой портрет личности — к тестам
             </button>
           )}
-        </div>
-      </section>
+        </section>
+      </div>
 
       {hasRequests && (
         <section className="flex flex-col gap-2">

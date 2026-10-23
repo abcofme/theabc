@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { ChevronRight, FileText, NotebookPen } from 'lucide-react';
+import ClayBanner from '../../components/ClayBanner';
 import Spinner from '../../components/Spinner';
-import { REPORT_GROUPS, REPORT_TYPES, reportTypeOf, formatDay, periodLabel } from './reportTypes';
+import { REPORT_TYPES, reportTypeOf, formatDay, periodLabel } from './reportTypes';
 import { plural } from '../diary/utils';
 import { useAppNav } from '../../navigation/appNav';
+import { useProfile } from '../../context/profile';
 import { api } from '../../utils/api';
 
 // Сколько записей за месяц нужно, чтобы отчеты были точными
@@ -50,51 +52,57 @@ function DiaryAccuracy() {
   );
 }
 
-function ReportTypeCard({ type, reports, onOpen }) {
+// Баннер вида отчета ведет на его страницу; метка — новый отчет или дата последнего
+function ReportTypeBanner({ type, reports, onOpen }) {
   const latest = reports[0];
   const hasNew = reports.some(r => r.is_read === false);
   return (
-    <button onClick={onOpen} className="text-left bg-rose-900/80 rounded-2xl overflow-hidden flex flex-col active:scale-[0.98] transition-transform">
-      <img src={type.image} alt="" className="w-full aspect-[12/5] object-cover pointer-events-none select-none" draggable="false" />
-      <span className="px-3 pt-2.5 pb-3 flex flex-col gap-1.5 flex-1">
-        <span className="text-sm font-bold text-[#F5E6D3] leading-tight">{type.shortTitle}</span>
-        {hasNew ? (
-          <span className="self-start text-[11px] font-bold text-rose-950 bg-[#e5c398] px-2 py-0.5 rounded-full">Новый отчет</span>
-        ) : (
-          <span className="text-xs text-[#F5E6D3]/60">{latest ? `Последний — ${formatDay(latest.created_at)}` : 'Еще не было'}</span>
-        )}
-      </span>
-    </button>
+    <ClayBanner
+      id={`report-${type.id}`}
+      kind="report"
+      title={type.bannerTitle || type.shortTitle}
+      description={type.subtitle}
+      image={type.image}
+      onClick={onOpen}
+      badge={hasNew ? 'Новый отчет' : latest ? `Последний — ${formatDay(latest.created_at)}` : undefined}
+      badgeAccent={hasNew}
+    />
   );
 }
 
-// Раздел «Поведенческий код»: точность по числу записей, виды отчетов и последние отчеты
-export default function BehaviorSection({ reports, onOpenType, onOpenReport }) {
+// Раздел отчетов («Поведенческий код» или «Профориентация»): точность по числу записей,
+// баннеры видов отчетов и последние отчеты этого раздела
+export default function ReportGroupSection({ group, reports, onOpenType, onOpenReport }) {
+  const { profile } = useProfile();
+  const { navigate } = useAppNav();
   if (!reports) return <Spinner />;
 
+  const types = REPORT_TYPES.filter(t => t.group === group.id);
   const byType = (type) => reports.filter(r => reportTypeOf(r)?.id === type.id);
-  const recent = reports.slice(0, 5);
+  const recent = reports.filter(r => types.some(t => t.id === reportTypeOf(r)?.id)).slice(0, 5);
+  const needsCareerTests = group.id === 'career'
+    && !profile?.categories?.find(c => c.name === 'Профориентация')?.tests.some(t => t.passed);
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-sm text-[#F5E6D3]/75 leading-relaxed px-1">
-        Замечай повторения, понимай свои реакции и находи опору в записях дневника.
-      </p>
+      <p className="text-sm text-[#F5E6D3]/75 leading-relaxed px-1">{group.desc}</p>
+
+      {needsCareerTests && (
+        <section className="bg-rose-900/80 rounded-3xl p-5">
+          <p className="text-sm text-[#F5E6D3]/80 mb-4">Эти отчеты строятся по тестам профориентации — сначала пройди их.</p>
+          <button onClick={() => navigate({ tab: 'tests' })} className="w-full py-3.5 bg-emerald-800 text-[#F5E6D3] font-bold rounded-2xl">
+            К тестам
+          </button>
+        </section>
+      )}
 
       <DiaryAccuracy />
 
-      {REPORT_GROUPS.map(group => (
-        <section key={group.id} className="flex flex-col gap-2">
-          <SectionLabel>{group.title}</SectionLabel>
-          <p className="text-xs text-[#F5E6D3]/60 leading-relaxed px-1 -mt-1">{group.desc}</p>
-          <div className="grid grid-cols-2 gap-3 mt-1">
-            {group.items.map(item => {
-              const type = REPORT_TYPES.find(t => t.id === item.id);
-              return <ReportTypeCard key={type.id} type={type} reports={byType(type)} onOpen={() => onOpenType(type)} />;
-            })}
-          </div>
-        </section>
-      ))}
+      <div className="flex flex-col gap-4">
+        {types.map(type => (
+          <ReportTypeBanner key={type.id} type={type} reports={byType(type)} onOpen={() => onOpenType(type)} />
+        ))}
+      </div>
 
       {recent.length > 0 && (
         <section className="flex flex-col gap-2">

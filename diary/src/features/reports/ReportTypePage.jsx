@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AlertTriangle, ChevronDown, ChevronRight, FileText, Trash2 } from 'lucide-react';
+import ClayBanner from '../../components/ClayBanner';
 import Page from '../../components/Page';
 import GenerationProgress from '../../components/GenerationProgress';
 import { PERIODS, FEW_ENTRIES, formatDay, periodLabel } from './reportTypes';
@@ -138,7 +139,7 @@ export default function ReportTypePage({ type, reports, onOpenReport, onDelete, 
   return (
     <Page title={type.shortTitle} onBack={onBack}>
       <div className="flex flex-col gap-4">
-        <img src={type.image} alt="" className="w-full rounded-3xl pointer-events-none select-none" draggable="false" />
+        <ClayBanner id={`report-page-${type.id}`} kind="report" title={type.bannerTitle || type.shortTitle} description={type.subtitle} image={type.image} />
         <div className="px-1">
           <p className="text-lg font-bold text-[#F5E6D3] leading-snug">{type.title}</p>
           <p className="text-sm text-[#F5E6D3]/70 mt-1">{type.subtitle}</p>

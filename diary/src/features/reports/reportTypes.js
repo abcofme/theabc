@@ -6,8 +6,8 @@ import competenceImage from '../../assets/reports/competence-handmade.webp';
 export const REPORT_GROUPS = [
   {
     id: 'general',
-    title: 'По дневнику',
-    desc: 'Строятся по записям дневника и портрету личности.',
+    title: 'Поведенческий код',
+    desc: 'Замечай повторения, понимай свои реакции и находи опору в записях дневника.',
     items: [
       {
         id: 'repeating_events',

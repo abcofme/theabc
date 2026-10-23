@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react';
-import BehaviorSection from './BehaviorSection';
+import ReportGroupSection from './ReportGroupSection';
 import ReportTypePage from './ReportTypePage';
 import ReportViewPage from './ReportViewPage';
 import CompatibilitySection from './compat/CompatibilitySection';
-import { reportTypeOf } from './reportTypes';
+import { REPORT_GROUPS, reportTypeOf } from './reportTypes';
 import { useErrorHandler } from '../../navigation/appNav';
 import { api } from '../../utils/api';
 
 const WebApp = window.Telegram.WebApp;
 
+// Три раздела: два вида отчетов по дневнику и совместимость с друзьями
 const SECTIONS = [
-  ['behavior', 'Поведенческий код'],
+  ['general', 'Поведенческий код'],
+  ['career', 'Профориентация'],
   ['compatibility', 'Совместимость'],
 ];
+const SECTION_IDS = SECTIONS.map(([id]) => id);
 
 function SectionSwitch({ value, onChange }) {
   return (
@@ -23,7 +26,7 @@ function SectionSwitch({ value, onChange }) {
           role="tab"
           aria-selected={value === id}
           onClick={() => onChange(id)}
-          className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors ${
+          className={`flex-1 flex items-center justify-center px-1 py-2 rounded-xl text-xs leading-tight font-bold transition-colors ${
             value === id ? 'bg-[#F5E6D3] text-rose-950' : 'text-[#F5E6D3]/70'
           }`}
         >
@@ -34,11 +37,11 @@ function SectionSwitch({ value, onChange }) {
   );
 }
 
-// Отчеты: «Поведенческий код» по дневнику и «Совместимость с друзьями».
+// Отчеты: «Поведенческий код», «Профориентация» и «Совместимость с друзьями».
 // Ссылки из бота: ?tab=reports&report=12 — открыть отчет, ?tab=reports&section=compatibility — раздел друзей
 export default function ReportsTab({ request }) {
   const handleError = useErrorHandler();
-  const [section, setSection] = useState('behavior');
+  const [section, setSection] = useState('general');
   const [reports, setReports] = useState(null);
   const [openType, setOpenType] = useState(null);
   const [viewReport, setViewReport] = useState(null);
@@ -56,12 +59,13 @@ export default function ReportsTab({ request }) {
 
   if (request && request.id !== handledRequest) {
     setHandledRequest(request.id);
-    setSection(request.section === 'compatibility' ? 'compatibility' : 'behavior');
+    setSection(SECTION_IDS.includes(request.section) ? request.section : 'general');
     setPendingReportId(request.report ? Number(request.report) : null);
   }
 
   const openReport = (report) => {
     setViewReport(report);
+    setSection(reportTypeOf(report)?.group || 'general');
     if (report.is_read) return;
     setReports(prev => prev.map(r => (r.id === report.id ? { ...r, is_read: true } : r)));
     api(`/api/reports/${report.id}/read`, { method: 'POST' }).catch(console.error);
@@ -95,9 +99,16 @@ export default function ReportsTab({ request }) {
       <h1 className="text-3xl font-bold text-[#F5E6D3] px-1 mb-4">Отчеты</h1>
       <SectionSwitch value={section} onChange={setSection} />
 
-      {section === 'behavior'
-        ? <BehaviorSection reports={reports} onOpenType={setOpenType} onOpenReport={openReport} />
-        : <CompatibilitySection />}
+      {section === 'compatibility' ? (
+        <CompatibilitySection />
+      ) : (
+        <ReportGroupSection
+          group={REPORT_GROUPS.find(g => g.id === section)}
+          reports={reports}
+          onOpenType={setOpenType}
+          onOpenReport={openReport}
+        />
+      )}
 
       {openType && (
         <ReportTypePage
