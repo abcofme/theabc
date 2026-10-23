@@ -7,7 +7,7 @@ export const REPORT_GROUPS = [
   {
     id: 'general',
     title: 'Поведенческий код',
-    desc: 'Замечай повторения, понимай свои реакции и находи опору в записях дневника.',
+    desc: 'По дневнику и портрету личности',
     items: [
       {
         id: 'repeating_events',
@@ -15,6 +15,7 @@ export const REPORT_GROUPS = [
         shortTitle: 'Повторяющиеся события',
         bannerTitle: 'Повторяющиеся\nсобытия',
         subtitle: 'Что снова и снова происходит в моей жизни',
+        question: 'Какие события чаще всего повторяются в моей жизни?',
         image: repeatingEventsImage,
         matches: (title) => title.includes('Повторяющиеся'),
       },
@@ -24,6 +25,7 @@ export const REPORT_GROUPS = [
         shortTitle: 'Мои реакции',
         bannerTitle: 'Мои\nреакции',
         subtitle: 'Как мои реакции влияют на происходящее',
+        question: 'На какие ситуации я реагирую эффективно, а на какие нет?',
         image: reactionsImage,
         matches: (title) => title.includes('эффективно'),
       },
@@ -32,13 +34,14 @@ export const REPORT_GROUPS = [
   {
     id: 'career',
     title: 'Профориентация',
-    desc: 'Что дает тебе силы и в чем твоя опора — по дневнику и тестам профориентации.',
+    desc: 'По дневнику и тестам профориентации',
     items: [
       {
         id: 'energy',
         title: 'Энергия',
         shortTitle: 'Энергия',
         subtitle: 'Что наполняет меня, а что забирает силы',
+        question: 'Что дает мне энергию, а что ее забирает?',
         image: energyImage,
         matches: (title) => title.includes('Энергия'),
       },
@@ -48,6 +51,7 @@ export const REPORT_GROUPS = [
         shortTitle: 'Чувство компетентности',
         bannerTitle: 'Чувство\nкомпетентности',
         subtitle: 'На какой опыт и сильные стороны я могу опереться',
+        question: 'На какой опыт и сильные стороны я могу опереться?',
         image: competenceImage,
         matches: (title) => title.includes('компетентност'),
       },
@@ -61,16 +65,15 @@ export const reportTypeOf = (report) =>
   REPORT_TYPES.find(t => report.title === t.title || t.matches(report.title));
 
 export const PERIODS = [
-  ['week', 'За последнюю неделю'],
-  ['month', 'За последний месяц'],
-  ['3months', 'За последние 3 месяца'],
-  ['year', 'За год'],
-  ['all', 'За все время'],
-  ['custom', 'Указать свой период'],
+  ['week', 'Неделя'],
+  ['month', 'Месяц'],
+  ['3months', '3 месяца'],
+  ['year', 'Год'],
+  ['all', 'Все время'],
+  ['custom', 'Свой период'],
 ];
 
-// Меньше записей — отчет получается неточным
-export const FEW_ENTRIES = 5;
+export { FEW_ENTRIES } from './reportHelpers';
 
 export const formatDay = (iso) => new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 

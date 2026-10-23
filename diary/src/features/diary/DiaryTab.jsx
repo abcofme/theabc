@@ -10,6 +10,8 @@ import EntryForm from './EntryForm';
 import MonthSheet from './MonthSheet';
 import DaySheet from './DaySheet';
 import ScreenState from '../../components/ScreenState';
+import ClayText from '../../components/ClayText';
+import PortraitPath from './PortraitPath';
 import { dayKey, plural, analysisLock, newestEntryFirst } from './utils';
 
 // Дневник открывается на сегодняшнем дне: что произошло сегодня, ответ дневника и неделя вокруг.
@@ -27,6 +29,8 @@ export default function DiaryTab() {
   const [savedEntryId, setSavedEntryId] = useState(null);
 
   const lock = analysisLock(profile);
+  // Без портрета путь к ответам показывает отдельная карточка, строка-подсказка нужна только про баланс
+  const showPath = !!profile && !profile.portrait;
 
   // Вернулись в приложение — мог смениться день, а записи — добавиться с другого устройства
   useEffect(() => {
@@ -83,7 +87,7 @@ export default function DiaryTab() {
       <div className="flex items-start justify-between gap-3 mb-5">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="screen-title">Сегодня</h1>
+            <h1 className="screen-title"><ClayText text="Сегодня" /></h1>
             {streak >= 2 && (
               <span className="flex items-center gap-1 bg-emerald-800 text-[#F5E6D3] text-xs font-bold px-2 py-1 rounded-lg">
                 <Flame size={14} /> {streak} {plural(streak, ['день', 'дня', 'дней'])} подряд
@@ -102,6 +106,8 @@ export default function DiaryTab() {
       </div>
 
       <WeekStrip today={today} daysWithEntries={daysWithEntries} onSelect={selectDay} />
+
+      {showPath && <div className="mb-4"><PortraitPath onNavigate={closeSheets} /></div>}
 
       {overviewStatus === 'loading' ? (
         <ScreenState loading title="Загружаем записи…" />
@@ -126,7 +132,7 @@ export default function DiaryTab() {
             </div>
           )}
           <EntryList entries={todayEntries} diary={diary} lock={lock} savedEntryId={savedEntryId} />
-          <AnalysisHint lock={lock} />
+          <AnalysisHint lock={showPath ? null : lock} />
         </div>
       )}
 
@@ -156,7 +162,7 @@ export default function DiaryTab() {
             })}
           </div>
         </section>
-      ) : overviewStatus === 'ready' && todayEntries.length === 0 && (
+      ) : overviewStatus === 'ready' && todayEntries.length === 0 && !showPath && (
         <p className="mt-6 px-2 text-sm text-[#F5E6D3]/80 text-center leading-relaxed">
           Записывай, что произошло и как ты отреагировал(а). Дневник знает твои сильные и слабые стороны,
           сверит реакцию с портретом личности и ответит — без искажений.

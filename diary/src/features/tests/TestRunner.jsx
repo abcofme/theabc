@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ArrowLeft, ArrowRight, Undo2, Wand2 } from 'lucide-react';
 import Spinner from '../../components/Spinner';
+import ClayBanner from '../../components/ClayBanner';
 import ScreenState from '../../components/ScreenState';
 import { readTestProgress, saveTestProgress, clearTestProgress, resumeTestProgress } from './testProgress';
 import { useBackHandler } from '../../navigation/backStack';
@@ -24,8 +25,8 @@ function storage(action) {
 }
 
 // Прохождение теста отдельной страницей: старт, карточки-свайпы «да/нет», результат
-export default function TestRunner({ test, onClose }) {
-  const { profile, refreshProfile, generatePortrait, isGeneratingPortrait, isPremium } = useProfile();
+export default function TestRunner({ test, image, onClose }) {
+  const { profile, refreshProfile, generatePortrait, isGeneratingPortrait } = useProfile();
   const { navigate } = useAppNav();
   const handleError = useErrorHandler();
   const [saved] = useState(() => readTestProgress(test.id));
@@ -202,7 +203,7 @@ export default function TestRunner({ test, onClose }) {
             </button>
           </>
         ) : (
-          <h2 className="text-xl font-bold text-[#F5E6D3] truncate">{test.name}</h2>
+          <h2 className="page-title text-[#F5E6D3] truncate">{test.name}</h2>
         )}
       </header>
 
@@ -220,7 +221,7 @@ export default function TestRunner({ test, onClose }) {
                 <>
                   <p className="text-sm text-[#F5E6D3]/80 mt-2">Все тесты пройдены — можно сформировать портрет личности.</p>
                   <button onClick={makePortrait} disabled={isGeneratingPortrait} className="ui-button ui-button--primary mt-4">
-                    <Wand2 size={20} /> {isGeneratingPortrait ? 'Портрет формируется…' : `Сформировать портрет${isPremium ? '' : ` · ${profile.prices.portrait} ₽`}`}
+                    <Wand2 size={20} /> {isGeneratingPortrait ? 'Портрет формируется…' : 'Сформировать портрет'}
                   </button>
                   <button onClick={exit} className="w-full mt-2 py-3 text-[#F5E6D3]/70 font-medium">Позже</button>
                 </>
@@ -243,14 +244,15 @@ export default function TestRunner({ test, onClose }) {
             <button type="button" onClick={() => submitAnswers(answers)} className="ui-button ui-button--primary">Повторить отправку</button>
           </div>
         ) : !isStarted ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto w-full">
-            <div className="ui-card mb-4 w-full">
-              <h3 className="text-xl sm:text-2xl font-bold text-[#F5E6D3] leading-snug mb-4">{details.name}</h3>
-              {details.description && <p className="text-[#F5E6D3]/70 text-sm mb-4">{details.description}</p>}
-              <p className="ui-secondary">
-                Вопросов: {questions.length} · около {minutes} мин
-              </p>
+          <div className="flex-1 flex flex-col max-w-md mx-auto w-full">
+            {/* Обложка категории: тест начинается в том же пластилиновом мире, что и каталог */}
+            {image && <ClayBanner id={`test-start-${test.id}`} kind="test" title={test.name} description={details.description} image={image} />}
+            <div className="mt-6 px-1">
+              {details.description && <p className="text-base leading-[26px] mb-3">{details.description}</p>}
+              <p className="ui-secondary">Вопросов: {questions.length} · около {minutes} мин{index > 0 ? ` · отвечено ${index}` : ''}</p>
+              <p className="ui-muted mt-3">На каждый вопрос — «да» или «нет»: смахни карточку или нажми кнопку под ней.</p>
             </div>
+            <div className="flex-1 min-h-6" />
             <button
               onClick={() => setIsStarted(true)}
               className="ui-button ui-button--primary"
@@ -265,7 +267,7 @@ export default function TestRunner({ test, onClose }) {
                 <ArrowLeft size={16} /> Нет · смахни карточку · Да <ArrowRight size={16} />
               </p>
             )}
-            <div className="relative flex-1 flex flex-col w-full min-h-[400px] mb-8">
+            <div className="relative flex-1 flex flex-col w-full min-h-[340px] mb-4">
               {/* Следующая карточка — под текущей */}
               {index + 1 < questions.length && <div className="absolute inset-x-1 top-0 bottom-4 rounded-3xl bg-rose-800/30" aria-hidden="true" />}
 
@@ -288,29 +290,12 @@ export default function TestRunner({ test, onClose }) {
                   style={{ opacity: Math.min(Math.abs(dragOffset) / 300, 0.08) }}
                 />
 
-                <div className="flex-1 flex flex-col justify-center w-full relative z-10 overflow-y-auto overflow-x-hidden mb-16 pointer-events-auto px-2">
+                <div className="flex-1 flex flex-col justify-center w-full relative z-10 overflow-y-auto overflow-x-hidden pointer-events-auto px-2">
                   <div className="flex items-center min-h-full">
-                    <h4 className="text-lg sm:text-xl md:text-2xl font-bold text-[#F5E6D3] leading-snug mx-auto w-full max-h-full">
+                    <h4 className="text-[22px] leading-[30px] sm:text-[26px] sm:leading-[34px] font-bold text-[#F5E6D3] mx-auto w-full max-h-full text-balance">
                       {questions[index]?.name || 'Вопрос загружается...'}
                     </h4>
                   </div>
-                </div>
-
-                <div className="absolute bottom-6 inset-x-6 flex justify-between items-center z-20">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); triggerSwipe('left'); }}
-                    onTouchEnd={(e) => e.stopPropagation()}
-                    className="ui-button ui-button--outline w-auto! px-5!"
-                  >
-                    <ArrowLeft size={20} /> Нет
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); triggerSwipe('right'); }}
-                    onTouchEnd={(e) => e.stopPropagation()}
-                    className="ui-button ui-button--outline w-auto! px-5!"
-                  >
-                    Да <ArrowRight size={20} />
-                  </button>
                 </div>
 
                 {/* Какой ответ выбирается свайпом — одинаковыми метками, без оценки цветом */}
@@ -321,6 +306,15 @@ export default function TestRunner({ test, onClose }) {
                   Нет
                 </span>
               </div>
+            </div>
+            {/* Кнопки под карточкой, в зоне большого пальца; ответы выглядят одинаково */}
+            <div className="grid grid-cols-2 gap-3">
+              <button type="button" onClick={() => triggerSwipe('left')} className="ui-button ui-button--outline min-h-14!">
+                <ArrowLeft size={20} /> Нет
+              </button>
+              <button type="button" onClick={() => triggerSwipe('right')} className="ui-button ui-button--outline min-h-14!">
+                Да <ArrowRight size={20} />
+              </button>
             </div>
           </div>
         )}

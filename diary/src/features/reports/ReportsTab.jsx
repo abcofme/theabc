@@ -1,34 +1,27 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import ReportGroupSection from './ReportGroupSection';
+import ReportsCatalog from './ReportsCatalog';
 import ReportTypePage from './ReportTypePage';
 import ReportViewPage from './ReportViewPage';
 import CompatibilitySection from './compat/CompatibilitySection';
-import { REPORT_GROUPS, reportTypeOf } from './reportTypes';
+import { reportTypeOf } from './reportTypes';
 import { useErrorHandler } from '../../navigation/appNav';
 import { api } from '../../utils/api';
+import ClayText from '../../components/ClayText';
 import ScreenState from '../../components/ScreenState';
 
 const WebApp = window.Telegram.WebApp;
 
-// Три раздела: два вида отчетов по дневнику и совместимость с друзьями
+// Два раздела: отчеты по дневнику («Поведенческий код» и «Профориентация») и совместимость с друзьями
 const SECTIONS = [
-  ['general', 'Поведенческий код'],
-  ['career', 'Профориентация'],
-  ['compatibility', 'Совместимость'],
+  ['mine', 'Обо мне'],
+  ['compatibility', 'С друзьями'],
 ];
-const SECTION_IDS = SECTIONS.map(([id]) => id);
 
 function SectionSwitch({ value, onChange }) {
   return (
     <div role="tablist" aria-label="Разделы отчетов" className="ui-segmented">
       {SECTIONS.map(([id, label]) => (
-        <button
-          key={id}
-          role="tab"
-          aria-selected={value === id}
-          onClick={() => onChange(id)}
-
-        >
+        <button key={id} type="button" role="tab" aria-selected={value === id} onClick={() => onChange(id)}>
           {label}
         </button>
       ))}
@@ -36,11 +29,11 @@ function SectionSwitch({ value, onChange }) {
   );
 }
 
-// Отчеты: «Поведенческий код», «Профориентация» и «Совместимость с друзьями».
-// Ссылки из бота: ?tab=reports&report=12 — открыть отчет, ?tab=reports&section=compatibility — раздел друзей
+// Ссылки из бота: ?tab=reports&report=12 — открыть отчет, ?tab=reports&section=compatibility — раздел друзей.
+// Прежние разделы general и career ведут в «Обо мне», career — сразу к своей группе
 export default function ReportsTab({ request, active }) {
   const handleError = useErrorHandler();
-  const [section, setSection] = useState('general');
+  const [section, setSection] = useState('mine');
   const [reports, setReports] = useState(null);
   const [loadError, setLoadError] = useState(false);
   const [jobs, setJobs] = useState({});
@@ -62,13 +55,17 @@ export default function ReportsTab({ request, active }) {
 
   if (request && request.id !== handledRequest) {
     setHandledRequest(request.id);
-    setSection(SECTION_IDS.includes(request.section) ? request.section : 'general');
+    setSection(request.section === 'compatibility' ? 'compatibility' : 'mine');
     setPendingReportId(request.report ? Number(request.report) : null);
   }
 
+  useEffect(() => {
+    if (request?.section === 'career') document.getElementById('reports-group-career')?.scrollIntoView({ block: 'start', behavior: 'auto' });
+  }, [request?.id, request?.section, reports]);
+
   const openReport = (report) => {
     setViewReport(report);
-    setSection(reportTypeOf(report)?.group || 'general');
+    setSection('mine');
     if (report.is_read) return;
     setReports(prev => (prev || []).map(r => (r.id === report.id ? { ...r, is_read: true } : r)));
     api(`/api/reports/${report.id}/read`, { method: 'POST' }).catch(console.error);
@@ -86,10 +83,17 @@ export default function ReportsTab({ request, active }) {
       try {
         await api(`/api/reports/${report.id}`, { method: 'DELETE' });
         setReports(prev => prev.filter(r => r.id !== report.id));
+        setViewReport(current => (current?.id === report.id ? null : current));
       } catch (err) {
         handleError(err, 'Не удалось удалить отчет');
       }
     });
+  };
+
+  // «Обновить отчет» ведет к форме нового отчета того же вида
+  const updateReport = (report) => {
+    setViewReport(null);
+    setOpenType(reportTypeOf(report));
   };
 
   const onCreated = (report, typeId) => {
@@ -100,16 +104,18 @@ export default function ReportsTab({ request, active }) {
 
   return (
     <div className="app-screen ui-stack" lang="ru">
-      <h1 className="screen-title">Отчеты</h1>
+      <h1 className="screen-title"><ClayText text="Отчеты" /></h1>
       <SectionSwitch value={section} onChange={setSection} />
 
-      {loadError && section !== 'compatibility' ? <ScreenState error title="Не удалось загрузить отчеты" onRetry={loadReports} /> : section === 'compatibility' ? (
+      {section === 'compatibility' ? (
         <CompatibilitySection />
+      ) : loadError ? (
+        <ScreenState error title="Не удалось загрузить отчеты" onRetry={loadReports} />
       ) : (
-        <ReportGroupSection
-          group={REPORT_GROUPS.find(g => g.id === section)}
+        <ReportsCatalog
           reports={reports}
           jobs={jobs}
+          active={active && section === 'mine'}
           onOpenType={setOpenType}
           onOpenReport={openReport}
         />
@@ -120,14 +126,20 @@ export default function ReportsTab({ request, active }) {
           type={openType}
           reports={(reports || []).filter(r => reportTypeOf(r)?.id === openType.id)}
           onOpenReport={openReport}
-          onDelete={deleteReport}
           isGenerating={!!jobs[openType.id]}
           onGeneratingChange={(generating) => setJobs(prev => ({ ...prev, [openType.id]: generating }))}
           onCreated={(report) => onCreated(report, openType.id)}
           onBack={() => setOpenType(null)}
         />
       )}
-      {viewReport && <ReportViewPage report={viewReport} onBack={() => setViewReport(null)} />}
+      {viewReport && (
+        <ReportViewPage
+          report={viewReport}
+          onBack={() => setViewReport(null)}
+          onUpdate={() => updateReport(viewReport)}
+          onDelete={() => deleteReport(viewReport)}
+        />
+      )}
     </div>
   );
 }

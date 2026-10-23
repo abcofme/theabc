@@ -71,33 +71,34 @@ export default function CompatibilitySection() {
   const hasRequests = data.incoming_requests.length > 0 || data.outgoing_requests.length > 0;
 
   const hasContacts = hasRequests || data.friends.length > 0;
+  const portraitHint = !myPortrait && (
+    <button type="button" onClick={() => navigate({ tab: 'tests' })} className="w-full min-h-11 text-sm text-[#F5E6D3]/75 underline underline-offset-2">
+      Для совместимости нужен твой портрет личности — к тестам
+    </button>
+  );
+  // Обложка и приглашение — одна карточка, пока друзей и заявок нет
   const introduction = (
-      <div className="flex flex-col gap-3">
-        <ClayBanner
-          id="compatibility"
-          kind="report"
-          title="Друзья"
-          description="Совместимость с друзьями"
-          image={friendsImage}
-        />
-        <section className="ui-card">
+    <section className="clay-group">
+      <ClayBanner
+        id="compatibility"
+        kind="report"
+        title="Друзья"
+        description="Совместимость с друзьями"
+        image={friendsImage}
+      />
+      <div className="p-5 flex flex-col gap-4">
+        <div>
           <h2 className="font-bold text-[#F5E6D3] text-lg">Совместимость с друзьями</h2>
-          <p className="text-sm text-[#F5E6D3]/75 leading-relaxed mt-1 mb-4">
+          <p className="ui-secondary mt-1">
             Сравним ваши портреты личности: в чем вы дополняете друг друга, где нужно терпение и что помогает мириться.
           </p>
-          <button
-            onClick={() => setIsInviteOpen(true)}
-            className="ui-button ui-button--primary"
-          >
-            <UserPlus size={20} /> Пригласить друга
-          </button>
-          {!myPortrait && (
-            <button onClick={() => navigate({ tab: 'tests' })} className="w-full mt-3 text-sm text-[#F5E6D3]/75 underline underline-offset-2">
-              Для совместимости нужен твой портрет личности — к тестам
-            </button>
-          )}
-        </section>
+        </div>
+        <button type="button" onClick={() => setIsInviteOpen(true)} className="ui-button ui-button--primary">
+          <UserPlus size={20} /> Пригласить друга
+        </button>
+        {portraitHint}
       </div>
+    </section>
   );
 
   return (
@@ -129,8 +130,13 @@ export default function CompatibilitySection() {
         </section>
       )}
 
-      <section className="flex flex-col gap-2">
-        <SectionLabel>Мои друзья</SectionLabel>
+      {hasContacts && <section className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-3">
+          <SectionLabel>Мои друзья</SectionLabel>
+          <button type="button" onClick={() => setIsInviteOpen(true)} className="ui-button ui-button--outline w-auto! min-h-11! py-1.5! px-3! text-sm!">
+            <UserPlus size={16} /> Пригласить
+          </button>
+        </div>
         {data.friends.length === 0 ? (
           <p className="text-sm text-[#F5E6D3]/70 text-center py-6 px-4 leading-relaxed bg-rose-900/40 rounded-3xl">
             Пока никого. Отправь другу личную ссылку — он появится здесь, как только ее откроет.
@@ -152,9 +158,8 @@ export default function CompatibilitySection() {
             })}
           </div>
         )}
-      </section>
-
-      {hasContacts && introduction}
+        {portraitHint}
+      </section>}
 
       {isInviteOpen && <InviteModal link={data.invite_link} onClose={() => setIsInviteOpen(false)} />}
       {openFriend && (

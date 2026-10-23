@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { User, Sparkles, Wallet, Bell, FileText, Shield, ChevronRight, Users } from 'lucide-react';
 import Avatar from '../../components/Avatar';
 import ClayBanner from '../../components/ClayBanner';
+import ClayText from '../../components/ClayText';
 import Page from '../../components/Page';
 import AdminPanel from '../admin/AdminPanel';
 import OfferPage from '../legal/OfferPage';
@@ -81,10 +82,12 @@ export default function ProfileTab({ request }) {
 
   return (
     <div className="app-screen ui-stack">
+      <h1 className="screen-title"><ClayText text="Профиль" /></h1>
+
       {/* ШАПКА: АВАТАР, ИМЯ И СТАТУС */}
-      <div className="profile-header ui-card min-w-0">
-        <img className="profile-header__vine profile-header__vine--top" src={headerVine} alt="" aria-hidden="true" width="512" height="512" draggable="false" />
-        <div className="profile-header__content flex items-start gap-4 w-full min-w-0">
+      <div className="vine-card ui-card min-w-0">
+        <img className="vine-card__vine" src={headerVine} alt="" aria-hidden="true" width="512" height="512" draggable="false" />
+        <div className="vine-card__content flex items-start gap-4 w-full min-w-0">
           <Avatar
             src={tgUser.photo_url && tgUser.id ? `${API_URL}/api/avatar/${tgUser.id}` : null}
             className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg shrink-0"
@@ -95,7 +98,7 @@ export default function ProfileTab({ request }) {
             }
           />
           <div className="flex-1 min-w-0">
-            <div className="min-w-0">
+            <div className="min-w-0 pr-14">
               <h2 className="text-lg sm:text-2xl font-bold text-[#F5E6D3] truncate">{tgUser.first_name}</h2>
               {tgUser.username && <p className="text-xs sm:text-base text-[#F5E6D3] font-medium truncate">@{tgUser.username}</p>}
             </div>

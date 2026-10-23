@@ -22,7 +22,7 @@ export default class ErrorBoundary extends Component {
           <h1 className="text-xl font-bold mb-3">Не удалось открыть приложение</h1>
           <p className="ui-secondary mb-6">Попробуй перезагрузить страницу. Сохраненные записи и результаты останутся на месте.</p>
           <button type="button" onClick={() => window.location.reload()} className="ui-button ui-button--primary"><RotateCcw size={20} /> Перезагрузить</button>
-          <details className="ui-muted mt-6">
+          <details className="ui-disclosure ui-muted mt-6">
             <summary className="py-3">Технические подробности</summary>
             <pre className="whitespace-pre-wrap break-words mt-3">{this.state.error?.toString()}{'\n'}{this.state.errorInfo?.componentStack}</pre>
           </details>

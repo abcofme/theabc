@@ -47,15 +47,15 @@ export default function BillingPage({ onBack }) {
     finally { requestLock.current = false; setBusy(null); }
   });
   const consent = <label className="flex items-start gap-3 ui-secondary my-5 py-1">
-    <input type="checkbox" checked={offerAccepted} onChange={event => setOfferAccepted(event.target.checked)} disabled={!!busy} className="w-5 h-5 mt-0.5 accent-emerald-800 shrink-0" />
+    <input type="checkbox" checked={offerAccepted} onChange={event => setOfferAccepted(event.target.checked)} disabled={!!busy} className="ui-checkbox mt-px" />
     <span>Я согласен с <button type="button" onClick={event => { event.preventDefault(); setIsOfferOpen(true); }} className="underline underline-offset-4 text-[#F5E6D3]">публичной офертой</button> и правилами предоставления услуг</span>
   </label>;
   return (
     <Page title="Подписка и баланс" onBack={onBack}>
       <div className="ui-stack">
-        <section className="ui-card">
+        <section className={`ui-card ${isPremium ? 'billing-premium' : ''}`}>
           {isPremium ? <>
-            <h3 className="text-lg font-semibold flex items-center gap-2 mb-3"><Sparkles size={20} /> Premium активен</h3>
+            <h3 className="text-lg font-semibold flex items-center gap-2 mb-3"><Sparkles size={20} className="text-[#E5C398]" /> Premium активен</h3>
             <Row label="Действует до" value={formatDate(profile.access_expires_at)} />
             <Row label="Автопродление" value={profile.has_active_subscription ? 'включено' : 'выключено'} />
             <Row label="Баланс" value={`${balance} ₽`} />
@@ -66,9 +66,9 @@ export default function BillingPage({ onBack }) {
           </>}
         </section>
         <div className="ui-segmented" role="tablist" aria-label="Способ оплаты">
-          {['balance', 'premium'].map(value => <button key={value} id={`${id}-${value}`} type="button" role="tab" aria-controls={`${id}-panel-${value}`} aria-selected={mode === value} onClick={() => setMode(value)} disabled={!!busy}>{value === 'balance' ? 'С баланса' : 'Premium'}</button>)}
+          {['balance', 'premium'].map(value => <button key={value} id={`${id}-${value}`} type="button" role="tab" aria-controls={`${id}-panel-${value}`} aria-selected={mode === value} onClick={() => setMode(value)} disabled={!!busy}>{value === 'balance' ? <><Wallet size={16} aria-hidden="true" /> С баланса</> : <><Sparkles size={16} aria-hidden="true" /> Premium</>}</button>)}
         </div>
-        <section id={`${id}-panel-${mode}`} role="tabpanel" aria-labelledby={`${id}-${mode}`} className="ui-card">
+        <section id={`${id}-panel-${mode}`} role="tabpanel" aria-labelledby={`${id}-${mode}`} className={`ui-card ${mode === 'premium' ? 'billing-premium' : ''}`}>
           {mode === 'balance' ? <>
             <h3 className="text-lg font-semibold mb-3">Оплата с баланса</h3>
             <div className="mb-6">{FEATURE_PRICES.map(([key, label]) => <Row key={key} label={label} value={`${prices[key]} ₽`} />)}</div>
@@ -79,9 +79,15 @@ export default function BillingPage({ onBack }) {
             {consent}
             <button type="button" onClick={() => pay('topup', '/api/balance/topup', { amount: sum })} disabled={!isAmountValid || !offerAccepted || !!busy} className="ui-button ui-button--primary">{busy === 'topup' ? 'Создаю платеж…' : isAmountValid ? `Пополнить на ${sum} ₽` : `Сумма от ${prices.min_topup} до ${prices.max_topup} ₽`}</button>
           </> : <>
-            <h3 className="text-xl font-semibold mb-2">Premium · {prices.premium} ₽ в месяц</h3>
-            <p className="ui-secondary mb-5">Все функции с ИИ без ограничений:</p>
-            <ul className="flex flex-col gap-3">{PREMIUM_BENEFITS.map(item => <li key={item} className="flex gap-3 text-base leading-6"><Check size={20} className="text-[#7BA887] shrink-0 mt-0.5" /><span>{item}</span></li>)}</ul>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="billing-premium__icon" aria-hidden="true"><Sparkles size={22} /></span>
+              <div>
+                <h3 className="text-xl font-semibold leading-7">Premium</h3>
+                <p className="text-[#E5C398] font-semibold">{prices.premium} ₽ в месяц</p>
+              </div>
+            </div>
+            <p className="ui-secondary mb-4">Все функции с ИИ без ограничений:</p>
+            <ul className="flex flex-col gap-3">{PREMIUM_BENEFITS.map(item => <li key={item} className="flex gap-3 text-base leading-6"><Check size={20} className="text-[#E5C398] shrink-0 mt-0.5" /><span>{item}</span></li>)}</ul>
             {!isPremium ? <>{consent}<button type="button" onClick={() => pay('premium', '/api/subscription/buy')} disabled={!offerAccepted || !!busy} className="ui-button ui-button--primary">{busy === 'premium' ? 'Создаю платеж…' : `Оформить · ${prices.premium} ₽ в месяц`}</button></> : <p className="ui-secondary mt-5">Все возможности Premium уже доступны.</p>}
           </>}
         </section>

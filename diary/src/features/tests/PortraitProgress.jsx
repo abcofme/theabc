@@ -3,7 +3,7 @@ import { useProfile, portraitState } from '../../context/profile';
 import { useAppNav, useErrorHandler } from '../../navigation/appNav';
 
 export default function PortraitProgress({ nextTest, onContinue }) {
-  const { profile, generatePortrait, isGeneratingPortrait, isPremium } = useProfile();
+  const { profile, generatePortrait, isGeneratingPortrait } = useProfile();
   const { navigate } = useAppNav();
   const handleError = useErrorHandler();
   const state = portraitState(profile);
@@ -25,7 +25,7 @@ export default function PortraitProgress({ nextTest, onContinue }) {
         <button type="button" onClick={onContinue} className="ui-button ui-button--primary mt-4">Продолжить тест</button>
         <p className="ui-muted mt-3">{nextTest.name}</p>
       </>}
-      {!isGeneratingPortrait && (state === 'ready' || state === 'outdated') && <button type="button" onClick={generate} className="ui-button ui-button--primary mt-4"><Wand2 size={20} />{state === 'ready' ? 'Сформировать' : 'Обновить'} портрет{isPremium ? '' : ` · ${profile.prices.portrait} ₽`}</button>}
+      {!isGeneratingPortrait && (state === 'ready' || state === 'outdated') && <button type="button" onClick={generate} className="ui-button ui-button--primary mt-4"><Wand2 size={20} />{state === 'ready' ? 'Сформировать' : 'Обновить'} портрет</button>}
       {(state === 'done' || isGeneratingPortrait) && <button type="button" onClick={openPortrait} className="ui-button ui-button--outline mt-4">Открыть портрет</button>}
     </section>
   );

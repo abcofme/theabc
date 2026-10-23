@@ -59,8 +59,19 @@ button.clay-banner:disabled .clay-banner__badge {
   display: block;
   width: 100%;
   height: auto;
+  opacity: 0;
   pointer-events: none;
   user-select: none;
+  transition: opacity 260ms ease;
+}
+
+/* Арт проявляется, когда загрузился, а не выскакивает в пустой карточке */
+.clay-banner__art.is-loaded {
+  opacity: 1;
+}
+
+.clay-banner[data-locked] .clay-banner__art.is-loaded {
+  opacity: 0.5;
 }
 
 .clay-banner__meta {
@@ -80,8 +91,60 @@ button.clay-banner:disabled .clay-banner__badge {
   min-width: 0;
 }
 
+.clay-banner__left {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.clay-banner__chip {
+  flex-shrink: 0;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #2b0a0a;
+  color: #e5c398;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+/* Обложка и ее содержимое — одна карточка: обложка сверху, список или текст под ней */
+.clay-group {
+  overflow: hidden;
+  border: 1px solid #f5e6d314;
+  border-radius: 24px;
+  background: var(--color-rose-900);
+  box-shadow: 0 5px 16px #16030524;
+  transition: border-color 180ms ease;
+}
+
+.clay-group > .clay-banner {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.clay-group > button.clay-banner:focus-visible {
+  outline-offset: -3px;
+}
+
+.clay-group:has(> button.clay-banner:hover:not(:disabled)),
+.clay-group:has(> button.clay-banner[aria-expanded='true']) {
+  border-color: #d8b38c66;
+}
+
+.clay-group__body {
+  padding: 4px 20px 16px;
+  border-top: 1px solid #f5e6d314;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  button.clay-banner {
+  button.clay-banner,
+  .clay-banner__art,
+  .clay-group {
     transition: none;
   }
 }

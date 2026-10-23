@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Check, ChevronRight } from 'lucide-react';
 import ClayBanner from '../../components/ClayBanner';
+import ClayText from '../../components/ClayText';
 import Modal from '../../components/Modal';
 import Spinner from '../../components/Spinner';
 import PortraitProgress from './PortraitProgress';
@@ -35,6 +36,7 @@ export default function TestsTab({ request }) {
   useEffect(() => {
     if (request?.category && requestedCategoryId) document.getElementById(`test-category-panel-${requestedCategoryId}`)?.parentElement?.scrollIntoView({ block: 'start', behavior: 'auto' });
   }, [request?.id, request?.category, requestedCategoryId]);
+  const categoryOf = id => categories.find(c => c.tests.some(t => t.id === id));
   const remaining = categories.filter(c => c.name !== 'Профориентация').flatMap(c => c.tests).filter(test => !test.passed);
   const nextTest = remaining.find(test => readTestProgress(test.id).index > 0) || remaining[0];
   const openTest = test => {
@@ -57,7 +59,7 @@ export default function TestsTab({ request }) {
   };
   return (
     <div className="app-screen ui-stack" lang="ru">
-      <h1 className="screen-title">Тесты</h1>
+      <h1 className="screen-title"><ClayText text="Тесты" /></h1>
       {!profile ? <Spinner /> : categories.length === 0 ? <p className="ui-secondary py-8">Нет доступных тестов.</p> : <>
         <PortraitProgress nextTest={nextTest} onContinue={() => openTest(nextTest)} />
         <div className="flex flex-col gap-4">
@@ -66,10 +68,10 @@ export default function TestsTab({ request }) {
             const isOpen = openCategory === cat.id;
             const passed = cat.tests.filter(test => test.passed).length;
             const toggle = () => setOpenCategory(isOpen ? null : cat.id);
-            return <section key={cat.id}>
+            return <section key={cat.id} className={banner ? 'clay-group' : undefined}>
               {banner ? <ClayBanner id={`test-category-${cat.id}`} kind="test" title={cat.name} image={banner.image} expanded={isOpen} onClick={toggle} controlsId={`test-category-panel-${cat.id}`} badge={cat.tests.length ? `Пройдено ${passed} из ${cat.tests.length}` : undefined} badgeAccent={cat.tests.length > 0 && passed === cat.tests.length} chevron /> : <button type="button" onClick={toggle} aria-expanded={isOpen} aria-controls={`test-category-panel-${cat.id}`} id={`clay-banner-title-test-category-${cat.id}`} className="ui-card w-full flex items-center justify-between gap-3 text-left"><span className="text-lg font-semibold">{cat.name}</span><span className="ui-muted">{passed}/{cat.tests.length}</span></button>}
               <div id={`test-category-panel-${cat.id}`} role="region" aria-labelledby={`clay-banner-title-test-category-${cat.id}`} hidden={!isOpen}>
-                {isOpen && <div className="px-1 pt-2">
+                {isOpen && <div className={banner ? 'clay-group__body' : 'px-1 pt-2'}>
                   {cat.tests.length === 0 ? <p className="ui-secondary py-4">В этой категории пока нет тестов.</p> : cat.tests.map(test => {
                     const saved = readTestProgress(test.id);
                     return <button type="button" key={test.id} onClick={() => openTest(test)} className="ui-row">
@@ -88,7 +90,7 @@ export default function TestsTab({ request }) {
         <button type="button" onClick={retake} className="ui-button ui-button--outline">Пройти тест заново</button>
         <button type="button" onClick={() => setSelectedResult(null)} className="ui-button ui-button--quiet">Закрыть</button>
       </>}><p className="text-base leading-[26px] whitespace-pre-wrap">{selectedResult.result_text || 'Нет детального описания результата.'}</p></Modal>}
-      {runningTest && <TestRunner key={runningTest.id} test={runningTest} onClose={closeTest} />}
+      {runningTest && <TestRunner key={runningTest.id} test={runningTest} image={categoryBanners[categoryOf(runningTest.id)?.name.trim()]?.image} onClose={closeTest} />}
     </div>
   );
 }

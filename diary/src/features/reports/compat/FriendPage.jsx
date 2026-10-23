@@ -36,7 +36,7 @@ function Choice({ options, value, onChange }) {
 // Пол спрашиваем, только если он нужен (партнерская совместимость) и еще не известен
 export default function FriendPage({ friend, myGender: knownMyGender, myPortrait, onBack, onChanged }) {
   const handleError = useErrorHandler();
-  const { profile, isPremium, refreshProfile } = useProfile();
+  const { refreshProfile } = useProfile();
   const generating = useRef(false);
   const [retry, setRetry] = useState(0);
   const name = friendName(friend);
@@ -143,7 +143,7 @@ export default function FriendPage({ friend, myGender: knownMyGender, myPortrait
               disabled={!canSubmit}
               className="ui-button ui-button--primary"
             >
-              Узнать совместимость{isPremium ? '' : ` · ${profile.prices.compatibility} ₽`}
+              Узнать совместимость
             </button>
           </section>
         )}

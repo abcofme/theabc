@@ -1,4 +1,1 @@
-.profile-header { position: relative; isolation: isolate; overflow: hidden; }
-.profile-header__content { position: relative; z-index: 1; }
-.profile-header__vine { position: absolute; z-index: 0; pointer-events: none; user-select: none; width: 140px; height: auto; right: -54px; top: -64px; opacity: .65; }
 .profile-header__premium { background: linear-gradient(145deg,#f1dfc1,#d9bd92); color: #491815; }

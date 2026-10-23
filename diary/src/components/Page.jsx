@@ -12,7 +12,7 @@ export default function Page({ title, onBack, children }) {
         <button type="button" onClick={onBack} aria-label="Назад" className="ui-icon-button shrink-0">
           <ChevronLeft size={24} />
         </button>
-        <h2 className="text-xl leading-7 font-bold text-[#F5E6D3] min-w-0 break-words">{title}</h2>
+        <h2 className="page-title text-[#F5E6D3] min-w-0 break-words">{title}</h2>
       </header>
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="w-full max-w-2xl mx-auto px-4 pb-10 pt-2">{children}</div>

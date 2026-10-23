@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Trash2, Activity, PenLine } from 'lucide-react';
+import { Trash2, Activity, PenLine, Leaf } from 'lucide-react';
 import { scoreColor } from './utils';
 import ResultContent from '../../components/ResultContent';
 
 const Label = ({ children }) => (
-  <span className="ui-section-label block mb-2">{children}</span>
+  <span className="entry-label">{children}</span>
 );
 
 // Шкала соответствия портрету: заполняется один раз при появлении
@@ -37,11 +37,11 @@ function MatchScale({ score }) {
   );
 }
 
-function Reply({ text, accentClass }) {
+// Ответ дневника — отдельный голос: своя подложка и подпись, а не еще одно поле анкеты
+function Reply({ text }) {
   return (
-    <div className="mt-5 pl-4 relative">
-      <div className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-full ${accentClass}`} />
-      <p className="ui-section-label mb-2">Ответ дневника</p>
+    <div className="diary-reply">
+      <p className="diary-reply__head"><Leaf size={16} className="text-[#7BA887]" aria-hidden="true" /> Ответ дневника</p>
       <ResultContent content={text} contents={false} compact />
     </div>
   );
@@ -60,13 +60,13 @@ export default function EntryCard({ entry, analysis, onDelete, onRetry, onEdit }
       >
         <Trash2 size={16} />
       </button>
-      <div className="mb-5 pr-8">
+      <div className="mb-4 pr-8">
         <Label>Событие</Label>
-        <p className="text-base text-[#F5E6D3] font-medium whitespace-pre-wrap">{entry.event}</p>
+        <p className="entry-event">{entry.event}</p>
       </div>
       <div>
         <Label>Реакция</Label>
-        <p className="text-base text-[#F5E6D3] whitespace-pre-wrap">{entry.reaction}</p>
+        <p className="text-base leading-6 text-[#F5E6D3] whitespace-pre-wrap">{entry.reaction}</p>
       </div>
 
       {analysis === 'pending' && (
@@ -77,22 +77,20 @@ export default function EntryCard({ entry, analysis, onDelete, onRetry, onEdit }
       )}
 
       {analysis === 'done' && (
-        <div className="mt-4">
-          <Label>Соответствие портрету личности</Label>
+        <div className="mt-5">
+          <Label>Насколько это похоже на тебя</Label>
           <MatchScale score={score} />
-          {entry.portrait_match_explanation && (
-            <Reply text={entry.portrait_match_explanation} accentClass={scoreColor(score)} />
-          )}
+          {entry.portrait_match_explanation && <Reply text={entry.portrait_match_explanation} />}
         </div>
       )}
 
       {/* Дневник не стал делать разбор: попросил дописать запись или дал кризисный ответ — шкалу не показываем */}
       {analysis === 'ask' && (
         <>
-          <Reply text={entry.portrait_match_explanation} accentClass="bg-[#F5E6D3]/40" />
+          <Reply text={entry.portrait_match_explanation} />
           <button
             onClick={onEdit}
-          className="ui-button ui-button--secondary mt-4"
+            className="ui-button ui-button--secondary mt-4"
           >
             <PenLine size={16} /> Дописать
           </button>

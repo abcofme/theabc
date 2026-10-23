@@ -27,7 +27,7 @@ export default function ResultContent({ content = '', components = {}, contents 
   return (
     <div className="result-reader">
       {contents && headings.length > 2 && (
-        <details className="result-toc">
+        <details className="result-toc ui-disclosure">
           <summary>Содержание</summary>
           <nav aria-label="Содержание">
             {headings.map(item => (
