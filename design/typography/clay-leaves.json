@@ -1,0 +1,14 @@
+{
+  "mode": "built-in image_gen",
+  "use_case": "background-extraction",
+  "reference": "IMG_1793.jpeg, supplied by user",
+  "source": "design/typography/clay-leaves-source.png",
+  "assets": [
+    "diary/src/assets/leaves/oak.webp",
+    "diary/src/assets/leaves/maple.webp",
+    "diary/src/assets/leaves/grape.webp",
+    "diary/src/assets/leaves/olive.webp",
+    "diary/src/assets/leaves/fig.webp"
+  ],
+  "prompt": "Use case: background-extraction. Asset type: one transparent sprite sheet for existing mini-app typography ornaments. Input image 1 is the exact edit target. Extract ONLY the five small leaf symbols in its top row: from left to right an upright green oak leaf, an orange-red maple leaf, a bright green grape leaf, a narrow muted sage olive leaf, and a dark teal-green fig leaf. Preserve the original five leaf silhouettes, colors, simple molded plasticine/clay material and visible raised veins. The first green oak leaf is the SECOND symbol from the left in the reference, after the yellow notebook logo. Do NOT extract the notebook or any letters or punctuation. Remove the dark background completely, including black between leaf lobes; genuine transparent alpha. Arrange the five leaves separately, upright in the same original order, evenly spaced in a single horizontal row on a 1536 by 1024 transparent canvas with ample blank transparent margins and at least 100 pixels empty gap between each symbol. Each leaf about 210 pixels tall including stem. Preserve the simple original handmade clay appearance. No fruits, nuts, extra twigs, decorations, acorns, grapes, fig fruit, text, lettering, glow, frames, square backgrounds or photorealistic botanical detail."
+}

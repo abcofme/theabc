@@ -215,7 +215,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
           <ScreenState title="В этом тесте пока нет вопросов" />
         ) : result ? (
           <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
-            <ResultContent content={result} titles={[test.name, 'Результат']} contents={false} variant="document" clayHeadings />
+            <ResultContent content={result} titles={[test.name, 'Результат']} contents={false} variant="document" clayHeadings testResult />
               {portraitState(profile) === 'ready' ? (
                 <div className="mt-6 border-t border-[#F5E6D3]/10 pt-6">
                   <p className="text-sm text-[#F5E6D3]/80 mt-2">Все тесты пройдены — можно сформировать портрет личности.</p>

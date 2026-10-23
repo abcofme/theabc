@@ -7,10 +7,21 @@ const legacyHeadings = new Set([
   'Зоны эффективности', 'Что наполняет', 'Что истощает', 'Ваша настоящая сила',
 ]);
 const legacyLabels = new Set(['Тип личности', 'Реакция на стресс', 'Принятие решений', 'Стиль продуктивности', 'Адаптация к изменениям', 'Поведение в конфликте']);
+const testHeadings = new Set([
+  'Уровень процессов возбуждения', 'Уровень процессов торможения',
+  'Уровень подвижности нервных процессов', 'Уравновешенность по силе',
+]);
+const testTypes = new Set([
+  'Холерик', 'Сангвиник', 'Флегматик', 'Меланхолик',
+  'Природа', 'Техника', 'Человек', 'Знаковые системы', 'Художественные образы',
+  'Демонстративный тип', 'Застревающий тип', 'Педантичный тип', 'Возбудимый тип',
+  'Гипертимный тип', 'Дистимический тип', 'Тревожный тип', 'Экзальтированный тип',
+  'Эмотивный тип', 'Циклотимный тип',
+]);
 
 // Сохраненные ответы могут содержать обычные строки вместо Markdown-заголовков.
 // Меняем только известные названия разделов и явные отдельные жирные заголовки.
-export function formatResultText(content, titles = []) {
+export function formatResultText(content, titles = [], { testResult = false } = {}) {
   let text = String(content ?? '').replace(/\r\n?/g, '\n').trim();
   const wrapped = /^```(?:markdown|md)\s*\n([\s\S]*?)\n```$/.exec(text);
   if (wrapped) text = wrapped[1];
@@ -23,6 +34,13 @@ export function formatResultText(content, titles = []) {
       return line;
     }
     if (fence || /^\s{4}/.test(line) || /^\s*#/.test(line)) return line;
+    if (testResult) {
+      // Старые тесты хранят заголовки шкал с «•», а тип — первым предложением.
+      const plain = line.trim().replace(/^[•●-]\s+/, '');
+      if (testHeadings.has(plain.replace(/:$/, ''))) return `\n## ${plain.replace(/:$/, '')}\n`;
+      const typed = /^([^.!?]+)\.\s+(.+)$/.exec(plain);
+      if (typed && testTypes.has(typed[1])) return `\n## ${typed[1]}\n\n${typed[2]}\n`;
+    }
     const labeled = /^(?:\d+[.)]\s+)?(?:\*\*(.+?)\*\*\s*[:—–-]?\s+|([^:*]+?)\s*[:—–-]\s+)(.+)$/.exec(line.trim());
     if (labeled) {
       const name = (labeled[1] || labeled[2]).replace(/:$/, '');
@@ -81,7 +99,7 @@ function addClass(node, className, properties = {}) {
 
 // Группируем готовый Markdown в разделы, не меняя порядок и содержание анализа.
 // Используем стандартные узлы MDAST с hName, чтобы сохранялись списки, ссылки и JSON шкал.
-export function remarkResultLayout({ sections = false } = {}) {
+export function remarkResultLayout({ sections = false, wrapIntro = false } = {}) {
   return tree => {
     const visit = node => {
       if (node.type === 'list') {
@@ -104,10 +122,16 @@ export function remarkResultLayout({ sections = false } = {}) {
         section = { type: 'blockquote', data: { hName: 'section', hProperties: { className: ['result-section'] } }, children: [node] };
         result.push(section);
       } else if (section) section.children.push(node);
-      else result.push(node);
+      else if (wrapIntro) {
+        section = { type: 'blockquote', data: { hName: 'section', hProperties: { className: ['result-section', 'result-section--intro'] } }, children: [node] };
+        result.push(section);
+      } else result.push(node);
     }
     for (const item of result) {
-      if (item.data?.hName === 'section' && item.children[1]?.type === 'paragraph') addClass(item.children[1], 'result-lead');
+      if (item.data?.hName === 'section') {
+        const lead = item.children[item.children[0]?.type === 'heading' ? 1 : 0];
+        if (lead?.type === 'paragraph') addClass(lead, 'result-lead');
+      }
     }
     tree.children = result;
   };

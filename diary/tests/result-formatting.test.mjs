@@ -51,3 +51,46 @@ test('Старые пронумерованные разделы отчета и
   assert.match(formatted, /\*\*Реакция на стресс:\*\* Ты обдумываешь решение\./);
   assert.match(formatted, /1\. Сделать паузу\n2\. Ответить/);
 });
+
+const renderTest = content => renderToStaticMarkup(createElement(ReactMarkdown, {
+  remarkPlugins: [remarkGfm, [remarkResultLabels, { blocks: true }], [remarkResultLayout, { sections: true, wrapIntro: true }]],
+}, formatResultText(content, [], { testResult: true })));
+
+test('Шкалы Стреляу и типы Белова получают такие же разделы, как отчеты', () => {
+  const html = renderTest('Ваша Формула темперамента = 40% Холерик + 60% Сангвиник\n\n• Холерик. Отличается повышенной возбудимостью.\n• Сангвиник. Быстро приспосабливается к новым условиям.\n\n• Уровень процессов возбуждения\nСильная ответная реакция на возбуждение.');
+  assert.equal((html.match(/<section /g) || []).length, 4);
+  assert.match(html, /class="result-section result-section--intro"/);
+  assert.match(html, /Ваша Формула темперамента = 40% Холерик \+ 60% Сангвиник/);
+  assert.match(html, /<h2[^>]*>Холерик<\/h2>/);
+  assert.match(html, /<h2[^>]*>Сангвиник<\/h2>/);
+  assert.match(html, /<h2[^>]*>Уровень процессов возбуждения<\/h2>/);
+  assert.match(html, /class="result-lead">Сильная ответная реакция на возбуждение\./);
+  assert.doesNotMatch(html, /<ul/);
+});
+
+test('Профориентация и акцентуации выделяют известный тип, сохраняя описание', () => {
+  const html = renderTest('• Знаковые системы. Работа с текстами, документами и базами данных.\n\nЭмотивный тип. Характерны эмоциональность и чувствительность.');
+  assert.equal((html.match(/<section /g) || []).length, 2);
+  assert.match(html, />Знаковые системы<\/h2>/);
+  assert.match(html, /Работа с текстами, документами и базами данных\./);
+  assert.match(html, />Эмотивный тип<\/h2>/);
+  assert.match(html, /Характерны эмоциональность и чувствительность\./);
+});
+
+test('Обычный результат без заголовков получает оформление документа без придуманного текста', () => {
+  const text = 'Ты предпочитаешь спокойно обдумывать решения.\n\nТебе помогает время на отдых.';
+  const html = renderTest(text);
+  assert.equal((html.match(/<section /g) || []).length, 1);
+  assert.match(html, /class="result-lead">Ты предпочитаешь спокойно обдумывать решения\./);
+  assert.match(html, /<p>Тебе помогает время на отдых\.<\/p>/);
+  assert.doesNotMatch(html, /<h[1-6]/);
+  assert.equal(formatResultText(text, [], { testResult: true }), text);
+  assert.equal((render(text).match(/<section /g) || []).length, 0);
+});
+
+test('Распознавание тестов не затрагивает обычные списки и блоки кода', () => {
+  const text = '- Пример. Это обычный пункт.\n\n```text\n• Холерик. Исходный пример.\n```';
+  const formatted = formatResultText(text, [], { testResult: true });
+  assert.equal(formatted, text);
+  assert.doesNotMatch(formatResultText('• Холерик. Описание.'), /##/);
+});

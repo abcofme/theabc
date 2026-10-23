@@ -176,6 +176,9 @@ input[type='date']::-webkit-calendar-picker-indicator { background: url('./asset
 .result-reader--document .result-heading { font-size: 25px; line-height: 1.4; }
 .result-section > .result-heading { margin: 0 0 20px; padding: 0 0 18px; border-bottom: 1px solid #71352D; }
 .result-heading > .clay-text, .result-heading__text { flex: 1; min-width: 0; }
+.clay-leaf { display: block; flex-shrink: 0; width: 32px; height: 36px; object-fit: contain; pointer-events: none; user-select: none; }
+.result-heading__leaf { margin-top: 1px; }
+.result-intro-leaf { margin-bottom: 16px; }
 .result-heading .clay-text { line-height: 1.4; }
 .result-heading .clay-text__word { display: inline-block; max-width: 100%; white-space: normal; }
 .result-section-number { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 30px; height: 30px; margin-top: 3px; border: 1px solid #71352D; border-radius: 10px; background: var(--color-rose-950); color: var(--ui-gold); font-size: 12px; line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -187,6 +190,7 @@ input[type='date']::-webkit-calendar-picker-indicator { background: url('./asset
 .result-content .result-points, .result-content .result-steps { display: grid; gap: 10px; margin: 20px 0; padding: 0; list-style: none; }
 .result-content .result-points > li, .result-content .result-steps > li { position: relative; margin: 0; padding: 14px 14px 14px 42px; border: 1px solid #71352D; border-radius: 14px; background: #3D1010; }
 .result-points > li::before { content: ''; position: absolute; left: 17px; top: 24px; width: 7px; height: 7px; border-radius: 50%; background: var(--ui-sage); }
+.result-reader--document .result-points > li::before { left: 13px; top: 16px; width: 19px; height: 23px; border-radius: 0; background: url('./assets/leaves/olive.webp') center / contain no-repeat; }
 .result-content .result-steps > li { padding-left: 52px; }
 .result-step__number { position: absolute; left: 12px; top: 14px; display: flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding-inline: 4px; border-radius: 9px; background: var(--ui-gold); color: var(--color-rose-950); font-size: 13px; font-weight: 700; }
 .result-content .result-points .result-points, .result-content .result-points .result-steps, .result-content .result-steps .result-points, .result-content .result-steps .result-steps { margin: 12px 0 0; }

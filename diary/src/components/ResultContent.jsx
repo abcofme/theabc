@@ -2,6 +2,7 @@ import { useId } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import ClayText from './ClayText';
+import ClayLeaf from './ClayLeaf';
 import { formatResultText, remarkResultLabels, remarkResultLayout } from './resultFormatting';
 
 function headingsOf(content) {
@@ -23,17 +24,18 @@ function nodeText(node) {
   return node.type === 'text' ? node.value : node.children?.map(nodeText).join('') || '';
 }
 
-export default function ResultContent({ content = '', components = {}, contents = true, compact = false, titles = [], variant = 'plain', clayHeadings = false }) {
+export default function ResultContent({ content = '', components = {}, contents = true, compact = false, titles = [], variant = 'plain', clayHeadings = false, testResult = false }) {
   const prefix = useId();
-  const formatted = variant === 'entry' ? String(content ?? '') : formatResultText(content, titles);
+  const formatted = variant === 'entry' ? String(content ?? '') : formatResultText(content, titles, { testResult });
   const rich = variant === 'document' || variant === 'reply';
+  const botanical = variant === 'document';
   const allHeadings = headingsOf(formatted);
   const mainHeadings = allHeadings.filter(item => item.depth <= 2);
   const headings = rich && mainHeadings.length > 1 ? mainHeadings : allHeadings;
   const heading = (Tag) => function Heading({ node, children, className }) {
     const number = node.properties?.['data-section-number'] ?? node.properties?.dataSectionNumber;
     return <Tag id={`${prefix}-${node.position?.start.line}`} className={`result-heading ${className || ''}`}>
-      {number && <span className="result-section-number" aria-hidden="true">{number}</span>}
+      {number && (botanical ? <ClayLeaf index={Number(number) - 1} className="result-heading__leaf" /> : <span className="result-section-number" aria-hidden="true">{number}</span>)}
       {clayHeadings ? <ClayText text={nodeText(node)} /> : <span className="result-heading__text">{children}</span>}
     </Tag>;
   };
@@ -52,8 +54,12 @@ export default function ResultContent({ content = '', components = {}, contents 
         </details>
       )}
       <div className={`result-content${compact ? ' result-content--compact' : ''}`}>
-        <ReactMarkdown remarkPlugins={[remarkGfm, [remarkResultLabels, { blocks: rich }], ...(rich ? [[remarkResultLayout, { sections: true }]] : [])]} components={{
+        <ReactMarkdown remarkPlugins={[remarkGfm, [remarkResultLabels, { blocks: rich }], ...(rich ? [[remarkResultLayout, { sections: true, wrapIntro: botanical }]] : [])]} components={{
           h1: heading('h1'), h2: heading('h2'), h3: heading('h3'), h4: heading('h4'), h5: heading('h5'), h6: heading('h6'),
+          section: ({ children, className = '' }) => <section className={className}>
+            {botanical && className.split(' ').includes('result-section--intro') && <ClayLeaf className="result-intro-leaf" />}
+            {children}
+          </section>,
           li: ({ node, children, className }) => {
             const step = node.properties?.['data-step'] ?? node.properties?.dataStep;
             return <li className={className} data-step={step}>

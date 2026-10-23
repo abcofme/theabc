@@ -87,7 +87,7 @@ export default function TestsTab({ request }) {
         </div>
       </>}
       {selectedResult && <Page title={selectedResult.name} onBack={() => setSelectedResult(null)} clayTitle>
-        <ResultContent content={selectedResult.result_text || 'Нет детального описания результата.'} titles={[selectedResult.name, 'Результат']} contents={false} variant="document" clayHeadings />
+        <ResultContent content={selectedResult.result_text || 'Нет детального описания результата.'} titles={[selectedResult.name, 'Результат']} contents={false} variant="document" clayHeadings testResult />
         <div className="flex flex-col gap-3 mt-6 border-t border-[#F5E6D3]/10 pt-6">
         {nextTest && <button type="button" onClick={() => { setSelectedResult(null); openTest(nextTest); }} className="ui-button ui-button--primary">Продолжить тесты</button>}
         <button type="button" onClick={retake} className="ui-button ui-button--outline">Пройти тест заново</button>
