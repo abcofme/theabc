@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { formatResultText, remarkResultLabels } from './resultFormatting';
 
 function headingsOf(content) {
   let fence = null;
@@ -16,17 +17,18 @@ function headingsOf(content) {
   });
 }
 
-export default function ResultContent({ content = '', components = {}, contents = true }) {
+export default function ResultContent({ content = '', components = {}, contents = true, compact = false, titles = [] }) {
   const prefix = useId();
-  const headings = headingsOf(content);
+  const formatted = formatResultText(content, titles);
+  const headings = headingsOf(formatted);
   const heading = (Tag) => function Heading({ node, children }) {
     return <Tag id={`${prefix}-${node.position.start.line}`}>{children}</Tag>;
   };
   return (
-    <>
+    <div className="result-reader">
       {contents && headings.length > 2 && (
         <details className="result-toc">
-          <summary>Разделы материала</summary>
+          <summary>Содержание</summary>
           <nav aria-label="Содержание">
             {headings.map(item => (
               <button key={item.line} type="button" onClick={() => {
@@ -36,9 +38,9 @@ export default function ResultContent({ content = '', components = {}, contents 
           </nav>
         </details>
       )}
-      <div className="result-content">
-        <ReactMarkdown components={{ h1: heading('h1'), h2: heading('h2'), h3: heading('h3'), ...components }}>{content}</ReactMarkdown>
+      <div className={`result-content${compact ? ' result-content--compact' : ''}`}>
+        <ReactMarkdown remarkPlugins={[remarkResultLabels]} components={{ h1: heading('h1'), h2: heading('h2'), h3: heading('h3'), ...components }}>{formatted}</ReactMarkdown>
       </div>
-    </>
+    </div>
   );
 }

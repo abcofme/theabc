@@ -52,6 +52,7 @@ export default function useDiary(today) {
     window.dispatchEvent(new Event('diary:changed'));
     if (res.analysis_started) startWaiting(res.id);
     loadOverview(); // серия дней могла вырасти
+    return res.id;
   }, [upsert, startWaiting, loadOverview]);
 
   const updateEntry = useCallback(async (entry, event, reaction) => {

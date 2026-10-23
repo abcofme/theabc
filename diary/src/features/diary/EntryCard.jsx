@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Trash2, Activity, PenLine } from 'lucide-react';
 import { scoreColor } from './utils';
+import ResultContent from '../../components/ResultContent';
 
 const Label = ({ children }) => (
   <span className="ui-section-label block mb-2">{children}</span>
@@ -41,7 +42,7 @@ function Reply({ text, accentClass }) {
     <div className="mt-5 pl-4 relative">
       <div className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-full ${accentClass}`} />
       <p className="ui-section-label mb-2">Ответ дневника</p>
-      <p className="text-base leading-[26px] whitespace-pre-wrap">{text}</p>
+      <ResultContent content={text} contents={false} compact />
     </div>
   );
 }
@@ -51,7 +52,7 @@ export default function EntryCard({ entry, analysis, onDelete, onRetry, onEdit }
   const score = entry.portrait_match_score;
 
   return (
-    <article className="ui-card relative">
+    <article id={`diary-entry-${entry.id}`} className="ui-card diary-entry relative">
       <button
         onClick={onDelete}
         aria-label="Удалить запись"

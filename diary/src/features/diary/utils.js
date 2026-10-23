@@ -6,6 +6,9 @@ export const NO_ANALYSIS_SCORE = -1;
 // День записи — строка YYYY-MM-DD в часовом поясе пользователя: так же её хранит бэкенд
 export const dayKey = (date) => format(date, 'yyyy-MM-dd');
 
+// Идентификатор назначается при создании: дописывание старой записи не меняет ее место.
+export const newestEntryFirst = (a, b) => b.id - a.id;
+
 // plural(4, ['тест', 'теста', 'тестов']) → 'теста'
 export function plural(n, [one, few, many]) {
   const mod10 = n % 10;

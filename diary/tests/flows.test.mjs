@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readDraft, saveDraft, clearDraft } from '../src/features/diary/drafts.js';
 import { readTestProgress, resumeTestProgress, saveTestProgress, clearTestProgress } from '../src/features/tests/testProgress.js';
 import { parseScales, scaleValue } from '../src/features/profile/portraitScales.js';
+import { newestEntryFirst } from '../src/features/diary/utils.js';
+import { formatResultText, remarkResultLabels } from '../src/components/resultFormatting.js';
 
 class MemoryStorage {
   entries = new Map();
@@ -75,4 +77,35 @@ test('Шкалы портрета сохраняют крайние значен
   assert.equal(scaleValue(null), 50);
   assert.equal(scaleValue('не число'), 50);
   assert.throws(() => parseScales('Не JSON'));
+});
+
+test('Новая запись остается первой после сохранения, повторной загрузки и редактирования старой', () => {
+  const entries = [{ id: 31, event: 'Старая' }, { id: 7, event: 'Дополненная старая' }, { id: 42, event: 'Новая' }];
+  assert.deepEqual([...entries].sort(newestEntryFirst).map(entry => entry.id), [42, 31, 7]);
+  assert.deepEqual([entries[2], entries[1], entries[0]].sort(newestEntryFirst).map(entry => entry.id), [42, 31, 7]);
+});
+
+test('Сохраненный ответ получает заголовки и списки, текст и JSON шкал не теряются', () => {
+  const json = '```json\n[{"description":"Зеркало","leftValue":0,"rightValue":100}]\n```';
+  const input = `Зеркало\nТы заметил усталость.\n\n**Мои предположения**\nВозможно, нужна пауза.\n\nМогу предложить попробовать:\n• Сделать паузу\n• Вернуться к разговору\n\n${json}`;
+  const result = formatResultText(input);
+  assert.match(result, /## Зеркало\n\nТы заметил усталость\./);
+  assert.match(result, /## Мои предположения\n\nВозможно, нужна пауза\./);
+  assert.match(result, /## Могу предложить попробовать\n\n- Сделать паузу\n- Вернуться к разговору/);
+  assert.ok(result.endsWith(json));
+  assert.equal(formatResultText('В тексте слово Зеркало остается на месте.'), 'В тексте слово Зеркало остается на месте.');
+  assert.equal(formatResultText('```markdown\n## Раздел\n\nТекст\n```'), '## Раздел\n\nТекст');
+  assert.equal(formatResultText('````text\n```\nЗеркало\n````'), '````text\n```\nЗеркало\n````');
+  assert.equal(formatResultText('# Мой портрет личности\n\n## Черты\n\nТекст', ['Мой портрет личности']), '## Черты\n\nТекст');
+  assert.equal(formatResultText('# Личность\n\nТекст', ['Портрет личности']), '# Личность\n\nТекст');
+});
+
+test('Отдельная жирная подпись оформляется блоком, внутритекстовые выделения остаются в абзаце', () => {
+  const labeled = { type: 'paragraph', children: [{ type: 'strong', children: [{ type: 'text', value: 'Реакция на стресс' }] }, { type: 'text', value: ' — Ты ищешь время обдумать решение.' }] };
+  const inline = { type: 'paragraph', children: [{ type: 'text', value: 'Твоя ' }, { type: 'strong', children: [{ type: 'text', value: 'опора' }] }, { type: 'text', value: ' — опыт.' }] };
+  remarkResultLabels()({ type: 'root', children: [labeled, inline] });
+  assert.deepEqual(labeled.data.hProperties.className, ['result-detail']);
+  assert.equal(labeled.children[1].value, 'Ты ищешь время обдумать решение.');
+  assert.equal(inline.data, undefined);
+  assert.equal(inline.children[2].value, ' — опыт.');
 });

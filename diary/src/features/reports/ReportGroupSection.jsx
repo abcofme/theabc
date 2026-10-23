@@ -1,39 +1,10 @@
-import { useEffect, useState } from 'react';
-import { ArrowRight, ChevronRight, FileText, NotebookPen } from 'lucide-react';
+import { ArrowRight, ChevronRight, FileText } from 'lucide-react';
 import ClayBanner from '../../components/ClayBanner';
 import Spinner from '../../components/Spinner';
 import { REPORT_TYPES, reportTypeOf, formatDay, periodLabel } from './reportTypes';
 import { plural } from '../diary/utils';
 import { useAppNav } from '../../navigation/appNav';
 import { useProfile } from '../../context/profile';
-import { api } from '../../utils/api';
-
-function DiaryAccuracy() {
-  const { navigate } = useAppNav();
-  const [count, setCount] = useState(null);
-  const [failed, setFailed] = useState(false);
-  const [retry, setRetry] = useState(0);
-  useEffect(() => {
-    let cancelled = false;
-    const load = () => api('/api/reports/entries-count?period=month')
-      .then(data => { if (!cancelled) { setCount(data.count); setFailed(false); } })
-      .catch(() => { if (!cancelled) setFailed(true); });
-    load();
-    window.addEventListener('diary:changed', load);
-    const onVisible = () => { if (document.visibilityState === 'visible') load(); };
-    document.addEventListener('visibilitychange', onVisible);
-    return () => { cancelled = true; window.removeEventListener('diary:changed', load); document.removeEventListener('visibilitychange', onVisible); };
-  }, [retry]);
-  if (failed) return <p className="ui-secondary">Не удалось посчитать записи. <button type="button" className="underline underline-offset-4 py-2" onClick={() => setRetry(t => t + 1)}>Повторить</button></p>;
-  return (
-    <div className="ui-secondary" aria-live="polite">
-      {count === null ? 'Считаем записи за месяц…' : <>
-        <p>{count} {plural(count, ['запись', 'записи', 'записей'])} за 30 дней · {count >= 15 ? 'данных достаточно' : count >= 5 ? 'чем больше записей, тем точнее отчеты' : 'пока мало данных для точного отчета'}</p>
-        {count < 5 && <button type="button" onClick={() => navigate({ tab: 'diary' })} className="flex items-center gap-2 min-h-11 font-semibold"><NotebookPen size={16} /> Записать в дневник</button>}
-      </>}
-    </div>
-  );
-}
 
 export default function ReportGroupSection({ group, reports, jobs, onOpenType, onOpenReport }) {
   const { profile } = useProfile();
@@ -74,10 +45,7 @@ export default function ReportGroupSection({ group, reports, jobs, onOpenType, o
           <button type="button" onClick={() => navigate({ tab: 'tests', category: 'Профориентация' })} className="ui-button ui-button--primary">К тестам профориентации</button>
         </section>
       )}
-      <section className="flex flex-col gap-4">
-        <h2 className="ui-section-label">Виды отчетов</h2>
-        <DiaryAccuracy />
-        {!latest && <p className="ui-secondary">{group.desc}</p>}
+      <section className="flex flex-col gap-4" aria-label="Виды отчетов">
         {types.map(type => {
           const existing = reports.filter(r => reportTypeOf(r)?.id === type.id);
           const hasNew = existing.some(r => r.is_read === false);

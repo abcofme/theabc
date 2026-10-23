@@ -61,18 +61,15 @@ export default function TestsTab({ request }) {
       {!profile ? <Spinner /> : categories.length === 0 ? <p className="ui-secondary py-8">Нет доступных тестов.</p> : <>
         <PortraitProgress nextTest={nextTest} onContinue={() => openTest(nextTest)} />
         <div className="flex flex-col gap-4">
-          <h2 className="ui-section-label">Категории</h2>
           {categories.map(cat => {
             const banner = categoryBanners[cat.name.trim()];
             const isOpen = openCategory === cat.id;
             const passed = cat.tests.filter(test => test.passed).length;
             const toggle = () => setOpenCategory(isOpen ? null : cat.id);
             return <section key={cat.id}>
-              {banner ? <ClayBanner id={`test-category-${cat.id}`} kind="test" title={cat.name} description={cat.name === 'Профориентация' ? 'Отдельные тесты для отчетов о работе' : `Символ категории — ${banner.tree}`} image={banner.image} expanded={isOpen} onClick={toggle} controlsId={`test-category-panel-${cat.id}`} badge={cat.tests.length ? `Пройдено ${passed} из ${cat.tests.length}` : undefined} badgeAccent={cat.tests.length > 0 && passed === cat.tests.length} chevron /> : <button type="button" onClick={toggle} aria-expanded={isOpen} aria-controls={`test-category-panel-${cat.id}`} id={`clay-banner-title-test-category-${cat.id}`} className="ui-card w-full flex items-center justify-between gap-3 text-left"><span className="text-lg font-semibold">{cat.name}</span><span className="ui-muted">{passed}/{cat.tests.length}</span></button>}
+              {banner ? <ClayBanner id={`test-category-${cat.id}`} kind="test" title={cat.name} image={banner.image} expanded={isOpen} onClick={toggle} controlsId={`test-category-panel-${cat.id}`} badge={cat.tests.length ? `Пройдено ${passed} из ${cat.tests.length}` : undefined} badgeAccent={cat.tests.length > 0 && passed === cat.tests.length} chevron /> : <button type="button" onClick={toggle} aria-expanded={isOpen} aria-controls={`test-category-panel-${cat.id}`} id={`clay-banner-title-test-category-${cat.id}`} className="ui-card w-full flex items-center justify-between gap-3 text-left"><span className="text-lg font-semibold">{cat.name}</span><span className="ui-muted">{passed}/{cat.tests.length}</span></button>}
               <div id={`test-category-panel-${cat.id}`} role="region" aria-labelledby={`clay-banner-title-test-category-${cat.id}`} hidden={!isOpen}>
                 {isOpen && <div className="px-1 pt-2">
-                  {banner?.description && <details className="ui-secondary"><summary className="py-3 font-medium">О категории</summary><p className="pb-4">{banner.description}</p></details>}
-                  {banner?.note && <p className="ui-secondary py-3">{banner.note}</p>}
                   {cat.tests.length === 0 ? <p className="ui-secondary py-4">В этой категории пока нет тестов.</p> : cat.tests.map(test => {
                     const saved = readTestProgress(test.id);
                     return <button type="button" key={test.id} onClick={() => openTest(test)} className="ui-row">

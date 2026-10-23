@@ -10,9 +10,7 @@ import EntryForm from './EntryForm';
 import MonthSheet from './MonthSheet';
 import DaySheet from './DaySheet';
 import ScreenState from '../../components/ScreenState';
-import { dayKey, plural, analysisLock } from './utils';
-
-const byId = (a, b) => a.id - b.id;
+import { dayKey, plural, analysisLock, newestEntryFirst } from './utils';
 
 // Дневник открывается на сегодняшнем дне: что произошло сегодня, ответ дневника и неделя вокруг.
 // Месяц и прошлые дни — во всплывающих экранах
@@ -26,6 +24,7 @@ export default function DiaryTab() {
   const [openDay, setOpenDay] = useState(null);
   const [isMonthOpen, setIsMonthOpen] = useState(false);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
+  const [savedEntryId, setSavedEntryId] = useState(null);
 
   const lock = analysisLock(profile);
 
@@ -47,7 +46,7 @@ export default function DiaryTab() {
   const entriesByDay = useMemo(() => {
     const map = new Map();
     entries.forEach(e => map.set(e.date, [...(map.get(e.date) || []), e]));
-    map.forEach(list => list.sort(byId));
+    map.forEach(list => list.sort(newestEntryFirst));
     return map;
   }, [entries]);
   const daysWithEntries = useMemo(() => new Set(entriesByDay.keys()), [entriesByDay]);
@@ -73,7 +72,8 @@ export default function DiaryTab() {
   };
 
   const addToday = async (event, reaction) => {
-    await diary.addEntry(today, event, reaction);
+    const id = await diary.addEntry(today, event, reaction);
+    setSavedEntryId(id);
     setIsComposerOpen(false);
   };
 
@@ -125,7 +125,7 @@ export default function DiaryTab() {
               />
             </div>
           )}
-          <EntryList entries={todayEntries} diary={diary} lock={lock} />
+          <EntryList entries={todayEntries} diary={diary} lock={lock} savedEntryId={savedEntryId} />
           <AnalysisHint lock={lock} />
         </div>
       )}

@@ -58,7 +58,7 @@ export default function PortraitPage({ onBack }) {
           <p className="ui-secondary mb-4">Есть новые результаты тестов — портрет можно обновить.</p>
           <button type="button" onClick={generate} className="ui-button ui-button--primary"><Wand2 size={20} /> Обновить портрет{price}</button>
         </section>}
-        {portrait ? <ResultContent content={content} components={portraitComponents} /> : state === 'ready' ? <section className="ui-card">
+        {portrait ? <ResultContent content={content} titles={['Портрет личности', 'Мой портрет личности']} components={portraitComponents} /> : state === 'ready' ? <section className="ui-card">
           <h3 className="text-lg font-semibold mb-3">Все тесты пройдены</h3>
           <p className="ui-secondary mb-5">Можно сформировать портрет личности. Он поможет дневнику лучше понимать твои реакции.</p>
           <button type="button" onClick={generate} className="ui-button ui-button--primary"><Wand2 size={20} /> Сформировать портрет{price}</button>

@@ -28,7 +28,7 @@ export default function ClayBanner({ id, title, description, image, expanded, on
       {/* The sculpted heading is baked into the art; retain one accessible text label. */}
       <Heading className="sr-only" id={titleId}>{title}</Heading>
       <p className="sr-only" id={descriptionId}>
-        {description}{badge ? `. ${badge}` : ''}
+        {[description, badge].filter(Boolean).join('. ')}
       </p>
       {(interactive || badge) && (
         <span className="clay-banner__meta" aria-hidden="true">

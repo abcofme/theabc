@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useLayoutEffect } from 'react';
 import { Lock, ChevronRight } from 'lucide-react';
 import EntryCard from './EntryCard';
 import EntryForm from './EntryForm';
@@ -29,9 +29,13 @@ export function AnalysisHint({ lock, onNavigate }) {
   );
 }
 
-export default function EntryList({ entries, diary, lock }) {
+export default function EntryList({ entries, diary, lock, savedEntryId }) {
   const [editingId, setEditingId] = useState(null);
   const handleError = useErrorHandler();
+
+  useLayoutEffect(() => {
+    if (savedEntryId) document.getElementById(`diary-entry-${savedEntryId}`)?.scrollIntoView({ block: 'start', behavior: 'auto' });
+  }, [savedEntryId]);
 
   const confirmDelete = (entry) => {
     WebApp.showConfirm('Удалить запись? Её нельзя будет восстановить.', (confirmed) => {
