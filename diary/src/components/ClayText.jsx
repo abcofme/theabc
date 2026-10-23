@@ -25,7 +25,7 @@ function Glyph({ char }) {
 }
 
 export default function ClayText({ text, as: Tag = 'span', className = '', ...props }) {
-  const words = String(text).split(/(\s+)/);
+  const words = String(text).split(/(\s+)/).flatMap(word => /\s/.test(word) ? word : word.match(/[^-]+-?|-/g) || []);
   return (
     <Tag className={`clay-text ${className}`.trim()} style={sheetStyle} {...props}>
       <span className="sr-only">{text}</span>
