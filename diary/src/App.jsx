@@ -9,6 +9,7 @@ import ReportsTab from './features/reports/ReportsTab';
 import TestsTab from './features/tests/TestsTab';
 import BillingPage from './features/billing/BillingPage';
 import ScreenState from './components/ScreenState';
+import TelegramChrome from './components/TelegramChrome';
 import { useProfile } from './context/profile';
 import diaryIcon from './assets/navigation/diary-clay.webp';
 import testsIcon from './assets/navigation/tests-clay.webp';
@@ -72,6 +73,7 @@ export default function App() {
   return (
     <ProfileProvider>
       <BackStackProvider>
+        <TelegramChrome />
         <Shell />
       </BackStackProvider>
     </ProfileProvider>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Check, ChevronRight, User, UserPlus, X } from 'lucide-react';
+import { Check, ChevronRight, User, UserPlus, X } from '../../../components/ClayIcon';
 import Avatar from '../../../components/Avatar';
 import ClayBanner from '../../../components/ClayBanner';
 import Spinner from '../../../components/Spinner';
@@ -112,7 +112,7 @@ export default function CompatibilitySection() {
             {data.incoming_requests.map(req => (
               <FriendRow key={req.request_id} user={req} caption={<span className="block text-xs text-[#F5E6D3]/60">Хочет дружить</span>}>
                 <button onClick={() => act(`/api/friends/accept/${req.request_id}`)} aria-label="Принять" className="ui-icon-button bg-[#F5E6D3] text-rose-950!">
-                  <Check size={18} />
+                  <Check size={18} className="clay-icon--dark" />
                 </button>
                 <button onClick={() => act(`/api/friends/reject/${req.request_id}`)} aria-label="Отклонить" className="ui-icon-button">
                   <X size={18} />

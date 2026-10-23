@@ -1,4 +1,4 @@
-import { Check } from 'lucide-react';
+import { Check } from '../../components/ClayIcon';
 import { useProfile, portraitState } from '../../context/profile';
 import { useAppNav } from '../../navigation/appNav';
 import headerVine from '../../assets/profile/header-vine-handmade.webp';

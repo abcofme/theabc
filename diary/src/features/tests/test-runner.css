@@ -1,0 +1,20 @@
+.test-question-back { background: var(--color-rose-800); opacity: .3; }
+
+.test-question-card {
+  min-height: 324px;
+  isolation: isolate;
+  border: 1px solid #F5E6D31A;
+  background: var(--color-rose-900);
+  padding: calc(var(--question-art-top, 0%) + 14px) 24px calc(var(--question-art-bottom, 0%) + 14px);
+}
+
+/* Две самостоятельные композиции остаются у краев при любой высоте вопроса. */
+.test-question-card__frame { position: absolute; inset: 0; pointer-events: none; user-select: none; }
+.test-question-card__edge { position: absolute; left: 0; display: block; width: 100%; height: auto; pointer-events: none; user-select: none; }
+.test-question-card__edge--top { top: 0; }
+.test-question-card__edge--bottom { bottom: 0; }
+.test-question-card__content { flex-shrink: 0; }
+
+@media (max-width: 360px) {
+  .test-question-card { padding-left: 20px; padding-right: 20px; }
+}

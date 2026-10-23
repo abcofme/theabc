@@ -1,5 +1,5 @@
 import { useRef, useState, useId } from 'react';
-import { Check, Sparkles, Wallet } from 'lucide-react';
+import { Check, Sparkles, Wallet } from '../../components/ClayIcon';
 import Page from '../../components/Page';
 import Spinner from '../../components/Spinner';
 import OfferPage from '../legal/OfferPage';

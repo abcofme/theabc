@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { format, parseISO, subDays } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { CalendarDays, Flame, Plus, MessageCircle, ChevronRight } from 'lucide-react';
+import { CalendarDays, Flame, Plus, MessageCircle, ChevronRight } from '../../components/ClayIcon';
 import { useProfile } from '../../context/profile';
 import useDiary from './useDiary';
 import WeekStrip from './WeekStrip';

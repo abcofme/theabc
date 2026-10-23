@@ -1,23 +1,24 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronUp } from './ClayIcon';
 import './clay-banner.css';
 
-// Художественная надпись остается в изображении; статус и управление — под ним.
+// У отчетов и портрета остаются обложка и стрелка; подписи категорий тестов — под артом.
 // meta и aside заменяют стандартную строку под артом (слева и справа от стрелки)
 export default function ClayBanner({ id, title, description, image, expanded, onClick, controlsId, badge, badgeAccent = false, kind, chevron = false, disabled = false, locked = false, meta, aside }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const interactive = typeof onClick === 'function';
+  const minimal = kind === 'report' || kind === 'profile';
   const Container = interactive ? 'button' : 'div';
   const Heading = interactive ? 'h3' : 'h2';
   const titleId = `clay-banner-title-${id}`;
   const descriptionId = `clay-banner-description-${id}`;
   const ActionIcon = expanded ? ChevronUp : chevron ? ChevronDown : ChevronRight;
   const left = meta ?? (badge ? <span className={`clay-banner__badge ${badgeAccent ? 'clay-banner__badge--accent' : ''}`}>{badge}</span> : <span className="clay-banner__caption">{description}</span>);
-  const hasMeta = interactive || badge || meta || aside;
+  const hasMeta = !minimal && (interactive || badge || meta || aside);
 
   return (
     <Container
-      className="clay-banner"
+      className={`clay-banner${minimal ? ' clay-banner--minimal' : ''}`}
       data-banner-kind={kind}
       data-locked={locked || undefined}
       {...(interactive ? {
@@ -41,6 +42,7 @@ export default function ClayBanner({ id, title, description, image, expanded, on
       <p className="sr-only" id={descriptionId}>
         {[description, badge].filter(Boolean).join('. ')}
       </p>
+      {minimal && interactive && <span className="clay-banner__arrow" aria-hidden="true"><ActionIcon size={22} /></span>}
       {hasMeta && (
         <span className="clay-banner__meta" aria-hidden="true">
           <span className="clay-banner__left">{left}</span>

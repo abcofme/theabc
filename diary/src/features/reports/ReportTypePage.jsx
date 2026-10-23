@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useId } from 'react';
-import { AlertTriangle, ChevronRight, FileText, Lock } from 'lucide-react';
+import { AlertTriangle, ChevronRight, FileText, Lock } from '../../components/ClayIcon';
 import Page from '../../components/Page';
 import ClayBanner from '../../components/ClayBanner';
 import ClayText from '../../components/ClayText';

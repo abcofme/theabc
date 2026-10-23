@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, Check, Trash2, Edit, Plus, Heart, Link2, Download } from 'lucide-react';
+import { ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, Check, Trash2, Edit, Plus, Heart, Link2, Download, LoaderCircle, X } from '../../components/ClayIcon';
 import AdminTestEditor from './AdminTestEditor';
 import ScreenState from '../../components/ScreenState';
 
@@ -401,7 +401,7 @@ export default function AdminPanel() {
       {statsError && <ScreenState error title="Не удалось обновить статистику" onRetry={fetchStats} />}
       {loading && !stats ? (
         <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-white"></div>
+          <LoaderCircle size={40} className="animate-spin" aria-label="Загрузка" />
         </div>
       ) : stats ? (
         <div className="flex flex-col gap-4">
@@ -602,8 +602,8 @@ export default function AdminPanel() {
             {aiImportResult && (
               <div className={`mb-3 p-3 rounded-xl text-sm font-medium ${aiImportResult.success ? 'bg-emerald-900/50 text-emerald-300' : 'bg-red-900/50 text-red-300'}`}>
                 {aiImportResult.success
-                  ? `✓ Тест «${aiImportResult.test_name}» создан: ${aiImportResult.questions_count} вопр., ${aiImportResult.results_count} интерпр.`
-                  : `✗ Ошибка: ${aiImportResult.error}`}
+                  ? <><Check size={16} className="mr-1" />Тест «{aiImportResult.test_name}» создан: {aiImportResult.questions_count} вопр., {aiImportResult.results_count} интерпр.</>
+                  : <><X size={16} className="mr-1" />Ошибка: {aiImportResult.error}</>}
               </div>
             )}
             <button

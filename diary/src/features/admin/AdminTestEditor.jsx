@@ -1,10 +1,12 @@
 import { useState, useEffect, useLayoutEffect, useRef } from 'react';
-import { ChevronLeft, Plus, Trash2, Save } from 'lucide-react';
+import { Plus, Trash2, Save, X, LoaderCircle } from '../../components/ClayIcon';
+import { useBackHandler } from '../../navigation/backStack';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
 
 export default function AdminTestEditor({ testId, categories, onClose }) {
+  useBackHandler(true, onClose);
   const editorRef = useRef(null);
   const [loading, setLoading] = useState(!!testId);
   const [saving, setSaving] = useState(false);
@@ -162,21 +164,13 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
   if (loading) {
     return (
       <div className="flex-1 flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#F5E6D3]"></div>
+        <LoaderCircle size={40} className="animate-spin" aria-label="Загрузка" />
       </div>
     );
   }
 
   return (
     <div ref={editorRef} className="admin-content flex flex-col w-full min-w-0 pb-8">
-      <button 
-        onClick={onClose}
-        className="flex items-center gap-2 text-[#F5E6D3] hover:text-[#F5E6D3] mb-6 transition-colors self-start"
-      >
-        <ChevronLeft size={20} />
-        <span className="font-medium">Назад к списку</span>
-      </button>
-
       <h2 className="text-2xl font-bold text-[#F5E6D3] mb-6">
         {testId ? "Редактирование теста" : "Создание теста"}
       </h2>
@@ -336,7 +330,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
           disabled={saving}
           className="ui-button ui-button--primary"
         >
-          {saving ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div> : <Save size={20} />}
+          {saving ? <LoaderCircle size={20} className="animate-spin" aria-hidden="true" /> : <Save size={20} />}
           {saving ? 'Сохранение...' : 'Сохранить тест'}
         </button>
       </div>
@@ -347,10 +341,5 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
 
 // Simple internal icon for removing answer
 function XIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="18" y1="6" x2="6" y2="18"></line>
-      <line x1="6" y1="6" x2="18" y2="18"></line>
-    </svg>
-  );
+  return <X size={16} />;
 }

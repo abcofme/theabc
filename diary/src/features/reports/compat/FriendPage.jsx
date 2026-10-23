@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import ResultContent from '../../../components/ResultContent';
 import ScreenState from '../../../components/ScreenState';
 import { useProfile } from '../../../context/profile';
-import { Lock, UserMinus } from 'lucide-react';
+import { Lock, UserMinus } from '../../../components/ClayIcon';
 import Page from '../../../components/Page';
 import Spinner from '../../../components/Spinner';
 import GenerationProgress from '../../../components/GenerationProgress';
@@ -113,7 +113,7 @@ export default function FriendPage({ friend, myGender: knownMyGender, myPortrait
           </section>
         ) : mode === 'view' && content ? (
           <>
-            <ResultContent content={content} variant="document" clayHeadings />
+            <ResultContent content={content} contents={false} variant="document" clayHeadings />
             {canCompare && (
               <button onClick={() => setMode('form')} className="ui-button ui-button--outline">
                 Пересчитать совместимость

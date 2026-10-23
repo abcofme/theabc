@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { User, Sparkles, Wallet, Bell, FileText, Shield, ChevronRight, Users } from 'lucide-react';
+import { User, Sparkles, Wallet, Bell, FileText, Shield, ChevronRight, Users } from '../../components/ClayIcon';
 import Avatar from '../../components/Avatar';
 import ClayBanner from '../../components/ClayBanner';
 import ClayText from '../../components/ClayText';
@@ -8,7 +8,7 @@ import AdminPanel from '../admin/AdminPanel';
 import OfferPage from '../legal/OfferPage';
 import PortraitPage from './PortraitPage';
 import portraitBanner from '../../assets/profile/portrait-woman-handmade.webp';
-import headerVine from '../../assets/profile/header-vine-handmade.webp';
+import headerVine from '../../assets/profile/header-vine-simple.webp';
 import { useProfile, portraitState } from '../../context/profile';
 import { useAppNav, useErrorHandler } from '../../navigation/appNav';
 import { api } from '../../utils/api';

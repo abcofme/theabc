@@ -1,0 +1,22 @@
+{
+  "temperament": {
+    "topInset": "41.771%",
+    "bottomInset": "41.250%"
+  },
+  "personality": {
+    "topInset": "37.604%",
+    "bottomInset": "39.167%"
+  },
+  "self-esteem": {
+    "topInset": "45.104%",
+    "bottomInset": "34.062%"
+  },
+  "sociability": {
+    "topInset": "44.688%",
+    "bottomInset": "46.146%"
+  },
+  "career": {
+    "topInset": "35.625%",
+    "bottomInset": "36.250%"
+  }
+}

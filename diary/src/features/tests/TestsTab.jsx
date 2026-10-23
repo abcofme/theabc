@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Check, ChevronRight } from 'lucide-react';
+import { Check, ChevronRight } from '../../components/ClayIcon';
 import ClayBanner from '../../components/ClayBanner';
 import ClayText from '../../components/ClayText';
-import Modal from '../../components/Modal';
+import Page from '../../components/Page';
+import ResultContent from '../../components/ResultContent';
 import Spinner from '../../components/Spinner';
 import PortraitProgress from './PortraitProgress';
 import TestRunner from './TestRunner';
@@ -85,12 +86,14 @@ export default function TestsTab({ request }) {
           })}
         </div>
       </>}
-      {selectedResult && <Modal title={selectedResult.name} onClose={() => setSelectedResult(null)} footer={<>
+      {selectedResult && <Page title={selectedResult.name} onBack={() => setSelectedResult(null)} clayTitle>
+        <ResultContent content={selectedResult.result_text || 'Нет детального описания результата.'} titles={[selectedResult.name, 'Результат']} contents={false} variant="document" clayHeadings />
+        <div className="flex flex-col gap-3 mt-6 border-t border-[#F5E6D3]/10 pt-6">
         {nextTest && <button type="button" onClick={() => { setSelectedResult(null); openTest(nextTest); }} className="ui-button ui-button--primary">Продолжить тесты</button>}
         <button type="button" onClick={retake} className="ui-button ui-button--outline">Пройти тест заново</button>
-        <button type="button" onClick={() => setSelectedResult(null)} className="ui-button ui-button--quiet">Закрыть</button>
-      </>}><p className="text-base leading-[26px] whitespace-pre-wrap">{selectedResult.result_text || 'Нет детального описания результата.'}</p></Modal>}
-      {runningTest && <TestRunner key={runningTest.id} test={runningTest} image={categoryBanners[categoryOf(runningTest.id)?.name.trim()]?.image} onClose={closeTest} />}
+        </div>
+      </Page>}
+      {runningTest && <TestRunner key={runningTest.id} test={runningTest} categoryStyle={categoryBanners[categoryOf(runningTest.id)?.name.trim()]} onClose={closeTest} />}
     </div>
   );
 }

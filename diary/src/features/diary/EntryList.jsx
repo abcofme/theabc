@@ -1,5 +1,5 @@
 import { useState, useLayoutEffect } from 'react';
-import { Lock, ChevronRight } from 'lucide-react';
+import { Lock, ChevronRight } from '../../components/ClayIcon';
 import EntryCard from './EntryCard';
 import EntryForm from './EntryForm';
 import { analysisState } from './utils';

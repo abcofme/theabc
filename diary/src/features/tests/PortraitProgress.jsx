@@ -1,4 +1,4 @@
-import { Wand2 } from 'lucide-react';
+import { Wand2 } from '../../components/ClayIcon';
 import { useProfile, portraitState } from '../../context/profile';
 import { useAppNav, useErrorHandler } from '../../navigation/appNav';
 

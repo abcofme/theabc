@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trash2, Activity, PenLine, Leaf } from 'lucide-react';
+import { Trash2, Activity, PenLine, Leaf } from '../../components/ClayIcon';
 import { scoreColor } from './utils';
 import ResultContent from '../../components/ResultContent';
 

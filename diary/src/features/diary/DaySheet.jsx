@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { Plus } from 'lucide-react';
+import { Plus } from '../../components/ClayIcon';
 import Page from '../../components/Page';
 import EntryList, { AnalysisHint } from './EntryList';
 import EntryForm from './EntryForm';

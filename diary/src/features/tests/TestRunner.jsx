@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronLeft, ArrowLeft, ArrowRight, Undo2, Wand2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Undo2, Wand2, LoaderCircle } from '../../components/ClayIcon';
 import Spinner from '../../components/Spinner';
 import ClayBanner from '../../components/ClayBanner';
+import ClayText from '../../components/ClayText';
+import ResultContent from '../../components/ResultContent';
 import ScreenState from '../../components/ScreenState';
 import { readTestProgress, saveTestProgress, clearTestProgress, resumeTestProgress } from './testProgress';
 import { useBackHandler } from '../../navigation/backStack';
 import { useAppNav, useErrorHandler } from '../../navigation/appNav';
 import { useProfile, portraitState } from '../../context/profile';
 import { api } from '../../utils/api';
+import './test-runner.css';
 
 const WebApp = window.Telegram.WebApp;
 
@@ -25,7 +28,8 @@ function storage(action) {
 }
 
 // Прохождение теста отдельной страницей: старт, карточки-свайпы «да/нет», результат
-export default function TestRunner({ test, image, onClose }) {
+export default function TestRunner({ test, categoryStyle, onClose }) {
+  const image = categoryStyle?.image;
   const { profile, refreshProfile, generatePortrait, isGeneratingPortrait } = useProfile();
   const { navigate } = useAppNav();
   const handleError = useErrorHandler();
@@ -180,13 +184,10 @@ export default function TestRunner({ test, image, onClose }) {
   const minutes = Math.max(1, Math.round((questions.length * SECONDS_PER_QUESTION) / 60));
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex flex-col bg-rose-950">
+    <div className="app-overlay test-runner fixed inset-0 z-[60] flex flex-col bg-rose-950" data-test-theme={categoryStyle?.theme || 'personality'}>
 
 
-      <header className="relative z-10 shrink-0 w-full max-w-md mx-auto flex items-center gap-2 px-2 pt-3 pb-2">
-        <button onClick={exit} aria-label="Назад" className="ui-icon-button shrink-0">
-          <ChevronLeft size={24} />
-        </button>
+      <header className={`relative z-10 shrink-0 w-full mx-auto flex items-center gap-2 px-4 pt-3 pb-2 ${result ? 'max-w-2xl' : 'max-w-md'}`}>
         {isStarted && !result && details ? (
           <>
             <span className="text-[#F5E6D3]/70 font-semibold text-sm whitespace-nowrap">Вопрос {index + 1} из {questions.length}</span>
@@ -203,7 +204,7 @@ export default function TestRunner({ test, image, onClose }) {
             </button>
           </>
         ) : (
-          <h2 className="page-title text-[#F5E6D3] truncate">{test.name}</h2>
+          <h2 className="page-title text-[#F5E6D3] min-w-0 break-words">{result ? <ClayText text={test.name} /> : test.name}</h2>
         )}
       </header>
 
@@ -213,28 +214,20 @@ export default function TestRunner({ test, image, onClose }) {
         ) : questions.length === 0 ? (
           <ScreenState title="В этом тесте пока нет вопросов" />
         ) : result ? (
-          <div className="flex-1 flex flex-col max-w-md mx-auto w-full">
-            <div className="ui-card flex flex-col">
-              <p className="text-xs font-bold text-[#F5E6D3]/70 uppercase tracking-wider mb-3">Результат</p>
-              <div className="text-base leading-[26px] whitespace-pre-wrap pb-4">{result}</div>
+          <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
+            <ResultContent content={result} titles={[test.name, 'Результат']} contents={false} variant="document" clayHeadings />
               {portraitState(profile) === 'ready' ? (
-                <>
+                <div className="mt-6 border-t border-[#F5E6D3]/10 pt-6">
                   <p className="text-sm text-[#F5E6D3]/80 mt-2">Все тесты пройдены — можно сформировать портрет личности.</p>
                   <button onClick={makePortrait} disabled={isGeneratingPortrait} className="ui-button ui-button--primary mt-4">
                     <Wand2 size={20} /> {isGeneratingPortrait ? 'Портрет формируется…' : 'Сформировать портрет'}
                   </button>
-                  <button onClick={exit} className="w-full mt-2 py-3 text-[#F5E6D3]/70 font-medium">Позже</button>
-                </>
-              ) : (
-                <button onClick={exit} className="ui-button ui-button--outline mt-4">
-                  Вернуться к тестам
-                </button>
-              )}
-            </div>
+                </div>
+              ) : null}
           </div>
         ) : isSubmitting ? (
           <div className="flex-1 flex flex-col justify-center items-center text-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#F5E6D3] border-t-transparent"></div>
+            <LoaderCircle size={48} className="animate-spin" aria-hidden="true" />
             <p className="text-[#F5E6D3] font-medium text-lg">Обработка результатов...</p>
           </div>
         ) : submitError ? (
@@ -269,28 +262,36 @@ export default function TestRunner({ test, image, onClose }) {
             )}
             <div className="relative flex-1 flex flex-col w-full min-h-[340px] mb-4">
               {/* Следующая карточка — под текущей */}
-              {index + 1 < questions.length && <div className="absolute inset-x-1 top-0 bottom-4 rounded-3xl bg-rose-800/30" aria-hidden="true" />}
+              {index + 1 < questions.length && <div className="test-question-back absolute inset-x-1 top-0 bottom-4 rounded-3xl" aria-hidden="true" />}
 
               <div
                 key={index}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
-                className={`absolute inset-2 bg-rose-900 rounded-3xl border border-[#F5E6D3]/10 p-6 sm:p-8 flex flex-col items-center justify-center text-center overflow-hidden cursor-grab active:cursor-grabbing select-none
+                className={`test-question-card relative m-2 flex-1 rounded-3xl flex flex-col items-center justify-center text-center overflow-hidden cursor-grab active:cursor-grabbing select-none
                   ${isDragging ? 'transition-none' : 'transition-all duration-500 ease-out'}
                   ${showTutorial && index === 0 && !isDragging && !swipingOut ? 'animate-swipe-hint' : ''}
                   ${swipingOut === 'right' ? 'translate-x-[150%] rotate-[10deg] opacity-0' : ''}
                   ${swipingOut === 'left' ? '-translate-x-[150%] -rotate-[10deg] opacity-0' : ''}
                 `}
-                style={(!swipingOut && isDragging) ? { transform: `translateX(${dragOffset}px) rotate(${dragOffset * 0.05}deg)` } : {}}
+                style={{
+                  '--question-art-top': categoryStyle?.frame?.topInset || '0%',
+                  '--question-art-bottom': categoryStyle?.frame?.bottomInset || '0%',
+                  ...((!swipingOut && isDragging) ? { transform: `translateX(${dragOffset}px) rotate(${dragOffset * 0.05}deg)` } : {}),
+                }}
               >
+                {categoryStyle?.frame && <div className="test-question-card__frame" aria-hidden="true">
+                  <img className="test-question-card__edge test-question-card__edge--top" src={categoryStyle.frame.top} alt="" draggable="false" />
+                  <img className="test-question-card__edge test-question-card__edge--bottom" src={categoryStyle.frame.bottom} alt="" draggable="false" />
+                </div>}
                 {/* Подсветка направления свайпа */}
                 <div
                   className="absolute inset-0 bg-[#F5E6D3] transition-opacity duration-200"
                   style={{ opacity: Math.min(Math.abs(dragOffset) / 300, 0.08) }}
                 />
 
-                <div className="flex-1 flex flex-col justify-center w-full relative z-10 overflow-y-auto overflow-x-hidden pointer-events-auto px-2">
+                <div className="test-question-card__content flex-1 flex flex-col justify-center w-full relative z-10 pointer-events-auto px-2">
                   <div className="flex items-center min-h-full">
                     <h4 className="text-[22px] leading-[30px] sm:text-[26px] sm:leading-[34px] font-bold text-[#F5E6D3] mx-auto w-full max-h-full text-balance">
                       {questions[index]?.name || 'Вопрос загружается...'}

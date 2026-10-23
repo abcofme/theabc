@@ -1,5 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useRef, useId } from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { PenLine } from '../../components/ClayIcon';
 import { readDraft, saveDraft, clearDraft } from './drafts';
 
 const WebApp = window.Telegram.WebApp;
@@ -65,7 +65,7 @@ export default function EntryForm({ title, initial, draftKey, submitLabel = 'С�
       <p className="ui-muted">{step === 'event' ? 'Событие · шаг 1 из 2' : 'Реакция · шаг 2 из 2'}</p>
       {step === 'reaction' && (
         <button type="button" onClick={() => changeStep('event')} disabled={isSubmitting} className="flex gap-2 text-left ui-secondary py-2">
-          <ChevronLeft size={20} className="shrink-0" />
+          <PenLine size={20} className="shrink-0" />
           <span><span className="line-clamp-3">{event}</span><span className="block underline underline-offset-4 mt-1">Изменить событие</span></span>
         </button>
       )}

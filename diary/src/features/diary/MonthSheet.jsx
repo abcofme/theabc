@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { format, parseISO, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, addMonths, subMonths } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from '../../components/ClayIcon';
 import Page from '../../components/Page';
 import ScreenState from '../../components/ScreenState';
 import { dayKey } from './utils';

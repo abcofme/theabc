@@ -1,4 +1,4 @@
-import { Trash2, Wand2 } from 'lucide-react';
+import { Trash2, Wand2 } from '../../components/ClayIcon';
 import Page from '../../components/Page';
 import ClayBanner from '../../components/ClayBanner';
 import ClayText from '../../components/ClayText';
@@ -75,7 +75,7 @@ export default function PortraitPage({ onBack }) {
           <p className="ui-secondary mb-4">Есть новые результаты тестов — портрет можно обновить.</p>
           <button type="button" onClick={generate} className="ui-button ui-button--primary"><Wand2 size={20} /> Обновить портрет</button>
         </section>}
-        {portrait ? <ResultContent content={content} titles={['Портрет личности', 'Мой портрет личности']} components={portraitComponents} variant="document" clayHeadings /> : state === 'ready' ? <section className="ui-card">
+        {portrait ? <ResultContent content={content} titles={['Портрет личности', 'Мой портрет личности']} components={portraitComponents} contents={false} variant="document" clayHeadings /> : state === 'ready' ? <section className="ui-card">
           <h3 className="text-lg font-semibold mb-3"><ClayText text="Все тесты пройдены" /></h3>
           <p className="ui-secondary mb-5">Можно сформировать портрет личности. Он поможет дневнику лучше понимать твои реакции.</p>
           <button type="button" onClick={generate} className="ui-button ui-button--primary"><Wand2 size={20} /> Сформировать портрет</button>

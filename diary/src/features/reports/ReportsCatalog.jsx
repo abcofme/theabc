@@ -1,4 +1,4 @@
-import { ChevronRight, FileText, LoaderCircle, Lock } from 'lucide-react';
+import { ChevronRight, FileText, LoaderCircle, Lock } from '../../components/ClayIcon';
 import ClayBanner from '../../components/ClayBanner';
 import ClayText from '../../components/ClayText';
 import Spinner from '../../components/Spinner';
@@ -79,7 +79,6 @@ export default function ReportsCatalog({ reports, jobs, active, onOpenType, onOp
           <section key={group.id} id={`reports-group-${group.id}`} className="flex flex-col gap-4 scroll-mt-4" aria-labelledby={`reports-group-title-${group.id}`}>
             <header className="px-1">
               <ClayText as="h2" id={`reports-group-title-${group.id}`} text={group.title} className="report-group-title" />
-              <p className="ui-secondary mt-1">{group.desc}</p>
             </header>
             {REPORT_TYPES.filter(t => t.group === group.id).map(type => (
               <TypeCard

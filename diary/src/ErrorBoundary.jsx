@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { CircleAlert, RotateCcw } from 'lucide-react';
+import { CircleAlert, RotateCcw } from './components/ClayIcon';
 
 export default class ErrorBoundary extends Component {
   state = { hasError: false, error: null, errorInfo: null };

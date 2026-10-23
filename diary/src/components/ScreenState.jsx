@@ -1,4 +1,4 @@
-import { CircleAlert, Inbox, LoaderCircle } from 'lucide-react';
+import { CircleAlert, Inbox, LoaderCircle } from './ClayIcon';
 
 export default function ScreenState({ title, description, loading = false, error = false, onRetry }) {
   const Icon = loading ? LoaderCircle : error ? CircleAlert : Inbox;

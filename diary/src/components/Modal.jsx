@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
+import { X } from './ClayIcon';
 import { useBackHandler } from '../navigation/backStack';
 
 // Окно по центру экрана. Закрывается крестиком, тапом мимо окна и кнопкой «Назад» Telegram
@@ -7,7 +7,7 @@ export default function Modal({ title, onClose, children, footer }) {
   useBackHandler(true, onClose);
 
   return createPortal(
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-rose-950/80 backdrop-blur-sm">
+    <div className="app-overlay app-overlay--modal fixed inset-0 z-[70] flex items-center justify-center p-4 bg-rose-950/80 backdrop-blur-sm">
       <div className="absolute inset-0" onClick={onClose} />
       <div role="dialog" aria-modal="true" aria-label={title} className="relative bg-rose-900 rounded-[2rem] w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl">
         <div className="flex items-start justify-between gap-3 p-5 pb-3">

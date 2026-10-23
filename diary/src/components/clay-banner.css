@@ -91,6 +91,18 @@ button.clay-banner:disabled .clay-banner__badge {
   min-width: 0;
 }
 
+.clay-banner__arrow {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+}
+
 .clay-banner__left {
   display: flex;
   flex: 1;
