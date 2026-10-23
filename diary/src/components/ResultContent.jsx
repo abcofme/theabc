@@ -35,9 +35,11 @@ export default function ResultContent({ content = '', components = {}, contents 
   const heading = (Tag) => function Heading({ node, children, className }) {
     const generatedId = useId();
     const number = node.properties?.['data-section-number'] ?? node.properties?.dataSectionNumber;
+    const text = nodeText(node);
+    const type = testResult && number && /^(.+?)\s+\(([^()]+)\)$/.exec(text);
     return <Tag id={node.position ? `${prefix}-${node.position.start.line}` : generatedId} className={`result-heading ${className || ''}`}>
       {number && (botanical ? <ClayLeaf index={Number(number) - 1} className="result-heading__leaf" /> : <span className="result-section-number" aria-hidden="true">{number}</span>)}
-      {clayHeadings ? <ClayText text={nodeText(node)} /> : <span className="result-heading__text">{children}</span>}
+      {clayHeadings ? (type ? <span className="result-heading__body"><ClayText text={type[1]} /><span className="result-heading__subtitle">({type[2]})</span></span> : <ClayText text={text} />) : <span className="result-heading__text">{children}</span>}
     </Tag>;
   };
   return (

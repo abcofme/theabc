@@ -29,6 +29,15 @@ function isStandaloneTestHeading(lines, index) {
   return !!body && !/^(?:[#>•●+*-]|\d+[.)]\s|`{3,}|~{3,})/.test(body) && /[.!?…]/.test(body);
 }
 
+function inlineTestHeading(lines, index) {
+  const line = lines[index].trim();
+  if ((index > 0 && lines[index - 1].trim()) || /^(?:[-*+•●]|\d+[.)])\s/.test(line)) return null;
+  const match = /^([^:\n]{3,160}):\s+(.+)$/.exec(line);
+  if (!match || /[.!?;*`<>|]/.test(match[1]) || match[1].split(/\s+/).length > 18 ||
+    (match[1].match(/\(/g)?.length || 0) !== (match[1].match(/\)/g)?.length || 0)) return null;
+  return match;
+}
+
 // Сохраненные ответы могут содержать обычные строки вместо Markdown-заголовков.
 // В тестах также распознаём отдельную строку заголовка перед описанием.
 export function formatResultText(content, titles = [], { testResult = false } = {}) {
@@ -51,6 +60,8 @@ export function formatResultText(content, titles = [], { testResult = false } = 
       if (testHeadings.has(plain.replace(/:$/, ''))) return `\n## ${plain.replace(/:$/, '')}\n`;
       const typed = /^([^.!?]+)\.\s+(.+)$/.exec(plain);
       if (typed && testTypes.has(typed[1])) return `\n## ${typed[1]}\n\n${typed[2]}\n`;
+      const inline = inlineTestHeading(lines, index);
+      if (inline) return `\n## ${inline[1].trim()}\n\n${inline[2]}\n`;
       if (isStandaloneTestHeading(lines, index)) return `\n## ${plain.replace(/:$/, '')}\n`;
     }
     const labeled = /^(?:\d+[.)]\s+)?(?:\*\*(.+?)\*\*\s*[:—–-]?\s+|([^:*]+?)\s*[:—–-]\s+)(.+)$/.exec(line.trim());
@@ -67,7 +78,7 @@ export function formatResultText(content, titles = [], { testResult = false } = 
   }).join('\n');
   const firstHeading = /^\s*#{1,2}\s+(.+?)\s*\n/.exec(formatted);
   if (firstHeading && titles.some(title => title?.trim().toLocaleLowerCase('ru') === firstHeading[1].trim().toLocaleLowerCase('ru'))) {
-    return formatted.slice(firstHeading[0].length).trim();
+    return formatResultText(formatted.slice(firstHeading[0].length).trim(), [], { testResult });
   }
   return formatted;
 }
@@ -100,7 +111,7 @@ export function remarkTestProse() {
       if (current) paragraphs.push(current);
       return paragraphs.map(text => {
         const summary = /^((?:(?:Ваш[а-яё]*|Тво[а-яё]*)\s+)?(?:главн[а-яё]*|основн[а-яё]*|ключев[а-яё]*)\s+[^.!?—–:\n]{1,70})\s*([—–:])\s+(.+)$/iu.exec(text);
-        const recommendation = /^((?:Вам|Тебе)\s+(?:подходят|подойдут|полезны|помогут)[^,.:!?]{0,55})(?=[,:])/i.exec(text);
+        const recommendation = /^((?:Вам|Тебе)\s+(?:подходят|подойдут|полезны|помогут|нужен|нужна|нужно|нужны)[^,.:!?]{0,55})(?=[,:])/i.exec(text);
         const label = (summary?.[1] || recommendation?.[1])?.trimEnd();
         return {
           ...node,

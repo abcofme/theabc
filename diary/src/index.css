@@ -178,7 +178,8 @@ input[type='date']::-webkit-calendar-picker-indicator { background: url('./asset
 .result-reader--document .result-heading, .result-reader--reply .result-heading { display: flex; align-items: flex-start; gap: 12px; min-width: 0; padding-left: 0; border-left: 0; text-wrap: initial; }
 .result-reader--document .result-heading { font-size: 25px; line-height: 1.4; }
 .result-section > .result-heading { margin: 0 0 20px; padding: 0 0 18px; border-bottom: 1px solid #71352D; }
-.result-heading > .clay-text, .result-heading__text { flex: 1; min-width: 0; }
+.result-heading > .clay-text, .result-heading__text, .result-heading__body { flex: 1; min-width: 0; }
+.result-heading__subtitle { display: block; margin-top: 8px; color: var(--ui-secondary); font-size: 15px; line-height: 23px; font-weight: 500; }
 .clay-leaf { display: block; flex-shrink: 0; width: 32px; height: 36px; object-fit: contain; pointer-events: none; user-select: none; }
 .result-heading__leaf { margin-top: 1px; }
 .result-intro-leaf { margin-bottom: 16px; }
