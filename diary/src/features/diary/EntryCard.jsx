@@ -42,7 +42,7 @@ function Reply({ text }) {
   return (
     <div className="diary-reply">
       <p className="diary-reply__head"><Leaf size={16} className="text-[#7BA887]" aria-hidden="true" /> Ответ дневника</p>
-      <ResultContent content={text} contents={false} compact />
+      <ResultContent content={text} contents={false} compact variant="reply" />
     </div>
   );
 }
@@ -62,11 +62,11 @@ export default function EntryCard({ entry, analysis, onDelete, onRetry, onEdit }
       </button>
       <div className="mb-4 pr-8">
         <Label>Событие</Label>
-        <p className="entry-event">{entry.event}</p>
+        <div className="entry-event"><ResultContent content={entry.event} contents={false} compact variant="entry" /></div>
       </div>
       <div>
         <Label>Реакция</Label>
-        <p className="text-base leading-6 text-[#F5E6D3] whitespace-pre-wrap">{entry.reaction}</p>
+        <ResultContent content={entry.reaction} contents={false} compact variant="entry" />
       </div>
 
       {analysis === 'pending' && (

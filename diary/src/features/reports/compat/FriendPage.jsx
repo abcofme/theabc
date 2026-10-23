@@ -113,7 +113,7 @@ export default function FriendPage({ friend, myGender: knownMyGender, myPortrait
           </section>
         ) : mode === 'view' && content ? (
           <>
-            <ResultContent content={content} />
+            <ResultContent content={content} variant="document" clayHeadings />
             {canCompare && (
               <button onClick={() => setMode('form')} className="ui-button ui-button--outline">
                 Пересчитать совместимость

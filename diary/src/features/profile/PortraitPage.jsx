@@ -1,6 +1,7 @@
 import { Trash2, Wand2 } from 'lucide-react';
 import Page from '../../components/Page';
 import ClayBanner from '../../components/ClayBanner';
+import ClayText from '../../components/ClayText';
 import ResultContent from '../../components/ResultContent';
 import GenerationProgress from '../../components/GenerationProgress';
 import { useProfile, portraitState } from '../../context/profile';
@@ -40,7 +41,7 @@ function ScaleCode({ className, children }) {
     try { scales = parseScales(String(children)); }
     catch { /* При неизвестном формате сохраняется весь исходный текст. */ }
   }
-  return scales.length ? <div>{scales.map((scale, index) => <PortraitScale key={index} scale={scale} />)}</div> : <code className={className}>{children}</code>;
+  return scales.length ? <div className="portrait-scales">{scales.map((scale, index) => <PortraitScale key={index} scale={scale} />)}</div> : <code className={className}>{children}</code>;
 }
 
 const portraitComponents = { pre: ({ children }) => <>{children}</>, code: ScaleCode };
@@ -64,7 +65,7 @@ export default function PortraitPage({ onBack }) {
   });
   const toTests = () => { onBack(); navigate({ tab: 'tests' }); };
   return (
-    <Page title="Портрет личности" onBack={onBack}>
+    <Page title="Портрет личности" onBack={onBack} clayTitle>
       <header className="mb-6">
         <ClayBanner id="portrait-hero" kind="profile" title="Мой портрет личности" description="Подробный анализ черт характера" image={portraitBanner} />
         {portrait?.updated_at && !isGeneratingPortrait && <p className="ui-secondary mt-3 px-1">Обновлен {formatDate(portrait.updated_at)}</p>}
@@ -74,12 +75,12 @@ export default function PortraitPage({ onBack }) {
           <p className="ui-secondary mb-4">Есть новые результаты тестов — портрет можно обновить.</p>
           <button type="button" onClick={generate} className="ui-button ui-button--primary"><Wand2 size={20} /> Обновить портрет</button>
         </section>}
-        {portrait ? <ResultContent content={content} titles={['Портрет личности', 'Мой портрет личности']} components={portraitComponents} /> : state === 'ready' ? <section className="ui-card">
-          <h3 className="text-lg font-semibold mb-3">Все тесты пройдены</h3>
+        {portrait ? <ResultContent content={content} titles={['Портрет личности', 'Мой портрет личности']} components={portraitComponents} variant="document" clayHeadings /> : state === 'ready' ? <section className="ui-card">
+          <h3 className="text-lg font-semibold mb-3"><ClayText text="Все тесты пройдены" /></h3>
           <p className="ui-secondary mb-5">Можно сформировать портрет личности. Он поможет дневнику лучше понимать твои реакции.</p>
           <button type="button" onClick={generate} className="ui-button ui-button--primary"><Wand2 size={20} /> Сформировать портрет</button>
         </section> : <section className="ui-card">
-          <h3 className="text-lg font-semibold mb-3">Портрет складывается из тестов</h3>
+          <h3 className="text-lg font-semibold mb-3"><ClayText text="Портрет складывается из тестов" /></h3>
           <p className="ui-secondary mb-5">Пройдено {profile?.passed_tests ?? 0} из {profile?.total_tests ?? 0}. Пройди оставшиеся тесты, чтобы сформировать портрет.</p>
           <button type="button" onClick={toTests} className="ui-button ui-button--primary">К тестам</button>
         </section>}

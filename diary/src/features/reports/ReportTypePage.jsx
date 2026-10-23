@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useId } from 'react';
 import { AlertTriangle, ChevronRight, FileText, Lock } from 'lucide-react';
 import Page from '../../components/Page';
 import ClayBanner from '../../components/ClayBanner';
+import ClayText from '../../components/ClayText';
 import GenerationProgress from '../../components/GenerationProgress';
 import { PERIODS, formatDay, periodLabel } from './reportTypes';
 import { FEW_ENTRIES, entriesLevel, groupLock, reportExcerpt } from './reportHelpers';
@@ -72,7 +73,7 @@ function NewReportForm({ type, onCreated, isGenerating, onGeneratingChange }) {
   if (isGenerating) return <section className="ui-card"><GenerationProgress text="Отчет формируется…" /><p className="ui-secondary text-center">Можно вернуться к другим делам. Когда отчет будет готов, он появится здесь, а бот пришлет сообщение.</p></section>;
   return (
     <section className="ui-card flex flex-col gap-4" aria-labelledby={`${periodId}-title`}>
-      <h3 id={`${periodId}-title`} className="text-lg leading-6 font-semibold">Новый отчет</h3>
+      <h3 id={`${periodId}-title`} className="text-lg leading-6 font-semibold"><ClayText text="Новый отчет" /></h3>
       <div>
         <p id={periodId} className="ui-secondary mb-2">Период</p>
         <div className="ui-chips" role="radiogroup" aria-labelledby={periodId}>
@@ -114,7 +115,7 @@ export default function ReportTypePage({ type, reports, onOpenReport, onCreated,
   const goToLock = () => { onBack(); navigate(lock.target); };
 
   return (
-    <Page title={type.shortTitle} onBack={onBack}>
+    <Page title={type.shortTitle} onBack={onBack} clayTitle>
       <div className="ui-stack">
         <div>
           <ClayBanner id={`report-hero-${type.id}`} kind="report" title={type.shortTitle} description={type.subtitle} image={type.image} />
@@ -139,7 +140,7 @@ export default function ReportTypePage({ type, reports, onOpenReport, onCreated,
           <section className="ui-card flex gap-3">
             <Lock size={18} className="shrink-0 mt-1 text-[#F5E6D3]/75" />
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold mb-1">{lock.label}</h3>
+              <h3 className="text-lg font-semibold mb-1"><ClayText text={lock.label} /></h3>
               <p className="ui-secondary mb-4">{lock.text}</p>
               <button type="button" onClick={goToLock} className="ui-button ui-button--primary">{lock.action}</button>
             </div>
@@ -149,7 +150,7 @@ export default function ReportTypePage({ type, reports, onOpenReport, onCreated,
         )}
 
         {earlier.length > 0 && <section>
-          <h3 className="ui-section-label mb-1">История</h3>
+          <h3 className="text-lg font-semibold mb-2"><ClayText text="История" /></h3>
           {earlier.map(report => (
             <button key={report.id} type="button" onClick={() => onOpenReport(report)} className="ui-row">
               <FileText size={20} className="shrink-0 text-[#F5E6D3]/75" />
