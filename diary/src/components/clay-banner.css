@@ -7,7 +7,7 @@
   overflow: hidden;
   border: 1px solid #f5e6d314;
   border-radius: 24px;
-  background: var(--color-rose-950);
+  background: var(--color-rose-900);
   color: #f5e6d3;
   text-align: left;
   box-shadow: 0 5px 16px #16030524;
@@ -31,6 +31,11 @@ button.clay-banner:focus-visible {
 
 button.clay-banner:disabled {
   cursor: not-allowed;
+}
+
+button.clay-banner:disabled .clay-banner__art,
+button.clay-banner:disabled .clay-banner__action,
+button.clay-banner:disabled .clay-banner__new {
   opacity: 0.65;
 }
 
