@@ -29,6 +29,6 @@ test('Цвета Telegram обновляются и при отсутствии 
   };
   syncTelegramTheme(app, 'light');
   syncTelegramTheme(app, 'dark');
-  assert.deepEqual(calls, [['background', '#F4ECDF'], ['bottom', '#FFF8EE'], ['background', '#2B0A0A'], ['bottom', '#541515']]);
+  assert.deepEqual(calls, [['background', '#E6D0AD'], ['bottom', '#F0DEC0'], ['background', '#2B0A0A'], ['bottom', '#541515']]);
   assert.doesNotThrow(() => syncTelegramTheme(undefined, 'light'));
 });

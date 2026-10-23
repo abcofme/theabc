@@ -9,7 +9,7 @@
     </script>
     <style>
       html { --app-bg: #2B0A0A; }
-      html[data-theme='light'] { --app-bg: #F4ECDF; }
+      html[data-theme='light'] { --app-bg: #E6D0AD; }
       html, body {
         background-color: var(--app-bg);
         margin: 0;
@@ -49,10 +49,10 @@
             tg.ready();
             tg.expand();
             if (typeof tg.setBackgroundColor === 'function') {
-              tg.setBackgroundColor(document.documentElement.dataset.theme === 'light' ? '#F4ECDF' : '#2B0A0A');
+              tg.setBackgroundColor(document.documentElement.dataset.theme === 'light' ? '#E6D0AD' : '#2B0A0A');
             }
             if (typeof tg.setHeaderColor === 'function') {
-              tg.setHeaderColor(document.documentElement.dataset.theme === 'light' ? '#F4ECDF' : '#2B0A0A');
+              tg.setHeaderColor(document.documentElement.dataset.theme === 'light' ? '#E6D0AD' : '#2B0A0A');
             }
           } catch (e) {
             console.error("Error initializing Telegram WebApp", e);

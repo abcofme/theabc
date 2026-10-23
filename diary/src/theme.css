@@ -17,17 +17,16 @@
   --clay-filter: none;
   --clay-inverse-filter: brightness(.48) sepia(.3);
   --clay-action-filter: none;
-  --clay-texture-wash: #2B0A0A73;
 }
 
 :root[data-theme='light'] {
   color-scheme: light;
   --color-rose-300: #AC776D;
   --color-rose-500: #A87569;
-  --color-rose-700: #D4B9A1;
-  --color-rose-800: #E8D7C2;
-  --color-rose-900: #FFF8EE;
-  --color-rose-950: #F4ECDF;
+  --color-rose-700: #C7A67E;
+  --color-rose-800: #DCC3A0;
+  --color-rose-900: #F0DEC0;
+  --color-rose-950: #E6D0AD;
   --color-emerald-300: #416746;
   --color-emerald-600: #527450;
   --color-emerald-700: #D2DFC7;
@@ -39,37 +38,38 @@
   --color-red-900: #EDCFC8;
   --ui-text: #5C2029;
   --ui-secondary: #754B49;
-  --ui-muted: #80625A;
+  --ui-muted: #745247;
   --ui-border: #5C202926;
-  --ui-gold: #7F5236;
+  --ui-gold: #784A2F;
   --ui-sage: #4D7151;
-  --ui-line: #DBC4B1;
-  --ui-inset: #F1E5D6;
-  --ui-table-alt: #F8EFE3;
-  --ui-quote: #E6EBD9;
+  --ui-line: #CBB08C;
+  --ui-inset: #E4CBA7;
+  --ui-table-alt: #EBD5B3;
+  --ui-quote: #DDE0C2;
   --ui-quote-border: #A9BC98;
-  --ui-stroke: #B59A86;
-  --ui-stroke-strong: #A18573;
+  --ui-stroke: #9C795B;
+  --ui-stroke-strong: #927158;
   --ui-hover: #5C20290A;
   --ui-subtle: #5C202908;
   --ui-track: #5C20291A;
   --ui-accent-border: #B99A76;
-  --ui-action: #D7E0CA;
-  --ui-action-hover: #C8D6B8;
+  --ui-action: #CCD4B2;
+  --ui-action-hover: #BFCB9F;
   --ui-on-action: #5C2029;
-  --ui-soft-green: #E5EAD8;
+  --ui-soft-green: #DADCC1;
   --clay-filter: brightness(.2) sepia(1) saturate(4) hue-rotate(300deg);
   --clay-inverse-filter: none;
   --clay-action-filter: var(--clay-filter);
-  --clay-texture-wash: #F4ECDF9C;
 }
 
-/* Нейтральная карта рельефа сохраняет цвет темы и мягкие следы лепки. */
-.app-shell, .app-overlay:not(.app-overlay--modal) {
-  background-image: linear-gradient(var(--clay-texture-wash), var(--clay-texture-wash)), url('./assets/textures/clay-relief.webp');
-  background-blend-mode: normal, soft-light;
-  background-size: auto, 560px 560px;
+/* Две готовые цветные фактуры: цвета уже записаны в изображения. */
+#root, .app-overlay:not(.app-overlay--modal) {
+  background-image: url('./assets/textures/clay-burgundy.webp');
+  background-size: 560px 560px;
 }
+:root[data-theme='light'] #root,
+:root[data-theme='light'] .app-overlay:not(.app-overlay--modal) { background-image: url('./assets/textures/clay-beige.webp'); }
+.app-shell { background: transparent; }
 .app-overlay--modal { background: var(--ui-scrim); }
 .clay-text { color: var(--ui-text); }
 .clay-text__glyph, .clay-icon, .clay-navigation__icon, .clay-leaf,

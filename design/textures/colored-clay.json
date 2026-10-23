@@ -1,0 +1,40 @@
+{
+  "mode": "built-in image_gen edit with exact color reference; final precolored bitmap export",
+  "runtime": "Direct background images; no CSS filters, overlays, blending or opacity.",
+  "textures": [
+    {
+      "name": "burgundy",
+      "base": "#2B0A0A",
+      "source": "clay-burgundy-source.png",
+      "output": "../../diary/src/assets/textures/clay-burgundy.webp",
+      "prompt": "EDIT TARGET: the attached flat color image, which is the exact mandatory color reference. Turn this same colored surface into a very gently hand-smoothed slab of real modelling plasticine. PRESERVE the reference's overall color and exposure exactly: #2B0A0A, RGB 43,10,10, very dark burgundy. Do not brighten or color-grade the image. Do not reinterpret the color. Add only extremely subtle broad shallow finger-pressure relief, with slightly lighter #310D0D and slightly darker #250707 variation. The vast majority of the surface must match the reference #2B0A0A. The color is more important than the visible relief. Calm large rounded impressions, soft waxy matte texture, no objects, no border, no lettering, no shadows from objects, no slab edges. No grain, no speckles, no pores, no fingerprints, no cracks, no detailed swirling. Uniform flat illumination, no exposure boost, no white cast, no gray cast, no vignette. Entire image is the surface. Seamlessly tileable on all four edges. Final image is a directly usable pre-colored background bitmap, no CSS tint, no compositing, no filter required.",
+      "export": {
+        "resize": "512x512",
+        "format": "lossless WebP",
+        "rgbCalibrationOffset": [
+          -14,
+          -1,
+          1
+        ],
+        "purpose": "Bake the exact requested median RGB into the image; preserve relief differences."
+      }
+    },
+    {
+      "name": "beige",
+      "base": "#E6D0AD",
+      "source": "clay-beige-source.png",
+      "output": "../../diary/src/assets/textures/clay-beige.webp",
+      "prompt": "EDIT TARGET: the attached flat color image, which is the exact mandatory color reference. Turn this same colored surface into a very gently hand-smoothed slab of real modelling plasticine. PRESERVE the reference's overall color and exposure exactly: #E6D0AD, RGB 230,208,173, warm pastel BEIGE / light sand. Do not brighten or color-grade the image. Do not reinterpret the color. Add only extremely subtle broad shallow finger-pressure relief, with slightly lighter #EBD7B9 and slightly darker #DEC5A1 variation. The vast majority of the surface must match the reference #E6D0AD. The color is more important than the visible relief. Calm large rounded impressions, soft waxy matte texture, no objects, no border, no lettering, no shadows from objects, no slab edges. No grain, no speckles, no pores, no fingerprints, no cracks, no detailed swirling. Uniform flat illumination, no exposure boost, no white cast, no gray cast, no vignette. Entire image is the surface. Seamlessly tileable on all four edges. Final image is a directly usable pre-colored background bitmap, no CSS tint, no compositing, no filter required.",
+      "export": {
+        "resize": "512x512",
+        "format": "lossless WebP",
+        "rgbCalibrationOffset": [
+          -1,
+          8,
+          16
+        ],
+        "purpose": "Bake the exact requested median RGB into the image; preserve relief differences."
+      }
+    }
+  ]
+}

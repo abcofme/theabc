@@ -1,7 +1,0 @@
-{
-  "mode": "built-in image_gen, new generation, opaque",
-  "prompt": "Use case: stylized-concept. Asset type: seamless repeating neutral relief texture for the background of a minimal mobile app. Create a top-down close-up of a continuous hand-smoothed slab of real modelling plasticine, not pottery clay. Single neutral mid-gray material (#808080), with gentle broad shallow thumb-pressure dents and softly smeared rounded kneading marks in irregular directions. Low contrast, tactile soft waxy matte surface, simple large forms, broad smooth depressions about 100-240 pixels across on a 1024x1024 canvas. Subtle rounded lifted edges of finger-smoothed marks should make the material unmistakably plasticine. Entire canvas is the surface; no visible slab edge, no objects or scene, no border, no lettering. Perfectly tileable on all four edges, even diffuse overhead lighting, no vignette, no large directional gradient. This will be softly blended over dark burgundy and pale beige UI surfaces, so keep the neutral gray tint uniform and the relief calm enough behind body text. Avoid granular noise, photographic pores, speckles, scratches, detailed fingerprints, cracks, rock, concrete, plaster, paper, fabric, wood grain, glossy plastic and swirly ornamental patterns.",
-  "source": "clay-relief-source.png",
-  "runtime": "../../diary/src/assets/textures/clay-relief.webp",
-  "export": "1024x1024 WebP, quality 85; CSS soft-light with theme-colored wash"
-}
