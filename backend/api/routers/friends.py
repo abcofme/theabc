@@ -227,7 +227,6 @@ async def _generate_compatibility(user_id: int, friend_id: int, compat_type: str
                 headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                 json={
                     "model": AI_MODEL,
-                    "max_tokens": 4096,
                     "messages": messages
                 }
             )
@@ -237,7 +236,6 @@ async def _generate_compatibility(user_id: int, friend_id: int, compat_type: str
                     headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                     json={
                         "model": AI_MODEL,
-                        "max_tokens": 4096,
                         "messages": messages
                     }
                 )
@@ -246,7 +244,14 @@ async def _generate_compatibility(user_id: int, friend_id: int, compat_type: str
                 return {"status": "error", "message": "AI service error"}
                 
             ai_data = ai_response.json()
-            content = ai_data["choices"][0]["message"]["content"].strip()
+            choice = (ai_data.get("choices") or [{}])[0]
+            content = ((choice.get("message") or {}).get("content") or "").strip()
+            print(f"AI compatibility {user_id}->{friend_id}: len={len(content)}, finish_reason={choice.get('finish_reason')}")
+            # Отчёт совместимости — несколько тысяч знаков. Пустой или короткий ответ — сбой агента,
+            # а не отчёт: не сохраняем его поверх прежнего, иначе на странице друга снова окажется форма
+            if len(content) < 200:
+                print(f"AI compatibility bad response: {ai_response.text[:500]}")
+                return {"status": "error", "message": "ИИ не смог составить анализ совместимости. Попробуйте еще раз."}
         
         # Check if exists
         async with async_session() as db_session:
