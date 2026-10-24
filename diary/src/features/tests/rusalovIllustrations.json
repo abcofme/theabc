@@ -1,0 +1,102 @@
+[
+  {
+    "id": 546,
+    "question": "Вы легко и с удовольствием беретесь за длительную умственную или физическую работу?",
+    "file": "rusalov-546-sustained-work-neutral.webp"
+  },
+  {
+    "id": 547,
+    "question": "Вы способны долго работать, не снижая темпа и качества, даже если задача монотонна?",
+    "file": "rusalov-547-steady-pace-neutral.webp"
+  },
+  {
+    "id": 548,
+    "question": "Вам нравится преодолевать трудности в работе, требующей усидчивости и напряжения?",
+    "file": "rusalov-548-persistence-neutral.webp"
+  },
+  {
+    "id": 549,
+    "question": "Вы быстро переключаетесь с одного вида работы на другой, не теряя эффективности?",
+    "file": "rusalov-549-task-switching-neutral.webp"
+  },
+  {
+    "id": 550,
+    "question": "Вам легко изменить привычный способ решения задачи, если он оказался неэффективным?",
+    "file": "rusalov-550-new-approach-neutral.webp"
+  },
+  {
+    "id": 551,
+    "question": "Ваш обычный темп работы можно назвать быстрым?",
+    "file": "rusalov-551-work-tempo-neutral.webp"
+  },
+  {
+    "id": 552,
+    "question": "Вы предпочитаете выполнять задания в высоком темпе, а не медленно и размеренно?",
+    "file": "rusalov-552-preferred-fast-pace-neutral.webp"
+  },
+  {
+    "id": 553,
+    "question": "Вы сильно расстраиваетесь, если не можете решить рабочую задачу с первого раза?",
+    "file": "rusalov-553-first-attempt-frustration-neutral.webp"
+  },
+  {
+    "id": 554,
+    "question": "Неудачи в работе надолго выбивают вас из эмоционального равновесия?",
+    "file": "rusalov-554-lingering-work-setback-neutral.webp"
+  },
+  {
+    "id": 555,
+    "question": "Вы остро переживаете, когда результат работы оказывается хуже ожидаемого?",
+    "file": "rusalov-555-expectation-result-neutral.webp"
+  },
+  {
+    "id": 556,
+    "question": "Вы легко заводите новые знакомства и стремитесь к расширению круга общения?",
+    "file": "rusalov-556-new-acquaintances-neutral.webp"
+  },
+  {
+    "id": 557,
+    "question": "Вы обычно активно участвуете в групповых мероприятиях и легко включаетесь в общую беседу?",
+    "file": "rusalov-557-joining-group-neutral.webp"
+  },
+  {
+    "id": 558,
+    "question": "Вы часто сами инициируете общение, а не ждете, пока к вам обратятся?",
+    "file": "rusalov-558-initiating-contact-neutral.webp"
+  },
+  {
+    "id": 559,
+    "question": "Вы легко приспосабливаетесь к новым людям и незнакомой компании?",
+    "file": "rusalov-559-unfamiliar-company-neutral.webp"
+  },
+  {
+    "id": 560,
+    "question": "Вам не составляет труда переключиться с одной темы разговора на другую или сменить стиль общения?",
+    "file": "rusalov-560-conversation-switching-neutral.webp"
+  },
+  {
+    "id": 561,
+    "question": "Ваша речь обычно быстрая и эмоционально выразительная?",
+    "file": "rusalov-561-expressive-speech-neutral.webp"
+  },
+  {
+    "id": 562,
+    "question": "Вы быстро отвечаете на вопросы собеседника, не делая длинных пауз?",
+    "file": "rusalov-562-quick-response-neutral.webp"
+  },
+  {
+    "id": 563,
+    "question": "Вы сильно переживаете, если кто-то критикует вас или неодобрительно отзывается?",
+    "file": "rusalov-563-sensitivity-criticism-neutral.webp"
+  },
+  {
+    "id": 564,
+    "question": "Вам бывает обидно, если собеседник не разделяет вашу точку зрения?",
+    "file": "rusalov-564-disagreement-hurt-neutral.webp"
+  },
+  {
+    "id": 565,
+    "question": "Вы долго помните неприятные моменты в общении и переживаете из-за них?",
+    "file": "rusalov-565-remembering-conflict-neutral.webp"
+  }
+]

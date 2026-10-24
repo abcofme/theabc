@@ -183,6 +183,13 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
 
   const questions = details?.questions || [];
   const illustration = questionIllustration(details || test, questions[index], categoryStyle?.theme);
+  const nextIllustration = questionIllustration(details || test, questions[index + 1], categoryStyle?.theme);
+  useEffect(() => {
+    if (nextIllustration) {
+      const image = new Image();
+      image.src = nextIllustration;
+    }
+  }, [nextIllustration]);
   const minutes = Math.max(1, Math.round((questions.length * SECONDS_PER_QUESTION) / 60));
 
   return createPortal(
