@@ -49,6 +49,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
   // Start while the introduction and question data are loading, with the resumed card first.
   useEffect(() => {
     const sources = testIllustrationSources(test, categoryStyle?.theme);
+    questionImages.retain(sources);
     const start = Math.min(saved.index, Math.max(sources.length - 1, 0));
     return questionImages.preload([...sources.slice(start), ...sources.slice(0, start)]);
   }, [test, categoryStyle?.theme, saved.index]);

@@ -70,3 +70,28 @@ test('Закрытие теста останавливает новые фоно
   assert.deepEqual(images.map(image => image.src), ['first', 'second', 'third']);
   assert.equal(await loader.load(undefined), false);
 });
+
+test('При смене теста освобождаются картинки прежнего набора, текущие остаются в кэше', async () => {
+  const { images, loader } = fixture();
+  const previous = loader.load('previous-test');
+  const current = loader.load('current-test');
+  await images[0].onload();
+  await images[1].onload();
+  loader.retain(['current-test']);
+  assert.equal(loader.load('current-test'), current);
+  assert.notEqual(loader.load('previous-test'), previous);
+  assert.equal(images.length, 3);
+});
+
+test('Ошибка освобождённой картинки не удаляет новый запрос при быстром возврате к тесту', async () => {
+  const { images, loader } = fixture();
+  const abandoned = loader.load('card');
+  loader.retain([]);
+  const restored = loader.load('card');
+  images[0].onerror();
+  assert.equal(await abandoned, false);
+  assert.equal(loader.load('card'), restored);
+  await images[1].onload();
+  assert.equal(await restored, true);
+  assert.equal(images.length, 2);
+});

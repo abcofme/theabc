@@ -15,17 +15,25 @@ export function createImagePreloader({ createImage = () => new Image(), concurre
     image.decoding = 'async';
     let resolve;
     const ready = new Promise(done => { resolve = done; });
-    images.set(src, { image, ready });
+    const entry = { image, ready };
+    images.set(src, entry);
     image.onload = async () => {
       try { await image.decode?.(); } catch { /* A loaded image remains usable if decode is unsupported. */ }
       resolve(true);
     };
     image.onerror = () => {
-      images.delete(src);
+      if (images.get(src) === entry) images.delete(src);
       resolve(false);
     };
     image.src = src;
     return ready;
+  }
+
+  function retain(sources) {
+    const current = new Set(sources);
+    for (const src of images.keys()) {
+      if (!current.has(src)) images.delete(src);
+    }
   }
 
   function preload(sources) {
@@ -42,7 +50,7 @@ export function createImagePreloader({ createImage = () => new Image(), concurre
     return () => { cancelled = true; };
   }
 
-  return { load, preload };
+  return { load, preload, retain };
 }
 
 export const questionImages = createImagePreloader();

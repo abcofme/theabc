@@ -1,18 +1,23 @@
-import manifest from './rusalovIllustrations.json';
+import rusalovManifest from './rusalovIllustrations.json';
+import manifest from './questionIllustrations.json';
 
-const images = import.meta.glob('../../assets/tests/questions/rusalov/*-neutral.webp', { eager: true, query: '?url', import: 'default' });
+const images = import.meta.glob('../../assets/tests/questions/**/*.webp', { eager: true, query: '?url', import: 'default' });
 const normalize = value => (value || '').toLocaleLowerCase('ru').replace(/ё/g, 'е').replace(/[^а-яa-z0-9]/g, '');
-const rusalov = new Map(manifest.map(({ question, file }) => [
-  normalize(question), images[`../../assets/tests/questions/rusalov/${file}`],
+const tests = [...manifest, {
+  testName: 'Опросник структуры темперамента (ОСТ) В.М. Русалова',
+  questions: rusalovManifest.map(entry => ({ ...entry, file: `rusalov/${entry.file}` })),
+}];
+const illustrations = new Map(tests.map(({ testName, questions }) => [
+  normalize(testName), new Map(questions.map(({ question, file }) => [
+    normalize(question), images[`../../assets/tests/questions/${file}`],
+  ])),
 ]));
 
 // Привязка к формулировке сохраняет сюжет при перестановке вопросов.
-export function questionIllustration(test, question, theme) {
-  if (theme !== 'temperament' || !normalize(test?.name).includes('русалов')) return undefined;
-  return rusalov.get(normalize(question?.name));
+export function questionIllustration(test, question) {
+  return illustrations.get(normalize(test?.name))?.get(normalize(question?.name));
 }
 
-export function testIllustrationSources(test, theme) {
-  if (theme !== 'temperament' || !normalize(test?.name).includes('русалов')) return [];
-  return [...rusalov.values()].filter(Boolean);
+export function testIllustrationSources(test) {
+  return [...(illustrations.get(normalize(test?.name))?.values() || [])].filter(Boolean);
 }
