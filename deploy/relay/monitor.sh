@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Мониторинг продакшена с ретранслятора (theabc-monitor.timer, раз в минуту).
 # После 2 неудачных проверок подряд шлёт алерт в Telegram, после восстановления — сообщение «снова работает».
-# Настройки в /etc/theabc-monitor.env: BOT_TOKEN, ALERT_CHAT_IDS (через пробел), HEALTH_URL
+# Настройки в /etc/theabc-monitor.env: BOT_TOKEN, ALERT_CHAT_IDS (через пробел),
+# HEALTH_URL — один или несколько через пробел: путь через NL (abcofme.ru) и прямой (direct.abcofme.ru)
 set -uo pipefail
 source /etc/theabc-monitor.env
 
@@ -17,7 +18,13 @@ notify() {
     done
 }
 
-if code=$(curl -s -m 15 -o /dev/null -w '%{http_code}' "$HEALTH_URL") && [ "$code" = "200" ]; then
+failed=""
+for url in $HEALTH_URL; do
+    code=$(curl -s -m 15 -o /dev/null -w '%{http_code}' "$url")
+    [ "$code" = "200" ] || failed="$failed $url ответил «${code:-нет ответа}»;"
+done
+
+if [ -z "$failed" ]; then
     if [ "$alerted" = "1" ]; then
         notify "✅ abcofme.ru снова работает"
     fi
@@ -25,7 +32,7 @@ if code=$(curl -s -m 15 -o /dev/null -w '%{http_code}' "$HEALTH_URL") && [ "$cod
 else
     fails=$((fails + 1)); echo "$fails" > "$state_dir/fails"
     if [ "$fails" -ge 2 ] && [ "$alerted" = "0" ]; then
-        notify "🔴 abcofme.ru недоступен: $HEALTH_URL ответил «${code:-нет ответа}» $fails раз подряд"
+        notify "🔴 abcofme.ru недоступен $fails раз подряд:$failed"
         echo 1 > "$state_dir/alerted"
     fi
 fi
