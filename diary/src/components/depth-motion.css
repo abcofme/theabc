@@ -1,0 +1,26 @@
+/* Эффект глубины: картинки сдвигаются вслед за наклоном телефона, каждая на свою глубину.
+   --tilt-x/--tilt-y от -1 до 1 пишет DepthMotion; --depth — сдвиг по горизонтали, --depth-y — по вертикали. */
+:root { --tilt-x: 0; --tilt-y: 0; }
+
+.clay-banner__art, .test-question-card__illustration img, .test-question-card__edge, .vine-card__vine,
+.profile-header__vine, .profile-header__avatar, .clay-leaf, .clay-text__glyph, .telegram-brand {
+  translate: calc(var(--tilt-x) * var(--depth)) calc(var(--tilt-y) * var(--depth-y, var(--depth)));
+}
+
+/* Обложки и рамки упираются в края карточки: пока картинка движется, она чуть крупнее, чтобы край не открывался */
+.clay-banner__art { --depth: 8px; --depth-y: 4px; }
+.test-question-card__edge { --depth: 6px; --depth-y: 0px; }
+:root[data-tilt] .clay-banner__art { scale: 1.06; }
+:root[data-tilt] .test-question-card__edge { scale: 1.05; }
+
+.test-question-card__illustration img { --depth: 10px; --depth-y: 6px; }
+.profile-header__vine { --depth: 7px; }
+.vine-card__vine { --depth: 5px; }
+.profile-header__avatar { --depth: 3px; }
+.clay-leaf { --depth: 4px; }
+.clay-text__glyph { --depth: 3px; }
+.telegram-brand { --depth: 2px; }
+/* Логотип и надпись в шапке двигаются вместе, буквы не получают второй сдвиг */
+.telegram-brand .clay-text__glyph { --depth: 0px; }
+
+:root[data-tilt] .clay-banner__art, :root[data-tilt] .test-question-card__illustration img { will-change: translate; }

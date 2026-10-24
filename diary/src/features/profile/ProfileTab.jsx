@@ -94,9 +94,9 @@ export default function ProfileTab({ request, active }) {
         <div className="profile-header__content flex flex-col items-center text-center w-full min-w-0">
           <Avatar
             src={tgUser.photo_url && tgUser.id ? `${API_URL}/api/avatar/${tgUser.id}` : null}
-            className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover shadow-lg shrink-0"
+            className="profile-header__avatar w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover shadow-lg shrink-0"
             fallback={
-              <div className="w-20 h-20 sm:w-24 sm:h-24 ui-avatar text-[var(--ui-text)] rounded-full flex items-center justify-center font-bold text-3xl shadow-inner shrink-0">
+              <div className="profile-header__avatar w-20 h-20 sm:w-24 sm:h-24 ui-avatar text-[var(--ui-text)] rounded-full flex items-center justify-center font-bold text-3xl shadow-inner shrink-0">
                 {tgUser.first_name?.[0] || <User size={36} />}
               </div>
             }
