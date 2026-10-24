@@ -11,3 +11,8 @@ export function questionIllustration(test, question, theme) {
   if (theme !== 'temperament' || !normalize(test?.name).includes('русалов')) return undefined;
   return rusalov.get(normalize(question?.name));
 }
+
+export function testIllustrationSources(test, theme) {
+  if (theme !== 'temperament' || !normalize(test?.name).includes('русалов')) return [];
+  return [...rusalov.values()].filter(Boolean);
+}

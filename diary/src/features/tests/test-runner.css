@@ -16,19 +16,20 @@
 .test-question-card__content { flex-shrink: 0; }
 
 .test-question-card.test-question-card--illustrated {
-  justify-content: space-between;
-  gap: 20px;
-  padding: 30px 20px 16px;
+  padding: 0 20px 16px;
 }
 
 .test-question-card--illustrated .test-question-card__content {
-  flex: 0 0 auto;
+  flex: 1 0 auto;
+  padding-top: 24px;
+  padding-bottom: 24px;
 }
 
 .test-question-card__illustration {
   position: relative;
   z-index: 1;
-  flex: 1 0 180px;
+  flex: 0 0 auto;
+  aspect-ratio: 3 / 2;
   width: 100%;
   pointer-events: none;
   user-select: none;

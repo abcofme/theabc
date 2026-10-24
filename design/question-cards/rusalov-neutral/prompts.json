@@ -2,6 +2,7 @@
   "testId": 27,
   "mode": "built-in image_gen",
   "transparent_background": true,
+  "webExport": { "maxWidth": 640, "format": "WebP", "quality": 78, "alphaQuality": 80, "method": 6 },
   "styleReference": "../../../diary/src/assets/tests/questions/rusalov/rusalov-546-sustained-work-neutral.webp",
   "reusedApprovedImage": {
     "id": 546,

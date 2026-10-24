@@ -7,7 +7,8 @@ import ClayText from '../../components/ClayText';
 import ResultContent from '../../components/ResultContent';
 import ScreenState from '../../components/ScreenState';
 import { readTestProgress, saveTestProgress, clearTestProgress, resumeTestProgress } from './testProgress';
-import { questionIllustration } from './questionIllustrations';
+import { questionIllustration, testIllustrationSources } from './questionIllustrations';
+import { questionImages } from '../../utils/imagePreloader';
 import { useBackHandler } from '../../navigation/backStack';
 import { useAppNav, useErrorHandler } from '../../navigation/appNav';
 import { useProfile, portraitState } from '../../context/profile';
@@ -44,6 +45,13 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
   const submissionLock = useRef(false);
   const [result, setResult] = useState(null);
   const [showTutorial, setShowTutorial] = useState(() => !storage(s => s.getItem(TUTORIAL_KEY)));
+
+  // Start while the introduction and question data are loading, with the resumed card first.
+  useEffect(() => {
+    const sources = testIllustrationSources(test, categoryStyle?.theme);
+    const start = Math.min(saved.index, Math.max(sources.length - 1, 0));
+    return questionImages.preload([...sources.slice(start), ...sources.slice(0, start)]);
+  }, [test, categoryStyle?.theme, saved.index]);
 
   // Swipe states
   const [dragOffset, setDragOffset] = useState(0);
@@ -185,11 +193,9 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
   const illustration = questionIllustration(details || test, questions[index], categoryStyle?.theme);
   const nextIllustration = questionIllustration(details || test, questions[index + 1], categoryStyle?.theme);
   useEffect(() => {
-    if (nextIllustration) {
-      const image = new Image();
-      image.src = nextIllustration;
-    }
-  }, [nextIllustration]);
+    void questionImages.load(illustration);
+    void questionImages.load(nextIllustration);
+  }, [illustration, nextIllustration]);
   const minutes = Math.max(1, Math.round((questions.length * SECONDS_PER_QUESTION) / 60));
 
   return createPortal(
@@ -309,7 +315,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
                 </div>
 
                 {illustration && <div className="test-question-card__illustration" aria-hidden="true">
-                  <img src={illustration} alt="" draggable="false" decoding="async" />
+                  <img src={illustration} alt="" draggable="false" decoding="async" fetchPriority="high" />
                 </div>}
 
                 {/* Какой ответ выбирается свайпом — одинаковыми метками, без оценки цветом */}
