@@ -211,6 +211,11 @@ COMPATIBILITY_OUTPUT_FORMAT = """ФОРМАТ ОТВЕТА (обязателен
 Между заголовками и абзацами — пустая строка. Без списков, таблиц, цитат, эмодзи и декоративных символов. Внутри текста жирным можно выделить только короткий фрагмент, не целое предложение."""
 
 
+# Модель сначала рассуждает, и рассуждения входят в лимит ответа. Агент по умолчанию даёт 4096 токенов —
+# их целиком съедали рассуждения, и текст отчёта оставался пустым (finish_reason=length)
+COMPATIBILITY_MAX_TOKENS = 16000
+
+
 async def _generate_compatibility_bg(user_id: int, friend_id: int, compat_type: str, my_gender: str, friend_gender: str, messages: list, ai_url: str, ai_token: str, charged: int):
     result = await _generate_compatibility(user_id, friend_id, compat_type, my_gender, friend_gender, messages, ai_url, ai_token)
     if result["status"] != "success":
@@ -221,12 +226,13 @@ async def _generate_compatibility_bg(user_id: int, friend_id: int, compat_type: 
 async def _generate_compatibility(user_id: int, friend_id: int, compat_type: str, my_gender: str, friend_gender: str, messages: list, ai_url: str, ai_token: str) -> dict:
     import httpx
     try:
-        async with httpx.AsyncClient(timeout=90.0) as client:
+        async with httpx.AsyncClient(timeout=180.0) as client:
             ai_response = await client.post(
                 ai_url,
                 headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                 json={
                     "model": AI_MODEL,
+                    "max_tokens": COMPATIBILITY_MAX_TOKENS,
                     "messages": messages
                 }
             )
@@ -236,6 +242,7 @@ async def _generate_compatibility(user_id: int, friend_id: int, compat_type: str
                     headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                     json={
                         "model": AI_MODEL,
+                        "max_tokens": COMPATIBILITY_MAX_TOKENS,
                         "messages": messages
                     }
                 )
