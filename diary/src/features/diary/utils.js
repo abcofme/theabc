@@ -47,7 +47,7 @@ export function analysisState(entry, isPending, lock) {
 }
 
 export function scoreColor(score) {
-  if (score <= 25) return 'bg-[#B46F65]';
+  if (score <= 25) return 'bg-[#A36E6B]';
   if (score <= 50) return 'bg-[#B88A4E]';
   if (score <= 75) return 'bg-[#D6AE68]';
   return 'bg-[#7BA887]';

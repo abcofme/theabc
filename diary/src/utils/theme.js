@@ -11,8 +11,8 @@ export function saveTheme(storage, theme) {
 }
 
 export function syncTelegramTheme(webApp, theme) {
-  const background = theme === 'light' ? '#E6D0AD' : '#2B0A0A';
-  const bar = theme === 'light' ? '#F0DEC0' : '#541515';
+  const background = theme === 'light' ? '#E6D0AD' : '#3B1819';
+  const bar = theme === 'light' ? '#F0DEC0' : '#582626';
   for (const [method, color] of [['setBackgroundColor', background], ['setHeaderColor', background], ['setBottomBarColor', bar]]) {
     try { webApp?.[method]?.(color); }
     catch { /* Старые клиенты Telegram могут не поддерживать один из методов. */ }

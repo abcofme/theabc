@@ -1,7 +1,7 @@
 :root {
-  --ui-line: #71352D;
-  --ui-inset: #3D1010;
-  --ui-table-alt: #481313;
+  --ui-line: #6D3E3C;
+  --ui-inset: #481F20;
+  --ui-table-alt: #502324;
   --ui-quote: #24362A;
   --ui-quote-border: #4D6955;
   --ui-stroke: #F5E6D340;
@@ -12,16 +12,16 @@
   --ui-accent-border: #E5C39859;
   --ui-on-action: #F5E6D3;
   --ui-action-hover: #096D50;
-  --ui-scrim: #170505CC;
+  --ui-scrim: #2D1212CC;
   --ui-soft-green: #163D2D;
   --clay-filter: none;
   --clay-inverse-filter: brightness(.48) sepia(.3);
   --clay-action-filter: none;
   /* Объем пластилина: блик сверху, тень снизу, бортик и мягкая тень под блоком */
-  --clay-raised: inset 0 1.5px 0 #F5E6D324, inset 0 -3px 2px #16050566, 0 4px 0 #1C0606, 0 10px 18px #12030366;
-  --clay-raised-sm: inset 0 1px 0 #F5E6D324, inset 0 -2px 1px #16050566, 0 3px 0 #1C0606, 0 6px 10px #1203034D;
-  --clay-pressed: inset 0 2px 4px #120303A6, inset 0 -1px 0 #F5E6D314;
-  --clay-nav: inset 0 1.5px 0 #F5E6D31F, 0 -6px 18px #1203034D;
+  --clay-raised: inset 0 1.5px 0 #F5E6D324, inset 0 -3px 2px #220D0E66, 0 4px 0 #2B1112, 0 10px 18px #1A080966;
+  --clay-raised-sm: inset 0 1px 0 #F5E6D324, inset 0 -2px 1px #220D0E66, 0 3px 0 #2B1112, 0 6px 10px #1A08094D;
+  --clay-pressed: inset 0 2px 4px #1C0A0B99, inset 0 -1px 0 #F5E6D314;
+  --clay-nav: inset 0 1.5px 0 #F5E6D31F, 0 -6px 18px #1A08094D;
 }
 
 :root[data-theme='light'] {
@@ -41,10 +41,10 @@
   --color-red-300: #8B3236;
   --color-red-400: #963F43;
   --color-red-900: #EDCFC8;
-  --ui-text: #5C2029;
+  --ui-text: #602F31;
   --ui-secondary: #754B49;
   --ui-muted: #745247;
-  --ui-border: #5C202926;
+  --ui-border: #602F3126;
   --ui-gold: #784A2F;
   --ui-sage: #4D7151;
   --ui-line: #CBB08C;
@@ -54,15 +54,15 @@
   --ui-quote-border: #A9BC98;
   --ui-stroke: #9C795B;
   --ui-stroke-strong: #927158;
-  --ui-hover: #5C20290A;
-  --ui-subtle: #5C202908;
-  --ui-track: #5C20291A;
+  --ui-hover: #602F310A;
+  --ui-subtle: #602F3108;
+  --ui-track: #602F311A;
   --ui-accent-border: #B99A76;
   --ui-action: #CCD4B2;
   --ui-action-hover: #BFCB9F;
-  --ui-on-action: #5C2029;
+  --ui-on-action: #602F31;
   --ui-soft-green: #DADCC1;
-  --clay-filter: brightness(.2) sepia(1) saturate(4) hue-rotate(300deg);
+  --clay-filter: brightness(.25) sepia(1) saturate(2.5) hue-rotate(305deg);
   --clay-inverse-filter: none;
   --clay-action-filter: var(--clay-filter);
   --clay-raised: inset 0 2px 1px #FFF8EFBF, inset 0 -3px 2px #B4916D4D, 0 4px 0 #CDB492, 0 10px 18px #6639232E;
@@ -115,13 +115,13 @@ input[type='date']::-webkit-calendar-picker-indicator { filter: var(--clay-filte
 :root[data-theme='light'] .test-retake-button:active:not(:disabled) { background: #DCC19E; box-shadow: inset 0 2px 3px #B4916D66; }
 
 .ui-switch { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; width: 52px; min-height: 44px; padding: 0; border-radius: 14px; }
-.ui-switch__track { position: relative; display: block; width: 48px; height: 28px; border-radius: 99px; background: var(--color-rose-950); box-shadow: inset 0 1px 3px #16050540; transition: background-color 180ms ease; }
-.ui-switch__thumb { position: absolute; top: 4px; left: 4px; width: 20px; height: 20px; border-radius: 50%; background: #F5E6D3; box-shadow: inset 0 1px 2px #FFF8EFB3, inset 0 -2px 2px #B4937266, 0 1px 3px #1605054D; transition: transform 180ms ease; }
+.ui-switch__track { position: relative; display: block; width: 48px; height: 28px; border-radius: 99px; background: var(--color-rose-950); box-shadow: inset 0 1px 3px #220D0E40; transition: background-color 180ms ease; }
+.ui-switch__thumb { position: absolute; top: 4px; left: 4px; width: 20px; height: 20px; border-radius: 50%; background: #F5E6D3; box-shadow: inset 0 1px 2px #FFF8EFB3, inset 0 -2px 2px #B4937266, 0 1px 3px #220D0E4D; transition: transform 180ms ease; }
 .ui-switch[aria-checked='true'] .ui-switch__track { background: #006045; }
 .ui-switch[aria-checked='true'] .ui-switch__thumb { transform: translateX(20px); }
 .ui-switch:disabled { opacity: .45; }
 :root[data-theme='light'] .ui-switch__track { background: #D7C5B2; box-shadow: inset 0 1px 3px #70472B33; }
-:root[data-theme='light'] .ui-switch[aria-checked='true'] .ui-switch__track { background: #762C38; }
+:root[data-theme='light'] .ui-switch[aria-checked='true'] .ui-switch__track { background: #723C3E; }
 
 /* Все блоки объемные: карточки и кнопки выпуклые, поля и дорожки вдавлены */
 .ui-card, .clay-banner, .clay-group, .test-question-card, .ui-dialog, .clay-raised { box-shadow: var(--clay-raised); }

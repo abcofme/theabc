@@ -8,7 +8,7 @@
       try { document.documentElement.dataset.theme = localStorage.getItem('azbuka-theme') === 'light' ? 'light' : 'dark'; } catch (e) {}
     </script>
     <style>
-      html { --app-bg: #2B0A0A; }
+      html { --app-bg: #3B1819; }
       html[data-theme='light'] { --app-bg: #E6D0AD; }
       html, body {
         background-color: var(--app-bg);
@@ -49,10 +49,10 @@
             tg.ready();
             tg.expand();
             if (typeof tg.setBackgroundColor === 'function') {
-              tg.setBackgroundColor(document.documentElement.dataset.theme === 'light' ? '#E6D0AD' : '#2B0A0A');
+              tg.setBackgroundColor(document.documentElement.dataset.theme === 'light' ? '#E6D0AD' : '#3B1819');
             }
             if (typeof tg.setHeaderColor === 'function') {
-              tg.setHeaderColor(document.documentElement.dataset.theme === 'light' ? '#E6D0AD' : '#2B0A0A');
+              tg.setHeaderColor(document.documentElement.dataset.theme === 'light' ? '#E6D0AD' : '#3B1819');
             }
           } catch (e) {
             console.error("Error initializing Telegram WebApp", e);
