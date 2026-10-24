@@ -7,6 +7,7 @@ import ClayText from '../../components/ClayText';
 import ResultContent from '../../components/ResultContent';
 import ScreenState from '../../components/ScreenState';
 import { readTestProgress, saveTestProgress, clearTestProgress, resumeTestProgress } from './testProgress';
+import { questionIllustration } from './questionIllustrations';
 import { useBackHandler } from '../../navigation/backStack';
 import { useAppNav, useErrorHandler } from '../../navigation/appNav';
 import { useProfile, portraitState } from '../../context/profile';
@@ -181,6 +182,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
   };
 
   const questions = details?.questions || [];
+  const illustration = questionIllustration(details || test, questions[index], categoryStyle?.theme);
   const minutes = Math.max(1, Math.round((questions.length * SECONDS_PER_QUESTION) / 60));
 
   return createPortal(
@@ -269,7 +271,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
-                className={`test-question-card relative m-2 flex-1 rounded-3xl flex flex-col items-center justify-center text-center overflow-hidden cursor-grab active:cursor-grabbing select-none
+                className={`test-question-card ${illustration ? 'test-question-card--illustrated' : ''} relative m-2 flex-1 rounded-3xl flex flex-col items-center justify-center text-center overflow-hidden cursor-grab active:cursor-grabbing select-none
                   ${isDragging ? 'transition-none' : 'transition-all duration-500 ease-out'}
                   ${showTutorial && index === 0 && !isDragging && !swipingOut ? 'animate-swipe-hint' : ''}
                   ${swipingOut === 'right' ? 'translate-x-[150%] rotate-[10deg] opacity-0' : ''}
@@ -281,7 +283,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
                   ...((!swipingOut && isDragging) ? { transform: `translateX(${dragOffset}px) rotate(${dragOffset * 0.05}deg)` } : {}),
                 }}
               >
-                {categoryStyle?.frame && <div className="test-question-card__frame" aria-hidden="true">
+                {!illustration && categoryStyle?.frame && <div className="test-question-card__frame" aria-hidden="true">
                   <img className="test-question-card__edge test-question-card__edge--top" src={categoryStyle.frame.top} alt="" draggable="false" />
                   <img className="test-question-card__edge test-question-card__edge--bottom" src={categoryStyle.frame.bottom} alt="" draggable="false" />
                 </div>}
@@ -298,6 +300,10 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
                     </h4>
                   </div>
                 </div>
+
+                {illustration && <div className="test-question-card__illustration" aria-hidden="true">
+                  <img src={illustration} alt="" draggable="false" decoding="async" />
+                </div>}
 
                 {/* Какой ответ выбирается свайпом — одинаковыми метками, без оценки цветом */}
                 <span className="absolute top-6 left-6 bg-[var(--ui-text)] text-rose-950 font-bold text-base px-4 py-1.5 rounded-full pointer-events-none transition-opacity duration-200" style={{ opacity: dragOffset > 30 ? Math.min(dragOffset / 100, 1) : 0 }}>
