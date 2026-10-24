@@ -9,7 +9,7 @@ export default function Modal({ title, onClose, children, footer }) {
   return createPortal(
     <div className="app-overlay app-overlay--modal fixed inset-0 z-[70] flex items-center justify-center p-4 bg-rose-950/80 backdrop-blur-sm">
       <div className="absolute inset-0" onClick={onClose} />
-      <div role="dialog" aria-modal="true" aria-label={title} className="relative bg-rose-900 rounded-[2rem] w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl">
+      <div role="dialog" aria-modal="true" aria-label={title} className="ui-dialog relative bg-rose-900 rounded-[2rem] w-full max-w-lg max-h-[85vh] flex flex-col">
         <div className="flex items-start justify-between gap-3 p-5 pb-3">
           <h3 className="text-lg font-bold text-[var(--ui-text)] leading-snug">{title}</h3>
           <button type="button" onClick={onClose} aria-label="Закрыть" className="ui-icon-button -m-1 shrink-0">

@@ -41,9 +41,9 @@ export default function MonthSheet({ today, daysWithEntries, onLoadMonth, onSele
     <Page title="Календарь" onBack={onClose}>
       <div className="calendar-grid">
         <div className="flex items-center justify-between mb-4">
-          <button type="button" onClick={() => changeMonth(subMonths(month, 1))} aria-label="Предыдущий месяц" className="ui-icon-button bg-rose-900"><ChevronLeft size={20} /></button>
+          <button type="button" onClick={() => changeMonth(subMonths(month, 1))} aria-label="Предыдущий месяц" className="ui-icon-button clay-raised-sm bg-rose-900"><ChevronLeft size={20} /></button>
           <h3 className="text-lg font-semibold capitalize">{format(month, 'LLLL yyyy', { locale: ru })}</h3>
-          <button type="button" onClick={() => changeMonth(addMonths(month, 1))} disabled={isCurrentMonth} aria-label="Следующий месяц" className="ui-icon-button bg-rose-900 disabled:opacity-35"><ChevronRight size={20} /></button>
+          <button type="button" onClick={() => changeMonth(addMonths(month, 1))} disabled={isCurrentMonth} aria-label="Следующий месяц" className="ui-icon-button clay-raised-sm bg-rose-900 disabled:opacity-35"><ChevronRight size={20} /></button>
         </div>
         {status === 'error' ? <ScreenState error title="Не удалось загрузить записи" onRetry={() => { setStatus('loading'); setRetry(t => t + 1); }} /> : (
           <div className="ui-card p-3!" aria-busy={status === 'loading'}>

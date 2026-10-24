@@ -29,7 +29,7 @@ function MatchScale({ score }) {
 
   return (
     <div className="flex items-center gap-3">
-      <div className="h-1.5 flex-1 bg-rose-950 rounded-full overflow-hidden relative">
+      <div className="clay-pressed h-1.5 flex-1 bg-rose-950 rounded-full overflow-hidden relative">
         <div className={`absolute inset-y-0 left-0 ${scoreColor(score)}`} style={{ width: `${shown}%` }} />
       </div>
       <span className="text-sm font-bold text-[var(--ui-text)] min-w-[4ch] text-right">{Math.round(shown)}%</span>

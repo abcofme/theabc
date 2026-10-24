@@ -431,7 +431,7 @@ export default function AdminPanel() {
             <span className="text-xl font-bold text-[var(--ui-text)]">{stats.diary_entries || 0}</span>
           </div>
 
-          <div className="bg-rose-900 border border-[var(--ui-text)]/10 rounded-3xl overflow-hidden shadow-sm transition-all duration-300">
+          <div className="bg-rose-900 border border-[var(--ui-text)]/10 rounded-3xl overflow-hidden clay-raised transition-all duration-300">
             <button
               onClick={() => setOpenReports(!openReports)}
               className="w-full flex items-center justify-between p-5 hover:bg-rose-800/70 transition-colors active:bg-rose-800"
@@ -475,7 +475,7 @@ export default function AdminPanel() {
 
           </div>
           <h3 className="text-xl font-bold text-[var(--ui-text)] mt-8 mb-4">Управление доступом</h3>
-          <div className="ui-card flex flex-col gap-4 shadow-sm">
+          <div className="ui-card flex flex-col gap-4">
             <div>
               <label className="text-[var(--ui-text)] text-sm font-medium mb-1 block">Telegram @username пользователя:</label>
               <input 
@@ -500,13 +500,13 @@ export default function AdminPanel() {
             <button 
               onClick={handleGrantAccess}
               disabled={isGranting}
-              className="w-full ui-action-surface disabled:opacity-50  font-bold py-3.5 rounded-xl transition-colors shadow-sm"
+              className="w-full ui-action-surface disabled:opacity-50  font-bold py-3.5 rounded-xl transition-colors clay-raised-sm"
             >
               {isGranting ? "Обработка..." : "Выдать права"}
             </button>
           </div>
 
-          <div className="ui-card flex flex-col gap-4 shadow-sm mt-4">
+          <div className="ui-card flex flex-col gap-4 mt-4">
             <div>
               <label className="text-[var(--ui-text)] text-sm font-medium mb-1 block">Забрать права у @username:</label>
               <input 
@@ -530,7 +530,7 @@ export default function AdminPanel() {
             <button 
               onClick={handleRevokeAccess}
               disabled={isRevoking}
-              className="w-full bg-rose-800 hover:bg-rose-700 disabled:opacity-50 text-[var(--ui-text)] font-bold py-3.5 rounded-xl transition-colors shadow-sm"
+              className="w-full bg-rose-800 hover:bg-rose-700 disabled:opacity-50 text-[var(--ui-text)] font-bold py-3.5 rounded-xl transition-colors clay-raised-sm"
             >
               {isRevoking ? "Обработка..." : "Забрать права"}
             </button>
@@ -538,7 +538,7 @@ export default function AdminPanel() {
 
           <h3 className="text-xl font-bold text-[var(--ui-text)] mt-8 mb-2">Статистика по тестам</h3>
           {(stats.tests || []).map(cat => (
-            <div key={cat.id} className="bg-rose-900 border border-[var(--ui-text)]/10 rounded-3xl overflow-hidden shadow-sm transition-all duration-300">
+            <div key={cat.id} className="bg-rose-900 border border-[var(--ui-text)]/10 rounded-3xl overflow-hidden clay-raised transition-all duration-300">
               <button
                 onClick={() => toggleCategory(cat.id)}
                 className="w-full flex items-center justify-between p-4 hover:bg-rose-800/70 transition-colors active:bg-rose-800"
@@ -682,7 +682,7 @@ export default function AdminPanel() {
           </div>
           <div className="bg-rose-900/40 p-4 rounded-3xl">
             {(stats.tests || []).map(cat => (
-              <div key={`edit-cat-${cat.id}`} className="bg-rose-900 border border-[var(--ui-text)]/10 rounded-3xl overflow-hidden shadow-sm transition-all duration-300 mb-3 last:mb-0">
+              <div key={`edit-cat-${cat.id}`} className="bg-rose-900 border border-[var(--ui-text)]/10 rounded-3xl overflow-hidden clay-raised transition-all duration-300 mb-3 last:mb-0">
                 <button
                   onClick={() => setOpenDeleteCategory(openDeleteCategory === cat.id ? null : cat.id)}
                   className="w-full flex items-center justify-between p-4 hover:bg-rose-800/70 transition-colors active:bg-rose-800"

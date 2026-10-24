@@ -160,7 +160,7 @@ function Shell() {
         </main>
 
         {!isNavHidden && (
-          <nav aria-label="Главное меню" className="fixed bottom-0 left-0 w-full bg-rose-900 border-t border-[var(--ui-text)]/10 p-2 pb-safe z-50">
+          <nav aria-label="Главное меню" className="clay-navigation fixed bottom-0 left-0 w-full bg-rose-900 border-t border-[var(--ui-text)]/10 p-2 pb-safe z-50">
             <div className="flex max-w-2xl mx-auto gap-1">
             {TABS.map(tab => {
               const isActive = activeTab === tab.id;

@@ -108,7 +108,7 @@ export default function CompatibilitySection() {
       {hasRequests && (
         <section className="flex flex-col gap-2">
           <SectionLabel>Заявки</SectionLabel>
-          <div className="bg-rose-900 rounded-3xl divide-y divide-[var(--ui-text)]/10 overflow-hidden">
+          <div className="clay-raised bg-rose-900 rounded-3xl divide-y divide-[var(--ui-text)]/10 overflow-hidden">
             {data.incoming_requests.map(req => (
               <FriendRow key={req.request_id} user={req} caption={<span className="block text-xs text-[var(--ui-muted)]">Хочет дружить</span>}>
                 <button onClick={() => act(`/api/friends/accept/${req.request_id}`)} aria-label="Принять" className="ui-icon-button ui-inverse-surface bg-[var(--ui-text)] text-rose-950!">
@@ -121,7 +121,7 @@ export default function CompatibilitySection() {
             ))}
             {data.outgoing_requests.map(req => (
               <FriendRow key={req.request_id} user={req} caption={<span className="block text-xs text-[var(--ui-muted)]">Ждет ответа</span>}>
-                <button onClick={() => act(`/api/friends/reject/${req.request_id}`)} className="min-h-11 px-3 text-sm font-medium text-[var(--ui-secondary)] bg-rose-950 rounded-xl">
+                <button onClick={() => act(`/api/friends/reject/${req.request_id}`)} className="clay-raised-sm min-h-11 px-3 text-sm font-medium text-[var(--ui-secondary)] bg-rose-950 rounded-xl">
                   Отменить
                 </button>
               </FriendRow>
@@ -138,11 +138,11 @@ export default function CompatibilitySection() {
           </button>
         </div>
         {data.friends.length === 0 ? (
-          <p className="text-sm text-[var(--ui-secondary)] text-center py-6 px-4 leading-relaxed bg-rose-900/40 rounded-3xl">
+          <p className="text-sm text-[var(--ui-secondary)] text-center py-6 px-4 leading-relaxed clay-pressed bg-rose-900/40 rounded-3xl">
             Пока никого. Отправь другу личную ссылку — он появится здесь, как только ее откроет.
           </p>
         ) : (
-          <div className="bg-rose-900 rounded-3xl divide-y divide-[var(--ui-text)]/10 overflow-hidden">
+          <div className="clay-raised bg-rose-900 rounded-3xl divide-y divide-[var(--ui-text)]/10 overflow-hidden">
             {[...data.friends].sort((a, b) => Number(b.has_compatibility) - Number(a.has_compatibility)).map(friend => {
               const status = compatStatus(friend, myPortrait);
               return (

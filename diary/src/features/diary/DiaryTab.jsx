@@ -99,7 +99,7 @@ export default function DiaryTab() {
         <button
           onClick={() => setIsMonthOpen(true)}
           aria-label="Открыть календарь"
-          className="ui-icon-button bg-rose-900 shrink-0"
+          className="ui-icon-button clay-raised-sm bg-rose-900 shrink-0"
         >
           <CalendarDays size={24} />
         </button>
@@ -148,7 +148,7 @@ export default function DiaryTab() {
                 <button
                   key={key}
                   onClick={() => setOpenDay(key)}
-                  className="w-full flex items-center gap-3 bg-rose-900 rounded-2xl px-4 py-3 text-left text-[var(--ui-text)] active:scale-[0.98]"
+                  className="clay-raised-sm w-full flex items-center gap-3 bg-rose-900 rounded-2xl px-4 py-3 text-left text-[var(--ui-text)]"
                 >
                   <span className="text-xs text-[var(--ui-secondary)] shrink-0 whitespace-nowrap first-letter:uppercase">
                     {format(parseISO(key), 'EEEEEE, d MMM', { locale: ru })}

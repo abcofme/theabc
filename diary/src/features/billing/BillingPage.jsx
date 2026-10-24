@@ -73,7 +73,7 @@ export default function BillingPage({ onBack }) {
             <h3 className="text-lg font-semibold mb-3">Оплата с баланса</h3>
             <div className="mb-6">{FEATURE_PRICES.map(([key, label]) => <Row key={key} label={label} value={`${prices[key]} ₽`} />)}</div>
             <h4 className="font-semibold mb-3">Пополнить баланс</h4>
-            <div className="grid grid-cols-2 min-[360px]:grid-cols-4 gap-2 mb-4">{QUICK_AMOUNTS.map(value => <button key={value} type="button" aria-pressed={sum === value} onClick={() => setAmount(String(value))} className={`min-h-11 rounded-xl text-sm font-semibold ${sum === value ? 'bg-[var(--ui-text)] text-rose-950' : 'bg-rose-950 text-[var(--ui-text)]'}`}>{value} ₽</button>)}</div>
+            <div className="grid grid-cols-2 min-[360px]:grid-cols-4 gap-2 mb-4">{QUICK_AMOUNTS.map(value => <button key={value} type="button" aria-pressed={sum === value} onClick={() => setAmount(String(value))} className={`clay-raised-sm min-h-11 rounded-xl text-sm font-semibold ${sum === value ? 'bg-[var(--ui-text)] text-rose-950' : 'bg-rose-950 text-[var(--ui-text)]'}`}>{value} ₽</button>)}</div>
             <label className="ui-secondary block" htmlFor={`${id}-amount`}>Своя сумма, от {prices.min_topup} до {prices.max_topup} ₽</label>
             <input id={`${id}-amount`} type="number" inputMode="numeric" min={prices.min_topup} max={prices.max_topup} value={amount} onChange={event => setAmount(event.target.value.replace(/\D/g, ''))} className="ui-input mt-2" />
             {consent}
