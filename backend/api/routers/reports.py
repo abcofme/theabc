@@ -113,7 +113,9 @@ async def _notify_if_unread(user_id: int, report_id: int, title: str):
         report = await db.get(BehavioralReport, report_id)
         if not report or report.is_read:
             return
-    await notify(user_id, f"📊 <b>Отчет «{html.escape(title)}» готов</b>", f"tab=reports&report={report_id}", "Открыть отчет")
+    await notify(user_id, f"📊 <b>Отчет «{html.escape(title)}» готов</b>\n\n"
+                          "<i>Он собран по твоим записям в дневнике</i> 👇",
+                 f"tab=reports&report={report_id}", "📊 Открыть отчет")
 
 
 async def _generate_report_bg(user_id: int, report_title: str, report_prompt: str, start_d, end_d, ai_url: str, ai_token: str, num_entries: int, charged: int):

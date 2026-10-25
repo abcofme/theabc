@@ -9,22 +9,22 @@ from backend.telegram.keyboards.admin.menu import admin_menu_btn
 from settings import settings
 
 diary_btn = InlineKeyboardButton(
-    text="Личный дневник",
+    text="✍️ Личный дневник",
     web_app=WebAppInfo(url=settings.WEB_APP_URL)
 )
 
 about_diary_btn = InlineKeyboardButton(
-    text="О дневнике",
+    text="📔 О дневнике",
     callback_data=AboutDiary().pack()
 )
 
 about_tests_btn = InlineKeyboardButton(
-    text="О тестах",
+    text="🧩 О тестах",
     callback_data=AboutTests().pack()
 )
 
 tech_support_btn = InlineKeyboardButton(
-    text="Связь",
+    text="💬 Связь",
     callback_data=TechSupport().pack()
 )
 
@@ -59,7 +59,7 @@ def menu_kb() -> InlineKeyboardMarkup:
 def about_diary_kb() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.row(InlineKeyboardButton(
-        text="Открыть личный дневник",
+        text="✍️ Открыть личный дневник",
         web_app=WebAppInfo(url=settings.WEB_APP_URL)
     ))
     builder.row(main_menu_btn)
@@ -73,7 +73,7 @@ def categories_kb() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     
     builder.row(InlineKeyboardButton(
-        text="Открыть тесты",
+        text="🧩 Открыть тесты",
         web_app=WebAppInfo(url=settings.WEB_APP_URL + "?tab=tests")
     ))
     

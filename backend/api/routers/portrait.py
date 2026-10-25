@@ -36,8 +36,10 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
         await refund(user_id, charged)
         return
     from backend.telegram.notify import notify
-    await notify(user_id, "✨ <b>Портрет личности готов</b>\n\nТеперь дневник будет сверять с ним твои реакции.",
-                 "tab=profile&page=portrait", "Открыть портрет")
+    await notify(user_id, "✨ <b>Портрет личности готов</b>\n\n"
+                          "Теперь дневник будет сверять с ним <b>твои реакции</b>.\n\n"
+                          "<i>Загляни — там твои сильные стороны и особенности</i> 👇",
+                 "tab=profile&page=portrait", "✨ Открыть портрет")
 
 
 async def _generate_portrait(user_id: int, user_tests_count: int, prompt: str, ai_url: str, ai_token: str) -> dict:
