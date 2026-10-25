@@ -5,6 +5,24 @@ import './depth-motion.css';
 const WebApp = window.Telegram.WebApp;
 const SENSOR_INTERVAL = 40;
 const EASE = 0.18;
+// Те же картинки, что в depth-motion.css. Сдвиг пишем им самим, а не на :root: переменная на :root
+// заставляет WebKit пересчитать всю страницу, на длинном портрете это ~45 мс на кадр против 0,03 мс
+const MOVING = '.clay-banner__art, .test-question-card__illustration img, .test-question-card__edge, .vine-card__vine, .profile-header__vine, .profile-header__avatar';
+
+function setTilt(x, y) {
+  for (const image of document.querySelectorAll(MOVING)) {
+    image.style.setProperty('--tilt-x', x);
+    image.style.setProperty('--tilt-y', y);
+  }
+}
+
+function clearTilt() {
+  delete document.documentElement.dataset.tilt;
+  for (const image of document.querySelectorAll(MOVING)) {
+    image.style.removeProperty('--tilt-x');
+    image.style.removeProperty('--tilt-y');
+  }
+}
 
 // Эффект глубины: при наклоне телефона картинки сдвигаются, каждая на свою глубину (см. depth-motion.css).
 // Датчик — DeviceOrientation Telegram (Bot API 8.0); в браузере — deviceorientation, если он не требует разрешения.
@@ -28,14 +46,9 @@ export default function DepthMotion() {
       shown.y += (target.y - shown.y) * EASE;
       const settled = Math.abs(target.x - shown.x) < 0.002 && Math.abs(target.y - shown.y) < 0.002;
       if (settled) Object.assign(shown, target);
-      root.style.setProperty('--tilt-x', shown.x.toFixed(3));
-      root.style.setProperty('--tilt-y', shown.y.toFixed(3));
+      setTilt(shown.x.toFixed(3), shown.y.toFixed(3));
       frame = settled ? 0 : requestAnimationFrame(paint);
-      if (settled && !running) {
-        delete root.dataset.tilt;
-        root.style.removeProperty('--tilt-x');
-        root.style.removeProperty('--tilt-y');
-      }
+      if (settled && !running) clearTilt();
     };
     const moveTo = (tilt) => {
       target = tilt;
@@ -88,9 +101,7 @@ export default function DepthMotion() {
       WebApp.offEvent?.('deactivated', stop);
       stop();
       cancelAnimationFrame(frame);
-      delete root.dataset.tilt;
-      root.style.removeProperty('--tilt-x');
-      root.style.removeProperty('--tilt-y');
+      clearTilt();
     };
   }, []);
 
