@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { createTiltTracker, toScreenAxes } from '../utils/tilt';
+import { createTiltTracker, isNoticeable, toScreenAxes } from '../utils/tilt';
 import './depth-motion.css';
 
 const WebApp = window.Telegram.WebApp;
@@ -9,6 +9,7 @@ const EASE = 0.18;
 // Эффект глубины: при наклоне телефона картинки сдвигаются, каждая на свою глубину (см. depth-motion.css).
 // Датчик — DeviceOrientation Telegram (Bot API 8.0); в браузере — deviceorientation, если он не требует разрешения.
 // Не работает при «Уменьшить движение» и выключается, пока приложение свернуто.
+// Дрожь руки не перезапускает анимацию: в неподвижной руке кадры не рисуются.
 export default function DepthMotion() {
   useEffect(() => {
     const root = document.documentElement;
@@ -43,8 +44,10 @@ export default function DepthMotion() {
     const update = (beta, gamma) => {
       const tilt = track(beta, gamma);
       if (!tilt || !running) return;
-      root.dataset.tilt = '';
-      moveTo(toScreenAxes(tilt, window.screen.orientation?.angle ?? 0));
+      const next = toScreenAxes(tilt, window.screen.orientation?.angle ?? 0);
+      if (!isNoticeable(target, next)) return;
+      if (!('tilt' in root.dataset)) root.dataset.tilt = '';
+      moveTo(next);
     };
     const onSensor = () => update(sensor.beta, sensor.gamma);
     const onBrowserSensor = event => update(event.beta * Math.PI / 180, event.gamma * Math.PI / 180);

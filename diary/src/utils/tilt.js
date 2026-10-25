@@ -3,6 +3,7 @@
 // откликаются на движение, а при неподвижном наклоне плавно возвращаются в центр.
 const RANGE = 0.35; // ~20° наклона дают полный сдвиг
 const SETTLE = 0.015; // доля, на которую нейтраль догоняет телефон за один замер (~2,5 с при 25 замерах в секунду)
+const STEP = 0.02; // меньше — дрожь руки (до 0,2 px сдвига): ради нее кадры не рисуем
 
 const clamp = value => Math.max(-1, Math.min(1, value));
 // Разность углов без скачка через ±180°
@@ -18,6 +19,11 @@ export function createTiltTracker({ range = RANGE, settle = SETTLE } = {}) {
     base = { beta: base.beta + dy * settle, gamma: base.gamma + dx * settle };
     return { x: clamp(dx / range), y: clamp(dy / range) };
   };
+}
+
+// Новый замер стоит рисовать, только если сдвиг заметно отличается от текущего
+export function isNoticeable(from, to, step = STEP) {
+  return Math.abs(to.x - from.x) >= step || Math.abs(to.y - from.y) >= step;
 }
 
 // В альбомной ориентации оси экрана повернуты относительно осей телефона

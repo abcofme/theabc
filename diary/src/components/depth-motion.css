@@ -1,9 +1,12 @@
 /* Эффект глубины: картинки сдвигаются вслед за наклоном телефона, каждая на свою глубину.
-   --tilt-x/--tilt-y от -1 до 1 пишет DepthMotion; --depth — сдвиг по горизонтали, --depth-y — по вертикали. */
+   --tilt-x/--tilt-y от -1 до 1 пишет DepthMotion; --depth — сдвиг по горизонтали, --depth-y — по вертикали.
+   Двигаются только крупные картинки, и пока эффект включен, каждая лежит на своем слое: сдвиг не перерисовывает
+   страницу под ней. Буквы, листья и шапку не двигаем — перерисовка на каждом кадре перегружала iPhone,
+   и Telegram перезапускал мини-приложение. */
 :root { --tilt-x: 0; --tilt-y: 0; }
 
 .clay-banner__art, .test-question-card__illustration img, .test-question-card__edge, .vine-card__vine,
-.profile-header__vine, .profile-header__avatar, .clay-leaf, .clay-text__glyph, .telegram-brand {
+.profile-header__vine, .profile-header__avatar {
   translate: calc(var(--tilt-x) * var(--depth)) calc(var(--tilt-y) * var(--depth-y, var(--depth)));
 }
 
@@ -17,10 +20,6 @@
 .profile-header__vine { --depth: 7px; }
 .vine-card__vine { --depth: 5px; }
 .profile-header__avatar { --depth: 3px; }
-.clay-leaf { --depth: 4px; }
-.clay-text__glyph { --depth: 3px; }
-.telegram-brand { --depth: 2px; }
-/* Логотип и надпись в шапке двигаются вместе, буквы не получают второй сдвиг */
-.telegram-brand .clay-text__glyph { --depth: 0px; }
 
-:root[data-tilt] .clay-banner__art, :root[data-tilt] .test-question-card__illustration img { will-change: translate; }
+:root[data-tilt] :is(.clay-banner__art, .test-question-card__illustration img, .test-question-card__edge, .vine-card__vine,
+.profile-header__vine, .profile-header__avatar) { will-change: translate; }
