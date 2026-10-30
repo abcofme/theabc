@@ -72,6 +72,7 @@ export default function EntryList({ entries, diary, lock, savedEntryId }) {
           onDelete={() => confirmDelete(entry)}
           onRetry={() => retry(entry)}
           onEdit={() => setEditingId(entry.id)}
+          onAddition={(text) => diary.addAddition(entry, text)}
         />
       ))}
     </div>

@@ -28,3 +28,18 @@ export function clearDraft(owner, key) {
   if (!key) return;
   try { localStorage.removeItem(keyFor(owner, key)); } catch { /* Хранилище может быть недоступно. */ }
 }
+
+// Черновик дополнения — один текст без шагов
+export function readTextDraft(owner, key) {
+  try { return localStorage.getItem(keyFor(owner, key)) || ''; } catch { return ''; }
+}
+
+export function saveTextDraft(owner, key, text) {
+  try {
+    if (!text) localStorage.removeItem(keyFor(owner, key));
+    else localStorage.setItem(keyFor(owner, key), text);
+    return true;
+  } catch {
+    return false;
+  }
+}

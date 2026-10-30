@@ -242,6 +242,8 @@ class DiaryEntry(BaseModel):
     date: Mapped[date] = mapped_column(Date(), nullable=False)
     event: Mapped[str] = mapped_column(Text(), nullable=False)
     reaction: Mapped[str] = mapped_column(Text(), nullable=False)
+    # Дополнения, дописанные после сохранения записи; несколько подряд разделены пустой строкой
+    addition: Mapped[str] = mapped_column(Text(), nullable=True)
     rating: Mapped[int] = mapped_column(Integer(), nullable=True)
     portrait_match_score: Mapped[int] = mapped_column(Integer(), nullable=True)
     portrait_match_explanation: Mapped[str] = mapped_column(Text(), nullable=True)

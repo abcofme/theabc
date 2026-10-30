@@ -19,6 +19,7 @@ def _serialize_diary_entry(e: DiaryEntry) -> dict:
         "date": e.date.isoformat(),
         "event": e.event,
         "reaction": e.reaction,
+        "addition": e.addition,
         "rating": e.rating,
         "portrait_match_score": e.portrait_match_score,
         "portrait_match_explanation": e.portrait_match_explanation
@@ -34,9 +35,9 @@ def _count_streak(dates, today):
         day -= timedelta(days=1)
     return streak
 
-async def _start_reaction_analysis(user_id: int, entry_id: int, session: AsyncSession) -> bool:
+async def _start_reaction_analysis(user_id: int, entry_id: int, session: AsyncSession, follow_up: dict | None = None) -> bool:
     """Запускает разбор записи в фоне, если он возможен: есть портрет и Premium или хватает баланса.
-    Фронт по ответу решает, ждать ли разбор."""
+    Фронт по ответу решает, ждать ли разбор. follow_up — прежний разбор и дополнение к нему (см. add_diary_addition)."""
     portrait = (await session.execute(
         select(PersonalityPortrait.id).where(PersonalityPortrait.user_id == user_id)
     )).first()
@@ -46,7 +47,7 @@ async def _start_reaction_analysis(user_id: int, entry_id: int, session: AsyncSe
         charged = await charge(session, user_id, "diary_answer")
     except HTTPException:
         return False
-    run_in_background(_analyze_reaction_bg(user_id, entry_id, charged))
+    run_in_background(_analyze_reaction_bg(user_id, entry_id, charged, follow_up))
     return True
 
 # Эндпоинт 2: Получение записей дневника за месяц
@@ -172,6 +173,48 @@ async def update_diary_entry(
     analysis_started = await _start_reaction_analysis(user_id, entry.id, session)
     return {"status": "success", "analysis_started": analysis_started}
 
+# Эндпоинт 3.2: Дополнить запись — текст дописывается к записи, не меняя её, и дневник читает её заново.
+# Если новый разбор не запустить (нет портрета, не хватает баланса), прежний ответ остаётся: он оплачен
+@router.post("/api/diary/{entry_id}/addition")
+async def add_diary_addition(
+    entry_id: int,
+    data: dict, # {"text": "..."}
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    user_id = user_data.get("id")
+    entry = (await session.execute(
+        select(DiaryEntry).where(DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id)
+    )).scalars().first()
+    if not entry:
+        raise HTTPException(status_code=404, detail="Entry not found")
+
+    text = (data.get("text") or "").strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Напишите, что хотите добавить")
+
+    earlier_addition = entry.addition
+    entry.addition = f"{earlier_addition}\n\n{text}" if earlier_addition else text
+    previous = entry.portrait_match_score, entry.portrait_match_explanation
+    # Дневник продолжает разговор о записи: видит свой прежний разбор и отвечает на дополнение к нему
+    follow_up = {
+        "score": previous[0],
+        "reply": previous[1],
+        "earlier_addition": earlier_addition,
+        "text": text,
+    } if previous[0] is not None and previous[1] else None
+    # Сбрасываем до запуска: фронт ждёт разбор, пока оценка пустая
+    entry.portrait_match_score = None
+    entry.portrait_match_explanation = None
+    await session.commit()
+
+    analysis_started = await _start_reaction_analysis(user_id, entry.id, session, follow_up)
+    if not analysis_started:
+        entry.portrait_match_score, entry.portrait_match_explanation = previous
+        await session.commit()
+
+    return {"status": "success", "addition": entry.addition, "analysis_started": analysis_started}
+
 # Эндпоинт 4: Удаление записи из дневника
 @router.delete("/api/diary/{entry_id}")
 async def delete_diary_entry(
@@ -247,15 +290,44 @@ DIARY_ANALYSIS_OUTPUT_FORMAT = """ТЕХНИЧЕСКИЙ ФОРМАТ ВЫВОД
 NO_ANALYSIS_SCORE = -1
 
 
-async def _analyze_reaction_bg(user_id: int, entry_id: int, charged: int = 0):
-    result = await _run_reaction_analysis(user_id, entry_id)
+async def _analyze_reaction_bg(user_id: int, entry_id: int, charged: int = 0, follow_up: dict | None = None):
+    result = await _run_reaction_analysis(user_id, entry_id, follow_up)
     # Платят только за разбор: сбой ИИ или просьба дописать запись бесплатны
     if result is None or result["score"] == NO_ANALYSIS_SCORE:
         await refund(user_id, charged)
+    # Сбой ИИ после дополнения не должен стирать оплаченный прежний ответ
+    if result is None and follow_up:
+        await _restore_reply(user_id, entry_id, follow_up)
     return result
 
 
-async def _run_reaction_analysis(user_id: int, entry_id: int):
+async def _restore_reply(user_id: int, entry_id: int, follow_up: dict):
+    from backend.database import async_session
+    async with async_session() as db:
+        entry = (await db.execute(select(DiaryEntry).where(DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id))).scalars().first()
+        if entry and entry.portrait_match_score is None:
+            entry.portrait_match_score = follow_up["score"]
+            entry.portrait_match_explanation = follow_up["reply"]
+            await db.commit()
+
+
+def _follow_up_messages(follow_up: dict) -> list:
+    """Прежний разбор — ответ ассистента в том же формате, дополнение — следующая реплика человека"""
+    score = "НЕТ" if follow_up["score"] == NO_ANALYSIS_SCORE else str(follow_up["score"])
+    return [
+        {"role": "assistant", "content": f"{score}\n===\n{follow_up['reply']}"},
+        {"role": "user", "content": (
+            "Человек дополнил эту запись после твоего ответа.\n"
+            "Дополнение: " + follow_up["text"] + "\n\n"
+            "Сделай новый полный разбор записи вместе с дополнением в том же формате. "
+            "Опирайся на свой прежний ответ: не повторяй его, а уточни, подтверди или пересмотри выводы с учётом нового. "
+            "Если дополнение отвечает на «Что можно дополнить» или проверяет твоё предположение, скажи, что это меняет. "
+            "Оценку пересчитай по записи целиком."
+        )},
+    ]
+
+
+async def _run_reaction_analysis(user_id: int, entry_id: int, follow_up: dict | None = None):
     import httpx
     import re
     from backend.database import async_session
@@ -283,17 +355,20 @@ async def _run_reaction_analysis(user_id: int, entry_id: int):
             
             SYSTEM_PROMPT = DIARY_ANALYSIS_PROMPT + "\n\n" + DIARY_ANALYSIS_OUTPUT_FORMAT
 
+            # При дополнении первая реплика — запись в том виде, в каком дневник её уже разобрал
+            addition = follow_up["earlier_addition"] if follow_up else entry.addition
             user_message = (
                 "Портрет пользователя (все результаты тестов с полными описаниями):\n"
                 + portrait_text
                 + "\n\nСобытие: " + entry.event
                 + "\nРеакция: " + entry.reaction
+                + ("\nДополнение (дописано позже): " + addition if addition else "")
             )
 
             messages = [
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_message}
-            ]
+            ] + (_follow_up_messages(follow_up) if follow_up else [])
 
             async with httpx.AsyncClient(timeout=120.0) as client:
                 ai_response = await client.post(

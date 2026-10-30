@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Trash2, Activity, PenLine, Leaf } from '../../components/ClayIcon';
+import { useState, useEffect, useLayoutEffect, useRef, useId } from 'react';
+import { Trash2, Activity, PenLine, Leaf, Plus } from '../../components/ClayIcon';
 import { scoreColor } from './utils';
+import { readTextDraft, saveTextDraft } from './drafts';
 import ResultContent from '../../components/ResultContent';
+
+const WebApp = window.Telegram.WebApp;
 
 const Label = ({ children }) => (
   <span className="entry-label">{children}</span>
@@ -47,9 +50,72 @@ function Reply({ text }) {
   );
 }
 
+// Дополнение к сохранённой записи: что вспомнилось позже или о чём спросил дневник
+function AdditionForm({ entryId, canAnswer, onSubmit, onClose }) {
+  const owner = WebApp.initDataUnsafe?.user?.id || 'current';
+  const draftKey = `addition:${entryId}`;
+  const [text, setText] = useState(() => readTextDraft(owner, draftKey));
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const fieldRef = useRef(null);
+  const fieldId = useId();
+
+  useLayoutEffect(() => {
+    const field = fieldRef.current;
+    if (!field) return;
+    field.style.height = 'auto';
+    field.style.height = `${Math.min(Math.max(field.scrollHeight, 120), 320)}px`;
+  }, [text]);
+
+  useEffect(() => {
+    const field = fieldRef.current;
+    field?.focus();
+    field?.setSelectionRange(field.value.length, field.value.length);
+  }, []);
+
+  const submit = async () => {
+    if (isSubmitting || !text.trim()) return;
+    setIsSubmitting(true);
+    try {
+      await onSubmit(text.trim());
+      saveTextDraft(owner, draftKey, '');
+      WebApp.HapticFeedback?.notificationOccurred('success');
+      onClose();
+    } catch (err) {
+      WebApp.showAlert(err.message || 'Не удалось сохранить дополнение. Попробуйте ещё раз.');
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="mt-5 flex flex-col gap-3">
+      <label htmlFor={fieldId} className="text-lg leading-6 font-semibold">Что хочешь добавить?</label>
+      <textarea
+        id={fieldId}
+        ref={fieldRef}
+        rows={4}
+        value={text}
+        disabled={isSubmitting}
+        onChange={(e) => { setText(e.target.value); saveTextDraft(owner, draftKey, e.target.value); }}
+        placeholder="Что было дальше, что ещё почувствовал(а) или понял(а)…"
+        className="ui-input resize-none"
+      />
+      {canAnswer && <p className="ui-muted">Дневник перечитает запись вместе с дополнением и ответит заново</p>}
+      <div className="flex gap-3">
+        <button type="button" onClick={onClose} disabled={isSubmitting} className="ui-button ui-button--outline w-auto!">Позже</button>
+        <button type="button" onClick={submit} disabled={!text.trim() || isSubmitting} className="ui-button ui-button--primary flex-1">
+          {isSubmitting ? 'Сохраняю…' : canAnswer ? 'Отправить дневнику' : 'Сохранить'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // analysis: pending | done | ask | idle | locked (см. analysisState)
-export default function EntryCard({ entry, analysis, onDelete, onRetry, onEdit }) {
+export default function EntryCard({ entry, analysis, onDelete, onRetry, onEdit, onAddition }) {
   const score = entry.portrait_match_score;
+  const [adding, setAdding] = useState(false);
+  // В «ask» запись переписывают целиком через «Дописать», пока идёт разбор — ждём его
+  const canAdd = onAddition && ['done', 'idle', 'locked'].includes(analysis);
 
   return (
     <article id={`diary-entry-${entry.id}`} className="ui-card diary-entry relative">
@@ -68,6 +134,12 @@ export default function EntryCard({ entry, analysis, onDelete, onRetry, onEdit }
         <Label>Реакция</Label>
         <ResultContent content={entry.reaction} contents={false} compact variant="entry" />
       </div>
+      {entry.addition && (
+        <div className="mt-4">
+          <Label>Дополнение</Label>
+          <ResultContent content={entry.addition} contents={false} compact variant="entry" />
+        </div>
+      )}
 
       {analysis === 'pending' && (
         <div className="mt-4 flex items-center gap-2 text-sm text-[var(--ui-secondary)]">
@@ -97,7 +169,7 @@ export default function EntryCard({ entry, analysis, onDelete, onRetry, onEdit }
         </>
       )}
 
-      {analysis === 'idle' && (
+      {analysis === 'idle' && !adding && (
         <button
           onClick={onRetry}
           className="ui-button ui-button--secondary mt-4"
@@ -105,6 +177,19 @@ export default function EntryCard({ entry, analysis, onDelete, onRetry, onEdit }
           <Activity size={16} /> Получить ответ дневника
         </button>
       )}
+
+      {canAdd && (adding ? (
+        <AdditionForm
+          entryId={entry.id}
+          canAnswer={analysis !== 'locked'}
+          onSubmit={onAddition}
+          onClose={() => setAdding(false)}
+        />
+      ) : (
+        <button onClick={() => setAdding(true)} className="ui-button ui-button--quiet mt-2">
+          <Plus size={16} /> Дополнить запись
+        </button>
+      ))}
     </article>
   );
 }

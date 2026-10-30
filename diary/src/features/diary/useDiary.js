@@ -48,7 +48,7 @@ export default function useDiary(today) {
 
   const addEntry = useCallback(async (date, event, reaction) => {
     const res = await api('/api/diary', { method: 'POST', body: { date, event, reaction } });
-    upsert([{ id: res.id, date, event, reaction, rating: null, portrait_match_score: null, portrait_match_explanation: null }]);
+    upsert([{ id: res.id, date, event, reaction, addition: null, rating: null, portrait_match_score: null, portrait_match_explanation: null }]);
     window.dispatchEvent(new Event('diary:changed'));
     if (res.analysis_started) startWaiting(res.id);
     loadOverview(); // серия дней могла вырасти
@@ -58,6 +58,15 @@ export default function useDiary(today) {
   const updateEntry = useCallback(async (entry, event, reaction) => {
     const res = await api(`/api/diary/${entry.id}`, { method: 'PATCH', body: { event, reaction } });
     upsert([{ ...entry, event, reaction, portrait_match_score: null, portrait_match_explanation: null }]);
+    if (res.analysis_started) startWaiting(entry.id);
+  }, [upsert, startWaiting]);
+
+  // Дополнение не меняет запись: дописывается к ней, и дневник отвечает заново, если может
+  const addAddition = useCallback(async (entry, text) => {
+    const res = await api(`/api/diary/${entry.id}/addition`, { method: 'POST', body: { text } });
+    upsert([res.analysis_started
+      ? { ...entry, addition: res.addition, portrait_match_score: null, portrait_match_explanation: null }
+      : { ...entry, addition: res.addition }]);
     if (res.analysis_started) startWaiting(entry.id);
   }, [upsert, startWaiting]);
 
@@ -121,6 +130,7 @@ export default function useDiary(today) {
     loadMonth,
     addEntry,
     updateEntry,
+    addAddition,
     deleteEntry,
     retryAnalysis,
   };

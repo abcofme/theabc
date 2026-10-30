@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readDraft, saveDraft, clearDraft } from '../src/features/diary/drafts.js';
+import { readDraft, saveDraft, clearDraft, readTextDraft, saveTextDraft } from '../src/features/diary/drafts.js';
 import { readTestProgress, resumeTestProgress, saveTestProgress, clearTestProgress } from '../src/features/tests/testProgress.js';
 import { parseScales, scaleValue } from '../src/features/profile/portraitScales.js';
 import { newestEntryFirst } from '../src/features/diary/utils.js';
@@ -35,6 +35,14 @@ test('Пустое поле и недоступное хранилище не л
   assert.deepEqual(readDraft(7, 'new:blocked', { event: 'Сохраненная запись', reaction: 'Реакция' }), { event: 'Сохраненная запись', reaction: 'Реакция', step: 'event' });
   assert.doesNotThrow(() => clearDraft(7, 'new:blocked'));
   globalThis.localStorage = storage;
+});
+
+test('Черновик дополнения хранится отдельно от записи и стирается пустым текстом', () => {
+  saveTextDraft(7, 'addition:41', 'Потом позвонил брат');
+  assert.equal(readTextDraft(7, 'addition:41'), 'Потом позвонил брат');
+  assert.equal(readDraft(7, 'edit:41', { event: 'С сервера' }).event, 'С сервера');
+  saveTextDraft(7, 'addition:41', '');
+  assert.equal(readTextDraft(7, 'addition:41'), '');
 });
 
 test('Поврежденный черновик не подменяет сохраненную серверную запись', () => {

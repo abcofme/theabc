@@ -265,7 +265,8 @@ async def generate_report(
     # Формируем текст записей для промпта
     entries_text = ""
     for e in entries:
-        entries_text += f"- Дата: {e.date}\nСобытие: {e.event}\nРеакция: {e.reaction}\nОценка дня: {e.rating if e.rating else 'Не указана'}\n\n"
+        addition = f"\nДополнение: {e.addition}" if e.addition else ""
+        entries_text += f"- Дата: {e.date}\nСобытие: {e.event}\nРеакция: {e.reaction}{addition}\nОценка дня: {e.rating if e.rating else 'Не указана'}\n\n"
 
     # Формируем промпт в зависимости от типа отчета
     report_title = ""
