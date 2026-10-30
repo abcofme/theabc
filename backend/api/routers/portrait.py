@@ -3,7 +3,7 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from backend.api.common import AI_MODEL, ai_endpoint, get_session
+from backend.api.common import AI_MODEL, GENDER_NEUTRAL_RULE, ai_endpoint, get_session
 from backend.api.security import validate_twa_data
 from backend.billing import charge, refund
 from backend.database.models import Category, Test, Progress, Result, PersonalityPortrait
@@ -49,6 +49,7 @@ async def _generate_portrait(user_id: int, user_tests_count: int, prompt: str, a
 
     # Добавляем инструкции для JSON формата и технического саммари
     prompt += '\n\nВАЖНО: В поле description напиши до 3 предложений пояснения, почему ты выбрал именно такое % соответствия на этой шкале.'
+    prompt += '\n\n' + GENDER_NEUTRAL_RULE
     prompt += '\n\nВыведи только красивый Markdown текст (включая блок с ```json внутри для шкал). Без дополнительных вступлений.'
     prompt += '\n\nОФОРМЛЕНИЕ: основные разделы начинай с ##, подзаголовки внутри — с ###. Одна мысль в абзаце, 2–4 предложения; между абзацами, заголовками и списками пустая строка. Названия поведенческих паттернов выделяй жирным в начале отдельного абзаца в формате **Реакция на стресс:** текст. Ключевые выводы выделяй коротким **жирным** фрагментом. Независимые черты и проявления оформляй маркированными списками, последовательность — нумерованными. Для содержательного сравнения допустима короткая таблица из двух колонок. Не выделяй жирным целые абзацы, не добавляй текст или дополнительные разделы ради оформления. Не меняй заданную структуру JSON шкал, не выноси их данные в таблицу.'
 

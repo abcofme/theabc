@@ -48,7 +48,7 @@ export default function BillingPage({ onBack }) {
   });
   const consent = <label className="flex items-start gap-3 ui-secondary my-5 py-1">
     <input type="checkbox" checked={offerAccepted} onChange={event => setOfferAccepted(event.target.checked)} disabled={!!busy} className="ui-checkbox mt-px" />
-    <span>Я согласен с <button type="button" onClick={event => { event.preventDefault(); setIsOfferOpen(true); }} className="underline underline-offset-4 text-[var(--ui-text)]">публичной офертой</button> и правилами предоставления услуг</span>
+    <span>Принимаю условия <button type="button" onClick={event => { event.preventDefault(); setIsOfferOpen(true); }} className="underline underline-offset-4 text-[var(--ui-text)]">публичной оферты</button> и правил предоставления услуг</span>
   </label>;
   return (
     <Page title="Подписка и баланс" onBack={onBack}>

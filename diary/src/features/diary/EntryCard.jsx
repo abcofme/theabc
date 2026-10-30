@@ -96,7 +96,7 @@ function AdditionForm({ entryId, canAnswer, onSubmit, onClose }) {
         value={text}
         disabled={isSubmitting}
         onChange={(e) => { setText(e.target.value); saveTextDraft(owner, draftKey, e.target.value); }}
-        placeholder="Что было дальше, что ещё почувствовал(а) или понял(а)…"
+        placeholder="Что было дальше, какие ещё появились чувства и мысли…"
         className="ui-input resize-none"
       />
       {canAnswer && <p className="ui-muted">Дневник перечитает запись вместе с дополнением и ответит заново</p>}

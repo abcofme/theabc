@@ -164,7 +164,7 @@ export default function DiaryTab() {
         </section>
       ) : overviewStatus === 'ready' && todayEntries.length === 0 && !showPath && (
         <p className="mt-6 px-2 text-sm text-[var(--ui-secondary)] text-center leading-relaxed">
-          Записывай, что произошло и как ты отреагировал(а). Дневник знает твои сильные и слабые стороны,
+          Записывай, что произошло и какой была твоя реакция. Дневник знает твои сильные и слабые стороны,
           сверит реакцию с портретом личности и ответит — без искажений.
         </p>
       )}

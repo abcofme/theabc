@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.api.common import AI_MODEL, ai_endpoint, get_session, run_in_background
+from backend.api.common import AI_MODEL, GENDER_NEUTRAL_RULE, ai_endpoint, get_session, run_in_background
 from backend.api.security import validate_twa_data
 from backend.billing import charge, refund
 from backend.database.models import DiaryEntry, PersonalityPortrait
@@ -284,7 +284,7 @@ DIARY_ANALYSIS_OUTPUT_FORMAT = """ТЕХНИЧЕСКИЙ ФОРМАТ ВЫВОД
 — видишь признаки кризиса — после === только кризисный ответ;
 — событие — бессмысленный набор символов или спам — после === фраза «Недостаточно данных для разбора.»
 
-В вопросе гейта называй недостающее простыми словами, а не названиями слотов. В приложении человек заполняет поля «Событие» и «Реакция», и фраза «не хватает события» при заполненном поле его запутает. Поясни, чего именно не хватает: например, «что конкретно произошло — где, с кем, что ты делал» или «что ты почувствовал или подумал, кроме усталости». Сам шаблон «Ты написал: … Для разбора не хватает … Опиши заново, добавив их.» сохраняй."""
+В вопросе гейта называй недостающее простыми словами, а не названиями слотов. В приложении человек заполняет поля «Событие» и «Реакция», и фраза «не хватает события» при заполненном поле его запутает. Поясни, чего именно не хватает: например, «что конкретно произошло — где, с кем, что происходило с тобой в тот момент» или «какие ещё чувства и мысли появились, кроме усталости». Сам шаблон «В записи: … Для разбора не хватает … Опиши заново, добавив их.» сохраняй."""
 
 # Оценка, которую сохраняем, когда модель не делала разбор (гейт, кризис, спам): приложение не показывает шкалу
 NO_ANALYSIS_SCORE = -1
@@ -353,7 +353,7 @@ async def _run_reaction_analysis(user_id: int, entry_id: int, follow_up: dict | 
                 portrait_text = portrait_text[:20000] + "\n[портрет обрезан]"
             print(f"Portrait len: {len(portrait_text)}, event len: {len(entry.event)}, reaction len: {len(entry.reaction)}")
             
-            SYSTEM_PROMPT = DIARY_ANALYSIS_PROMPT + "\n\n" + DIARY_ANALYSIS_OUTPUT_FORMAT
+            SYSTEM_PROMPT = DIARY_ANALYSIS_PROMPT + "\n\n" + DIARY_ANALYSIS_OUTPUT_FORMAT + "\n\n" + GENDER_NEUTRAL_RULE
 
             # При дополнении первая реплика — запись в том виде, в каком дневник её уже разобрал
             addition = follow_up["earlier_addition"] if follow_up else entry.addition

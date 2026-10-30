@@ -23,11 +23,11 @@ async def notify(user_id: int, text: str, query: str = "", button: str = "Отк
 
 async def greet_new_friend(friend: User, inviter_id: int) -> bool:
     """Пригласившему — что друг принял приглашение (из бота и из приложения)"""
-    name = html.escape(friend.tg_first_name or (f"@{friend.username}" if friend.username else "Твой друг"))
+    name = html.escape(friend.tg_first_name or (f"@{friend.username}" if friend.username else "Человек по твоей ссылке"))
     return await notify(
         inviter_id,
-        f"🤝 <b>У тебя новый друг</b>\n\n"
-        f"<b>{name}</b> принял(а) приглашение — теперь вы друзья в «Азбуке Я».\n\n"
+        f"🤝 <b>Приглашение принято</b>\n\n"
+        f"<b>{name}</b> — теперь в твоих друзьях в «Азбуке Я».\n\n"
         "<i>Посмотри, насколько вы совместимы</i> 👇",
         "tab=reports&section=compatibility", "🤝 Открыть совместимость",
     )

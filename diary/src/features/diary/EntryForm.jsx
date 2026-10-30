@@ -70,7 +70,7 @@ export default function EntryForm({ title, initial, draftKey, submitLabel = 'С�
         </button>
       )}
       <label htmlFor={fieldId} className="text-lg leading-6 font-semibold">
-        {step === 'event' ? title || 'Что произошло?' : 'Как ты отреагировал(а)?'}
+        {step === 'event' ? title || 'Что произошло?' : 'Какой была твоя реакция?'}
       </label>
       <textarea
         key={step}
@@ -83,7 +83,7 @@ export default function EntryForm({ title, initial, draftKey, submitLabel = 'С�
           if (step === 'event') { setEvent(e.target.value); persist({ event: e.target.value }); }
           else { setReaction(e.target.value); persist({ reaction: e.target.value }); }
         }}
-        placeholder={step === 'event' ? 'Например: начальник отчитал меня при всех' : 'Что ты сделал(а), что почувствовал(а)…'}
+        placeholder={step === 'event' ? 'Например: начальник отчитал меня при всех' : 'Действия, чувства, мысли…'}
         className="ui-input resize-none"
       />
       <div className="flex gap-3">

@@ -9,7 +9,7 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from backend.api.common import AI_MODEL, ai_endpoint, get_session, run_in_background
+from backend.api.common import AI_MODEL, GENDER_NEUTRAL_RULE, ai_endpoint, get_session, run_in_background
 from backend.api.security import validate_twa_data
 from backend.billing import charge, refund
 from backend.database.models import Category, Test, Progress, Result, DiaryEntry, PersonalityPortrait, BehavioralReport
@@ -133,7 +133,7 @@ async def _generate_report(user_id: int, report_title: str, report_prompt: str, 
     try:
         payload = {
             "model": AI_MODEL,
-            "messages": [{"role": "user", "content": report_prompt}]
+            "messages": [{"role": "user", "content": report_prompt + "\n\n" + GENDER_NEUTRAL_RULE}]
         }
         print(f"--- Отправка запроса к ИИ ({payload['model']}) ---")
         print(f"URL: {ai_url}")
@@ -349,7 +349,7 @@ async def generate_report(
 ВАЖНОЕ ТРЕБОВАНИЕ: Этот отчет обязан подсветить компетентность пользователя и его реальные победы, а не просто давать произвольный анализ. В отчете должно быть МИНИМУМ рекомендаций, ТОЛЬКО глубокий анализ.
 
 Структура отчета (используй Markdown-разметку, как в портрете личности, с заголовками h2, жирным текстом и маркированными списками):
-1. **Твои победы и достижения**: В каких ситуациях ты проявил(а) себя максимально компетентно (даже в мелочах).
+1. **Твои победы и достижения**: В каких ситуациях твоя компетентность проявляется ярче всего (даже в мелочах).
 2. **Твоя настоящая сила**: В чем заключается твоя уникальная компетентность, с опорой на твои результаты тестов.
 3. **Краткий вывод**: Один-два предложения анализа (без списков рекомендаций).
 

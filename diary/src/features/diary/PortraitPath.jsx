@@ -28,7 +28,7 @@ export default function PortraitPath({ onNavigate }) {
       <div className="vine-card__content">
         <h2 id="portrait-path-title" className="text-lg leading-6 font-semibold pr-16">Как дневник начнет отвечать</h2>
         <p className="ui-secondary mt-2 pr-6">
-          Записывай, что произошло и как ты отреагировал(а). Дневник сверит реакцию с портретом личности и ответит — без искажений.
+          Записывай, что произошло и какой была твоя реакция. Дневник сверит реакцию с портретом личности и ответит — без искажений.
         </p>
         <ol className="portrait-path">
           {steps.map((step, index) => (
