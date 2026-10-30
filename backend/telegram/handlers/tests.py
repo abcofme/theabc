@@ -75,7 +75,7 @@ async def CategoryChoose_callback(
     ]:
         msg = await bot.send_photo(
             chat_id=user.id,
-            photo=FSInputFile(IMAGES / f"{category.name.lower()}.png"),
+            photo=FSInputFile(IMAGES / f"{category.name.lower()}.jpg"),
             caption=text,
             reply_markup=kb
         )
