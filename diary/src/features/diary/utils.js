@@ -18,6 +18,9 @@ export function plural(n, [one, few, many]) {
   return many;
 }
 
+// Баланс и цены функций — в токенах: formatTokens(50) → '50 токенов'
+export const formatTokens = n => `${n.toLocaleString('ru-RU')} ${plural(n, ['токен', 'токена', 'токенов'])}`;
+
 // Почему дневник не может ответить и куда вести пользователя (action: tests | billing). null — ответ доступен
 export function analysisLock(profile) {
   if (!profile) return { text: null };

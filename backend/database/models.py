@@ -32,7 +32,7 @@ class User(BaseModel):
     invited_id: Mapped[str] = mapped_column(String(64), nullable=True)
     discount_pct: Mapped[int] = mapped_column(Integer(), nullable=True, default=0)
 
-    # Рубли на функции с ИИ для тех, у кого нет Premium (цены — backend/pricing.py)
+    # Токены на функции с ИИ для тех, у кого нет Premium (цены и курс к рублю — backend/pricing.py)
     balance: Mapped[int] = mapped_column(Integer(), default=0, server_default="0", nullable=False)
     # Пол для анализа совместимости: спрашиваем один раз
     gender: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
@@ -198,7 +198,7 @@ class Payment(BaseModel):
     
     is_premium_subscription: Mapped[bool] = mapped_column(Boolean, default=False)
     is_recurring: Mapped[bool] = mapped_column(Boolean, default=False)
-    # Пополнение баланса: сумма зачисляется после подтверждения оплаты
+    # Пополнение баланса: сумма в рублях, после подтверждения оплаты зачисляется в токенах
     is_topup: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false", nullable=False)
     amount: Mapped[Optional[int]] = mapped_column(Integer(), nullable=True)
 

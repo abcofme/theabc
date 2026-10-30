@@ -5,6 +5,7 @@ import Spinner from '../../components/Spinner';
 import OfferPage from '../legal/OfferPage';
 import { useProfile } from '../../context/profile';
 import { api } from '../../utils/api';
+import { formatTokens } from '../diary/utils';
 
 const WebApp = window.Telegram.WebApp;
 const QUICK_AMOUNTS = [100, 300, 500, 1000];
@@ -58,11 +59,11 @@ export default function BillingPage({ onBack }) {
             <h3 className="text-lg font-semibold flex items-center gap-2 mb-3"><Sparkles size={20} className="text-[var(--ui-gold)]" /> Premium активен</h3>
             <Row label="Действует до" value={formatDate(profile.access_expires_at)} />
             <Row label="Автопродление" value={profile.has_active_subscription ? 'включено' : 'выключено'} />
-            <Row label="Баланс" value={`${balance} ₽`} />
+            <Row label="Баланс" value={formatTokens(balance)} />
             {profile.has_active_subscription && <button type="button" onClick={cancelAutoRenewal} disabled={!!busy} className="ui-button ui-button--outline mt-4">{busy === 'cancel' ? 'Отмена…' : 'Отменить автопродление'}</button>}
           </> : <>
-            <h3 className="text-lg font-semibold flex items-center gap-2 mb-2"><Wallet size={20} /> Баланс: {balance} ₽</h3>
-            <p className="ui-secondary">Оплачивай функции по мере использования или подключи Premium. Если функция не сработала, деньги возвращаются.</p>
+            <h3 className="text-lg font-semibold flex items-center gap-2 mb-2"><Wallet size={20} /> Баланс: {formatTokens(balance)}</h3>
+            <p className="ui-secondary">Оплачивай функции токенами по мере использования или подключи Premium. Если функция не сработала, токены возвращаются.</p>
           </>}
         </section>
         <div className="ui-segmented" role="tablist" aria-label="Способ оплаты">
@@ -71,13 +72,14 @@ export default function BillingPage({ onBack }) {
         <section id={`${id}-panel-${mode}`} role="tabpanel" aria-labelledby={`${id}-${mode}`} className={`ui-card ${mode === 'premium' ? 'billing-premium' : ''}`}>
           {mode === 'balance' ? <>
             <h3 className="text-lg font-semibold mb-3">Оплата с баланса</h3>
-            <div className="mb-6">{FEATURE_PRICES.map(([key, label]) => <Row key={key} label={label} value={`${prices[key]} ₽`} />)}</div>
-            <h4 className="font-semibold mb-3">Пополнить баланс</h4>
+            <div className="mb-6">{FEATURE_PRICES.map(([key, label]) => <Row key={key} label={label} value={formatTokens(prices[key])} />)}</div>
+            <h4 className="font-semibold">Пополнить баланс</h4>
+            <p className="ui-secondary mb-3">1 ₽ = {formatTokens(prices.tokens_per_ruble)}</p>
             <div className="grid grid-cols-2 min-[360px]:grid-cols-4 gap-2 mb-4">{QUICK_AMOUNTS.map(value => <button key={value} type="button" aria-pressed={sum === value} onClick={() => setAmount(String(value))} className={`clay-raised-sm min-h-11 rounded-xl text-sm font-semibold ${sum === value ? 'bg-[var(--ui-text)] text-rose-950' : 'bg-rose-950 text-[var(--ui-text)]'}`}>{value} ₽</button>)}</div>
             <label className="ui-secondary block" htmlFor={`${id}-amount`}>Своя сумма, от {prices.min_topup} до {prices.max_topup} ₽</label>
             <input id={`${id}-amount`} type="number" inputMode="numeric" min={prices.min_topup} max={prices.max_topup} value={amount} onChange={event => setAmount(event.target.value.replace(/\D/g, ''))} className="ui-input mt-2" />
             {consent}
-            <button type="button" onClick={() => pay('topup', '/api/balance/topup', { amount: sum })} disabled={!isAmountValid || !offerAccepted || !!busy} className="ui-button ui-button--primary">{busy === 'topup' ? 'Создаю платеж…' : isAmountValid ? `Пополнить на ${sum} ₽` : `Сумма от ${prices.min_topup} до ${prices.max_topup} ₽`}</button>
+            <button type="button" onClick={() => pay('topup', '/api/balance/topup', { amount: sum })} disabled={!isAmountValid || !offerAccepted || !!busy} className="ui-button ui-button--primary">{busy === 'topup' ? 'Создаю платеж…' : isAmountValid ? `Купить ${formatTokens(sum * prices.tokens_per_ruble)} за ${sum.toLocaleString('ru-RU')} ₽` : `Сумма от ${prices.min_topup} до ${prices.max_topup} ₽`}</button>
           </> : <>
             <div className="flex items-center gap-3 mb-4">
               <span className="billing-premium__icon" aria-hidden="true"><Sparkles size={22} /></span>

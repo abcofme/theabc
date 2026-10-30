@@ -15,7 +15,7 @@ from backend.database.models import (
     DiaryEntry, BehavioralReport, CompatibilityReport, Friendship,
 )
 from backend.friends import befriend, inviter_from_payload
-from backend.pricing import AI_PRICES, DEMO_BALANCE, MAX_TOPUP, MIN_TOPUP, PREMIUM_PRICE
+from backend.pricing import AI_PRICES, DEMO_BALANCE, MAX_TOPUP, MIN_TOPUP, PREMIUM_PRICE, TOKENS_PER_RUBLE
 
 router = APIRouter()
 
@@ -203,6 +203,7 @@ async def get_profile(
             "premium": PREMIUM_PRICE,
             "min_topup": MIN_TOPUP,
             "max_topup": MAX_TOPUP,
+            "tokens_per_ruble": TOKENS_PER_RUBLE,
             **AI_PRICES,
         },
         "diary_reminders": db_user.diary_reminders if db_user else True,

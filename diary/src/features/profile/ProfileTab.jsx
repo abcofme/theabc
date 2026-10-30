@@ -13,6 +13,7 @@ import headerVine from '../../assets/profile/header-vine-simple.webp';
 import { useProfile, portraitState } from '../../context/profile';
 import { useAppNav, useErrorHandler } from '../../navigation/appNav';
 import { api } from '../../utils/api';
+import { formatTokens } from '../diary/utils';
 import { useTheme } from '../../context/theme';
 import './profile-header.css';
 
@@ -109,7 +110,7 @@ export default function ProfileTab({ request, active }) {
             <span className={`font-bold px-3 py-1.5 rounded-xl text-sm sm:text-base flex items-center gap-1.5 clay-raised-sm ${
               isPremium ? 'profile-header__premium' : 'bg-rose-900 border border-[var(--ui-border)] text-[var(--ui-text)]'
             }`}>
-              {!profile ? '…' : isPremium ? <><Sparkles size={16} /> Premium</> : <><Wallet size={16} /> {profile.balance} ₽</>}
+              {!profile ? '…' : isPremium ? <><Sparkles size={16} /> Premium</> : <><Wallet size={16} /> {formatTokens(profile.balance)}</>}
             </span>
             <ChevronRight size={20} className="text-[var(--ui-muted)] shrink-0" />
           </button>

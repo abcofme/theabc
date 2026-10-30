@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.database import async_session
 from backend.database.models import User
-from backend.pricing import AI_PRICES
+from backend.pricing import AI_PRICES, TOKENS_PER_RUBLE, tokens
 
 
 def is_premium(user) -> bool:
@@ -19,8 +19,8 @@ def can_use(user, feature: str) -> bool:
 
 
 async def charge(session: AsyncSession, user_id: int, feature: str) -> int:
-    """Списывает цену функции с баланса до запуска ИИ. Возвращает списанную сумму: 0 у Premium.
-    Если ИИ не справится, сумму возвращает refund. Не хватает денег — 402"""
+    """Списывает цену функции в токенах с баланса до запуска ИИ. Возвращает списанные токены: 0 у Premium.
+    Если ИИ не справится, их возвращает refund. Не хватает токенов — 402"""
     user = await session.get(User, user_id)
     if not user:
         raise HTTPException(status_code=403, detail="User not found")
@@ -35,7 +35,7 @@ async def charge(session: AsyncSession, user_id: int, feature: str) -> int:
     if result.rowcount == 0:
         raise HTTPException(
             status_code=402,
-            detail=f"Недостаточно средств на балансе: нужно {price} ₽. Пополните баланс или оформите Premium.",
+            detail=f"Недостаточно токенов на балансе: нужно {tokens(price)}. Пополните баланс или оформите Premium.",
         )
     return price
 
@@ -48,5 +48,7 @@ async def refund(user_id: int, amount: int):
         await session.commit()
 
 
-async def top_up(session: AsyncSession, user_id: int, amount: int):
+async def top_up(session: AsyncSession, user_id: int, rubles: int):
+    """Зачисляет оплаченное пополнение: рубли переводятся в токены по курсу TOKENS_PER_RUBLE"""
+    amount = rubles * TOKENS_PER_RUBLE
     await session.execute(update(User).where(User.id == user_id).values(balance=User.balance + amount))

@@ -180,7 +180,7 @@ async def _generate_report(user_id: int, report_title: str, report_prompt: str, 
         import traceback
         traceback.print_exc()
         print("BG report failed:", repr(e))
-        return {"detail": "Не удалось сформировать отчет. Попробуйте позже — деньги с баланса не списаны."}
+        return {"detail": "Не удалось сформировать отчет. Попробуйте позже — токены с баланса не списаны."}
 
 @router.delete("/api/reports/{report_id}")
 async def delete_report(

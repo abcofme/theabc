@@ -10,7 +10,7 @@ from backend.api.security import validate_twa_data
 from backend.billing import top_up
 from backend.database.models import Payment, User
 from backend.integrations.payment.yoo import _check_payment, _create_payment
-from backend.pricing import MAX_TOPUP, MIN_TOPUP, PREMIUM_PRICE
+from backend.pricing import MAX_TOPUP, MIN_TOPUP, PREMIUM_PRICE, TOKENS_PER_RUBLE, tokens
 
 router = APIRouter()
 
@@ -78,7 +78,7 @@ async def buy_balance_topup(
         raise HTTPException(status_code=400, detail=f"Сумма пополнения — от {MIN_TOPUP} до {MAX_TOPUP} ₽")
     user_id = user_data.get("id")
 
-    url, payment_id = await _create_payment(amount=req.amount, chat_id=str(user_id), description="Пополнение баланса «Азбука Я»", email="", save_payment_method=False)
+    url, payment_id = await _create_payment(amount=req.amount, chat_id=str(user_id), description=f"Пополнение баланса «Азбука Я»: {tokens(req.amount * TOKENS_PER_RUBLE)}", email="", save_payment_method=False)
 
     session.add(Payment(user_id=user_id, uuid=payment_id, url=url, is_topup=True, amount=req.amount))
     await session.commit()
