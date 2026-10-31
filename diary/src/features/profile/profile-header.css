@@ -1,13 +1,21 @@
 .profile-header__premium { background: linear-gradient(145deg,#f1dfc1,#d9bd92); color: #502525; }
 
-/* Шапка без подложки: лоза по диагонали, в левом верхнем и правом нижнем углах. Рамка по размеру содержимого —
-   лоза прилегает к аватару, имени и балансу и расходится вслед за самым широким из них.
-   Отступы — от внутреннего края стеблей на картинке (сбоку стебель занимает ~12% ее ширины, сверху ~17%) плюс небольшой зазор */
-.profile-header { --vine: 96px; --vine-gap: 8px; position: relative; isolation: isolate; align-self: center; width: fit-content; max-width: 100%; padding: calc(var(--vine) * .17 + var(--vine-gap)) calc(var(--vine) * .12 + var(--vine-gap)); }
-.profile-header__vine { position: absolute; z-index: 0; width: var(--vine); height: auto; pointer-events: none; user-select: none; opacity: .9; }
-.profile-header__vine--top { top: 0; left: 0; transform: scaleX(-1); }
-.profile-header__vine--bottom { bottom: 0; right: 0; transform: scaleY(-1); }
+/* Углы пластилиновой рамки сохраняют форму, прямые участки растягиваются под содержимое. */
+.profile-header {
+  position: relative;
+  isolation: isolate;
+  align-self: center;
+  width: 100%;
+  max-width: 380px;
+  padding: 4px;
+  border: 64px solid transparent;
+  border-image: url('../../assets/profile/header-frame-plasticine.webp') 32% / 80px / 0 stretch;
+}
 .profile-header__content { position: relative; z-index: 1; }
+
+@media (max-width: 359px) {
+  .profile-header { border-width: 56px; border-image-width: 72px; }
+}
 
 .profile-stat { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; border-radius: 20px; min-width: 0; }
 .profile-stat__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }

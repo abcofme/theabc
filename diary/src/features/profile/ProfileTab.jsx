@@ -9,7 +9,6 @@ import OfferPage from '../legal/OfferPage';
 import PortraitPage from './PortraitPage';
 import ProfileStats from './ProfileStats';
 import portraitBanner from '../../assets/profile/portrait-woman-handmade.webp';
-import headerVine from '../../assets/profile/header-vine-simple.webp';
 import { useProfile, portraitState } from '../../context/profile';
 import { useAppNav, useErrorHandler } from '../../navigation/appNav';
 import { api } from '../../utils/api';
@@ -90,8 +89,6 @@ export default function ProfileTab({ request, active }) {
 
       {/* ШАПКА: АВАТАР, ИМЯ И СТАТУС */}
       <div className="profile-header min-w-0">
-        <img className="profile-header__vine profile-header__vine--top" src={headerVine} alt="" aria-hidden="true" width="512" height="512" draggable="false" />
-        <img className="profile-header__vine profile-header__vine--bottom" src={headerVine} alt="" aria-hidden="true" width="512" height="512" draggable="false" />
         <div className="profile-header__content flex flex-col items-center text-center w-full min-w-0">
           <Avatar
             src={tgUser.photo_url && tgUser.id ? `${API_URL}/api/avatar/${tgUser.id}` : null}
