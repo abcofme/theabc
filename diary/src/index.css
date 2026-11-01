@@ -42,9 +42,8 @@
 :root[data-telegram-fullscreen='true'] { --app-header-height: max(56px, var(--app-content-safe-top)); }
 
 html, body { margin: 0; padding: 0; height: 100%; background: var(--color-rose-950); color: var(--ui-text); }
-/* Пустая полоса снизу в установленном приложении на iPhone (utils/platform.js): тянем страницу и прижатое к низу */
+/* Пустая полоса снизу в установленном приложении на iPhone (utils/platform.js). Fixed-элементы iOS сдвигает сам */
 :root { height: calc(100% + var(--app-standalone-gap, 0px)); }
-.app-overlay, .clay-navigation { bottom: calc(-1 * var(--app-standalone-gap, 0px)); }
 body { font-size: 16px; line-height: 1.6; }
 #root { box-sizing: border-box; height: 100%; padding-top: var(--app-top-inset); padding-left: var(--app-left-inset); padding-right: var(--app-right-inset); }
 .app-overlay { padding-top: var(--app-top-inset); padding-left: var(--app-left-inset); padding-right: var(--app-right-inset); padding-bottom: var(--app-bottom-inset); }

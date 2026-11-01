@@ -10,19 +10,22 @@ export const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.
 
 export const isMobile = isIOS || /Android/i.test(navigator.userAgent);
 
-// Установленное на iPhone приложение со строкой состояния black-translucent: окно страницы бывает короче экрана
-// на высоту строки состояния, и под нижним меню остается пустая полоса. Меряем разницу и растягиваем на нее
-// корень и прижатые к низу элементы (--app-standalone-gap в index.css). Где окно во весь экран, разница нулевая
+// Установленное на iPhone приложение со строкой состояния black-translucent: окно страницы короче экрана
+// на высоту строки состояния, и под нижним меню остается пустая полоса. Меряем разницу и удлиняем на нее корень
+// (--app-standalone-gap в index.css) — вместе с ним iOS растягивает и область для fixed-элементов: меню и страницы
+// сами встают к краю экрана. Меряем без удлинения и только при запуске и повороте: иначе мерили бы сами себя
 if (isIOS && isStandalone) {
+  const root = document.documentElement;
   const fitScreen = () => {
+    root.style.setProperty('--app-standalone-gap', '0px');
     const landscape = window.matchMedia('(orientation: landscape)').matches;
     const screenHeight = landscape ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
-    const gap = screenHeight - Math.min(window.innerHeight, document.documentElement.clientHeight);
-    document.documentElement.style.setProperty('--app-standalone-gap', `${gap > 0 && gap < 100 ? gap : 0}px`);
+    const gap = screenHeight - Math.min(window.innerHeight, root.clientHeight);
+    root.style.setProperty('--app-standalone-gap', `${gap > 0 && gap < 100 ? gap : 0}px`);
   };
   fitScreen();
-  window.addEventListener('resize', fitScreen);
-  window.addEventListener('orientationchange', fitScreen);
+  // Размеры окна после поворота обновляются не сразу
+  window.matchMedia('(orientation: landscape)').addEventListener?.('change', () => setTimeout(fitScreen, 300));
 }
 
 const SESSION_KEY = 'azbuka-session';
