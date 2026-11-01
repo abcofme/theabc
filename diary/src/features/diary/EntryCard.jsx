@@ -3,6 +3,7 @@ import { Trash2, Activity, PenLine, Leaf, Plus } from '../../components/ClayIcon
 import { scoreColor } from './utils';
 import { readTextDraft, saveTextDraft } from './drafts';
 import ResultContent from '../../components/ResultContent';
+import { currentUser } from '../../utils/platform';
 
 const WebApp = window.Telegram.WebApp;
 
@@ -52,7 +53,7 @@ function Reply({ text }) {
 
 // Дополнение к сохранённой записи: что вспомнилось позже или о чём спросил дневник
 function AdditionForm({ entryId, canAnswer, onSubmit, onClose }) {
-  const owner = WebApp.initDataUnsafe?.user?.id || 'current';
+  const owner = currentUser()?.id || 'current';
   const draftKey = `addition:${entryId}`;
   const [text, setText] = useState(() => readTextDraft(owner, draftKey));
   const [isSubmitting, setIsSubmitting] = useState(false);

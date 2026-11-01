@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react';
-import { User, Sparkles, Wallet, Bell, FileText, Shield, ChevronRight, Users, Leaf } from '../../components/ClayIcon';
+import { User, Sparkles, Wallet, Bell, FileText, Shield, ChevronRight, Users, Leaf, Download, ArrowRight } from '../../components/ClayIcon';
 import Avatar from '../../components/Avatar';
 import ClayBanner from '../../components/ClayBanner';
 import Switch from '../../components/Switch';
 import Page from '../../components/Page';
 import AdminPanel from '../admin/AdminPanel';
 import OfferPage from '../legal/OfferPage';
+import InstallPage from '../install/InstallPage';
 import PortraitPage from './PortraitPage';
 import ProfileStats from './ProfileStats';
 import portraitBanner from '../../assets/profile/portrait-woman-handmade.webp';
@@ -13,13 +14,14 @@ import { useProfile, portraitState } from '../../context/profile';
 import { useAppNav, useErrorHandler } from '../../navigation/appNav';
 import { api } from '../../utils/api';
 import { formatTokens } from '../diary/utils';
+import { clearSession, currentUser, isStandalone, isTelegram } from '../../utils/platform';
 import { useTheme } from '../../context/theme';
 import './profile-header.css';
 
 const API_URL = window.location.origin;
 const WebApp = window.Telegram.WebApp;
 
-const PAGES = ['portrait', 'offer', 'admin'];
+const PAGES = ['portrait', 'offer', 'admin', 'install'];
 
 const PORTRAIT_CAPTIONS = {
   tests: (p) => `Пройдено ${p.passed_tests} из ${p.total_tests} тестов`,
@@ -60,7 +62,7 @@ export default function ProfileTab({ request, active }) {
     setPageOrigin(request.returnTo || null);
   }
 
-  const tgUser = WebApp.initDataUnsafe?.user || { first_name: 'Пользователь', username: '' };
+  const tgUser = currentUser() || { first_name: 'Пользователь', username: '' };
   const state = portraitState(profile);
 
   const openPortrait = () => { setPageOrigin(null); setPage('portrait'); };
@@ -76,6 +78,13 @@ export default function ProfileTab({ request, active }) {
       handleError(err, 'Не удалось сохранить настройку');
     } finally { reminderRequest.current = false; setIsSavingReminder(false); }
   };
+
+  // Выход только из этого браузера: сессия на сервере удаляется, приложение возвращается к экрану входа
+  const logout = () => WebApp.showConfirm('Выйти из аккаунта на этом устройстве?', async (confirmed) => {
+    if (!confirmed) return;
+    try { await api('/api/auth/logout', { method: 'POST' }); } catch { /* сессия и так забудется на устройстве */ }
+    clearSession();
+  });
 
   const closePage = () => {
     setPage(null);
@@ -143,13 +152,23 @@ export default function ProfileTab({ request, active }) {
           <MenuRow icon={Bell} label="Напоминания о дневнике" hint="Вечером, если за день не было записей">
             <Switch checked={!!profile?.diary_reminders} label="Напоминания о дневнике" onClick={toggleReminders} disabled={!profile || isSavingReminder} />
           </MenuRow>
+          {!isStandalone && (
+            <MenuRow
+              icon={Download}
+              label="Приложение на телефон"
+              hint="Дневник на главном экране, как обычное приложение"
+              onClick={() => { setPageOrigin(null); setPage('install'); }}
+            />
+          )}
           <MenuRow icon={FileText} label="Публичная оферта" onClick={() => { setPageOrigin(null); setPage('offer'); }} />
           {profile?.is_admin && <MenuRow icon={Shield} label="Админ-панель" onClick={() => { setPageOrigin(null); setPage('admin'); }} />}
+          {!isTelegram && <MenuRow icon={ArrowRight} label="Выйти" onClick={logout}>{false}</MenuRow>}
         </div>
       </div>
 
       {page === 'portrait' && <PortraitPage onBack={closePage} />}
       {page === 'offer' && <OfferPage onBack={closePage} />}
+      {page === 'install' && <InstallPage onBack={closePage} />}
       {page === 'admin' && (
         <Page title="Админ-панель" onBack={closePage}>
           <AdminPanel />

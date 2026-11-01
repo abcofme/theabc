@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, Check, Trash2, Edit, Plus, Heart, Link2, Download, LoaderCircle, X } from '../../components/ClayIcon';
 import AdminTestEditor from './AdminTestEditor';
 import ScreenState from '../../components/ScreenState';
+import { authHeader, isSignedIn } from '../../utils/platform';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
@@ -38,8 +39,8 @@ export default function AdminPanel() {
   const [isAiImporting, setIsAiImporting] = useState(false);
   const [aiImportResult, setAiImportResult] = useState(null); // {test_name, questions_count, results_count} or error string
   const fetchTrackingLinks = useCallback(() => {
-    if (!WebApp.initData) return Promise.resolve();
-    return fetch(`${API_URL}/api/admin/tracking_links`, { headers: { Authorization: `Bearer ${WebApp.initData}` } })
+    if (!isSignedIn()) return Promise.resolve();
+    return fetch(`${API_URL}/api/admin/tracking_links`, { headers: { Authorization: authHeader() } })
       .then(async response => {
         if (!response.ok) throw new Error('Не удалось загрузить ссылки');
         setTrackingLinks(await response.json());
@@ -56,7 +57,7 @@ export default function AdminPanel() {
       const response = await fetch(`${API_URL}/api/admin/tracking_links`, {
         method: 'POST',
         headers: {
-          "Authorization": `Bearer ${WebApp.initData}`,
+          "Authorization": authHeader(),
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ name: newLinkName })
@@ -81,7 +82,7 @@ export default function AdminPanel() {
       try {
         const response = await fetch(`${API_URL}/api/admin/tracking_links/${id}`, {
           method: 'DELETE',
-          headers: { "Authorization": `Bearer ${WebApp.initData}` }
+          headers: { "Authorization": authHeader() }
         });
         if (response.ok) {
           fetchTrackingLinks();
@@ -93,12 +94,12 @@ export default function AdminPanel() {
   };
 
   const fetchStats = useCallback(() => {
-    if (!WebApp.initData) return Promise.resolve();
+    if (!isSignedIn()) return Promise.resolve();
     const params = new URLSearchParams();
     if (startDate) params.append('start_date', startDate);
     if (endDate) params.append('end_date', endDate);
     if (isUnique) params.append('unique', 'true');
-    return fetch(`${API_URL}/api/admin/stats?${params}`, { headers: { Authorization: `Bearer ${WebApp.initData}` } })
+    return fetch(`${API_URL}/api/admin/stats?${params}`, { headers: { Authorization: authHeader() } })
       .then(async response => {
         if (!response.ok) throw new Error(`Ошибка ${response.status}: ${await response.text()}`);
         setStats(await response.json());
@@ -136,7 +137,7 @@ export default function AdminPanel() {
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          "Authorization": `Bearer ${WebApp.initData}`,
+          "Authorization": authHeader(),
           "Content-Type": "application/json"
         },
         body: JSON.stringify(bodyData)
@@ -168,7 +169,7 @@ export default function AdminPanel() {
       const response = await fetch(`${API_URL}/api/admin/revoke`, {
         method: 'POST',
         headers: {
-          "Authorization": `Bearer ${WebApp.initData}`,
+          "Authorization": authHeader(),
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -201,7 +202,7 @@ export default function AdminPanel() {
     try {
       const response = await fetch(`${API_URL}/api/admin/tests/${testId}`, {
         method: 'DELETE',
-        headers: { "Authorization": `Bearer ${WebApp.initData}` }
+        headers: { "Authorization": authHeader() }
       });
       
       if (!response.ok) {
@@ -246,7 +247,7 @@ export default function AdminPanel() {
     try {
       const response = await fetch(`${API_URL}/api/admin/tests/ai-import`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${WebApp.initData}`, 'Content-Type': 'application/json' },
+        headers: { 'Authorization': authHeader(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ raw_text: aiImportText, category_id: parseInt(aiImportCategoryId) })
       });
       const data = await response.json();
@@ -271,7 +272,7 @@ export default function AdminPanel() {
       const params = new URLSearchParams();
       params.append('test_ids', exportSelectedIds.join(','));
       const response = await fetch(`${API_URL}/api/admin/tests/export?${params.toString()}`, {
-        headers: { 'Authorization': `Bearer ${WebApp.initData}` }
+        headers: { 'Authorization': authHeader() }
       });
       if (!response.ok) throw new Error(await response.text());
       const { token } = await response.json();

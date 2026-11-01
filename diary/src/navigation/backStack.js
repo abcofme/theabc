@@ -1,9 +1,10 @@
 import { createContext, useContext, useEffect, useRef } from 'react';
 
-export const BackStackContext = createContext({ push: () => () => {}, depth: 0 });
+export const BackStackContext = createContext({ push: () => () => {}, depth: 0, back: () => {} });
 
 // Сколько страниц и окон открыто поверх вкладок
 export const useBackDepth = () => useContext(BackStackContext).depth;
+export const useBackStack = () => useContext(BackStackContext);
 
 // Пока active, onBack закрывает этот экран по кнопке «Назад» Telegram
 export function useBackHandler(active, onBack) {

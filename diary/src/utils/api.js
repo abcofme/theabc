@@ -1,4 +1,4 @@
-const WebApp = window.Telegram.WebApp;
+import { authHeader, clearSession, isTelegram } from './platform';
 
 // Мини-апп открывается через NL: из РФ режут ответы московского сервера на адреса многих VPN.
 // Если прямой путь в Москву быстрый, запросы к API идут напрямую, иначе — через домен страницы
@@ -42,9 +42,14 @@ async function request(path, init, timeoutMs) {
   return fetch(`${RELAY_URL}${path}`, init);
 }
 
+// Сессия браузера закончилась или её отозвали — приложение вернётся на экран входа
+function checkSession(res) {
+  if (res.status === 401 && !isTelegram) clearSession();
+}
+
 // Запрос к API от имени пользователя Telegram. Ошибка HTTP становится исключением с текстом detail от бэкенда
 export async function api(path, { method = 'GET', body } = {}) {
-  const headers = { Authorization: `Bearer ${WebApp.initData}` };
+  const headers = { Authorization: authHeader() };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
 
   const res = await request(path, {
@@ -52,6 +57,7 @@ export async function api(path, { method = 'GET', body } = {}) {
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
   }, method === 'GET' ? DIRECT_GET_TIMEOUT_MS : null);
+  checkSession(res);
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     const error = new Error(data?.detail || `Ошибка сервера (${res.status})`);
@@ -66,9 +72,10 @@ export async function api(path, { method = 'GET', body } = {}) {
 export async function apiStream(path, body) {
   const res = await request(path, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${WebApp.initData}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: authHeader(), 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   }, null);
+  checkSession(res);
   const text = await res.text();
   const start = text.indexOf('{');
   const data = start === -1 ? null : JSON.parse(text.slice(start));

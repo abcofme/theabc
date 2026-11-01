@@ -1,13 +1,52 @@
 import { useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import ClayText from './ClayText';
+import { ArrowLeft } from './ClayIcon';
 import logo from '../assets/logo.webp';
+import { useBackStack } from '../navigation/backStack';
+import { isTelegram } from '../utils/platform';
 
 const WebApp = window.Telegram.WebApp;
 const events = ['safeAreaChanged', 'contentSafeAreaChanged', 'fullscreenChanged', 'viewportChanged'];
 
 // Шапка находится между нативными кнопками Telegram, а экраны начинаются под ней.
+// В браузере кнопок Telegram нет: шапка своя, с кнопкой «Назад», пока открыт экран поверх вкладок
 export default function TelegramChrome() {
+  if (!isTelegram) return <BrowserChrome />;
+  return <TelegramHeader />;
+}
+
+function Brand() {
+  return (
+    <div className="telegram-brand" aria-label="Азбука Я">
+      <img src={logo} alt="" width="32" height="32" draggable="false" />
+      <ClayText text="Азбука Я" aria-hidden="true" />
+    </div>
+  );
+}
+
+function BrowserChrome() {
+  const { depth, back } = useBackStack();
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    root.dataset.browserChrome = 'true';
+    return () => { delete root.dataset.browserChrome; };
+  }, []);
+
+  return createPortal(
+    <>
+      <Brand />
+      {depth > 0 && (
+        <button type="button" onClick={back} aria-label="Назад" className="browser-back ui-icon-button">
+          <ArrowLeft size={24} />
+        </button>
+      )}
+    </>,
+    document.body,
+  );
+}
+
+function TelegramHeader() {
   useLayoutEffect(() => {
     const root = document.documentElement;
     const sync = () => {
@@ -31,11 +70,5 @@ export default function TelegramChrome() {
     };
   }, []);
 
-  return createPortal(
-    <div className="telegram-brand" aria-label="Азбука Я">
-      <img src={logo} alt="" width="32" height="32" draggable="false" />
-      <ClayText text="Азбука Я" aria-hidden="true" />
-    </div>,
-    document.body,
-  );
+  return createPortal(<Brand />, document.body);
 }

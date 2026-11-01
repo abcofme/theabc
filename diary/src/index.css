@@ -47,7 +47,12 @@ body { font-size: 16px; line-height: 1.6; }
 .app-overlay { padding-top: var(--app-top-inset); padding-left: var(--app-left-inset); padding-right: var(--app-right-inset); padding-bottom: var(--app-bottom-inset); }
 .app-overlay--modal { padding-top: calc(var(--app-top-inset) + 16px); padding-left: calc(var(--app-left-inset) + 16px); padding-right: calc(var(--app-right-inset) + 16px); padding-bottom: calc(var(--app-bottom-inset) + 16px); }
 .telegram-brand { display: none; position: fixed; z-index: 100; top: var(--app-system-top); left: calc(92px + var(--app-left-inset)); right: calc(92px + var(--app-right-inset)); height: var(--app-header-height); align-items: center; justify-content: center; gap: 6px; pointer-events: none; color: var(--ui-text); font-size: 16px; white-space: nowrap; }
-:root[data-telegram-fullscreen='true'] .telegram-brand { display: flex; }
+:root[data-telegram-fullscreen='true'] .telegram-brand, :root[data-browser-chrome='true'] .telegram-brand { display: flex; }
+/* Браузер и установленное приложение: своя шапка вместо кнопок Telegram, «Назад» — слева */
+:root[data-browser-chrome='true'] { --app-header-height: 56px; }
+.browser-back { position: fixed; z-index: 100; top: calc(var(--app-system-top) + 6px); left: calc(8px + var(--app-left-inset)); color: var(--ui-text); }
+.login-screen { height: 100%; overflow-y: auto; display: flex; flex-direction: column; justify-content: center; padding: 24px 16px calc(24px + var(--app-bottom-inset)); }
+.login-screen__logo { width: 96px; height: 96px; object-fit: contain; }
 .telegram-brand > img { width: 32px; height: 32px; object-fit: contain; flex-shrink: 0; }
 button, a, input, textarea, select { transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, opacity 180ms ease, transform 180ms ease; }
 button:not(:disabled), summary { cursor: pointer; }

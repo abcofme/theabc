@@ -5,6 +5,7 @@ import time
 import urllib.parse
 from fastapi import HTTPException, Security
 from fastapi.security import APIKeyHeader
+from backend.web_auth import read_session
 from settings import settings
 
 # Ожидаем токен в заголовке Authorization
@@ -13,7 +14,14 @@ header_scheme = APIKeyHeader(name="Authorization")
 # Сколько живёт подпись initData: без ограничения перехваченный заголовок работал бы вечно
 INIT_DATA_MAX_AGE = 24 * 60 * 60
 
-def validate_twa_data(auth_header: str = Security(header_scheme)) -> dict:
+# Пользователь запроса. В Telegram — подписанный initData («Bearer <initData>»),
+# в браузере и установленном приложении — сессия после входа через бота («Session <токен>», backend/web_auth.py)
+async def validate_twa_data(auth_header: str = Security(header_scheme)) -> dict:
+    if auth_header.startswith("Session "):
+        user_data = await read_session(auth_header.removeprefix("Session "))
+        if not user_data:
+            raise HTTPException(status_code=401, detail="Сессия закончилась, войдите снова")
+        return user_data
     if not auth_header.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Invalid token format")
     

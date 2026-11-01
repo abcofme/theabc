@@ -1,12 +1,13 @@
 import { useState, useEffect, useLayoutEffect, useRef, useId } from 'react';
 import { PenLine } from '../../components/ClayIcon';
 import { readDraft, saveDraft, clearDraft } from './drafts';
+import { currentUser } from '../../utils/platform';
 
 const WebApp = window.Telegram.WebApp;
 
 // Запись в два шага. Черновик принадлежит пользователю и дате/редактируемой записи.
 export default function EntryForm({ title, initial, draftKey, submitLabel = 'Сохранить', onSubmit, onCancel }) {
-  const owner = WebApp.initDataUnsafe?.user?.id || 'current';
+  const owner = currentUser()?.id || 'current';
   const [draft] = useState(() => readDraft(owner, draftKey, initial));
   const [step, setStep] = useState(draft.step);
   const [event, setEvent] = useState(draft.event);

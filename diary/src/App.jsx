@@ -12,6 +12,9 @@ import ScreenState from './components/ScreenState';
 import TelegramChrome from './components/TelegramChrome';
 import DepthMotion from './components/DepthMotion';
 import { useProfile } from './context/profile';
+import LoginScreen from './features/auth/LoginScreen';
+import { api } from './utils/api';
+import { getSession, isTelegram, onSessionChange, saveSession } from './utils/platform';
 import diaryIcon from './assets/navigation/diary-clay.webp';
 import testsIcon from './assets/navigation/tests-clay.webp';
 import reportsIcon from './assets/navigation/reports-clay.webp';
@@ -30,7 +33,7 @@ const TABS = [
 const isTextField = (el) => el?.tagName === 'INPUT' || el?.tagName === 'TEXTAREA';
 
 // Ссылки из бота открывают нужный экран: ?tab=reports&report=12, ?tab=reports&section=compatibility,
-// ?tab=profile&page=portrait, ?page=billing
+// ?tab=profile&page=portrait, ?page=billing, ?tab=profile&page=install
 function readDeepLink() {
   const params = new URLSearchParams(window.location.search);
   const tab = params.get('tab');
@@ -59,17 +62,9 @@ export default function App() {
     }
   }, []);
 
-  // Блокировка: если нет данных от Telegram, не пускаем
-  if (!WebApp.initData) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-rose-950 text-center p-4">
-        <div>
-          <h2 className="text-2xl font-bold text-[var(--ui-text)] mb-2">Доступ запрещен</h2>
-          <p className="text-[var(--ui-text)]">Дневник можно открыть только через нашего Telegram-бота.</p>
-        </div>
-      </div>
-    );
-  }
+  const browserAuth = useBrowserSession();
+  if (browserAuth.isClaiming) return <div className="login-screen"><ScreenState loading title="Входим…" /></div>;
+  if (!browserAuth.isSignedIn) return <LoginScreen notice={browserAuth.notice} />;
 
   return (
     <ProfileProvider>
@@ -80,6 +75,30 @@ export default function App() {
       </BackStackProvider>
     </ProfileProvider>
   );
+}
+
+// Вне Telegram нужна сессия. Из мини-аппа приходят по одноразовой ссылке ?login=<код> — меняем ее на сессию
+// и убираем код из адреса, чтобы он не остался в истории и закладках
+function useBrowserSession() {
+  const [handoff] = useState(() => (isTelegram ? null : new URLSearchParams(window.location.search).get('login')));
+  const [isSignedIn, setIsSignedIn] = useState(() => isTelegram || Boolean(getSession()));
+  const [isClaiming, setIsClaiming] = useState(Boolean(handoff));
+  const [notice, setNotice] = useState(null);
+
+  useEffect(() => onSessionChange(session => setIsSignedIn(Boolean(session))), []);
+
+  useEffect(() => {
+    if (!handoff) return;
+    const url = new URL(window.location.href);
+    url.searchParams.delete('login');
+    window.history.replaceState(null, '', url);
+    api('/api/auth/handoff/claim', { method: 'POST', body: { code: handoff } })
+      .then(saveSession)
+      .catch(err => { if (!getSession()) setNotice(err.message); })
+      .finally(() => setIsClaiming(false));
+  }, [handoff]);
+
+  return { isSignedIn: isTelegram || isSignedIn, isClaiming, notice };
 }
 
 // Клавиатура открыта, пока фокус в поле ввода: прячем нижнее меню, чтобы оно не прыгало над ней

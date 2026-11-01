@@ -3,7 +3,7 @@ from urllib.parse import urlsplit
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.api.routers import admin, diary, friends, payments, portrait, profile, reports, tests
+from backend.api.routers import admin, auth, diary, friends, payments, portrait, profile, reports, tests
 from settings import settings
 
 app = FastAPI(title="TheABC Diary API")
@@ -20,5 +20,5 @@ app.add_middleware(
     max_age=7200,
 )
 
-for module in (profile, diary, portrait, reports, tests, admin, friends, payments):
+for module in (auth, profile, diary, portrait, reports, tests, admin, friends, payments):
     app.include_router(module.router)
