@@ -12,6 +12,11 @@ const DIRECT_GET_TIMEOUT_MS = 8000;
 let useDirect = false;
 let directFailed = false;
 
+// Запросы первого экрана отправляем при запуске вместе с профилем, а не после него: экран заберет готовый ответ.
+// Ответ живет недолго — позже экран спросит сервер заново
+const PREFETCH_TTL_MS = 15000;
+const prefetched = new Map();
+
 function fetchWithTimeout(url, init, timeoutMs) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -49,6 +54,10 @@ function checkSession(res) {
 
 // Запрос к API от имени пользователя Telegram. Ошибка HTTP становится исключением с текстом detail от бэкенда
 export async function api(path, { method = 'GET', body } = {}) {
+  if (method === 'GET') {
+    const ready = takePrefetched(path);
+    if (ready) return ready;
+  }
   const headers = { Authorization: authHeader() };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
 
@@ -65,6 +74,19 @@ export async function api(path, { method = 'GET', body } = {}) {
     throw error;
   }
   return data;
+}
+
+export function prefetch(path) {
+  if (prefetched.has(path)) return;
+  const promise = api(path);
+  promise.catch(() => {});
+  prefetched.set(path, { promise, at: Date.now() });
+}
+
+function takePrefetched(path) {
+  const entry = prefetched.get(path);
+  prefetched.delete(path);
+  return entry && Date.now() - entry.at < PREFETCH_TTL_MS ? entry.promise : null;
 }
 
 // Долгие запросы к ИИ: бэкенд держит соединение пробелами и в конце присылает JSON.

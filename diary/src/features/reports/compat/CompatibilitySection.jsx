@@ -4,12 +4,14 @@ import Avatar from '../../../components/Avatar';
 import ClayBanner from '../../../components/ClayBanner';
 import Spinner from '../../../components/Spinner';
 import ScreenState from '../../../components/ScreenState';
-import InviteModal from './InviteModal';
-import FriendPage from './FriendPage';
+import { lazyScreen } from '../../../components/lazyScreen';
 import { friendName, compatStatus } from './friends';
 import { useAppNav, useErrorHandler } from '../../../navigation/appNav';
 import { api } from '../../../utils/api';
 import friendsImage from '../../../assets/reports/friends-handmade.webp';
+
+const InviteModal = lazyScreen(() => import('./InviteModal'));
+const FriendPage = lazyScreen(() => import('./FriendPage'));
 
 const SectionLabel = ({ children }) => (
   <h3 className="ui-section-label">{children}</h3>

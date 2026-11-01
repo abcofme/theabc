@@ -4,10 +4,8 @@ import Avatar from '../../components/Avatar';
 import ClayBanner from '../../components/ClayBanner';
 import Switch from '../../components/Switch';
 import Page from '../../components/Page';
-import AdminPanel from '../admin/AdminPanel';
-import OfferPage from '../legal/OfferPage';
+import { lazyScreen } from '../../components/lazyScreen';
 import InstallPage from '../install/InstallPage';
-import PortraitPage from './PortraitPage';
 import ProfileStats from './ProfileStats';
 import headerVine from '../../assets/profile/header-vine-thick.webp';
 import portraitBanner from '../../assets/profile/portrait-woman-handmade.webp';
@@ -21,6 +19,9 @@ import './profile-header.css';
 
 const API_URL = window.location.origin;
 const WebApp = window.Telegram.WebApp;
+const AdminPanel = lazyScreen(() => import('../admin/AdminPanel'));
+const OfferPage = lazyScreen(() => import('../legal/OfferPage'));
+const PortraitPage = lazyScreen(() => import('./PortraitPage'));
 // Тот же дневник в браузере: адрес сайта, с которого открыт мини-апп
 const SITE_URL = window.location.origin;
 const SITE_HOST = window.location.host;

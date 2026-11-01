@@ -5,6 +5,8 @@ const POLL_INTERVAL = 3000;
 // Разбор идёт по всему портрету и может занять до пары минут; дольше — считаем, что он не удался
 const POLL_TIMEOUT = 150000;
 
+export const overviewPath = (today) => `/api/diary/overview?today=${today}`;
+
 const withoutKey = (obj, key) => {
   const next = { ...obj };
   delete next[key];
@@ -32,7 +34,7 @@ export default function useDiary(today) {
 
   const loadOverview = useCallback(async () => {
     try {
-      const data = await api(`/api/diary/overview?today=${today}`);
+      const data = await api(overviewPath(today));
       upsert(data.entries);
       setStreak(data.streak);
       setOverviewStatus('ready');

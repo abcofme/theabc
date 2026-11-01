@@ -34,12 +34,28 @@
         width: 100%;
         background-color: var(--app-bg);
       }
+      /* Заставка, пока грузится приложение: первый экран React заменит ее */
+      .app-splash {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .app-splash img {
+        width: 96px;
+        height: 96px;
+        animation: app-splash-pulse 1.6s ease-in-out infinite;
+      }
+      @keyframes app-splash-pulse {
+        50% { opacity: 0.6; transform: scale(0.94); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .app-splash img { animation: none; }
+      }
     </style>
-    <!-- Копия с telegram.org: в РФ его домены замедляют. Обновляется workflow update-telegram-sdk -->
-    <script src="/telegram-web-app.js"></script>
     <script>
-      // Инициализация и безопасный мок для Telegram WebApp
-      (function() {
+      // Инициализация и безопасный мок для Telegram WebApp: вызывается, когда SDK выполнился или не загрузился
+      function initTelegram() {
         if (!window.Telegram) {
           window.Telegram = {};
         }
@@ -69,11 +85,18 @@
             console.error("Error initializing Telegram WebApp", e);
           }
         }
-      })();
+      }
     </script>
+    <!-- Копия с telegram.org: в РФ его домены замедляют. Обновляется workflow update-telegram-sdk.
+         defer: не задерживает заставку, но выполняется раньше кода приложения -->
+    <script defer src="/telegram-web-app.js" onload="initTelegram()" onerror="initTelegram()"></script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="app-splash" role="status" aria-label="Загрузка">
+        <img src="/src/assets/logo.webp" alt="" width="96" height="96" />
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

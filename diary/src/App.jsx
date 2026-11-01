@@ -7,15 +7,17 @@ import { AppNavContext } from './navigation/appNav';
 import ProfileTab from './features/profile/ProfileTab';
 import ReportsTab from './features/reports/ReportsTab';
 import TestsTab from './features/tests/TestsTab';
-import BillingPage from './features/billing/BillingPage';
 import ScreenState from './components/ScreenState';
+import { lazyScreen, preloadScreens } from './components/lazyScreen';
 import TelegramChrome from './components/TelegramChrome';
 import DepthMotion from './components/DepthMotion';
 import { useProfile } from './context/profile';
 import LoginScreen from './features/auth/LoginScreen';
 import InstallOffer from './features/install/InstallOffer';
 import { markInstallOffered, shouldOfferInstall } from './features/install/offerTiming';
-import { api } from './utils/api';
+import { overviewPath } from './features/diary/useDiary';
+import { dayKey } from './features/diary/utils';
+import { api, prefetch } from './utils/api';
 import { getSession, isTelegram, onSessionChange, saveSession } from './utils/platform';
 import diaryIcon from './assets/navigation/diary-clay.webp';
 import testsIcon from './assets/navigation/tests-clay.webp';
@@ -24,6 +26,7 @@ import profileIcon from './assets/navigation/profile-clay.webp';
 import './components/clay-navigation.css';
 
 const WebApp = window.Telegram.WebApp;
+const BillingPage = lazyScreen(() => import('./features/billing/BillingPage'));
 
 const TABS = [
   { id: 'diary', label: 'Дневник', icon: diaryIcon },
@@ -31,6 +34,9 @@ const TABS = [
   { id: 'reports', label: 'Отчеты', icon: reportsIcon },
   { id: 'profile', label: 'Профиль', icon: profileIcon },
 ];
+
+// Через столько после первого экрана монтируем остальные вкладки и подгружаем редкие экраны
+const BACKGROUND_LOAD_DELAY_MS = 2000;
 
 const isTextField = (el) => el?.tagName === 'INPUT' || el?.tagName === 'TEXTAREA';
 
@@ -130,6 +136,9 @@ function Shell() {
   const { profile, profileError, refreshProfile } = useProfile();
   const [request, setRequest] = useState(readDeepLink);
   const [activeTab, setActiveTab] = useState(request.tab);
+  // Скрытые вкладки монтируем при первом переходе или когда первый экран уже показан:
+  // их картинки и запросы не отнимают сеть у первого экрана
+  const [mountedTabs, setMountedTabs] = useState(() => [request.tab]);
   const [isBillingOpen, setIsBillingOpen] = useState(request.page === 'billing');
   // Пришли по ссылке на установку из Telegram — страница установки и так откроется, окно не нужно
   const [isInstallOfferOpen, setIsInstallOfferOpen] = useState(() => shouldOfferInstall() && request.page !== 'install');
@@ -137,6 +146,22 @@ function Shell() {
   const depth = useBackDepth();
   const isKeyboardOpen = useKeyboardOpen();
   const isNavHidden = depth > 0 || isKeyboardOpen;
+
+  // Дневник — первый экран: его записи запрашиваем вместе с профилем, а не когда профиль загрузится
+  const [startsWithDiary] = useState(request.tab === 'diary');
+  useEffect(() => {
+    if (startsWithDiary) prefetch(overviewPath(dayKey(new Date())));
+  }, [startsWithDiary]);
+
+  const isLoaded = Boolean(profile);
+  useEffect(() => {
+    if (!isLoaded) return;
+    const timer = setTimeout(() => {
+      setMountedTabs(TABS.map(tab => tab.id));
+      preloadScreens();
+    }, BACKGROUND_LOAD_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [isLoaded]);
 
   // У каждой вкладки своя позиция прокрутки: переход между вкладками её не переносит
   const mainRef = useRef(null);
@@ -150,6 +175,7 @@ function Shell() {
     }
     if (main) scrollTops.current[activeTab] = main.scrollTop;
     setActiveTab(tab);
+    setMountedTabs(tabs => (tabs.includes(tab) ? tabs : [...tabs, tab]));
   }, [activeTab]);
 
   useLayoutEffect(() => {
@@ -171,16 +197,16 @@ function Shell() {
         <main ref={mainRef} className={`app-main ${isNavHidden ? '' : 'app-main--with-nav'}`}>
           {!profile ? <ScreenState loading={!profileError} error={!!profileError} title={profileError ? 'Не удалось загрузить приложение' : 'Загружаем твои данные…'} onRetry={profileError ? refreshProfile : undefined} /> : <>
           <div className="flex-1 flex-col" style={{ display: activeTab === 'diary' ? 'flex' : 'none' }}>
-            <DiaryTab />
+            {mountedTabs.includes('diary') && <DiaryTab />}
           </div>
           <div className="flex-1 flex-col" style={{ display: activeTab === 'tests' ? 'flex' : 'none' }}>
-            <TestsTab request={requestFor('tests')} />
+            {mountedTabs.includes('tests') && <TestsTab request={requestFor('tests')} />}
           </div>
           <div className="flex-1 flex-col" style={{ display: activeTab === 'reports' ? 'flex' : 'none' }}>
-            <ReportsTab request={requestFor('reports')} active={activeTab === 'reports'} />
+            {mountedTabs.includes('reports') && <ReportsTab request={requestFor('reports')} active={activeTab === 'reports'} />}
           </div>
           <div className="flex-1 flex-col" style={{ display: activeTab === 'profile' ? 'flex' : 'none' }}>
-            <ProfileTab request={requestFor('profile')} active={activeTab === 'profile'} />
+            {mountedTabs.includes('profile') && <ProfileTab request={requestFor('profile')} active={activeTab === 'profile'} />}
           </div>
           </>}
         </main>

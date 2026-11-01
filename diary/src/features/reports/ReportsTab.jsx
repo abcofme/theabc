@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import ReportsCatalog from './ReportsCatalog';
 import ReportTypePage from './ReportTypePage';
-import ReportViewPage from './ReportViewPage';
 import CompatibilitySection from './compat/CompatibilitySection';
 import { reportTypeOf } from './reportTypes';
 import { useErrorHandler } from '../../navigation/appNav';
 import { api } from '../../utils/api';
 import ClayText from '../../components/ClayText';
 import ScreenState from '../../components/ScreenState';
+import { lazyScreen } from '../../components/lazyScreen';
 
 const WebApp = window.Telegram.WebApp;
+const ReportViewPage = lazyScreen(() => import('./ReportViewPage'));
 
 // Два раздела: отчеты по дневнику («Поведенческий код» и «Профориентация») и совместимость с друзьями
 const SECTIONS = [

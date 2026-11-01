@@ -3,10 +3,10 @@ import { Check, ChevronRight, RefreshCw } from '../../components/ClayIcon';
 import ClayBanner from '../../components/ClayBanner';
 import ClayText from '../../components/ClayText';
 import Page from '../../components/Page';
+import { lazyScreen } from '../../components/lazyScreen';
 import ResultContent from '../../components/ResultContent';
 import Spinner from '../../components/Spinner';
 import PortraitProgress from './PortraitProgress';
-import TestRunner from './TestRunner';
 import { categoryBanners } from './categoryBanners';
 import { readTestProgress, clearTestProgress } from './testProgress';
 import { useProfile } from '../../context/profile';
@@ -14,6 +14,7 @@ import { useErrorHandler } from '../../navigation/appNav';
 import { api } from '../../utils/api';
 
 const WebApp = window.Telegram.WebApp;
+const TestRunner = lazyScreen(() => import('./TestRunner'));
 
 export default function TestsTab({ request }) {
   const { profile, refreshProfile } = useProfile();
