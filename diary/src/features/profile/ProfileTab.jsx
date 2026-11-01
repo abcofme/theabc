@@ -21,9 +21,6 @@ import './profile-header.css';
 
 const API_URL = window.location.origin;
 const WebApp = window.Telegram.WebApp;
-// Тот же дневник в браузере: адрес сайта, с которого открыт мини-апп
-const SITE_URL = window.location.origin;
-const SITE_HOST = window.location.host;
 
 const PAGES = ['portrait', 'offer', 'admin', 'install'];
 
@@ -170,17 +167,6 @@ export default function ProfileTab({ request, active }) {
           {profile?.is_admin && <MenuRow icon={Shield} label="Админ-панель" onClick={() => { setPageOrigin(null); setPage('admin'); }} />}
           {!isTelegram && <MenuRow icon={ArrowRight} label="Выйти" onClick={logout}>{false}</MenuRow>}
         </div>
-
-        <p className="ui-secondary text-center px-4">
-          «Азбука Я» работает и в браузере — на компьютере и телефоне:{' '}
-          <a
-            href={SITE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={isTelegram ? (event) => { event.preventDefault(); WebApp.openLink(SITE_URL); } : undefined}
-            className="font-semibold text-[var(--ui-text)] underline underline-offset-4"
-          >{SITE_HOST}</a>. Вход через Telegram.
-        </p>
       </div>
 
       {page === 'portrait' && <PortraitPage onBack={closePage} />}
