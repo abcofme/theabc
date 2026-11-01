@@ -56,6 +56,7 @@ export function Link2(props) { return <ClayIcon name="Link2" {...props} />; }
 export function LoaderCircle(props) { return <ClayIcon name="LoaderCircle" {...props} />; }
 export function Lock(props) { return <ClayIcon name="Lock" {...props} />; }
 export function MessageCircle(props) { return <ClayIcon name="MessageCircle" {...props} />; }
+export function Mic(props) { return <ClayIcon name="Mic" {...props} />; }
 export function PenLine(props) { return <ClayIcon name="PenLine" {...props} />; }
 export function Plus(props) { return <ClayIcon name="Plus" {...props} />; }
 export function RefreshCw(props) { return <ClayIcon name="RefreshCw" {...props} />; }

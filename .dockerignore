@@ -16,3 +16,4 @@ local_logs*.txt
 tail_logs.txt
 .deployed-commit
 .failed-commit
+stt

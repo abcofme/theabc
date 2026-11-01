@@ -136,6 +136,23 @@ input[type='date']::-webkit-calendar-picker-indicator { background: url('./asset
 .diary-reply { margin-top: 16px; padding: 16px; border: 1px solid var(--ui-line); border-radius: 16px; background: var(--color-rose-950); }
 .diary-reply__head { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; color: var(--ui-gold); font-size: 13px; line-height: 18px; font-weight: 600; }
 
+/* Диктовка: панель поверх низа поля ввода; отступ снизу не дает тексту уйти под нее */
+.dictation-field { position: relative; }
+.dictation-field > textarea { padding-bottom: 60px; }
+.dictation-bar { position: absolute; right: 1px; bottom: 1px; left: 1px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 12px 8px 8px; border-radius: 0 0 11px 11px; background: linear-gradient(to bottom, transparent, var(--color-rose-950) 12px); pointer-events: none; }
+.dictation-bar > * { pointer-events: auto; }
+.dictation-bar__status { display: inline-flex; align-items: center; gap: 8px; margin-right: auto; padding-left: 8px; color: var(--ui-secondary); font-size: 14px; line-height: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.dictation-bar__cancel { min-width: 40px; min-height: 40px; padding: 8px; }
+.dictation-bar__cancel + .dictation-bar__status { padding-left: 0; }
+.dictation-bar__dot { width: 10px; height: 10px; border-radius: 50%; background: #C4524F; animation: dictationPulse 1.2s ease-in-out infinite; }
+.dictation-button { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 16px 8px 10px; border-radius: 999px; background: var(--color-rose-800); color: var(--ui-text); font-size: 14px; line-height: 20px; font-weight: 600; box-shadow: var(--clay-raised-sm); }
+.dictation-button:disabled { opacity: .45; }
+.dictation-button:active:not(:disabled) { transform: translateY(2px); box-shadow: var(--clay-pressed); }
+/* Ореол вокруг «Готово» дышит с громкостью голоса (--level пишет useDictation) */
+.dictation-button--recording { padding-left: 14px; background: var(--ui-action); color: var(--ui-on-action); transition: box-shadow 90ms linear; }
+.dictation-button--recording { box-shadow: var(--clay-raised-sm), 0 0 0 calc(3px + var(--level, 0) * 9px) color-mix(in srgb, var(--ui-action) 35%, transparent); }
+.dictation-button__stop { width: 12px; height: 12px; border-radius: 3px; background: currentColor; }
+
 /* Карточка с пластилиновой лозой в правом верхнем углу; угол рисунка совпадает с углом карточки */
 .vine-card { position: relative; isolation: isolate; overflow: hidden; }
 .vine-card__vine { position: absolute; z-index: 0; top: -6px; right: -6px; width: 116px; height: auto; pointer-events: none; user-select: none; opacity: .9; }
@@ -253,6 +270,7 @@ input[type='date']::-webkit-calendar-picker-indicator { background: url('./asset
 .generation-progress__track { height: 6px; background: var(--ui-track); border-radius: 99px; overflow: hidden; }
 .generation-progress__track > span { display: block; width: 35%; height: 100%; border-radius: inherit; background: var(--ui-sage); animation: generation 1.8s ease-in-out infinite; }
 @keyframes generation { from { transform: translateX(-100%); } to { transform: translateX(390%); } }
+@keyframes dictationPulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 .animate-slide-down { animation: slideDown 230ms ease-out; }
 @keyframes swipeHint { 0%,50%,100% { transform: translateX(0) rotate(0); } 25% { transform: translateX(28px) rotate(2deg); } 75% { transform: translateX(-28px) rotate(-2deg); } }

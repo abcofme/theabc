@@ -1,6 +1,8 @@
 import { useState, useEffect, useLayoutEffect, useRef, useId } from 'react';
 import { PenLine } from '../../components/ClayIcon';
 import { readDraft, saveDraft, clearDraft } from './drafts';
+import DictationField from './DictationField';
+import { appendDictated, useDictation } from './useDictation';
 import { currentUser } from '../../utils/platform';
 
 const WebApp = window.Telegram.WebApp;
@@ -21,7 +23,15 @@ export default function EntryForm({ title, initial, draftKey, submitLabel = 'С�
 
   const persist = (changes = {}) => setDraftSaved(saveDraft(owner, draftKey, { event, reaction, step, ...changes }));
   const changeStep = next => { persist({ step: next }); setStep(next); };
-
+  const changeValue = text => {
+    if (step === 'event') { setEvent(text); persist({ event: text }); }
+    else { setReaction(text); persist({ reaction: text }); }
+  };
+  const dictation = useDictation(text => {
+    changeValue(appendDictated(value, text));
+    requestAnimationFrame(() => { if (fieldRef.current) fieldRef.current.scrollTop = fieldRef.current.scrollHeight; });
+  });
+  const locked = isSubmitting || dictation.busy;
 
   useLayoutEffect(() => {
     const field = fieldRef.current;
@@ -65,7 +75,7 @@ export default function EntryForm({ title, initial, draftKey, submitLabel = 'С�
     <div className="flex flex-col gap-4">
       <p className="ui-muted">{step === 'event' ? 'Событие · шаг 1 из 2' : 'Реакция · шаг 2 из 2'}</p>
       {step === 'reaction' && (
-        <button type="button" onClick={() => changeStep('event')} disabled={isSubmitting} className="flex gap-2 text-left ui-secondary py-2">
+        <button type="button" onClick={() => changeStep('event')} disabled={locked} className="flex gap-2 text-left ui-secondary py-2">
           <PenLine size={20} className="shrink-0" />
           <span><span className="line-clamp-3">{event}</span><span className="block underline underline-offset-4 mt-1">Изменить событие</span></span>
         </button>
@@ -73,23 +83,23 @@ export default function EntryForm({ title, initial, draftKey, submitLabel = 'С�
       <label htmlFor={fieldId} className="text-lg leading-6 font-semibold">
         {step === 'event' ? title || 'Что произошло?' : 'Какой была твоя реакция?'}
       </label>
-      <textarea
-        key={step}
-        id={fieldId}
-        ref={fieldRef}
-        rows={4}
-        value={value}
-        disabled={isSubmitting}
-        onChange={(e) => {
-          if (step === 'event') { setEvent(e.target.value); persist({ event: e.target.value }); }
-          else { setReaction(e.target.value); persist({ reaction: e.target.value }); }
-        }}
-        placeholder={step === 'event' ? 'Например: начальник отчитал меня при всех' : 'Действия, чувства, мысли…'}
-        className="ui-input resize-none"
-      />
+      <DictationField dictation={dictation} disabled={isSubmitting}>
+        <textarea
+          key={step}
+          id={fieldId}
+          ref={fieldRef}
+          rows={4}
+          value={value}
+          disabled={isSubmitting}
+          readOnly={dictation.busy}
+          onChange={(e) => changeValue(e.target.value)}
+          placeholder={step === 'event' ? 'Например: начальник отчитал меня при всех' : 'Действия, чувства, мысли…'}
+          className="ui-input resize-none"
+        />
+      </DictationField>
       <div className="flex gap-3">
         {onCancel && <button type="button" onClick={cancel} disabled={isSubmitting} className="ui-button ui-button--outline w-auto!">Позже</button>}
-        <button type="button" disabled={!value.trim() || isSubmitting} onClick={step === 'event' ? () => changeStep('reaction') : handleSubmit} className="ui-button ui-button--primary flex-1">
+        <button type="button" disabled={!value.trim() || locked} onClick={step === 'event' ? () => changeStep('reaction') : handleSubmit} className="ui-button ui-button--primary flex-1">
           {step === 'event' ? 'Дальше' : isSubmitting ? 'Сохраняю…' : submitLabel}
         </button>
       </div>

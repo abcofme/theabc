@@ -2,6 +2,8 @@ import { useState, useEffect, useLayoutEffect, useRef, useId } from 'react';
 import { Trash2, Activity, PenLine, Leaf, Plus } from '../../components/ClayIcon';
 import { scoreColor } from './utils';
 import { readTextDraft, saveTextDraft } from './drafts';
+import DictationField from './DictationField';
+import { appendDictated, useDictation } from './useDictation';
 import ResultContent from '../../components/ResultContent';
 import { currentUser } from '../../utils/platform';
 
@@ -59,6 +61,11 @@ function AdditionForm({ entryId, canAnswer, onSubmit, onClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fieldRef = useRef(null);
   const fieldId = useId();
+  const changeText = value => { setText(value); saveTextDraft(owner, draftKey, value); };
+  const dictation = useDictation(dictated => {
+    changeText(appendDictated(text, dictated));
+    requestAnimationFrame(() => { if (fieldRef.current) fieldRef.current.scrollTop = fieldRef.current.scrollHeight; });
+  });
 
   useLayoutEffect(() => {
     const field = fieldRef.current;
@@ -90,20 +97,23 @@ function AdditionForm({ entryId, canAnswer, onSubmit, onClose }) {
   return (
     <div className="mt-5 flex flex-col gap-3">
       <label htmlFor={fieldId} className="text-lg leading-6 font-semibold">Что хочешь добавить?</label>
-      <textarea
-        id={fieldId}
-        ref={fieldRef}
-        rows={4}
-        value={text}
-        disabled={isSubmitting}
-        onChange={(e) => { setText(e.target.value); saveTextDraft(owner, draftKey, e.target.value); }}
-        placeholder="Что было дальше, какие ещё появились чувства и мысли…"
-        className="ui-input resize-none"
-      />
+      <DictationField dictation={dictation} disabled={isSubmitting}>
+        <textarea
+          id={fieldId}
+          ref={fieldRef}
+          rows={4}
+          value={text}
+          disabled={isSubmitting}
+          readOnly={dictation.busy}
+          onChange={(e) => changeText(e.target.value)}
+          placeholder="Что было дальше, какие ещё появились чувства и мысли…"
+          className="ui-input resize-none"
+        />
+      </DictationField>
       {canAnswer && <p className="ui-muted">Дневник перечитает запись вместе с дополнением и ответит заново</p>}
       <div className="flex gap-3">
         <button type="button" onClick={onClose} disabled={isSubmitting} className="ui-button ui-button--outline w-auto!">Позже</button>
-        <button type="button" onClick={submit} disabled={!text.trim() || isSubmitting} className="ui-button ui-button--primary flex-1">
+        <button type="button" onClick={submit} disabled={!text.trim() || isSubmitting || dictation.busy} className="ui-button ui-button--primary flex-1">
           {isSubmitting ? 'Сохраняю…' : canAnswer ? 'Отправить дневнику' : 'Сохранить'}
         </button>
       </div>

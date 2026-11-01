@@ -55,6 +55,20 @@ services:
       redis:
         condition: service_healthy
 
+  # Распознавание речи для диктовки в дневнике (stt/app.py): модель на CPU, ходит к нему только api
+  stt:
+    build: ./stt
+    image: theabc-stt
+    restart: unless-stopped
+    logging: *logging
+    # Модель занимает ~0,6 ГБ; на сервере еще Postgres и соседние проекты
+    mem_limit: 1536m
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
   db:
     image: postgres:17-alpine
     env_file: .env

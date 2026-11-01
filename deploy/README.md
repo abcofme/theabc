@@ -5,6 +5,7 @@
          └─► direct.abcofme.ru (DNS → Москва), если прямой путь быстрый ───┴─► сервер в Москве
                    web (Caddy): TLS, HTTP/1.1+2, сжатие, статика, /api → api
                    api (FastAPI) · bot (aiogram + планировщик) · db (Postgres 17) · redis
+                   stt — распознавание речи для диктовки в дневнике (stt/app.py), ходит к нему только api
                    bot ──► ретранслятор в NL ──► api.telegram.org
 ```
 

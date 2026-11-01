@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     TIMEWEB_AI_URL: str | None = None
     TIMEWEB_AI_TOKEN: str | None = None
 
+    # Распознавание речи для диктовки в дневнике (сервис stt в docker-compose.yml)
+    STT_URL: str = "http://stt:8000"
+
     # Ретранслятор Bot API: из российского ДЦ api.telegram.org недоступен
     TELEGRAM_API_URL: str | None = None
     TELEGRAM_API_CA_FILE: str | None = None

@@ -52,19 +52,21 @@ function checkSession(res) {
   if (res.status === 401 && !isTelegram) clearSession();
 }
 
-// Запрос к API от имени пользователя Telegram. Ошибка HTTP становится исключением с текстом detail от бэкенда
+// Запрос к API от имени пользователя Telegram. Ошибка HTTP становится исключением с текстом detail от бэкенда.
+// Blob (запись диктовки) уходит как есть, остальное — JSON
 export async function api(path, { method = 'GET', body } = {}) {
   if (method === 'GET') {
     const ready = takePrefetched(path);
     if (ready) return ready;
   }
+  const raw = body instanceof Blob;
   const headers = { Authorization: authHeader() };
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  if (body !== undefined) headers['Content-Type'] = raw ? body.type || 'application/octet-stream' : 'application/json';
 
   const res = await request(path, {
     method,
     headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: raw || body === undefined ? body : JSON.stringify(body),
   }, method === 'GET' ? DIRECT_GET_TIMEOUT_MS : null);
   checkSession(res);
   const data = await res.json().catch(() => null);
