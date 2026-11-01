@@ -59,7 +59,10 @@ function Installed() {
   );
 }
 
-function FromBrowser() {
+// card=false — без своей карточки, для окна с предложением установить (InstallOffer.jsx)
+export function FromBrowser({ card = true }) {
+  const Wrapper = card ? 'section' : 'div';
+  const wrapperClass = card ? 'ui-card' : undefined;
   const [canPrompt, setCanPrompt] = useState(() => Boolean(getInstallPrompt()));
   const [isInstalled, setIsInstalled] = useState(false);
   useEffect(() => onInstallPromptChange(() => setCanPrompt(Boolean(getInstallPrompt()))), []);
@@ -70,15 +73,15 @@ function FromBrowser() {
 
   if (isInstalled) {
     return (
-      <section className="ui-card">
+      <Wrapper className={wrapperClass}>
         <h3 className="text-lg font-semibold mb-2">Готово</h3>
         <p className="ui-secondary">Значок «Азбуки Я» появится на главном экране. Если приложение попросит войти — нажми «Войти через Telegram».</p>
-      </section>
+      </Wrapper>
     );
   }
 
   return (
-    <section className="ui-card">
+    <Wrapper className={wrapperClass}>
       {canPrompt ? <>
         <h3 className="text-lg font-semibold mb-2">Установить в одно касание</h3>
         <p className="ui-secondary mb-5">Браузер спросит подтверждение, и значок появится на главном экране.</p>
@@ -88,7 +91,7 @@ function FromBrowser() {
         <Steps steps={isIOS ? IOS_STEPS : BROWSER_STEPS} />
         <p className="ui-muted">Если приложение попросит войти — нажми «Войти через Telegram», это займет пару секунд.</p>
       </>}
-    </section>
+    </Wrapper>
   );
 }
 

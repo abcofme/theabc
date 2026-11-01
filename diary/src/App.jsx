@@ -13,6 +13,8 @@ import TelegramChrome from './components/TelegramChrome';
 import DepthMotion from './components/DepthMotion';
 import { useProfile } from './context/profile';
 import LoginScreen from './features/auth/LoginScreen';
+import InstallOffer from './features/install/InstallOffer';
+import { markInstallOffered, shouldOfferInstall } from './features/install/offerTiming';
 import { api } from './utils/api';
 import { getSession, isTelegram, onSessionChange, saveSession } from './utils/platform';
 import diaryIcon from './assets/navigation/diary-clay.webp';
@@ -129,6 +131,9 @@ function Shell() {
   const [request, setRequest] = useState(readDeepLink);
   const [activeTab, setActiveTab] = useState(request.tab);
   const [isBillingOpen, setIsBillingOpen] = useState(request.page === 'billing');
+  // Пришли по ссылке на установку из Telegram — страница установки и так откроется, окно не нужно
+  const [isInstallOfferOpen, setIsInstallOfferOpen] = useState(() => shouldOfferInstall() && request.page !== 'install');
+  useEffect(() => { if (shouldOfferInstall()) markInstallOffered(); }, []);
   const depth = useBackDepth();
   const isKeyboardOpen = useKeyboardOpen();
   const isNavHidden = depth > 0 || isKeyboardOpen;
@@ -205,6 +210,7 @@ function Shell() {
         )}
 
         {isBillingOpen && profile && <BillingPage onBack={() => setIsBillingOpen(false)} />}
+        {isInstallOfferOpen && profile && !isBillingOpen && <InstallOffer onClose={() => setIsInstallOfferOpen(false)} />}
       </div>
     </AppNavContext.Provider>
   );

@@ -8,6 +8,23 @@ export const isTelegram = Boolean(WebApp.initData);
 export const isStandalone = window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
 export const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
+export const isMobile = isIOS || /Android/i.test(navigator.userAgent);
+
+// Установленное на iPhone приложение со строкой состояния black-translucent: окно страницы бывает короче экрана
+// на высоту строки состояния, и под нижним меню остается пустая полоса. Меряем разницу и растягиваем на нее
+// корень и прижатые к низу элементы (--app-standalone-gap в index.css). Где окно во весь экран, разница нулевая
+if (isIOS && isStandalone) {
+  const fitScreen = () => {
+    const landscape = window.matchMedia('(orientation: landscape)').matches;
+    const screenHeight = landscape ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
+    const gap = screenHeight - Math.min(window.innerHeight, document.documentElement.clientHeight);
+    document.documentElement.style.setProperty('--app-standalone-gap', `${gap > 0 && gap < 100 ? gap : 0}px`);
+  };
+  fitScreen();
+  window.addEventListener('resize', fitScreen);
+  window.addEventListener('orientationchange', fitScreen);
+}
+
 const SESSION_KEY = 'azbuka-session';
 const listeners = new Set();
 
