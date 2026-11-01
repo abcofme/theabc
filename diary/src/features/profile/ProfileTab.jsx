@@ -9,6 +9,7 @@ import OfferPage from '../legal/OfferPage';
 import InstallPage from '../install/InstallPage';
 import PortraitPage from './PortraitPage';
 import ProfileStats from './ProfileStats';
+import headerVine from '../../assets/profile/header-vine-thick.webp';
 import portraitBanner from '../../assets/profile/portrait-woman-handmade.webp';
 import { useProfile, portraitState } from '../../context/profile';
 import { useAppNav, useErrorHandler } from '../../navigation/appNav';
@@ -20,6 +21,9 @@ import './profile-header.css';
 
 const API_URL = window.location.origin;
 const WebApp = window.Telegram.WebApp;
+// Тот же дневник в браузере: адрес сайта, с которого открыт мини-апп
+const SITE_URL = window.location.origin;
+const SITE_HOST = window.location.host;
 
 const PAGES = ['portrait', 'offer', 'admin', 'install'];
 
@@ -98,6 +102,8 @@ export default function ProfileTab({ request, active }) {
 
       {/* ШАПКА: АВАТАР, ИМЯ И СТАТУС */}
       <div className="profile-header min-w-0">
+        <img className="profile-header__vine profile-header__vine--top" src={headerVine} alt="" aria-hidden="true" width="512" height="512" draggable="false" />
+        <img className="profile-header__vine profile-header__vine--bottom" src={headerVine} alt="" aria-hidden="true" width="512" height="512" draggable="false" />
         <div className="profile-header__content flex flex-col items-center text-center w-full min-w-0">
           <Avatar
             src={tgUser.photo_url && tgUser.id ? `${API_URL}/api/avatar/${tgUser.id}` : null}
@@ -164,6 +170,17 @@ export default function ProfileTab({ request, active }) {
           {profile?.is_admin && <MenuRow icon={Shield} label="Админ-панель" onClick={() => { setPageOrigin(null); setPage('admin'); }} />}
           {!isTelegram && <MenuRow icon={ArrowRight} label="Выйти" onClick={logout}>{false}</MenuRow>}
         </div>
+
+        <p className="ui-secondary text-center px-4">
+          «Азбука Я» работает и в браузере — на компьютере и телефоне:{' '}
+          <a
+            href={SITE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={isTelegram ? (event) => { event.preventDefault(); WebApp.openLink(SITE_URL); } : undefined}
+            className="font-semibold text-[var(--ui-text)] underline underline-offset-4"
+          >{SITE_HOST}</a>. Вход через Telegram.
+        </p>
       </div>
 
       {page === 'portrait' && <PortraitPage onBack={closePage} />}
