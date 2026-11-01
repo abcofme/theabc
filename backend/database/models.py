@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from sqlalchemy import (
     String, BigInteger, DateTime, func, Date,
-    Boolean, Text, ForeignKey, Integer,
+    Boolean, Text, ForeignKey, Integer, UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, relationship
@@ -295,6 +295,19 @@ class CompatibilityReport(BaseModel):
     my_gender: Mapped[str] = mapped_column(String(20), nullable=True)
     friend_gender: Mapped[str] = mapped_column(String(20), nullable=True)
     content: Mapped[str] = mapped_column(Text(), nullable=False)
+
+
+class Bonus(BaseModel):
+    """Бонус за первый шаг в приложении (backend/bonuses.py): один на пользователя за каждый вид"""
+    __tablename__ = "bonuses"
+    __table_args__ = (UniqueConstraint("user_id", "kind", name="uq_bonuses_user_kind"),)
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    kind: Mapped[str] = mapped_column(String(50), nullable=False)
+    # Начисленные токены. 0 — шаг сделан до появления бонусов: отмечен, но не оплачен
+    amount: Mapped[int] = mapped_column(Integer(), nullable=False, default=0)
+    # Приложение уже показало, что бонус начислен
+    seen: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false", nullable=False)
 
 
 class TrackingLink(BaseModel):

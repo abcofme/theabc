@@ -111,6 +111,7 @@ export default function useDiary(today) {
           if (entry.portrait_match_score !== null) {
             upsert([entry]);
             stopWaiting(id);
+            window.dispatchEvent(new Event('diary:answered'));
           } else if (now - since > POLL_TIMEOUT) {
             stopWaiting(id);
           }

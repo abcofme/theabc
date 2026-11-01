@@ -12,6 +12,7 @@ from sqlalchemy.orm import joinedload
 from backend.api.common import AI_MODEL, GENDER_NEUTRAL_RULE, ai_endpoint, get_session, run_in_background
 from backend.api.security import validate_twa_data
 from backend.billing import charge, refund
+from backend.bonuses import award
 from backend.database.models import Category, Test, Progress, Result, DiaryEntry, PersonalityPortrait, BehavioralReport
 
 router = APIRouter()
@@ -118,9 +119,10 @@ async def _notify_if_unread(user_id: int, report_id: int, title: str):
                  f"tab=reports&report={report_id}", "📊 Открыть отчет")
 
 
-async def _generate_report_bg(user_id: int, report_title: str, report_prompt: str, start_d, end_d, ai_url: str, ai_token: str, num_entries: int, charged: int):
+async def _generate_report_bg(user_id: int, report_type: str, report_title: str, report_prompt: str, start_d, end_d, ai_url: str, ai_token: str, num_entries: int, charged: int):
     result = await _generate_report(user_id, report_title, report_prompt, start_d, end_d, ai_url, ai_token, num_entries)
     if result.get("status") == "success":
+        await award(user_id, f"report_{report_type}")
         run_in_background(_notify_if_unread(user_id, result["report"].id, REPORT_TITLES_SHORT.get(report_title, report_title)))
     else:
         await refund(user_id, charged)
@@ -366,7 +368,7 @@ async def generate_report(
         raise HTTPException(status_code=500, detail="AI сервис не настроен")
 
     charged = await charge(session, user_id, "report")
-    task = run_in_background(_generate_report_bg(user_id, report_title, report_prompt, start_d, end_d, ai_url, ai_token, len(entries), charged))
+    task = run_in_background(_generate_report_bg(user_id, req.report_type, report_title, report_prompt, start_d, end_d, ai_url, ai_token, len(entries), charged))
     
     async def stream_generator():
         try:

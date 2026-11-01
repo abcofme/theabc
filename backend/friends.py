@@ -1,6 +1,7 @@
 from sqlalchemy import select, or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.bonuses import award
 from backend.database.models import Friendship, User
 
 FRIEND_INVITE_PREFIX = "friend_"
@@ -19,7 +20,7 @@ def inviter_from_payload(payload: str | None) -> int | None:
 
 
 async def befriend(session: AsyncSession, user_id: int, inviter_id: int) -> bool:
-    """Друг открыл личную ссылку — дружба сразу принята. True, если она появилась только что"""
+    """Друг открыл личную ссылку — дружба сразу принята, пригласившему бонус. True, если она появилась только что"""
     if user_id == inviter_id or not await session.get(User, inviter_id):
         return False
     existing = (await session.execute(select(Friendship).where(or_(
@@ -33,4 +34,5 @@ async def befriend(session: AsyncSession, user_id: int, inviter_id: int) -> bool
     else:
         session.add(Friendship(user_id=inviter_id, friend_id=user_id, status="accepted"))
     await session.commit()
+    await award(inviter_id, "friend_invited")
     return True

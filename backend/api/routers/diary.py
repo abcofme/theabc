@@ -8,9 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.api.common import AI_MODEL, GENDER_NEUTRAL_RULE, ai_endpoint, get_session, run_in_background
 from backend.api.security import validate_twa_data
 from backend.billing import charge, refund
+from backend.bonuses import award
 from backend.database.models import DiaryEntry, PersonalityPortrait
 
 router = APIRouter()
+
+# Бонус «7 дней подряд» (backend/bonuses.py)
+DIARY_WEEK_DAYS = 7
 
 
 def _serialize_diary_entry(e: DiaryEntry) -> dict:
@@ -24,6 +28,16 @@ def _serialize_diary_entry(e: DiaryEntry) -> dict:
         "portrait_match_score": e.portrait_match_score,
         "portrait_match_explanation": e.portrait_match_explanation
     }
+
+def _longest_streak(dates) -> int:
+    """Самая длинная серия дней подряд с записями за всё время."""
+    best = run = 0
+    prev = None
+    for day in sorted(dates):
+        run = run + 1 if prev and day - prev == timedelta(days=1) else 1
+        best = max(best, run)
+        prev = day
+    return best
 
 def _count_streak(dates, today):
     """Сколько дней подряд есть записи. Если сегодня ещё не писали, серия считается до вчера — она ещё не прервана."""
@@ -138,6 +152,10 @@ async def create_diary_entry(
     session.add(new_entry)
     await session.commit()
     await session.refresh(new_entry)
+
+    dates = (await session.execute(select(DiaryEntry.date).distinct().where(DiaryEntry.user_id == user_id))).scalars().all()
+    if _longest_streak(dates) >= DIARY_WEEK_DAYS:
+        await award(user_id, "diary_week")
 
     # Разбор запускается только здесь: фронт его не дублирует, а ждёт, опрашивая запись
     analysis_started = await _start_reaction_analysis(user_id, new_entry.id, session)
@@ -295,6 +313,8 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int, charged: int = 0, fo
     # Платят только за разбор: сбой ИИ или просьба дописать запись бесплатны
     if result is None or result["score"] == NO_ANALYSIS_SCORE:
         await refund(user_id, charged)
+    else:
+        await award(user_id, "diary_answer")
     # Сбой ИИ после дополнения не должен стирать оплаченный прежний ответ
     if result is None and follow_up:
         await _restore_reply(user_id, entry_id, follow_up)

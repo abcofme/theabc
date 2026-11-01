@@ -6,6 +6,7 @@ from sqlalchemy.orm import joinedload
 from backend.api.common import AI_MODEL, GENDER_NEUTRAL_RULE, ai_endpoint, get_session
 from backend.api.security import validate_twa_data
 from backend.billing import charge, refund
+from backend.bonuses import award
 from backend.database.models import Category, Test, Progress, Result, PersonalityPortrait
 
 router = APIRouter()
@@ -35,6 +36,7 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
     if result["status"] != "success":
         await refund(user_id, charged)
         return
+    await award(user_id, "portrait")
     from backend.telegram.notify import notify
     await notify(user_id, "✨ <b>Портрет личности готов</b>\n\n"
                           "Теперь дневник будет сверять с ним <b>твои реакции</b>.\n\n"

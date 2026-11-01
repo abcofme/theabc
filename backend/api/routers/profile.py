@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -7,9 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from backend.api.common import get_session, is_admin, run_in_background
-from backend.api.routers.diary import _count_streak
+from backend.api.routers.diary import _count_streak, _longest_streak
 from backend.api.security import validate_twa_data
 from backend.billing import is_premium
+from backend.bonuses import award, bonus_list, mark_seen
 from backend.database.models import (
     User, Category, Progress, Result, PersonalityPortrait,
     DiaryEntry, BehavioralReport, CompatibilityReport, Friendship,
@@ -208,18 +209,8 @@ async def get_profile(
         },
         "diary_reminders": db_user.diary_reminders if db_user else True,
         "is_admin": is_admin(db_user, user_data.get("username")),
+        "bonuses": await bonus_list(session, user_id) if db_user else [],
     }
-
-
-def _longest_streak(dates) -> int:
-    """Самая длинная серия дней подряд с записями за всё время."""
-    best = run = 0
-    prev = None
-    for day in sorted(dates):
-        run = run + 1 if prev and day - prev == timedelta(days=1) else 1
-        best = max(best, run)
-        prev = day
-    return best
 
 
 # Статистика для профиля: сколько пользователь с нами и что успел сделать.
@@ -282,3 +273,24 @@ async def update_settings(
     db_user.diary_reminders = payload.diary_reminders
     await session.commit()
     return {"status": "success"}
+
+
+class BonusesSeen(BaseModel):
+    kinds: list[str]
+
+
+# Приложение показало, что бонусы начислены: в следующий раз не повторять
+@router.post("/api/bonuses/seen")
+async def bonuses_seen(
+    payload: BonusesSeen,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    await mark_seen(session, user_data.get("id"), payload.kinds)
+    return {"status": "success"}
+
+
+# Запуск с главного экрана видит только браузер, поэтому о нем сообщает само приложение
+@router.post("/api/bonuses/install")
+async def app_installed(user_data: dict = Depends(validate_twa_data)):
+    return {"amount": await award(user_data.get("id"), "install_app")}

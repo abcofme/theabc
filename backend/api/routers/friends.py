@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.api.common import AI_MODEL, ai_endpoint, avatar_url, get_session, run_in_background
 from backend.api.security import validate_twa_data
 from backend.billing import charge, refund
+from backend.bonuses import award
 from backend.database import async_session
 from backend.database.models import User, Friendship, PersonalityPortrait, CompatibilityReport
 from backend.friends import friend_invite_link
@@ -122,6 +123,7 @@ async def accept_friend_request(
         
     f.status = "accepted"
     await session.commit()
+    await award(f.user_id, "friend_invited")
     return {"status": "success"}
 
 @router.post("/api/friends/reject/{request_id}")
@@ -220,6 +222,8 @@ async def _generate_compatibility_bg(user_id: int, friend_id: int, compat_type: 
     result = await _generate_compatibility(user_id, friend_id, compat_type, my_gender, friend_gender, messages, ai_url, ai_token)
     if result["status"] != "success":
         await refund(user_id, charged)
+    else:
+        await award(user_id, "compatibility")
     return result
 
 

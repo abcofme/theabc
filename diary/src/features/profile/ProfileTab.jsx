@@ -6,6 +6,7 @@ import Switch from '../../components/Switch';
 import Page from '../../components/Page';
 import { lazyScreen } from '../../components/lazyScreen';
 import InstallPage from '../install/InstallPage';
+import BonusesPage from '../bonuses/BonusesPage';
 import ProfileStats from './ProfileStats';
 import headerVine from '../../assets/profile/header-vine-thick.webp';
 import portraitBanner from '../../assets/profile/portrait-woman-handmade.webp';
@@ -26,7 +27,7 @@ const PortraitPage = lazyScreen(() => import('./PortraitPage'));
 const SITE_URL = window.location.origin;
 const SITE_HOST = window.location.host;
 
-const PAGES = ['portrait', 'offer', 'admin', 'install'];
+const PAGES = ['portrait', 'offer', 'admin', 'install', 'bonuses'];
 
 const PORTRAIT_CAPTIONS = {
   tests: (p) => `Пройдено ${p.passed_tests} из ${p.total_tests} тестов`,
@@ -97,6 +98,19 @@ export default function ProfileTab({ request, active }) {
     if (pageOrigin) navigate({ tab: pageOrigin });
   };
 
+  // Со страницы бонусов — к функции за невыполненным шагом: страницы профиля открываем здесь же
+  const goFromBonuses = (target) => {
+    setPageOrigin(null);
+    if (target.tab === 'profile') {
+      setPage(target.page);
+    } else {
+      setPage(null);
+      navigate(target);
+    }
+  };
+  const bonuses = profile?.bonuses || [];
+  const bonusesLeft = bonuses.filter(b => !b.done).length;
+
   return (
     <div className="app-screen ui-stack">
       <h1 className="sr-only">Профиль</h1>
@@ -147,6 +161,14 @@ export default function ProfileTab({ request, active }) {
 
         <div className="ui-card py-1! divide-y divide-[var(--ui-text)]/10">
           <MenuRow icon={Users} label="Друзья и совместимость" onClick={() => navigate({ tab: 'reports', section: 'compatibility' })} />
+          {bonuses.length > 0 && (
+            <MenuRow
+              icon={Sparkles}
+              label="Бонусы за первые шаги"
+              hint={bonusesLeft ? `Еще ${bonusesLeft} из ${bonuses.length} — токены на баланс` : 'Все бонусы получены'}
+              onClick={() => { setPageOrigin(null); setPage('bonuses'); }}
+            />
+          )}
           <MenuRow
             icon={Wallet}
             label="Подписка и баланс"
@@ -187,6 +209,7 @@ export default function ProfileTab({ request, active }) {
       {page === 'portrait' && <PortraitPage onBack={closePage} />}
       {page === 'offer' && <OfferPage onBack={closePage} />}
       {page === 'install' && <InstallPage onBack={closePage} />}
+      {page === 'bonuses' && <BonusesPage onBack={closePage} onGo={goFromBonuses} />}
       {page === 'admin' && (
         <Page title="Админ-панель" onBack={closePage}>
           <AdminPanel />

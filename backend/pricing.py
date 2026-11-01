@@ -20,6 +20,22 @@ MAX_TOPUP = 50000
 # Начисляется один раз при первом открытии приложения, в токенах
 DEMO_BALANCE = 1000
 
+# Бонусы за первые шаги в приложении: каждый начисляется один раз, в токенах (backend/bonuses.py)
+BONUSES = {
+    "first_test": 100,
+    "all_tests": 200,
+    "portrait": 200,
+    "diary_answer": 100,
+    "diary_week": 200,
+    "report_repeating_events": 100,
+    "report_effective_reactions": 100,
+    "report_energy": 100,
+    "report_competence": 100,
+    "friend_invited": 200,
+    "compatibility": 200,
+    "install_app": 100,
+}
+
 
 def tokens(n: int) -> str:
     """tokens(3) → '3 токена'"""

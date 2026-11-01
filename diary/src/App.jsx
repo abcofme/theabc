@@ -14,11 +14,12 @@ import DepthMotion from './components/DepthMotion';
 import { useProfile } from './context/profile';
 import LoginScreen from './features/auth/LoginScreen';
 import InstallOffer from './features/install/InstallOffer';
+import BonusToast from './features/bonuses/BonusToast';
 import { markInstallOffered, shouldOfferInstall } from './features/install/offerTiming';
 import { overviewPath } from './features/diary/useDiary';
 import { dayKey } from './features/diary/utils';
 import { api, prefetch } from './utils/api';
-import { getSession, isTelegram, onSessionChange, saveSession } from './utils/platform';
+import { getSession, isStandalone, isTelegram, onSessionChange, saveSession } from './utils/platform';
 import diaryIcon from './assets/navigation/diary-clay.webp';
 import testsIcon from './assets/navigation/tests-clay.webp';
 import reportsIcon from './assets/navigation/reports-clay.webp';
@@ -153,6 +154,12 @@ function Shell() {
     if (startsWithDiary) prefetch(overviewPath(dayKey(new Date())));
   }, [startsWithDiary]);
 
+  // Бонус за приложение на главном экране: запуск оттуда видит только само приложение
+  const isInstallBonusDue = isStandalone && Boolean(profile?.bonuses?.some(b => b.kind === 'install_app' && !b.done));
+  useEffect(() => {
+    if (isInstallBonusDue) api('/api/bonuses/install', { method: 'POST' }).then(refreshProfile).catch(() => {});
+  }, [isInstallBonusDue, refreshProfile]);
+
   const isLoaded = Boolean(profile);
   useEffect(() => {
     if (!isLoaded) return;
@@ -237,6 +244,7 @@ function Shell() {
 
         {isBillingOpen && profile && <BillingPage onBack={() => setIsBillingOpen(false)} />}
         {isInstallOfferOpen && profile && !isBillingOpen && <InstallOffer onClose={() => setIsInstallOfferOpen(false)} />}
+        <BonusToast />
       </div>
     </AppNavContext.Provider>
   );

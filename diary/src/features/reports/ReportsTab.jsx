@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import ReportsCatalog from './ReportsCatalog';
 import ReportTypePage from './ReportTypePage';
 import CompatibilitySection from './compat/CompatibilitySection';
-import { reportTypeOf } from './reportTypes';
+import { REPORT_TYPES, reportTypeOf } from './reportTypes';
 import { useErrorHandler } from '../../navigation/appNav';
 import { api } from '../../utils/api';
 import ClayText from '../../components/ClayText';
@@ -31,6 +31,7 @@ function SectionSwitch({ value, onChange }) {
 }
 
 // Ссылки из бота: ?tab=reports&report=12 — открыть отчет, ?tab=reports&section=compatibility — раздел друзей.
+// Со страницы бонусов приходит type — открыть форму отчета этого вида.
 // Прежние разделы general и career ведут в «Обо мне», career — сразу к своей группе
 export default function ReportsTab({ request, active }) {
   const handleError = useErrorHandler();
@@ -58,6 +59,7 @@ export default function ReportsTab({ request, active }) {
     setHandledRequest(request.id);
     setSection(request.section === 'compatibility' ? 'compatibility' : 'mine');
     setPendingReportId(request.report ? Number(request.report) : null);
+    if (request.type) setOpenType(REPORT_TYPES.find(t => t.id === request.type) || null);
   }
 
   useEffect(() => {

@@ -31,6 +31,13 @@ export default function ProfileProvider({ children }) {
     return () => document.removeEventListener('visibilitychange', onVisible);
   }, [refreshProfile]);
 
+  // Запись и ответ дневника меняют баланс и могут принести бонус за первый шаг
+  useEffect(() => {
+    const events = ['diary:changed', 'diary:answered'];
+    events.forEach(name => window.addEventListener(name, refreshProfile));
+    return () => events.forEach(name => window.removeEventListener(name, refreshProfile));
+  }, [refreshProfile]);
+
   // Запуск генерации портрета. Ошибку (например, 402 — не хватает баланса) получает вызывающий
   const generatePortrait = useCallback(async () => {
     if (portraitRequest.current || portraitJob) return;

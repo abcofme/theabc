@@ -8,6 +8,7 @@ from sqlalchemy.orm import selectinload
 
 from backend.api.common import get_session
 from backend.api.security import validate_twa_data
+from backend.bonuses import award, passed_all_portrait_tests
 from backend.database.models import Test, Question, Answer, Progress, Result
 from backend.telegram.views.hardcoded_tests import get_hardcoded_test_result
 
@@ -114,6 +115,10 @@ async def submit_test(
             result_text = result_obj.name if result_obj and result_obj.name else "Результат не найден"
             
         await session.commit()
+
+        await award(user_id, "first_test")
+        if await passed_all_portrait_tests(session, user_id):
+            await award(user_id, "all_tests")
         return {"result": result_text}
     except Exception:
         import traceback
