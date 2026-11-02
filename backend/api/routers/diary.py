@@ -17,10 +17,6 @@ router = APIRouter()
 # Бонус «7 дней подряд» (backend/bonuses.py)
 DIARY_WEEK_DAYS = 7
 
-# Диктовка: фронт останавливает запись через 3 минуты — это ~3 МБ даже в AAC 128 кбит/с
-DICTATION_MAX_BYTES = 10 * 1024 * 1024
-DICTATION_PER_HOUR = 40
-
 
 def _serialize_diary_entry(e: DiaryEntry) -> dict:
     return {
@@ -167,42 +163,71 @@ async def create_diary_entry(
 
     return {"id": new_entry.id, "status": "success", "analysis_started": analysis_started}
 
-# Диктовка: аудио из формы записи → текст. Распознаёт свой сервис stt (stt/app.py), бесплатно и без ИИ-агента
+# Диктовка: аудио из формы записи → текст. Распознаёт свой сервис stt (stt/app.py), без ИИ-агента.
+# Доступ — Premium или одна пробная диктовка (backend/dictation.py)
 @router.post("/api/diary/transcribe")
 async def transcribe_dictation(request: Request, user_data: dict = Depends(validate_twa_data)):
+    import time
+
     import httpx
+    from backend import dictation
+    from backend.alerts import raise_alert
+    from backend.billing import is_premium
+    from backend.database import async_session
+    from backend.database.models import User
     from backend.redis_db import async_redis
 
-    # Распознавание занимает процессор сервера: больше этого за час живой человек не надиктует
-    limit_key = f"dictation:{user_data.get('id')}"
-    count = await async_redis.incr(limit_key)
-    if count == 1:
-        await async_redis.expire(limit_key, 60 * 60)
-    if count > DICTATION_PER_HOUR:
-        raise HTTPException(status_code=429, detail="Слишком много диктовок подряд. Попробуй через час или напиши текстом")
-
-    audio = bytearray()
-    async for chunk in request.stream():
-        audio += chunk
-        if len(audio) > DICTATION_MAX_BYTES:
-            raise HTTPException(status_code=413, detail="Запись слишком длинная")
-    if not audio:
-        raise HTTPException(status_code=400, detail="Пустая запись")
+    user_id = user_data.get("id")
+    # Короткие сессии к базе: соединение не должно висеть, пока запись ждет очереди на распознавание
+    async with async_session() as session:
+        trial = not is_premium(await session.get(User, user_id))
+        if trial and await dictation.trial_used(session, user_id):
+            raise HTTPException(status_code=403, detail="Диктовка доступна с Premium")
+    # Пробную диктовку нельзя запустить дважды параллельно
+    trial_key = f"dictation-trial:{user_id}"
+    if trial and not await async_redis.set(trial_key, 1, ex=10 * 60, nx=True):
+        raise HTTPException(status_code=409, detail="Пробная диктовка уже распознаётся")
 
     try:
-        async with httpx.AsyncClient(timeout=180) as client:
-            res = await client.post(f"{settings.STT_URL}/transcribe", content=bytes(audio))
-    except httpx.HTTPError as error:
-        print(f"STT unavailable: {error!r}")
-        raise HTTPException(status_code=503, detail="Распознавание речи сейчас недоступно. Попробуй позже или напиши текстом")
-    if res.status_code == 413:
-        raise HTTPException(status_code=413, detail="Запись слишком длинная")
-    if res.status_code == 422:
-        raise HTTPException(status_code=400, detail="Не удалось прочитать запись. Попробуй ещё раз")
-    if res.status_code != 200:
-        print(f"STT error {res.status_code}: {res.text[:200]}")
-        raise HTTPException(status_code=503, detail="Распознавание речи сейчас недоступно. Попробуй позже или напиши текстом")
-    return {"text": res.json().get("text", "")}
+        refusal = await dictation.check_limits(user_id)
+        if refusal:
+            raise HTTPException(status_code=429, detail=refusal)
+
+        audio = bytearray()
+        async for chunk in request.stream():
+            audio += chunk
+            if len(audio) > dictation.MAX_BYTES:
+                raise HTTPException(status_code=413, detail="Запись слишком длинная")
+        if not audio:
+            raise HTTPException(status_code=400, detail="Пустая запись")
+
+        unavailable = "Распознавание речи сейчас недоступно. Попробуй позже или напиши текстом"
+        started = time.monotonic()
+        try:
+            async with httpx.AsyncClient(timeout=180) as client:
+                res = await client.post(f"{settings.STT_URL}/transcribe", content=bytes(audio))
+        except httpx.HTTPError as error:
+            print(f"STT unavailable: {error!r}")
+            await dictation.record(user_id, "error", trial, total=time.monotonic() - started)
+            run_in_background(raise_alert("stt_down", "Диктовка не работает", f"Сервис распознавания не ответил: {error!r}"))
+            raise HTTPException(status_code=503, detail=unavailable)
+        if res.status_code == 413:
+            raise HTTPException(status_code=413, detail="Запись слишком длинная")
+        if res.status_code == 422:
+            raise HTTPException(status_code=400, detail="Не удалось прочитать запись. Попробуй ещё раз")
+        if res.status_code != 200:
+            print(f"STT error {res.status_code}: {res.text[:200]}")
+            await dictation.record(user_id, "error", trial, total=time.monotonic() - started)
+            run_in_background(raise_alert("stt_down", "Диктовка не работает", f"Сервис распознавания ответил {res.status_code}: {res.text[:200]}"))
+            raise HTTPException(status_code=503, detail=unavailable)
+
+        result = res.json()
+        text = (result.get("text") or "").strip()
+        await dictation.record(user_id, "ok" if text else "empty", trial, result, total=time.monotonic() - started)
+        return {"text": text, "trial_used": trial and bool(text)}
+    finally:
+        if trial:
+            await async_redis.delete(trial_key)
 
 # Эндпоинт 3.1: Дописать запись (дневник попросил подробностей) — старый разбор сбрасывается, запускается новый
 @router.patch("/api/diary/{entry_id}")

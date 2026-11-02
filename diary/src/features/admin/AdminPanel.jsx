@@ -2,13 +2,21 @@ import Select from '../../components/Select';
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, Check, Trash2, Edit, Plus, Heart, Link2, Download, LoaderCircle, X } from '../../components/ClayIcon';
 import AdminTestEditor from './AdminTestEditor';
+import AdminMonitoring from './AdminMonitoring';
 import ScreenState from '../../components/ScreenState';
 import { authHeader, isSignedIn } from '../../utils/platform';
+import { api } from '../../utils/api';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
 
-export default function AdminPanel() {
+// section=monitoring — сразу раздел мониторинга (ссылка из алерта в Telegram)
+export default function AdminPanel({ section }) {
+  const [view, setView] = useState(section === 'monitoring' ? 'monitoring' : 'stats');
+  const [unseenAlerts, setUnseenAlerts] = useState(0);
+  useEffect(() => {
+    api('/api/admin/alerts').then(data => setUnseenAlerts(data.unseen)).catch(() => {});
+  }, []);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [isUnique, setIsUnique] = useState(false);
@@ -298,6 +306,13 @@ export default function AdminPanel() {
 
   return (
     <div className="admin-content flex flex-col w-full">
+      <div role="tablist" aria-label="Разделы админ-панели" className="ui-segmented mb-6">
+        <button type="button" role="tab" aria-selected={view === 'stats'} onClick={() => setView('stats')}>Статистика</button>
+        <button type="button" role="tab" aria-selected={view === 'monitoring'} onClick={() => setView('monitoring')}>
+          Мониторинг{unseenAlerts > 0 && <span className="admin-badge" aria-label={`новых алертов: ${unseenAlerts}`}>{unseenAlerts}</span>}
+        </button>
+      </div>
+      {view === 'monitoring' ? <AdminMonitoring onAlertsSeen={() => setUnseenAlerts(0)} /> : <>
 
       <div className="ui-card mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
@@ -734,6 +749,7 @@ export default function AdminPanel() {
 
         </div>
       ) : null}
+      </>}
     </div>
   );
 }

@@ -13,7 +13,7 @@ from backend.api.common import AI_MODEL, ai_endpoint, get_session, require_admin
 from backend.api.security import validate_twa_data
 from backend.database.models import (
     User, Category, Test, Question, Answer, Progress, Result, DiaryEntry, PersonalityPortrait, BehavioralReport,
-    TrackingLink,
+    TrackingLink, AdminAlert,
 )
 
 router = APIRouter()
@@ -679,5 +679,48 @@ async def delete_tracking_link(
         raise HTTPException(status_code=404, detail="Link not found")
         
     await session.delete(link)
+    await session.commit()
+    return {"status": "success"}
+
+
+# Мониторинг: отчет о производительности и алерты (backend/performance.py, backend/alerts.py)
+@router.get("/api/admin/performance")
+async def get_performance(
+    hours: int = 24,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from backend.performance import report
+
+    await require_admin(user_data, session)
+    return await report(session, 168 if hours > 24 else 24)
+
+
+@router.get("/api/admin/alerts")
+async def get_alerts(
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    await require_admin(user_data, session)
+    alerts = (await session.execute(select(AdminAlert).order_by(AdminAlert.last_at.desc()).limit(50))).scalars().all()
+    unseen = await session.scalar(select(func.count()).select_from(AdminAlert).where(AdminAlert.seen.is_(False)))
+    return {
+        "unseen": unseen,
+        "alerts": [{
+            "id": a.id, "kind": a.kind, "title": a.title, "text": a.text, "count": a.count, "seen": a.seen,
+            "created_at": a.created_at.isoformat() + "Z", "last_at": a.last_at.isoformat() + "Z",
+        } for a in alerts],
+    }
+
+
+@router.post("/api/admin/alerts/seen")
+async def mark_alerts_seen(
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session)
+):
+    from sqlalchemy import update
+
+    await require_admin(user_data, session)
+    await session.execute(update(AdminAlert).where(AdminAlert.seen.is_(False)).values(seen=True))
     await session.commit()
     return {"status": "success"}

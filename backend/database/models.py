@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from sqlalchemy import (
     String, BigInteger, DateTime, func, Date,
-    Boolean, Text, ForeignKey, Integer, UniqueConstraint,
+    Boolean, Text, ForeignKey, Integer, UniqueConstraint, Float,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, relationship
@@ -315,3 +315,33 @@ class TrackingLink(BaseModel):
     
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     code: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+
+
+class DictationLog(BaseModel):
+    """Одна диктовка (backend/dictation.py): по ним проверяется пробная диктовка и строится отчет о скорости"""
+    __tablename__ = "dictation_logs"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    # ok — текст распознан, empty — слов не нашлось, error — сервис распознавания не ответил
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    # Пробная диктовка без Premium: одна на пользователя (считается только status=ok)
+    trial: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false", nullable=False)
+    audio_seconds: Mapped[float] = mapped_column(Float(), nullable=True)
+    # Ожидание в очереди сервиса, само распознавание и весь ответ с загрузкой записи
+    wait_seconds: Mapped[float] = mapped_column(Float(), nullable=True)
+    process_seconds: Mapped[float] = mapped_column(Float(), nullable=True)
+    total_seconds: Mapped[float] = mapped_column(Float(), nullable=True)
+
+
+class AdminAlert(BaseModel):
+    """Алерт для админов (backend/alerts.py): уходит в Telegram и виден в админ-панели.
+    Повтор того же вида, пока не прошла пауза, не создает новый алерт, а увеличивает count"""
+    __tablename__ = "admin_alerts"
+
+    kind: Mapped[str] = mapped_column(String(50), nullable=False)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    text: Mapped[str] = mapped_column(Text(), nullable=False)
+    count: Mapped[int] = mapped_column(Integer(), default=1, server_default="1", nullable=False)
+    last_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now())
+    # Админ открыл его в панели
+    seen: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false", nullable=False)

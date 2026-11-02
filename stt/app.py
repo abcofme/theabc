@@ -6,7 +6,10 @@ GigaAM v3 (Сбер, лицензия MIT) через onnx-asr на CPU: рус�
 """
 import asyncio
 import io
+import os
 import re
+import time
+from pathlib import Path
 
 import av
 import numpy as np
@@ -15,8 +18,8 @@ import onnxruntime as ort
 from fastapi import FastAPI, HTTPException, Request
 
 SAMPLE_RATE = 16000
-# Ограничение диктовки на фронте — 3 минуты (diary/src/features/diary/useDictation.js), здесь с запасом
-MAX_SECONDS = 4 * 60
+# Ограничение диктовки на фронте — 5 минут (diary/src/features/diary/useDictation.js), здесь с запасом
+MAX_SECONDS = 6 * 60
 
 # На сервере 2 vCPU: одна запись за раз на оба ядра, остальные ждут в очереди
 _options = ort.SessionOptions()
@@ -28,6 +31,10 @@ _vad = onnx_asr.load_vad("silero", sess_options=_options, providers=_cpu)
 # Режем только на заметных паузах: на каждой короткой модель ставила бы точку посреди фразы
 _recognizer = _model.with_vad(_vad, min_silence_duration_ms=700, max_speech_duration_s=22)
 _lock = asyncio.Lock()
+# Сколько диктовок ждут своей очереди прямо сейчас — для мониторинга (backend/scheduler/monitoring.py)
+_waiting = 0
+_started = time.time()
+CGROUP = Path("/sys/fs/cgroup")
 
 app = FastAPI(title="TheABC STT", docs_url=None, redoc_url=None)
 
@@ -65,29 +72,64 @@ def _join(parts: list[str]) -> str:
     return text
 
 
-def _recognize(data: bytes) -> str:
+def _recognize(data: bytes) -> tuple[str, float]:
+    """Текст и длительность записи в секундах"""
     try:
         waveform = _decode(data)
     except TooLong:
         raise
     except Exception as error:
         raise BadAudio from error
+    seconds = len(waveform) / SAMPLE_RATE
     if len(waveform) < SAMPLE_RATE // 4:
-        return ""
-    return _join([segment.text for segment in _recognizer.recognize(waveform)])
+        return "", seconds
+    return _join([segment.text for segment in _recognizer.recognize(waveform)]), seconds
 
 
 @app.post("/transcribe")
 async def transcribe(request: Request):
+    global _waiting
     data = await request.body()
-    async with _lock:
-        try:
-            text = await asyncio.to_thread(_recognize, data)
-        except TooLong:
-            raise HTTPException(status_code=413, detail="too long")
-        except BadAudio:
-            raise HTTPException(status_code=422, detail="bad audio")
-    return {"text": text}
+    arrived = time.monotonic()
+    _waiting += 1
+    try:
+        await _lock.acquire()
+    finally:
+        _waiting -= 1
+    try:
+        started = time.monotonic()
+        text, seconds = await asyncio.to_thread(_recognize, data)
+    except TooLong:
+        raise HTTPException(status_code=413, detail="too long")
+    except BadAudio:
+        raise HTTPException(status_code=422, detail="bad audio")
+    finally:
+        _lock.release()
+    # wait — очередь, took — само распознавание: по ним api решает, не пора ли поднять алерт
+    return {"text": text, "seconds": round(seconds, 2), "wait": round(started - arrived, 2), "took": round(time.monotonic() - started, 2)}
+
+
+def _cgroup(name: str) -> str | None:
+    try:
+        return (CGROUP / name).read_text().strip()
+    except OSError:
+        return None
+
+
+@app.get("/metrics")
+async def metrics():
+    """Ресурсы контейнера (cgroup v2) и очередь. CPU — накопленные микросекунды: процент считает тот, кто опрашивает"""
+    cpu = dict(line.split() for line in (_cgroup("cpu.stat") or "").splitlines() if line)
+    memory_max = _cgroup("memory.max")
+    return {
+        "queue": _waiting,
+        "busy": _lock.locked(),
+        "memory": int(_cgroup("memory.current") or 0),
+        "memory_limit": int(memory_max) if memory_max and memory_max.isdigit() else None,
+        "cpu_usec": int(cpu.get("usage_usec", 0)),
+        "cpus": os.cpu_count(),
+        "uptime": round(time.time() - _started),
+    }
 
 
 @app.get("/health")

@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import { useProfile } from '../../context/profile';
 import { api } from '../../utils/api';
 
 const WebApp = window.Telegram.WebApp;
 
-// Сервер режет запись длиннее 4 минут (stt/app.py) — останавливаем раньше сами
-const MAX_SECONDS = 180;
+// Одна диктовка — до 5 минут: этого хватает на любую запись, а сервер защищен от часовых записей.
+// Сервер режет длиннее 6 минут (stt/app.py)
+export const MAX_SECONDS = 300;
 // Первый поддерживаемый формат: Chrome и Android пишут webm/opus, Safari и iPhone — mp4/aac
 const MIME_TYPES = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/ogg;codecs=opus', 'audio/webm'];
 
@@ -42,6 +44,10 @@ export function useDictation(onText) {
   const onTextRef = useRef(onText);
   const meterRef = useRef(null);
   const session = useRef(null);
+  const { profile, isPremium, refreshProfile } = useProfile();
+  // premium — без ограничений, trial — одна пробная диктовка, locked — пробная уже была.
+  // Пока профиль грузится, не запрещаем: доступ все равно проверит сервер
+  const access = !profile || isPremium ? 'premium' : profile.dictation_trial ? 'trial' : 'locked';
 
   useEffect(() => { onTextRef.current = onText; });
 
@@ -51,7 +57,9 @@ export function useDictation(onText) {
   async function transcribe(current, blob) {
     setState('processing');
     try {
-      const { text } = await api('/api/diary/transcribe', { method: 'POST', body: blob });
+      const { text, trial_used: trialUsed } = await api('/api/diary/transcribe', { method: 'POST', body: blob });
+      // Пробная диктовка потрачена — поле переключится на предложение Premium
+      if (trialUsed) refreshProfile();
       if (current.cancelled) return;
       if (text?.trim()) {
         onTextRef.current(text.trim());
@@ -60,6 +68,8 @@ export function useDictation(onText) {
         setError('Не получилось разобрать слова. Попробуй говорить ближе к микрофону');
       }
     } catch (err) {
+      // 403 — пробная уже потрачена (например, в другой вкладке): профиль покажет это
+      if (err.status === 403) refreshProfile();
       if (!current.cancelled) setError(err.message || 'Не удалось распознать запись');
     } finally {
       if (!current.cancelled) setState('idle');
@@ -137,5 +147,5 @@ export function useDictation(onText) {
   const stop = () => { finish(session.current, false); WebApp.HapticFeedback?.impactOccurred('light'); };
   const cancel = () => { finish(session.current, true); setState('idle'); };
 
-  return { supported, state, busy: state !== 'idle', seconds, error, meterRef, start, stop, cancel };
+  return { supported, access, state, busy: state !== 'idle', seconds, error, meterRef, start, stop, cancel };
 }

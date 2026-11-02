@@ -10,6 +10,7 @@ from backend.api.common import get_session, is_admin, run_in_background
 from backend.api.routers.diary import _count_streak, _longest_streak
 from backend.api.security import validate_twa_data
 from backend.billing import is_premium
+from backend.dictation import trial_used as dictation_trial_used
 from backend.bonuses import award, bonus_list, mark_seen
 from backend.database.models import (
     User, Category, Progress, Result, PersonalityPortrait,
@@ -210,6 +211,8 @@ async def get_profile(
         "diary_reminders": db_user.diary_reminders if db_user else True,
         "is_admin": is_admin(db_user, user_data.get("username")),
         "bonuses": await bonus_list(session, user_id) if db_user else [],
+        # Без Premium одна диктовка — пробная (backend/dictation.py)
+        "dictation_trial": not premium and not await dictation_trial_used(session, user_id),
     }
 
 

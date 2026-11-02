@@ -212,7 +212,7 @@ export default function ProfileTab({ request, active }) {
       {page === 'bonuses' && <BonusesPage onBack={closePage} onGo={goFromBonuses} />}
       {page === 'admin' && (
         <Page title="Админ-панель" onBack={closePage}>
-          <AdminPanel />
+          <AdminPanel section={request?.page === 'admin' ? request.section : null} />
         </Page>
       )}
     </div>
