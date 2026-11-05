@@ -8,10 +8,10 @@ TOKENS_PER_RUBLE = 10
 
 # Без Premium функции с ИИ оплачиваются с баланса: столько токенов стоит одно использование
 AI_PRICES = {
-    "diary_answer": 50,
-    "report": 200,
-    "portrait": 300,
-    "compatibility": 300,
+    "diary_answer": 47,
+    "report": 183,
+    "portrait": 287,
+    "compatibility": 263,
 }
 
 # Пополнение, в рублях

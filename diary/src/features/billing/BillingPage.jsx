@@ -73,7 +73,7 @@ export default function BillingPage({ onBack }) {
         <section id={`${id}-panel-${mode}`} role="tabpanel" aria-labelledby={`${id}-${mode}`} className={`ui-card ${mode === 'premium' ? 'billing-premium' : ''}`}>
           {mode === 'balance' ? <>
             <h3 className="text-lg font-semibold mb-3">Оплата с баланса</h3>
-            <div className="mb-6">{FEATURE_PRICES.map(([key, label]) => <div key={key} className="mb-3"><Row label={label} value={`${formatTokens(prices[key])} · ${(prices[key] / prices.tokens_per_ruble).toLocaleString('ru-RU')} ₽`} /><p className="ui-secondary text-sm">{SERVICE_DESCRIPTIONS[key]}</p></div>)}</div>
+            <div className="mb-6">{FEATURE_PRICES.map(([key, label]) => <div key={key} className="mb-3"><Row label={label} value={formatTokens(prices[key])} /><p className="ui-secondary text-sm">{SERVICE_DESCRIPTIONS[key]}</p></div>)}</div>
             <h4 className="font-semibold">Пополнить баланс</h4>
             <p className="ui-secondary mb-3">1 ₽ = {formatTokens(prices.tokens_per_ruble)}</p>
             <div className="grid grid-cols-2 min-[360px]:grid-cols-4 gap-2 mb-4">{QUICK_AMOUNTS.map(value => <button key={value} type="button" aria-pressed={sum === value} onClick={() => setAmount(String(value))} className={`clay-raised-sm min-h-11 rounded-xl text-sm font-semibold ${sum === value ? 'bg-[var(--ui-text)] text-rose-950' : 'bg-rose-950 text-[var(--ui-text)]'}`}>{value} ₽</button>)}</div>
