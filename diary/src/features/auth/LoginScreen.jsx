@@ -4,12 +4,6 @@ import { LoaderCircle, Send } from '../../components/ClayIcon';
 import logo from '../../assets/logo.webp';
 import { api } from '../../utils/api';
 import { saveSession } from '../../utils/platform';
-import Modal from '../../components/Modal';
-import ResultContent from '../../components/ResultContent';
-import { PUBLIC_OFFER_TEXT } from '../legal/offer';
-import { ServiceInformation, ContactInformation } from '../legal/ServiceInformation';
-
-const INFORMATION = { services: 'Услуги и цены', offer: 'Публичная оферта', contacts: 'Контакты и реквизиты' };
 
 const POLL_INTERVAL = 2000;
 // Неиспользованный код меняем за минуту до конца срока: ссылка в бота всегда рабочая
@@ -21,10 +15,6 @@ export default function LoginScreen({ notice }) {
   const [login, setLogin] = useState(null); // { code, secret, url, expiresAt }
   const [isWaiting, setIsWaiting] = useState(false);
   const [message, setMessage] = useState(notice || null);
-  const [information, setInformation] = useState(() => {
-    const page = new URLSearchParams(window.location.search).get('page');
-    return Object.hasOwn(INFORMATION, page) ? page : null;
-  });
 
   const requestCode = useCallback(() => api('/api/auth/login', { method: 'POST' })
     .then(data => setLogin({ ...data, expiresAt: Date.now() + data.expires_in * 1000 }))
@@ -100,15 +90,7 @@ export default function LoginScreen({ notice }) {
           )}
           {message && <p className="ui-secondary text-center mt-4" role="alert">{message}</p>}
         </section>
-        <nav aria-label="Информация о сервисе" className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm ui-secondary">
-          {Object.entries(INFORMATION).map(([page, label]) => <a key={page} href={`/?tab=profile&page=${page}`} onClick={event => { event.preventDefault(); setInformation(page); }} className="underline underline-offset-4">{label}</a>)}
-        </nav>
       </div>
-      {information && <Modal title={INFORMATION[information]} onClose={() => setInformation(null)}>
-        {information === 'services' && <ServiceInformation />}
-        {information === 'offer' && <ResultContent content={PUBLIC_OFFER_TEXT} />}
-        {information === 'contacts' && <ContactInformation />}
-      </Modal>}
     </div>
   );
 }

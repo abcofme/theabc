@@ -39,8 +39,8 @@ docker compose logs -f bot api             # логи
 
 ## ЮKassa
 
-- Услуги, цены, порядок получения, оферта и реквизиты доступны в существующем приложении и по ссылкам на экране входа, без авторизации. После публикации в анкете ЮKassa укажите адрес сайта `https://abcofme.ru/?tab=profile&page=services`, ссылку на реквизиты `https://abcofme.ru/?tab=profile&page=contacts`. Оферта: `https://abcofme.ru/?tab=profile&page=offer`.
-- Контакты исполнителя хранятся в `diary/src/features/legal/business.js`. Цены до входа загружаются из `/api/public/prices` (значения из `backend/pricing.py`), внутри приложения — из профиля. При изменении тарифов обновляйте также фиксированные суммы в оферте `diary/src/features/legal/offer.js`.
+- Описания услуг, цены и порядок получения размещены в существующем разделе «Подписка и баланс»: `https://abcofme.ru/?page=billing`. Контакты и реквизиты: `https://abcofme.ru/?tab=profile&page=contacts`. Оферта: `https://abcofme.ru/?tab=profile&page=offer`. Для просмотра нужен вход в приложение.
+- Контакты исполнителя хранятся в `diary/src/features/legal/business.js`. Цены в разделе «Подписка и баланс» берутся из профиля (`backend/pricing.py`). При изменении тарифов обновляйте также фиксированные суммы в оферте `diary/src/features/legal/offer.js`.
 
 ## Бэкапы
 
