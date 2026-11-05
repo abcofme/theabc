@@ -11,6 +11,7 @@ import ProfileStats from './ProfileStats';
 import { ContactInformation } from '../legal/ServiceInformation';
 import headerVine from '../../assets/profile/header-vine-thick.webp';
 import portraitBanner from '../../assets/profile/portrait-woman-handmade.webp';
+import logo from '../../assets/logo.webp';
 import { useProfile, portraitState } from '../../context/profile';
 import { useAppNav, useErrorHandler } from '../../navigation/appNav';
 import { api } from '../../utils/api';
@@ -122,7 +123,7 @@ export default function ProfileTab({ request, active }) {
         <img className="profile-header__vine profile-header__vine--bottom" src={headerVine} alt="" aria-hidden="true" width="512" height="512" draggable="false" />
         <div className="profile-header__content flex flex-col items-center text-center w-full min-w-0">
           <Avatar
-            src={tgUser.photo_url && tgUser.id ? `${API_URL}/api/avatar/${tgUser.id}` : null}
+            src={tgUser.avatar_kind === 'logo' ? logo : tgUser.photo_url && tgUser.id ? `${API_URL}/api/avatar/${tgUser.id}` : null}
             className="profile-header__avatar w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover shadow-lg shrink-0"
             fallback={
               <div className="profile-header__avatar w-20 h-20 sm:w-24 sm:h-24 ui-avatar text-[var(--ui-text)] rounded-full flex items-center justify-center font-bold text-3xl shadow-inner shrink-0">
@@ -179,9 +180,9 @@ export default function ProfileTab({ request, active }) {
           <MenuRow icon={Leaf} label="Светлая тема">
             <Switch checked={theme === 'light'} label="Светлая тема" onClick={toggleTheme} />
           </MenuRow>
-          <MenuRow icon={Bell} label="Напоминания о дневнике" hint="Вечером, если за день не было записей">
+          {tgUser.auth_provider !== 'password' && <MenuRow icon={Bell} label="Напоминания о дневнике" hint="Вечером, если за день не было записей">
             <Switch checked={!!profile?.diary_reminders} label="Напоминания о дневнике" onClick={toggleReminders} disabled={!profile || isSavingReminder} />
-          </MenuRow>
+          </MenuRow>}
           {!isStandalone && (
             <MenuRow
               icon={Download}
@@ -204,7 +205,7 @@ export default function ProfileTab({ request, active }) {
             rel="noopener noreferrer"
             onClick={isTelegram ? (event) => { event.preventDefault(); WebApp.openLink(SITE_URL); } : undefined}
             className="font-semibold text-[var(--ui-text)] underline underline-offset-4"
-          >{SITE_HOST}</a>. Вход через Telegram.
+          >{SITE_HOST}</a>. {tgUser.auth_provider === 'password' ? 'Этот профиль не связан с Telegram.' : 'Вход через Telegram.'}
         </p>
       </div>
 

@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     REQUESTS_CHAT_ID: int
     SUPPORT_CHAT_ID: int
 
+    # Отдельный браузерный аккаунт; без настройки вход по паролю отключён.
+    BROWSER_LOGIN_NAME: str = ""
+    BROWSER_PASSWORD_HASH: str = ""
+
     POSTGRES_DB: str
     POSTGRES_HOST: str
     POSTGRES_PORT: str

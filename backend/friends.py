@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.bonuses import award
 from backend.database.models import Friendship, User
+from backend.password_auth import BROWSER_USER_ID
 
 FRIEND_INVITE_PREFIX = "friend_"
 
@@ -16,7 +17,7 @@ def inviter_from_payload(payload: str | None) -> int | None:
     if not payload or not payload.startswith(FRIEND_INVITE_PREFIX):
         return None
     rest = payload[len(FRIEND_INVITE_PREFIX):]
-    return int(rest) if rest.isdigit() else None
+    return int(rest) if rest.isdigit() or rest == str(BROWSER_USER_ID) else None
 
 
 async def befriend(session: AsyncSession, user_id: int, inviter_id: int) -> bool:

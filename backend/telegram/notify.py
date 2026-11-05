@@ -11,6 +11,8 @@ from settings import settings
 async def notify(user_id: int, text: str, query: str = "", button: str = "Открыть") -> bool:
     """Сообщение от бота с кнопкой, которая открывает нужный экран приложения (query — параметры ссылки,
     например tab=reports&report=12). Ошибка отправки — например, бот заблокирован — не мешает основному действию"""
+    if user_id <= 0:
+        return False  # У отдельного браузерного профиля нет чата Telegram.
     url = settings.WEB_APP_URL + (f"?{query}" if query else "")
     markup = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=button, web_app=WebAppInfo(url=url))]])
     try:

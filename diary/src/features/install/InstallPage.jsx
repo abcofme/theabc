@@ -3,7 +3,7 @@ import { Check, Download, Send } from '../../components/ClayIcon';
 import Page from '../../components/Page';
 import { api } from '../../utils/api';
 import {
-  getInstallPrompt, isIOS, isStandalone, isTelegram, onInstallPromptChange, promptInstall,
+  currentUser, getInstallPrompt, isIOS, isStandalone, isTelegram, onInstallPromptChange, promptInstall,
 } from '../../utils/platform';
 
 const WebApp = window.Telegram.WebApp;
@@ -26,7 +26,7 @@ export default function InstallPage({ onBack }) {
     <Page title="Приложение на телефон" onBack={onBack}>
       <div className="ui-stack">
         <p className="ui-secondary">
-          «Азбука Я» откроется с главного экрана в одно касание, как обычное приложение. Аккаунт тот же: записи, тесты и баланс общие с Telegram.
+          «Азбука Я» откроется с главного экрана в одно касание, как обычное приложение. {currentUser()?.auth_provider === 'password' ? 'Сохранятся записи, тесты и баланс твоего браузерного профиля.' : 'Аккаунт тот же: записи, тесты и баланс общие с Telegram.'}
         </p>
         {isTelegram ? <FromTelegram /> : isStandalone ? <Installed /> : <FromBrowser />}
       </div>
