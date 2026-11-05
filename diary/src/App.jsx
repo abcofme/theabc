@@ -73,7 +73,7 @@ export default function App() {
 
   const browserAuth = useBrowserSession();
   if (browserAuth.isClaiming) return <div className="login-screen"><ScreenState loading title="Входим…" /></div>;
-  if (!browserAuth.isSignedIn) return <LoginScreen notice={browserAuth.notice} />;
+  if (!browserAuth.isSignedIn) return <BackStackProvider><LoginScreen notice={browserAuth.notice} /></BackStackProvider>;
 
   return (
     <ProfileProvider>

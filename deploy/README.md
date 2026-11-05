@@ -37,6 +37,11 @@ docker compose ps                          # состояние контейне
 docker compose logs -f bot api             # логи
 ```
 
+## ЮKassa
+
+- Услуги, цены, порядок получения, оферта и реквизиты доступны в существующем приложении и по ссылкам на экране входа, без авторизации. После публикации в анкете ЮKassa укажите адрес сайта `https://abcofme.ru/?tab=profile&page=services`, ссылку на реквизиты `https://abcofme.ru/?tab=profile&page=contacts`. Оферта: `https://abcofme.ru/?tab=profile&page=offer`.
+- Контакты исполнителя хранятся в `diary/src/features/legal/business.js`. Цены до входа загружаются из `/api/public/prices` (значения из `backend/pricing.py`), внутри приложения — из профиля. При изменении тарифов обновляйте также фиксированные суммы в оферте `diary/src/features/legal/offer.js`.
+
 ## Бэкапы
 
 `theabc-backup.timer` каждый день в 03:30 кладёт дамп в `/var/backups/theabc/` (хранится 14 дней).

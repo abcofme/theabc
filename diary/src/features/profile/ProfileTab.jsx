@@ -8,6 +8,7 @@ import { lazyScreen } from '../../components/lazyScreen';
 import InstallPage from '../install/InstallPage';
 import BonusesPage from '../bonuses/BonusesPage';
 import ProfileStats from './ProfileStats';
+import { ServiceInformation, ContactInformation } from '../legal/ServiceInformation';
 import headerVine from '../../assets/profile/header-vine-thick.webp';
 import portraitBanner from '../../assets/profile/portrait-woman-handmade.webp';
 import { useProfile, portraitState } from '../../context/profile';
@@ -27,7 +28,7 @@ const PortraitPage = lazyScreen(() => import('./PortraitPage'));
 const SITE_URL = window.location.origin;
 const SITE_HOST = window.location.host;
 
-const PAGES = ['portrait', 'offer', 'admin', 'install', 'bonuses'];
+const PAGES = ['portrait', 'offer', 'services', 'contacts', 'admin', 'install', 'bonuses'];
 
 const PORTRAIT_CAPTIONS = {
   tests: (p) => `Пройдено ${p.passed_tests} из ${p.total_tests} тестов`,
@@ -189,7 +190,9 @@ export default function ProfileTab({ request, active }) {
               onClick={() => { setPageOrigin(null); setPage('install'); }}
             />
           )}
+          <MenuRow icon={FileText} label="Услуги и цены" onClick={() => { setPageOrigin(null); setPage('services'); }} />
           <MenuRow icon={FileText} label="Публичная оферта" onClick={() => { setPageOrigin(null); setPage('offer'); }} />
+          <MenuRow icon={FileText} label="Контакты и реквизиты" onClick={() => { setPageOrigin(null); setPage('contacts'); }} />
           {profile?.is_admin && <MenuRow icon={Shield} label="Админ-панель" onClick={() => { setPageOrigin(null); setPage('admin'); }} />}
           {!isTelegram && <MenuRow icon={ArrowRight} label="Выйти" onClick={logout}>{false}</MenuRow>}
         </div>
@@ -208,6 +211,8 @@ export default function ProfileTab({ request, active }) {
 
       {page === 'portrait' && <PortraitPage onBack={closePage} />}
       {page === 'offer' && <OfferPage onBack={closePage} />}
+      {page === 'services' && <Page title="Услуги и цены" onBack={closePage}><ServiceInformation prices={profile?.prices} /></Page>}
+      {page === 'contacts' && <Page title="Контакты и реквизиты" onBack={closePage}><div className="ui-card"><ContactInformation /></div></Page>}
       {page === 'install' && <InstallPage onBack={closePage} />}
       {page === 'bonuses' && <BonusesPage onBack={closePage} onGo={goFromBonuses} />}
       {page === 'admin' && (

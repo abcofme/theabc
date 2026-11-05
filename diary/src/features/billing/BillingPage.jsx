@@ -6,6 +6,7 @@ import OfferPage from '../legal/OfferPage';
 import { useProfile } from '../../context/profile';
 import { api } from '../../utils/api';
 import { formatTokens } from '../diary/utils';
+import { SERVICE_DESCRIPTIONS, DeliveryInformation, ContactInformation } from '../legal/ServiceInformation';
 
 const WebApp = window.Telegram.WebApp;
 const QUICK_AMOUNTS = [100, 300, 500, 1000];
@@ -72,7 +73,7 @@ export default function BillingPage({ onBack }) {
         <section id={`${id}-panel-${mode}`} role="tabpanel" aria-labelledby={`${id}-${mode}`} className={`ui-card ${mode === 'premium' ? 'billing-premium' : ''}`}>
           {mode === 'balance' ? <>
             <h3 className="text-lg font-semibold mb-3">Оплата с баланса</h3>
-            <div className="mb-6">{FEATURE_PRICES.map(([key, label]) => <Row key={key} label={label} value={formatTokens(prices[key])} />)}</div>
+            <div className="mb-6">{FEATURE_PRICES.map(([key, label]) => <div key={key} className="mb-3"><Row label={label} value={`${formatTokens(prices[key])} · ${(prices[key] / prices.tokens_per_ruble).toLocaleString('ru-RU')} ₽`} /><p className="ui-secondary text-sm">{SERVICE_DESCRIPTIONS[key]}</p></div>)}</div>
             <h4 className="font-semibold">Пополнить баланс</h4>
             <p className="ui-secondary mb-3">1 ₽ = {formatTokens(prices.tokens_per_ruble)}</p>
             <div className="grid grid-cols-2 min-[360px]:grid-cols-4 gap-2 mb-4">{QUICK_AMOUNTS.map(value => <button key={value} type="button" aria-pressed={sum === value} onClick={() => setAmount(String(value))} className={`clay-raised-sm min-h-11 rounded-xl text-sm font-semibold ${sum === value ? 'bg-[var(--ui-text)] text-rose-950' : 'bg-rose-950 text-[var(--ui-text)]'}`}>{value} ₽</button>)}</div>
@@ -90,8 +91,14 @@ export default function BillingPage({ onBack }) {
             </div>
             <p className="ui-secondary mb-4">Все функции с ИИ без ограничений:</p>
             <ul className="flex flex-col gap-3">{PREMIUM_BENEFITS.map(item => <li key={item} className="flex gap-3 text-base leading-6"><Check size={20} className="text-[var(--ui-gold)] shrink-0 mt-0.5" /><span>{item}</span></li>)}</ul>
+            <p className="ui-secondary text-sm mt-4">Расчетный период — 30 дней. При оформлении подключается автопродление: {prices.premium} ₽ каждые 30 дней с сохраненного способа оплаты. Отменить его можно здесь кнопкой «Отменить автопродление»; доступ сохранится до конца оплаченного периода.</p>
             {!isPremium ? <>{consent}<button type="button" onClick={() => pay('premium', '/api/subscription/buy')} disabled={!offerAccepted || !!busy} className="ui-button ui-button--primary">{busy === 'premium' ? 'Создаю платеж…' : `Оформить · ${prices.premium} ₽ в месяц`}</button></> : <p className="ui-secondary mt-5">Все возможности Premium уже доступны.</p>}
           </>}
+        </section>
+        <section className="ui-card">
+          <h3 className="text-lg font-semibold mb-3">Как получить услугу</h3>
+          <DeliveryInformation />
+          <details className="mt-5"><summary className="font-semibold py-2">Контакты и реквизиты</summary><div className="mt-3"><ContactInformation /></div></details>
         </section>
       </div>
       {isOfferOpen && <OfferPage onBack={() => setIsOfferOpen(false)} />}
