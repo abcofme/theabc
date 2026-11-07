@@ -93,13 +93,17 @@ export default function BillingPage({ onBack }) {
   const { prices, balance } = profile;
   const sum = Number(amount);
   const isAmountValid = Number.isInteger(sum) && sum >= prices.min_topup && sum <= prices.max_topup;
-  const pay = async (kind, path, body) => {
+  const pay = async (kind, path, body, method) => {
     if (pending || !offerAccepted || requestLock.current) return;
     requestLock.current = true;
     setBusy(kind);
     try {
       const checkoutId = isTelegram ? crypto.randomUUID?.() : null;
-      const request = api(checkoutId ? `${path}?checkout_id=${checkoutId}` : path, { method: 'POST', body });
+      const query = new URLSearchParams();
+      if (checkoutId) query.set('checkout_id', checkoutId);
+      if (method) query.set('method', method);
+      const params = query.toString();
+      const request = api(params ? `${path}?${params}` : path, { method: 'POST', body });
       if (checkoutId) {
         // Telegram принимает команду открытия ссылки только сразу после нажатия.
         try { WebApp.openLink(`${window.location.origin}/checkout.html#id=${checkoutId}`); }
@@ -156,7 +160,14 @@ export default function BillingPage({ onBack }) {
             <label className="ui-secondary block" htmlFor={`${id}-amount`}>Своя сумма, от {prices.min_topup} до {prices.max_topup} ₽</label>
             <input id={`${id}-amount`} type="number" inputMode="numeric" min={prices.min_topup} max={prices.max_topup} value={amount} onChange={event => setAmount(event.target.value.replace(/\D/g, ''))} className="ui-input mt-2" />
             {consent}
-            <button type="button" onClick={() => pay('topup', '/api/balance/topup', { amount: sum })} disabled={!isAmountValid || !offerAccepted || !!busy || !!pending} className="ui-button ui-button--primary">{busy === 'topup' ? 'Создаю платеж…' : isAmountValid ? `Купить ${formatTokens(sum * prices.tokens_per_ruble)} за ${sum.toLocaleString('ru-RU')} ₽` : `Сумма от ${prices.min_topup} до ${prices.max_topup} ₽`}</button>
+            <p className="ui-secondary mb-3">
+              {isAmountValid ? `${formatTokens(sum * prices.tokens_per_ruble)} за ${sum.toLocaleString('ru-RU')} ₽` : `Сумма от ${prices.min_topup} до ${prices.max_topup} ₽`}
+            </p>
+            <CheckoutActions
+              onPay={method => pay('topup', '/api/balance/topup', { amount: sum }, method)}
+              disabled={!isAmountValid || !offerAccepted || !!busy || !!pending}
+              creating={busy === 'topup'}
+            />
             {pending?.kind === 'topup' && <PendingNote url={pending.url} />}
           </> : <>
             <div className="flex items-center gap-3 mb-4">
@@ -170,10 +181,14 @@ export default function BillingPage({ onBack }) {
             <ul className="flex flex-col gap-3">{PREMIUM_BENEFITS.map(item => <li key={item} className="flex gap-3 text-base leading-6"><Check size={20} className="text-[var(--ui-gold)] shrink-0 mt-0.5" /><span>{item}</span></li>)}</ul>
             {isPremium ? <p className="ui-secondary mt-5">Все возможности Premium уже доступны.</p> : <>
               <p className="ui-secondary text-sm mt-4">{profile.premium_autorenew
-                ? `При оформлении подключается автопродление за ${prices.premium} ₽ каждые 30 дней. Отменить его можно в этом разделе.`
+                ? `При оформлении подключается автопродление за ${prices.premium} ₽ каждые 30 дней. Отменить его можно в этом разделе. Для автопродления через СБП нужен банк, который поддерживает автоплатежи.`
                 : 'Разовая оплата за 30 дней доступа.'}</p>
               {consent}
-              <button type="button" onClick={() => pay('premium', '/api/subscription/buy')} disabled={!offerAccepted || !!busy || !!pending} className="ui-button ui-button--primary">{busy === 'premium' ? 'Создаю платеж…' : `Оформить · ${prices.premium} ₽`}</button>
+              <CheckoutActions
+                onPay={method => pay('premium', '/api/subscription/buy', undefined, method)}
+                disabled={!offerAccepted || !!busy || !!pending}
+                creating={busy === 'premium'}
+              />
               {pending?.kind === 'premium' && <PendingNote url={pending.url} />}
             </>}
           </>}
@@ -186,6 +201,20 @@ export default function BillingPage({ onBack }) {
       </div>
       {isOfferOpen && <OfferPage onBack={() => setIsOfferOpen(false)} />}
     </Page>
+  );
+}
+
+function CheckoutActions({ onPay, disabled, creating }) {
+  return (
+    <div className="flex flex-col gap-2" aria-busy={creating}>
+      <button type="button" onClick={() => onPay('sbp')} disabled={disabled} className="ui-button ui-button--primary">
+        Оплатить через СБП
+      </button>
+      <button type="button" onClick={() => onPay()} disabled={disabled} className="ui-button ui-button--outline">
+        Другие способы оплаты
+      </button>
+      {creating && <p className="ui-secondary text-center" role="status">Создаю платёж…</p>}
+    </div>
   );
 }
 

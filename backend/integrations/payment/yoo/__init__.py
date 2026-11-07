@@ -40,18 +40,25 @@ def _return_url() -> str:
 
 
 async def _create_payment(
-    amount: int, chat_id, description: str, save_payment_method: bool = False, return_url: str | None = None
+    amount: int,
+    chat_id,
+    description: str,
+    save_payment_method: bool = False,
+    return_url: str | None = None,
+    method: str | None = None,
 ):
-    """Платёж с переходом на страницу ЮKassa. Способ оплаты (карта, СБП, SberPay, T-Pay) выбирает пользователь;
-    с save_payment_method ЮKassa покажет только способы, которые можно сохранить для автопродления"""
-    payment = await _create({
+    """Открывает выбранный способ оплаты или общую форму ЮKassa."""
+    payload = {
         "amount": {"value": f"{amount}.00", "currency": "RUB"},
         "confirmation": {"type": "redirect", "return_url": return_url or _return_url()},
         "capture": True,
         "save_payment_method": save_payment_method,
         "metadata": {"chat_id": chat_id},
         "description": description,
-    })
+    }
+    if method:
+        payload["payment_method_data"] = {"type": method}
+    payment = await _create(payload)
     return payment.confirmation.confirmation_url, payment.id
 
 

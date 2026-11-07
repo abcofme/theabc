@@ -1,3 +1,5 @@
+from typing import Literal
+
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, Security
 from loguru import logger
 from pydantic import BaseModel, UUID4
@@ -51,6 +53,7 @@ async def buy_subscription(
     session: AsyncSession = Depends(get_session),
     auth_header: str = Security(header_scheme),
     checkout_id: UUID4 | None = None,
+    method: Literal["sbp"] | None = None,
 ):
     user_id = user_data.get("id")
 
@@ -60,6 +63,7 @@ async def buy_subscription(
         chat_id=str(user_id),
         description="Premium «Азбука Я» (30 дней)",
         save_payment_method=settings.YOOKASSA_AUTORENEW,
+        method=method,
     )
 
     payment = Payment(
@@ -87,6 +91,7 @@ async def buy_balance_topup(
     session: AsyncSession = Depends(get_session),
     auth_header: str = Security(header_scheme),
     checkout_id: UUID4 | None = None,
+    method: Literal["sbp"] | None = None,
 ):
     if not MIN_TOPUP <= req.amount <= MAX_TOPUP:
         raise HTTPException(status_code=400, detail=f"Сумма пополнения — от {MIN_TOPUP} до {MAX_TOPUP} ₽")
@@ -97,6 +102,7 @@ async def buy_balance_topup(
         amount=req.amount,
         chat_id=str(user_id),
         description=f"Пополнение баланса «Азбука Я»: {tokens(req.amount * TOKENS_PER_RUBLE)}",
+        method=method,
     )
 
     session.add(Payment(user_id=user_id, uuid=payment_id, url=url, is_topup=True, amount=req.amount))
