@@ -32,6 +32,7 @@ export default function BillingPage({ onBack }) {
   const { profile, isPremium, refreshProfile } = useProfile();
   const storageKey = `azbuka-payment:${currentUser()?.id}`;
   const [pending, setPending] = useState(() => readPending(storageKey));
+  const activePayment = useRef(pending);
   const [selectedMode, setMode] = useState(() => {
     if (pending) return pending.kind === 'premium' ? 'premium' : 'balance';
     const requested = new URLSearchParams(window.location.search).get('billing');
@@ -40,39 +41,53 @@ export default function BillingPage({ onBack }) {
   });
   const mode = isPremium ? 'premium' : selectedMode;
   const title = isPremium ? 'Подписка' : 'Подписка и баланс';
-  const [amount, setAmount] = useState('300');
+  const [amount, setAmount] = useState(() => pending?.amount?.toString() ?? '300');
   const [offerAccepted, setOfferAccepted] = useState(false);
   const [isOfferOpen, setIsOfferOpen] = useState(false);
   const [busy, setBusy] = useState(null);
   const requestLock = useRef(false);
-  const checkLock = useRef(false);
+  const checkingPayment = useRef(null);
   const id = useId();
 
-  const checkPending = useCallback(async () => {
-    if (!pending || checkLock.current) return;
-    checkLock.current = true;
-    const clearPending = () => {
-      setPending(null);
-      try { window[PAYMENT_STORAGE].removeItem(storageKey); } catch { /* Хранилище недоступно. */ }
-    };
+  const updatePending = useCallback(payment => {
+    const previous = activePayment.current;
+    activePayment.current = payment;
+    setPending(payment);
     try {
-      if (Date.now() - pending.since >= PAYMENT_POLL_TIMEOUT) {
-        clearPending();
+      if (payment) {
+        window[PAYMENT_STORAGE].setItem(storageKey, JSON.stringify(payment));
+      } else {
+        const saved = readPending(storageKey);
+        if (!saved || saved.id === previous?.id) window[PAYMENT_STORAGE].removeItem(storageKey);
+      }
+    } catch { /* Хранилище недоступно. */ }
+  }, [storageKey]);
+
+  const checkPending = useCallback(async () => {
+    const payment = activePayment.current;
+    if (!payment || checkingPayment.current === payment) return;
+    checkingPayment.current = payment;
+    try {
+      if (Date.now() - payment.since >= PAYMENT_POLL_TIMEOUT) {
+        updatePending(null);
         return;
       }
-      const { status } = await api(`/api/subscription/status/${pending.id}`);
+      const { status } = await api(`/api/subscription/status/${payment.id}`);
+      if (activePayment.current !== payment) return;
       if (status === 'success') {
-        clearPending();
+        updatePending(null);
         await refreshProfile();
         WebApp.HapticFeedback?.notificationOccurred('success');
-        WebApp.showAlert(PAID_TEXT[pending.kind]);
+        WebApp.showAlert(PAID_TEXT[payment.kind]);
       } else if (status === 'canceled') {
-        clearPending();
+        updatePending(null);
         WebApp.showAlert('Платёж отменён. Можно попробовать снова.');
       }
     } catch (err) { console.error('Ошибка проверки платежа:', err); }
-    finally { checkLock.current = false; }
-  }, [pending, refreshProfile, storageKey]);
+    finally {
+      if (checkingPayment.current === payment) checkingPayment.current = null;
+    }
+  }, [refreshProfile, updatePending]);
 
   useEffect(() => {
     if (!pending) return;
@@ -94,7 +109,7 @@ export default function BillingPage({ onBack }) {
   const sum = Number(amount);
   const isAmountValid = Number.isInteger(sum) && sum >= prices.min_topup && sum <= prices.max_topup;
   const pay = async (kind, path, body, method) => {
-    if (pending || !offerAccepted || requestLock.current) return;
+    if (activePayment.current || !offerAccepted || requestLock.current) return;
     requestLock.current = true;
     setBusy(kind);
     try {
@@ -110,13 +125,17 @@ export default function BillingPage({ onBack }) {
         catch { /* Ссылка ЮKassa появится в блоке ожидающего платежа. */ }
       }
       const { url, payment_id } = await request;
-      const payment = { id: payment_id, kind, since: Date.now(), url };
-      setPending(payment);
-      try { window[PAYMENT_STORAGE].setItem(storageKey, JSON.stringify(payment)); } catch { /* Хранилище недоступно. */ }
+      updatePending({ id: payment_id, kind, since: Date.now(), url, amount: body?.amount });
       if (!isTelegram) window.location.assign(url);
       else if (!checkoutId) WebApp.openLink(url);
     } catch (err) { WebApp.showAlert(err.message || 'Не удалось создать платеж'); }
     finally { requestLock.current = false; setBusy(null); }
+  };
+  const closeCheckout = () => {
+    const payment = activePayment.current;
+    if (!payment) return;
+    updatePending(null);
+    setMode(payment.kind === 'topup' ? 'balance' : 'premium');
   };
   const cancelAutoRenewal = () => WebApp.showConfirm('Отменить автопродление Premium? Подписка будет действовать до конца оплаченного периода.', async confirmed => {
     if (!confirmed || requestLock.current) return;
@@ -147,6 +166,11 @@ export default function BillingPage({ onBack }) {
             <p className="ui-secondary">Оплачивай функции токенами по мере использования или подключи Premium. Если функция не сработала, токены возвращаются.</p>
           </>}
         </section>
+        {pending && <PendingNote
+          url={pending.url}
+          onClose={closeCheckout}
+          canChangeAmount={!isPremium && pending.kind === 'topup'}
+        />}
         {!isPremium && <div className="ui-segmented" role="tablist" aria-label="Способ оплаты">
           {['balance', 'premium'].map(value => <button key={value} id={`${id}-${value}`} type="button" role="tab" aria-controls={`${id}-panel-${value}`} aria-selected={mode === value} onClick={() => setMode(value)} disabled={!!busy}>{value === 'balance' ? <><Wallet size={16} aria-hidden="true" /> С баланса</> : <><Sparkles size={16} aria-hidden="true" /> Premium</>}</button>)}
         </div>}
@@ -168,7 +192,6 @@ export default function BillingPage({ onBack }) {
               disabled={!isAmountValid || !offerAccepted || !!busy || !!pending}
               creating={busy === 'topup'}
             />
-            {pending?.kind === 'topup' && <PendingNote url={pending.url} />}
           </> : <>
             <div className="flex items-center gap-3 mb-4">
               <span className="billing-premium__icon" aria-hidden="true"><Sparkles size={22} /></span>
@@ -189,7 +212,6 @@ export default function BillingPage({ onBack }) {
                 disabled={!offerAccepted || !!busy || !!pending}
                 creating={busy === 'premium'}
               />
-              {pending?.kind === 'premium' && <PendingNote url={pending.url} />}
             </>}
           </>}
         </section>
@@ -218,16 +240,22 @@ function CheckoutActions({ onPay, disabled, creating }) {
   );
 }
 
-function PendingNote({ url }) {
+function PendingNote({ url, onClose, canChangeAmount }) {
   const reopen = event => {
     if (!isTelegram) return;
     event.preventDefault();
     WebApp.openLink(url);
   };
-  return <div className="ui-secondary mt-3 text-center">
-    <p role="status">Ждём подтверждения оплаты.</p>
-    {url && <a href={url} onClick={reopen} className="underline underline-offset-4">Вернуться к оплате</a>}
-  </div>;
+  return <section className="ui-card">
+    <p role="status" className="font-semibold">Ждём подтверждения оплаты</p>
+    <p className="ui-secondary mt-2">Чтобы создать новый платёж, закрой прежнюю форму в браузере без оплаты.</p>
+    <div className="flex flex-col gap-2 mt-4">
+      {url && <a href={url} onClick={reopen} className="ui-button ui-button--primary">Вернуться к оплате</a>}
+      <button type="button" onClick={onClose} className="ui-button ui-button--outline">
+        {canChangeAmount ? 'Изменить сумму' : 'Выйти из оплаты'}
+      </button>
+    </div>
+  </section>;
 }
 
 function Row({ label, value }) {
