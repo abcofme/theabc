@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     ACCOUNT_ID: str
     SECRET_KEY: str
     BOT_LINK: str
+    # По умолчанию ЮKassa возвращает в раздел оплаты на сайте.
+    PAYMENT_RETURN_URL: str | None = None
+    YOOKASSA_AUTORENEW: bool = False
     REQUESTS_CHAT_ID: int
     SUPPORT_CHAT_ID: int
 

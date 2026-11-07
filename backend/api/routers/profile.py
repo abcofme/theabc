@@ -18,6 +18,7 @@ from backend.database.models import (
 )
 from backend.friends import befriend, inviter_from_payload
 from backend.pricing import AI_PRICES, DEMO_BALANCE, MAX_TOPUP, MIN_TOPUP, PREMIUM_PRICE, TOKENS_PER_RUBLE
+from settings import settings
 
 router = APIRouter()
 
@@ -200,6 +201,7 @@ async def get_profile(
         "access_level": "Premium" if premium else "Free",
         "access_expires_at": db_user.premium_until.isoformat() if premium else None,
         "has_active_subscription": bool(db_user and db_user.yookassa_payment_method_id),
+        "premium_autorenew": settings.YOOKASSA_AUTORENEW,
         "balance": (db_user.balance or 0) if db_user else 0,
         "prices": {
             "premium": PREMIUM_PRICE,

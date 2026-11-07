@@ -1,98 +1,68 @@
-import asyncio
 from datetime import datetime, timedelta
 
 from apscheduler.triggers.interval import IntervalTrigger
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_, and_
+from loguru import logger
+from sqlalchemy import select
 
-from backend.database import engine
-from backend.database.models import User, Payment
-from backend.scheduler import scheduler
-from backend.integrations.payment.yoo import _create_recurring_payment, _check_payment
+from backend.billing import settle_payment
+from backend.database import async_session
+from backend.database.models import Payment, User
+from backend.integrations.payment.yoo import _check_payment, _create_recurring_payment
 from backend.pricing import PREMIUM_PRICE
-from backend.telegram.bot import bot
+from backend.scheduler import scheduler
+from settings import settings
 
-PREMIUM_RENEWED_TEXT = (
-    "💎 <b>Подписка Premium продлена</b>\n\n"
-    "Ещё на месяц все возможности «Азбуки Я» — <b>без ограничений</b>."
-)
 
 @scheduler.scheduled_job(IntervalTrigger(hours=1))
 async def process_recurring_subscriptions():
-    """
-    Checks for subscriptions that are expiring in the next 24 hours
-    and attempts to auto-renew them using the saved payment method.
-    """
-    async with AsyncSession(engine) as session:
-        now = datetime.utcnow()
-        # Look for users whose premium is expiring in the next 24 hours
-        # and who have a saved payment method
-        target_time = now + timedelta(hours=24)
-        
-        query = select(User).where(
+    """Автопродление Premium: за сутки до окончания списывает PREMIUM_PRICE сохранённым способом оплаты.
+    Не прошло — пробует раз в сутки, пока подписка просрочена не больше чем на 3 дня"""
+    if not settings.YOOKASSA_AUTORENEW:
+        return
+    now = datetime.utcnow()
+    async with async_session() as session:
+        user_ids = (await session.execute(select(User.id).where(
             User.premium_until != None,
-            User.premium_until <= target_time,
-            User.premium_until >= now - timedelta(days=3), # Don't try if it expired long ago
-            User.yookassa_payment_method_id != None
-        )
-        
-        users = (await session.execute(query)).scalars().all()
-        
-        for user in users:
-            # Check if there is already a pending recurring payment for this period
-            pending_query = select(Payment).where(
-                Payment.user_id == user.id,
-                Payment.is_premium_subscription == True,
-                Payment.is_recurring == True,
-                Payment.success == False,
-                Payment.created_at >= now - timedelta(hours=24)
-            )
-            pending = (await session.execute(pending_query)).scalars().first()
-            
-            if pending:
-                # Check status
-                meta, _, _ = await _check_payment(pending.uuid)
-                if meta is not False: # succeeded
-                    pending.success = True
-                    user.premium_until += timedelta(days=30)
+            User.premium_until <= now + timedelta(hours=24),
+            User.premium_until >= now - timedelta(days=3),
+            User.yookassa_payment_method_id != None,
+        ))).scalars().all()
 
-                    try:
-                        await bot.send_message(user.id, PREMIUM_RENEWED_TEXT)
-                    except:
-                        pass
-                else:
-                    # Still pending or failed. We don't create a new one yet.
-                    pass
-                continue
-                
-            # Create a new recurring payment
-            try:
-                status, payment_id = await _create_recurring_payment(
-                    amount=PREMIUM_PRICE,
-                    chat_id=str(user.id),
-                    description="Продление Premium подписки",
-                    email="",
-                    payment_method_id=user.yookassa_payment_method_id
-                )
-                
-                new_payment = Payment(
-                    user_id=user.id,
-                    uuid=payment_id,
-                    is_premium_subscription=True,
-                    is_recurring=True,
-                    success=(status == "succeeded")
-                )
-                session.add(new_payment)
-                
-                if status == "succeeded":
-                    user.premium_until += timedelta(days=30)
+    # Своя сессия на пользователя: сбой одного продления не задевает остальные
+    for user_id in user_ids:
+        try:
+            async with async_session() as session:
+                await _renew(session, await session.get(User, user_id), now)
+        except Exception as e:
+            logger.warning(f"Premium renewal for {user_id} failed: {e!r}")
 
-                    try:
-                        await bot.send_message(user.id, PREMIUM_RENEWED_TEXT)
-                    except:
-                        pass
-                        
-            except Exception as e:
-                print(f"Error processing recurring payment for user {user.id}: {e}")
-                
-        await session.commit()
+
+async def _renew(session, user: User, now: datetime):
+    if not user or not user.yookassa_payment_method_id or not user.premium_until or user.premium_until > now + timedelta(hours=24):
+        return
+    # Списание за последние сутки уже есть: ждём его итога, новое не создаём
+    pending = (await session.execute(select(Payment).where(
+        Payment.user_id == user.id,
+        Payment.is_premium_subscription == True,
+        Payment.is_recurring == True,
+        Payment.success == False,
+        Payment.created_at >= now - timedelta(hours=24),
+    ))).scalars().first()
+    if pending:
+        info = await _check_payment(pending.uuid)
+        if info.status == "succeeded":
+            await settle_payment(session, pending, info)
+        return
+
+    status, payment_id = await _create_recurring_payment(
+        amount=PREMIUM_PRICE,
+        chat_id=str(user.id),
+        description="Продление Premium подписки «Азбука Я»",
+        payment_method_id=user.yookassa_payment_method_id,
+    )
+    # Сохраняем сразу: вебхук об этом платеже может прийти раньше, чем закончится обход
+    payment = Payment(user_id=user.id, uuid=payment_id, is_premium_subscription=True, is_recurring=True, amount=PREMIUM_PRICE)
+    session.add(payment)
+    await session.commit()
+    if status == "succeeded":
+        await settle_payment(session, payment, await _check_payment(payment_id))
