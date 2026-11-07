@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Security
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, Security
 from loguru import logger
-from pydantic import BaseModel
+from pydantic import BaseModel, UUID4
+from redis.exceptions import RedisError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from yookassa.domain.exceptions import ForbiddenError
@@ -11,23 +12,16 @@ from backend.billing import handle_canceled_payment, settle_payment
 from backend.database.models import Payment, User
 from backend.integrations.payment.yoo import _check_payment, _create_payment
 from backend.pricing import MAX_TOPUP, MIN_TOPUP, PREMIUM_PRICE, TOKENS_PER_RUBLE, tokens
+from backend.redis_db import async_redis
 from settings import settings
 
 router = APIRouter()
 
 
-async def checkout_user(
-    user_data: dict = Depends(validate_twa_data),
-    auth_header: str = Security(header_scheme),
-) -> dict:
-    if not auth_header.startswith("Session "):
-        raise HTTPException(status_code=403, detail="Оплата через ЮKassa доступна на сайте.")
-    return user_data
-
-
-async def _start_payment(**kwargs):
+async def _start_payment(auth_header: str, **kwargs):
+    return_url = f"{settings.BOT_LINK.rstrip('/')}?startapp=billing" if auth_header.startswith("Bearer ") else None
     try:
-        return await _create_payment(**kwargs)
+        return await _create_payment(return_url=return_url, **kwargs)
     except ForbiddenError as e:
         logger.warning("YooKassa refused to create a payment for the configured shop")
         raise HTTPException(status_code=503, detail="Приём платежей через ЮKassa временно недоступен.") from e
@@ -36,14 +30,32 @@ async def _start_payment(**kwargs):
         raise HTTPException(status_code=502, detail="Не удалось создать платеж. Попробуйте еще раз через минуту.") from e
 
 
+async def _checkout_response(url: str, payment_id: str, checkout_id: UUID4 | None):
+    if checkout_id:
+        try:
+            await async_redis.set(f"yoo-checkout:{checkout_id}", url, ex=120, nx=True)
+        except RedisError:
+            logger.warning("Could not publish YooKassa checkout URL to the browser")
+    return {"url": url, "payment_id": payment_id}
+
+
+@router.get("/api/payment/checkout/{checkout_id}")
+async def checkout_link(checkout_id: UUID4, response: Response):
+    response.headers["Cache-Control"] = "no-store"
+    return {"url": await async_redis.get(f"yoo-checkout:{checkout_id}")}
+
+
 @router.post("/api/subscription/buy")
 async def buy_subscription(
-    user_data: dict = Depends(checkout_user),
-    session: AsyncSession = Depends(get_session)
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session),
+    auth_header: str = Security(header_scheme),
+    checkout_id: UUID4 | None = None,
 ):
     user_id = user_data.get("id")
 
     url, payment_id = await _start_payment(
+        auth_header,
         amount=PREMIUM_PRICE,
         chat_id=str(user_id),
         description="Premium «Азбука Я» (30 дней)",
@@ -61,7 +73,7 @@ async def buy_subscription(
     session.add(payment)
     await session.commit()
 
-    return {"url": url, "payment_id": payment_id}
+    return await _checkout_response(url, payment_id, checkout_id)
 
 
 class TopUpRequest(BaseModel):
@@ -71,19 +83,26 @@ class TopUpRequest(BaseModel):
 @router.post("/api/balance/topup")
 async def buy_balance_topup(
     req: TopUpRequest,
-    user_data: dict = Depends(checkout_user),
-    session: AsyncSession = Depends(get_session)
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session),
+    auth_header: str = Security(header_scheme),
+    checkout_id: UUID4 | None = None,
 ):
     if not MIN_TOPUP <= req.amount <= MAX_TOPUP:
         raise HTTPException(status_code=400, detail=f"Сумма пополнения — от {MIN_TOPUP} до {MAX_TOPUP} ₽")
     user_id = user_data.get("id")
 
-    url, payment_id = await _start_payment(amount=req.amount, chat_id=str(user_id), description=f"Пополнение баланса «Азбука Я»: {tokens(req.amount * TOKENS_PER_RUBLE)}")
+    url, payment_id = await _start_payment(
+        auth_header,
+        amount=req.amount,
+        chat_id=str(user_id),
+        description=f"Пополнение баланса «Азбука Я»: {tokens(req.amount * TOKENS_PER_RUBLE)}",
+    )
 
     session.add(Payment(user_id=user_id, uuid=payment_id, url=url, is_topup=True, amount=req.amount))
     await session.commit()
 
-    return {"url": url, "payment_id": payment_id}
+    return await _checkout_response(url, payment_id, checkout_id)
 
 
 @router.get("/api/subscription/status/{payment_uuid}")

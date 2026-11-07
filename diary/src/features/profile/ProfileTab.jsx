@@ -135,7 +135,7 @@ export default function ProfileTab({ request, active }) {
             <h2 className="text-xl sm:text-2xl font-bold text-[var(--ui-text)] truncate">{tgUser.first_name}</h2>
             {tgUser.username && <p className="text-sm sm:text-base text-[var(--ui-secondary)] font-medium truncate">@{tgUser.username}</p>}
           </div>
-          <button type="button" onClick={openBilling} className="flex items-center gap-1 min-h-11 mt-2 active:scale-95" aria-label="Подписка и баланс">
+          <button type="button" onClick={openBilling} className="flex items-center gap-1 min-h-11 mt-2 active:scale-95" aria-label={isPremium ? 'Подписка' : 'Подписка и баланс'}>
             <span className={`font-bold px-3 py-1.5 rounded-xl text-sm sm:text-base flex items-center gap-1.5 clay-raised-sm ${
               isPremium ? 'profile-header__premium' : 'bg-rose-900 border border-[var(--ui-border)] text-[var(--ui-text)]'
             }`}>
@@ -172,8 +172,8 @@ export default function ProfileTab({ request, active }) {
             />
           )}
           <MenuRow
-            icon={Wallet}
-            label="Подписка и баланс"
+            icon={isPremium ? Sparkles : Wallet}
+            label={isPremium ? 'Подписка' : 'Подписка и баланс'}
             hint={isPremium ? 'Premium активен' : 'Баланс расходуется по мере использования'}
             onClick={openBilling}
           />

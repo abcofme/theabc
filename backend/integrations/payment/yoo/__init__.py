@@ -39,12 +39,14 @@ def _return_url() -> str:
     return urlunsplit(base._replace(query=urlencode(query)))
 
 
-async def _create_payment(amount: int, chat_id, description: str, save_payment_method: bool = False):
+async def _create_payment(
+    amount: int, chat_id, description: str, save_payment_method: bool = False, return_url: str | None = None
+):
     """Платёж с переходом на страницу ЮKassa. Способ оплаты (карта, СБП, SberPay, T-Pay) выбирает пользователь;
     с save_payment_method ЮKassa покажет только способы, которые можно сохранить для автопродления"""
     payment = await _create({
         "amount": {"value": f"{amount}.00", "currency": "RUB"},
-        "confirmation": {"type": "redirect", "return_url": _return_url()},
+        "confirmation": {"type": "redirect", "return_url": return_url or _return_url()},
         "capture": True,
         "save_payment_method": save_payment_method,
         "metadata": {"chat_id": chat_id},

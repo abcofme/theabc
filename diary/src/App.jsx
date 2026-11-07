@@ -48,7 +48,7 @@ function readDeepLink() {
   const tab = params.get('tab');
   const link = {
     tab: TABS.some(t => t.id === tab) ? tab : 'diary',
-    page: params.get('page'),
+    page: params.get('page') ?? (WebApp.initDataUnsafe?.start_param === 'billing' ? 'billing' : null),
     section: params.get('section'),
     report: params.get('report'),
     id: 0,

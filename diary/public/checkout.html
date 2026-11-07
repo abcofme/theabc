@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Оплата в ЮKassa</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+    main { max-width: 28rem; margin: 4rem auto; padding: 0 1.25rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Оплата в ЮKassa</h1>
+    <p id="status" role="status">Открываем форму оплаты…</p>
+  </main>
+  <script>
+    const checkoutId = new URLSearchParams(location.hash.slice(1)).get('id');
+    const status = document.getElementById('status');
+
+    async function openCheckout() {
+      const deadline = Date.now() + 45000;
+      while (checkoutId && Date.now() < deadline) {
+        try {
+          const response = await fetch('/api/payment/checkout/' + encodeURIComponent(checkoutId), {
+            cache: 'no-store',
+            signal: AbortSignal.timeout?.(5000),
+          });
+          if (response.ok) {
+            const { url } = await response.json();
+            if (url && new URL(url).protocol === 'https:') {
+              location.replace(url);
+              return;
+            }
+          }
+        } catch { /* Короткий сетевой сбой не прерывает ожидание. */ }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      status.textContent = 'Вернись в «Азбуку Я» и открой оплату ещё раз.';
+    }
+
+    openCheckout();
+  </script>
+</body>
+</html>
