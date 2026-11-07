@@ -1,19 +1,20 @@
+from datetime import datetime
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, Security
 from loguru import logger
 from pydantic import BaseModel, UUID4
 from redis.exceptions import RedisError
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from yookassa.domain.exceptions import ForbiddenError
 
 from backend.api.common import get_session
 from backend.api.security import header_scheme, validate_twa_data
-from backend.billing import handle_canceled_payment, settle_payment
+from backend.billing import disable_autorenew, handle_canceled_payment, settle_payment
 from backend.database.models import Payment, User
 from backend.integrations.payment.yoo import _check_payment, _create_payment
-from backend.pricing import MAX_TOPUP, MIN_TOPUP, PREMIUM_PRICE, TOKENS_PER_RUBLE, tokens
+from backend.pricing import AUTORENEW_TERMS_VERSION, MAX_TOPUP, MIN_TOPUP, PREMIUM_PERIOD_DAYS, PREMIUM_PRICE, TOKENS_PER_RUBLE, tokens
 from backend.redis_db import async_redis
 from settings import settings
 
@@ -47,8 +48,19 @@ async def checkout_link(checkout_id: UUID4, response: Response):
     return {"url": await async_redis.get(f"yoo-checkout:{checkout_id}")}
 
 
+class AutoRenewConsent(BaseModel):
+    terms_version: str
+    amount: int
+    period_days: int
+
+
+class SubscriptionPurchase(BaseModel):
+    autorenew: AutoRenewConsent | None = None
+
+
 @router.post("/api/subscription/buy")
 async def buy_subscription(
+    req: SubscriptionPurchase | None = None,
     user_data: dict = Depends(validate_twa_data),
     session: AsyncSession = Depends(get_session),
     auth_header: str = Security(header_scheme),
@@ -56,13 +68,26 @@ async def buy_subscription(
     method: Literal["sbp"] | None = None,
 ):
     user_id = user_data.get("id")
+    user = await session.get(User, user_id)
+    if settings.YOOKASSA_AUTORENEW and user and user.yookassa_payment_method_id and user.autorenew_consent_payment_id:
+        raise HTTPException(status_code=409, detail="Перед новой покупкой Premium отключи текущее автопродление.")
+    consent = req.autorenew if req else None
+    if consent and (
+        not settings.YOOKASSA_AUTORENEW
+        or user_id <= 0
+        or consent.terms_version != AUTORENEW_TERMS_VERSION
+        or consent.amount != PREMIUM_PRICE
+        or consent.period_days != PREMIUM_PERIOD_DAYS
+    ):
+        raise HTTPException(status_code=409, detail="Условия автопродления изменились. Обнови страницу перед оплатой.")
+    consent_at = datetime.utcnow() if consent else None
 
     url, payment_id = await _start_payment(
         auth_header,
         amount=PREMIUM_PRICE,
         chat_id=str(user_id),
-        description="Premium «Азбука Я» (30 дней)",
-        save_payment_method=settings.YOOKASSA_AUTORENEW,
+        description=f"Premium «Азбука Я» ({PREMIUM_PERIOD_DAYS} дней)",
+        save_payment_method=bool(consent),
         method=method,
     )
 
@@ -73,6 +98,9 @@ async def buy_subscription(
         is_premium_subscription=True,
         is_recurring=False,
         amount=PREMIUM_PRICE,
+        premium_period_days=PREMIUM_PERIOD_DAYS,
+        autorenew_consent_at=consent_at,
+        autorenew_terms_version=consent.terms_version if consent else None,
     )
     session.add(payment)
     await session.commit()
@@ -157,6 +185,11 @@ async def yookassa_webhook(request: Request, session: AsyncSession = Depends(get
         return {"status": "ok"}
 
     payment = (await session.execute(select(Payment).where(Payment.uuid == payment_uuid))).scalars().first()
+    if not payment:
+        metadata = obj.get("metadata")
+        renewal_key = metadata.get("renewal_key") if isinstance(metadata, dict) else None
+        if isinstance(renewal_key, str):
+            payment = await session.scalar(select(Payment).where(Payment.renewal_key == renewal_key))
     if not payment or payment.success:
         return {"status": "ok"}
 
@@ -167,6 +200,18 @@ async def yookassa_webhook(request: Request, session: AsyncSession = Depends(get
     except Exception as e:
         logger.warning(f"YooKassa check {payment_uuid} failed: {type(e).__name__}")
         raise HTTPException(status_code=500, detail="Payment check failed")
+
+    if payment.renewal_key:
+        if info.renewal_key != payment.renewal_key:
+            return {"status": "ok"}
+        if payment.uuid is None:
+            # ЮKassa могла провести списание, даже если сервер потерял ответ на POST.
+            await session.get(User, payment.user_id, with_for_update=True, populate_existing=True)
+            await session.refresh(payment)
+            if payment.uuid and payment.uuid != payment_uuid:
+                return {"status": "ok"}
+            payment.uuid = payment_uuid
+            await session.commit()
 
     if info.status == "succeeded":
         await settle_payment(session, payment, info)
@@ -181,10 +226,17 @@ async def cancel_subscription(
     session: AsyncSession = Depends(get_session)
 ):
     user_id = user_data.get("id")
-    db_user = await session.get(User, user_id)
+    db_user = await session.get(User, user_id, with_for_update=True)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    db_user.yookassa_payment_method_id = None
+    disable_autorenew(db_user)
+    await session.execute(update(Payment).where(
+        Payment.user_id == user_id,
+        Payment.renewal_key.is_not(None),
+        Payment.renewal_started_at.is_(None),
+        Payment.uuid.is_(None),
+        Payment.renewal_canceled_at.is_(None),
+    ).values(renewal_canceled_at=db_user.autorenew_disabled_at))
     await session.commit()
     return {"status": "success"}

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -14,10 +14,10 @@ from backend.dictation import trial_used as dictation_trial_used
 from backend.bonuses import award, bonus_list, mark_seen
 from backend.database.models import (
     User, Category, Progress, Result, PersonalityPortrait,
-    DiaryEntry, BehavioralReport, CompatibilityReport, Friendship,
+    DiaryEntry, BehavioralReport, CompatibilityReport, Friendship, Payment,
 )
 from backend.friends import befriend, inviter_from_payload
-from backend.pricing import AI_PRICES, DEMO_BALANCE, MAX_TOPUP, MIN_TOPUP, PREMIUM_PRICE, TOKENS_PER_RUBLE
+from backend.pricing import AI_PRICES, AUTORENEW_TERMS_VERSION, DEMO_BALANCE, MAX_TOPUP, MIN_TOPUP, PREMIUM_PERIOD_DAYS, PREMIUM_PRICE, TOKENS_PER_RUBLE
 from settings import settings
 
 router = APIRouter()
@@ -193,6 +193,14 @@ async def get_profile(
             "updated_at": portrait_obj.updated_at.isoformat() if portrait_obj.updated_at else None,
         }
 
+    renewal_consent = None
+    renewal_not_before = None
+    if db_user and db_user.yookassa_payment_method_id and db_user.autorenew_consent_payment_id:
+        renewal_consent = await session.get(Payment, db_user.autorenew_consent_payment_id)
+        renewal_not_before = db_user.premium_until
+        if renewal_not_before and db_user.autorenew_reminded_for == renewal_not_before and db_user.autorenew_reminded_at:
+            renewal_not_before = max(renewal_not_before, db_user.autorenew_reminded_at + timedelta(days=1))
+
     return {
         "categories": result_data,
         "total_tests": total_tests,
@@ -201,7 +209,11 @@ async def get_profile(
         "access_level": "Premium" if premium else "Free",
         "access_expires_at": db_user.premium_until.isoformat() if premium else None,
         "has_active_subscription": bool(db_user and db_user.yookassa_payment_method_id),
-        "premium_autorenew": settings.YOOKASSA_AUTORENEW,
+        "premium_autorenew": settings.YOOKASSA_AUTORENEW and user_id > 0,
+        "premium_autorenew_terms_version": AUTORENEW_TERMS_VERSION,
+        "premium_period_days": PREMIUM_PERIOD_DAYS,
+        "autorenew_amount": renewal_consent.amount if renewal_consent else None,
+        "autorenew_not_before": renewal_not_before.isoformat() + "Z" if renewal_not_before else None,
         "balance": (db_user.balance or 0) if db_user else 0,
         "prices": {
             "premium": PREMIUM_PRICE,

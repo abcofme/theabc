@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import ClayText from '../../components/ClayText';
 import { LoaderCircle, Send } from '../../components/ClayIcon';
+import ResultContent from '../../components/ResultContent';
 import logo from '../../assets/logo.webp';
 import { api } from '../../utils/api';
 import { saveSession } from '../../utils/platform';
+import { PUBLIC_OFFER_TEXT } from '../legal/offer';
 
 const POLL_INTERVAL = 2000;
 // Неиспользованный код меняем за минуту до конца срока: ссылка в бота всегда рабочая
@@ -95,6 +97,12 @@ export default function LoginScreen({ notice }) {
           )}
           {message && <p className="ui-secondary text-center mt-4" role="alert">{message}</p>}
         </section>}
+        <details className="w-full text-left ui-secondary">
+          <summary className="font-semibold text-center py-2">Оферта, тарифы и контакты</summary>
+          <section className="ui-card mt-3">
+            <ResultContent content={PUBLIC_OFFER_TEXT} />
+          </section>
+        </details>
       </div>
     </div>
   );

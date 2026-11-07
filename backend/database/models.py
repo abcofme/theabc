@@ -44,6 +44,10 @@ class User(BaseModel):
     first_opened_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     premium_until: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     yookassa_payment_method_id: Mapped[str] = mapped_column(String(100), nullable=True)
+    autorenew_consent_payment_id: Mapped[Optional[int]] = mapped_column(BigInteger)
+    autorenew_disabled_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    autorenew_reminded_for: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    autorenew_reminded_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     has_career_access: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
 
     tracking_link_id: Mapped[Optional[int]] = mapped_column(ForeignKey("tracking_links.id", ondelete="SET NULL"), nullable=True)
@@ -201,6 +205,14 @@ class Payment(BaseModel):
     # Пополнение баланса: сумма в рублях, после подтверждения оплаты зачисляется в токенах
     is_topup: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false", nullable=False)
     amount: Mapped[Optional[int]] = mapped_column(Integer(), nullable=True)
+    autorenew_consent_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    autorenew_terms_version: Mapped[Optional[str]] = mapped_column(String(32))
+    premium_period_days: Mapped[Optional[int]] = mapped_column(Integer)
+    renewal_due_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    renewal_key: Mapped[Optional[str]] = mapped_column(String(36), unique=True)
+    renewal_method_id: Mapped[Optional[str]] = mapped_column(String(100))
+    renewal_started_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    renewal_canceled_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     category_id: Mapped[Optional[int]] = mapped_column(ForeignKey("categories.id"))
     category: Mapped[Optional["Category"]] = relationship(

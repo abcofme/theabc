@@ -43,6 +43,7 @@ export default function BillingPage({ onBack }) {
   const title = isPremium ? 'Подписка' : 'Подписка и баланс';
   const [amount, setAmount] = useState(() => pending?.amount?.toString() ?? '300');
   const [offerAccepted, setOfferAccepted] = useState(false);
+  const [autorenewAccepted, setAutorenewAccepted] = useState(false);
   const [isOfferOpen, setIsOfferOpen] = useState(false);
   const [busy, setBusy] = useState(null);
   const requestLock = useRef(false);
@@ -106,6 +107,14 @@ export default function BillingPage({ onBack }) {
 
   if (!profile) return <Page title={title} onBack={onBack}><Spinner /></Page>;
   const { prices, balance } = profile;
+  const premiumDays = profile.premium_period_days ?? 30;
+  const purchaseTerms = profile.premium_autorenew && autorenewAccepted ? {
+    autorenew: {
+      terms_version: profile.premium_autorenew_terms_version,
+      amount: prices.premium,
+      period_days: premiumDays,
+    },
+  } : undefined;
   const sum = Number(amount);
   const isAmountValid = Number.isInteger(sum) && sum >= prices.min_topup && sum <= prices.max_topup;
   const pay = async (kind, path, body, method) => {
@@ -143,6 +152,7 @@ export default function BillingPage({ onBack }) {
     setBusy('cancel');
     try {
       await api('/api/subscription/cancel', { method: 'POST' });
+      setAutorenewAccepted(false);
       await refreshProfile();
       WebApp.showAlert('Автопродление отменено.');
     } catch (err) { WebApp.showAlert(err.message || 'Не удалось отменить автопродление'); }
@@ -159,13 +169,20 @@ export default function BillingPage({ onBack }) {
           {isPremium ? <>
             <h3 className="text-lg font-semibold flex items-center gap-2 mb-3"><Sparkles size={20} className="text-[var(--ui-gold)]" /> Premium активен</h3>
             <Row label="Действует до" value={formatDate(profile.access_expires_at)} />
-            <Row label="Автопродление" value={profile.has_active_subscription ? 'включено' : 'выключено'} />
-            {profile.has_active_subscription && <button type="button" onClick={cancelAutoRenewal} disabled={!!busy} className="ui-button ui-button--outline mt-4">{busy === 'cancel' ? 'Отмена…' : 'Отменить автопродление'}</button>}
+            {!profile.has_active_subscription && <Row label="Автопродление" value="выключено" />}
           </> : <>
             <h3 className="text-lg font-semibold flex items-center gap-2 mb-2"><Wallet size={20} /> Баланс: {formatTokens(balance)}</h3>
             <p className="ui-secondary">Оплачивай функции токенами по мере использования или подключи Premium. Если функция не сработала, токены возвращаются.</p>
           </>}
         </section>
+        {profile.has_active_subscription && <section className="ui-card">
+          <h3 className="font-semibold">Автопродление Premium</h3>
+          {profile.autorenew_amount != null && <Row label="Сумма списания" value={`${profile.autorenew_amount} ₽`} />}
+          {profile.autorenew_not_before && <Row label="Списание не раньше" value={formatDate(profile.autorenew_not_before)} />}
+          <button type="button" onClick={cancelAutoRenewal} disabled={!!busy} className="ui-button ui-button--outline mt-4">
+            {busy === 'cancel' ? 'Отмена…' : 'Отменить автопродление'}
+          </button>
+        </section>}
         {pending && <PendingNote
           url={pending.url}
           onClose={closeCheckout}
@@ -197,18 +214,25 @@ export default function BillingPage({ onBack }) {
               <span className="billing-premium__icon" aria-hidden="true"><Sparkles size={22} /></span>
               <div>
                 <h3 className="text-xl font-semibold leading-7">Premium</h3>
-                <p className="text-[var(--ui-gold)] font-semibold">{prices.premium} ₽ за 30 дней</p>
+                <p className="text-[var(--ui-gold)] font-semibold">{prices.premium} ₽ за {premiumDays} дней</p>
               </div>
             </div>
             <p className="ui-secondary mb-4">Все функции с ИИ без ограничений:</p>
             <ul className="flex flex-col gap-3">{PREMIUM_BENEFITS.map(item => <li key={item} className="flex gap-3 text-base leading-6"><Check size={20} className="text-[var(--ui-gold)] shrink-0 mt-0.5" /><span>{item}</span></li>)}</ul>
-            {isPremium ? <p className="ui-secondary mt-5">Все возможности Premium уже доступны.</p> : <>
-              <p className="ui-secondary text-sm mt-4">{profile.premium_autorenew
-                ? `При оформлении подключается автопродление за ${prices.premium} ₽ каждые 30 дней. Отменить его можно в этом разделе. Для автопродления через СБП нужен банк, который поддерживает автоплатежи.`
-                : 'Разовая оплата за 30 дней доступа.'}</p>
+            {isPremium ? <p className="ui-secondary mt-5">Все возможности Premium уже доступны.</p> : profile.premium_autorenew && profile.autorenew_amount != null ? (
+              <p className="ui-secondary mt-5">Чтобы оплатить новый период вручную, сначала отключи текущее автопродление.</p>
+            ) : <>
+              <p className="ui-secondary text-sm mt-4">
+                {purchaseTerms ? 'ЮKassa сохранит способ оплаты. О списании сообщим в Telegram не менее чем за сутки. Отключить продление можно в этом разделе.' : `Разовая оплата за ${premiumDays} дней доступа.`}
+              </p>
+              {profile.premium_autorenew && <label className="flex items-start gap-3 ui-secondary mt-4">
+                <input type="checkbox" checked={autorenewAccepted} onChange={event => setAutorenewAccepted(event.target.checked)} disabled={!!busy || !!pending} className="ui-checkbox mt-px" />
+                <span>Согласен на автоматическое списание {prices.premium} ₽ каждые {premiumDays} дней с сохранённого способа оплаты</span>
+              </label>}
+              {purchaseTerms && <p className="ui-secondary text-sm mt-2">Для автопродления через СБП нужен банк, который поддерживает автоплатежи.</p>}
               {consent}
               <CheckoutActions
-                onPay={method => pay('premium', '/api/subscription/buy', undefined, method)}
+                onPay={method => pay('premium', '/api/subscription/buy', purchaseTerms, method)}
                 disabled={!offerAccepted || !!busy || !!pending}
                 creating={busy === 'premium'}
               />

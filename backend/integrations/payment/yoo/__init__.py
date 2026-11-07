@@ -2,10 +2,12 @@ import asyncio
 import uuid
 from dataclasses import dataclass
 from decimal import Decimal
-from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
 
+import httpx
 import yookassa
 from yookassa import Payment
+from yookassa.domain.response import PaymentResponse
 
 from settings import settings
 
@@ -24,10 +26,22 @@ class PaymentInfo:
     currency: str
     payment_method_id: str | None  # сохранённый способ оплаты — для автопродления
     cancel_reason: str | None
+    renewal_key: str | None = None
 
 
 async def _create(payload: dict) -> Payment:
     return await asyncio.to_thread(Payment.create, payload, str(uuid.uuid4()))
+
+
+async def _request_payment(method: str, path: str = "", **kwargs) -> PaymentResponse:
+    # SDK 3.1 не задаёт сетевой таймаут. Ограничиваем ожидание ответа ЮKassa.
+    async with asyncio.timeout(40), httpx.AsyncClient(timeout=35) as client:
+        response = await client.request(
+            method, f"https://api.yookassa.ru/v3/payments{path}",
+            auth=(settings.ACCOUNT_ID, settings.SECRET_KEY), **kwargs,
+        )
+        response.raise_for_status()
+        return PaymentResponse(response.json())
 
 
 def _return_url() -> str:
@@ -62,21 +76,24 @@ async def _create_payment(
     return payment.confirmation.confirmation_url, payment.id
 
 
-async def _create_recurring_payment(amount: int, chat_id, description: str, payment_method_id: str):
+async def _create_recurring_payment(
+    amount: int, chat_id: str, description: str, payment_method_id: str, renewal_key: str
+):
     """Списание сохранённым способом оплаты, без участия пользователя"""
-    payment = await _create({
+    payload = {
         "amount": {"value": f"{amount}.00", "currency": "RUB"},
         "payment_method_id": payment_method_id,
         "capture": True,
-        "metadata": {"chat_id": chat_id},
+        "metadata": {"chat_id": chat_id, "renewal_key": renewal_key},
         "description": description,
-    })
-    return payment.status, payment.id
+    }
+    payment = await _request_payment("POST", headers={"Idempotence-Key": renewal_key}, json=payload)
+    return payment.id
 
 
 async def _check_payment(payment_id) -> PaymentInfo:
     """Состояние платежа из API ЮKassa — единственный источник правды: телу вебхука не доверяем"""
-    payment = await asyncio.to_thread(Payment.find_one, payment_id)
+    payment = await _request_payment("GET", f"/{quote(payment_id, safe='')}")
     method = payment.payment_method
     return PaymentInfo(
         status=payment.status,
@@ -84,4 +101,5 @@ async def _check_payment(payment_id) -> PaymentInfo:
         currency=payment.amount.currency,
         payment_method_id=method.id if method and getattr(method, "saved", False) else None,
         cancel_reason=payment.cancellation_details.reason if payment.cancellation_details else None,
+        renewal_key=(payment.metadata or {}).get("renewal_key"),
     )
