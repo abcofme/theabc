@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, useId } from 'react';
 import { Check, Sparkles, Wallet } from '../../components/ClayIcon';
+import OpenInBrowserButton from '../../components/OpenInBrowserButton';
 import Page from '../../components/Page';
 import Spinner from '../../components/Spinner';
 import OfferPage from '../legal/OfferPage';
@@ -31,7 +32,12 @@ export default function BillingPage({ onBack }) {
   const { profile, isPremium, refreshProfile } = useProfile();
   const storageKey = `azbuka-payment:${currentUser()?.id}`;
   const [pending, setPending] = useState(() => readPending(storageKey));
-  const [mode, setMode] = useState(isPremium || pending?.kind === 'premium' ? 'premium' : 'balance');
+  const [mode, setMode] = useState(() => {
+    if (pending) return pending.kind === 'premium' ? 'premium' : 'balance';
+    const requested = new URLSearchParams(window.location.search).get('billing');
+    if (requested === 'balance' || requested === 'premium') return requested;
+    return isPremium ? 'premium' : 'balance';
+  });
   const [amount, setAmount] = useState('300');
   const [offerAccepted, setOfferAccepted] = useState(false);
   const [isOfferOpen, setIsOfferOpen] = useState(false);
@@ -129,7 +135,7 @@ export default function BillingPage({ onBack }) {
           {mode === 'balance' ? <>
             <h3 className="text-lg font-semibold mb-3">Оплата с баланса</h3>
             <div className="mb-6">{FEATURE_PRICES.map(([key, label]) => <div key={key} className="mb-3"><Row label={label} value={formatTokens(prices[key])} /><p className="ui-secondary text-sm">{SERVICE_DESCRIPTIONS[key]}</p></div>)}</div>
-            {isTelegram ? <p className="ui-secondary">Пополнение баланса доступно в браузерной версии «Азбуки Я».</p> : <>
+            {!isTelegram && <>
             <h4 className="font-semibold">Пополнить баланс</h4>
             <p className="ui-secondary mb-3">1 ₽ = {formatTokens(prices.tokens_per_ruble)}</p>
             <div className="grid grid-cols-2 min-[360px]:grid-cols-4 gap-2 mb-4">{QUICK_AMOUNTS.map(value => <button key={value} type="button" aria-pressed={sum === value} onClick={() => setAmount(String(value))} className={`clay-raised-sm min-h-11 rounded-xl text-sm font-semibold ${sum === value ? 'bg-[var(--ui-text)] text-rose-950' : 'bg-rose-950 text-[var(--ui-text)]'}`}>{value} ₽</button>)}</div>
@@ -149,9 +155,7 @@ export default function BillingPage({ onBack }) {
             </div>
             <p className="ui-secondary mb-4">Все функции с ИИ без ограничений:</p>
             <ul className="flex flex-col gap-3">{PREMIUM_BENEFITS.map(item => <li key={item} className="flex gap-3 text-base leading-6"><Check size={20} className="text-[var(--ui-gold)] shrink-0 mt-0.5" /><span>{item}</span></li>)}</ul>
-            {isPremium ? <p className="ui-secondary mt-5">Все возможности Premium уже доступны.</p> : isTelegram ? (
-              <p className="ui-secondary mt-5">Оформление Premium доступно в браузерной версии «Азбуки Я».</p>
-            ) : <>
+            {isPremium ? <p className="ui-secondary mt-5">Все возможности Premium уже доступны.</p> : !isTelegram && <>
               <p className="ui-secondary text-sm mt-4">{profile.premium_autorenew
                 ? `При оформлении подключается автопродление за ${prices.premium} ₽ каждые 30 дней. Отменить его можно в этом разделе.`
                 : 'Разовая оплата за 30 дней доступа.'}</p>
@@ -160,6 +164,10 @@ export default function BillingPage({ onBack }) {
               {pending?.kind === 'premium' && <PendingNote url={pending.url} />}
             </>}
           </>}
+          {isTelegram && (mode === 'balance' || !isPremium) && <div className="mt-5">
+            <p className="ui-secondary mb-3">Продолжи в браузере. Ты войдёшь в тот же аккаунт автоматически.</p>
+            <OpenInBrowserButton query={{ tab: 'profile', page: 'billing', billing: mode }} />
+          </div>}
         </section>
         <section className="ui-card">
           <h3 className="text-lg font-semibold mb-3">Как получить услугу</h3>

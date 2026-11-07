@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Check, Download, Send } from '../../components/ClayIcon';
+import { useEffect, useState } from 'react';
+import { Check, Download } from '../../components/ClayIcon';
+import OpenInBrowserButton from '../../components/OpenInBrowserButton';
 import Page from '../../components/Page';
-import { api } from '../../utils/api';
 import {
   currentUser, getInstallPrompt, isIOS, isStandalone, isTelegram, onInstallPromptChange, promptInstall,
 } from '../../utils/platform';
@@ -95,29 +95,9 @@ export function FromBrowser({ card = true }) {
   );
 }
 
-// Ссылка одноразовая: берем ее заранее (openLink должен идти сразу из нажатия) и после перехода — новую
 function FromTelegram() {
-  const [code, setCode] = useState(null);
-  const [error, setError] = useState(null);
   const ios = WebApp.platform === 'ios';
   const android = WebApp.platform === 'android';
-
-  const requestCode = useCallback(() => {
-    api('/api/auth/handoff', { method: 'POST' })
-      .then(data => { setCode(data.code); setError(null); })
-      .catch(err => setError(err.message || 'Не удалось подготовить ссылку'));
-  }, []);
-  useEffect(() => { requestCode(); }, [requestCode]);
-
-  const open = () => {
-    const url = new URL(window.location.origin);
-    url.searchParams.set('login', code);
-    url.searchParams.set('tab', 'profile');
-    url.searchParams.set('page', 'install');
-    WebApp.openLink(url.toString());
-    setCode(null);
-    requestCode();
-  };
 
   const steps = [
     { title: 'Открой дневник в браузере', hint: 'Вход выполнится сам — по ссылке ниже' },
@@ -132,10 +112,7 @@ function FromTelegram() {
     <section className="ui-card">
       <h3 className="text-lg font-semibold">Два шага</h3>
       <Steps steps={steps} />
-      <button type="button" onClick={open} disabled={!code} className="ui-button ui-button--primary">
-        <Send size={20} aria-hidden="true" /> {code ? 'Открыть в браузере' : 'Готовлю ссылку…'}
-      </button>
-      {error && <p className="ui-secondary text-center mt-3" role="alert">{error}</p>}
+      <OpenInBrowserButton query={{ tab: 'profile', page: 'install' }} />
     </section>
   );
 }
