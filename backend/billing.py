@@ -80,6 +80,7 @@ async def _extend_premium(session: AsyncSession, user: User, payment: Payment, i
             return
     user.yookassa_payment_method_id = info.payment_method_id
     user.autorenew_consent_payment_id = payment.id
+    payment.autorenew_method_label = info.payment_method_label
 
 
 async def settle_payment(session: AsyncSession, payment: Payment, info: PaymentInfo):

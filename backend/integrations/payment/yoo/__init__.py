@@ -1,4 +1,5 @@
 import asyncio
+import re
 import uuid
 from dataclasses import dataclass
 from decimal import Decimal
@@ -27,6 +28,26 @@ class PaymentInfo:
     payment_method_id: str | None  # сохранённый способ оплаты — для автопродления
     cancel_reason: str | None
     renewal_key: str | None = None
+    payment_method_label: str | None = None
+
+
+CARD_BRANDS = {
+    "MasterCard": "Mastercard", "Visa": "Visa", "MIR": "Мир", "UnionPay": "UnionPay",
+    "JCB": "JCB", "AmericanExpress": "American Express", "DinersClub": "Diners Club",
+}
+PAYMENT_METHOD_NAMES = {
+    "sbp": "СБП", "yoo_money": "ЮMoney", "tinkoff_bank": "T-Pay",
+    "sberbank": "SberPay", "alfa_pay": "Alfa Pay",
+}
+
+
+def _payment_method_label(method) -> str:
+    if method.type != "bank_card":
+        return PAYMENT_METHOD_NAMES.get(method.type, "Сохранённый способ оплаты")
+    card = getattr(method, "card", None)
+    brand = CARD_BRANDS.get(getattr(card, "card_type", None), "Банковская карта")
+    last4 = getattr(card, "last4", None)
+    return f"{brand} •••• {last4}" if isinstance(last4, str) and re.fullmatch(r"[0-9]{4}", last4) else brand
 
 
 async def _create(payload: dict) -> Payment:
@@ -95,11 +116,13 @@ async def _check_payment(payment_id) -> PaymentInfo:
     """Состояние платежа из API ЮKassa — единственный источник правды: телу вебхука не доверяем"""
     payment = await _request_payment("GET", f"/{quote(payment_id, safe='')}")
     method = payment.payment_method
+    saved_method_id = method.id if method and getattr(method, "saved", False) else None
     return PaymentInfo(
         status=payment.status,
         amount=Decimal(payment.amount.value),
         currency=payment.amount.currency,
-        payment_method_id=method.id if method and getattr(method, "saved", False) else None,
+        payment_method_id=saved_method_id,
         cancel_reason=payment.cancellation_details.reason if payment.cancellation_details else None,
         renewal_key=(payment.metadata or {}).get("renewal_key"),
+        payment_method_label=_payment_method_label(method) if saved_method_id else None,
     )

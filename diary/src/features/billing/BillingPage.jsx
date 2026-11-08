@@ -146,9 +146,10 @@ export default function BillingPage({ onBack }) {
     updatePending(null);
     setMode(payment.kind === 'topup' ? 'balance' : 'premium');
   };
+  const paymentMethod = profile.autorenew_method_label || 'Сохранённый способ оплаты';
   const cancelSubscription = () => WebApp.showPopup({
     title: 'Отмена подписки',
-    message: 'Автопродление отключится, а способ оплаты отвяжется. Доступ к Premium сохранится до конца оплаченного периода.',
+    message: `Способ оплаты: ${paymentMethod}\n\nАвтопродление отключится, а способ оплаты отвяжется. Доступ к Premium сохранится до конца оплаченного периода.`,
     buttons: [
       { id: 'back', type: 'cancel', text: 'Назад' },
       { id: 'cancel_subscription', type: 'destructive', text: 'Отменить подписку' },
@@ -184,6 +185,7 @@ export default function BillingPage({ onBack }) {
         </section>
         {profile.has_active_subscription && <section className="ui-card">
           <h3 className="font-semibold">Автопродление Premium</h3>
+          <Row label="Способ оплаты" value={paymentMethod} />
           {profile.autorenew_amount != null && <Row label="Сумма списания" value={`${profile.autorenew_amount} ₽`} />}
           {profile.autorenew_not_before && <Row label="Списание не раньше" value={formatDate(profile.autorenew_not_before)} />}
           <button type="button" onClick={cancelSubscription} disabled={!!busy} className="ui-button ui-button--outline mt-4">

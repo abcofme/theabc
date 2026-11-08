@@ -195,11 +195,16 @@ async def get_profile(
 
     renewal_consent = None
     renewal_not_before = None
+    renewal_method_label = None
     if db_user and db_user.yookassa_payment_method_id and db_user.autorenew_consent_payment_id:
         renewal_consent = await session.get(Payment, db_user.autorenew_consent_payment_id)
+        if renewal_consent:
+            renewal_method_label = renewal_consent.autorenew_method_label
         renewal_not_before = db_user.premium_until
         if renewal_not_before and db_user.autorenew_reminded_for == renewal_not_before and db_user.autorenew_reminded_at:
             renewal_not_before = max(renewal_not_before, db_user.autorenew_reminded_at + timedelta(days=1))
+    elif db_user and db_user.yookassa_payment_method_id == "demo-autorenew-screenshot-2026-11-08":
+        renewal_method_label = "Тестовая карта •••• 4242"
 
     return {
         "categories": result_data,
@@ -213,6 +218,7 @@ async def get_profile(
         "premium_autorenew_terms_version": AUTORENEW_TERMS_VERSION,
         "premium_period_days": PREMIUM_PERIOD_DAYS,
         "autorenew_amount": renewal_consent.amount if renewal_consent else None,
+        "autorenew_method_label": renewal_method_label,
         "autorenew_not_before": renewal_not_before.isoformat() + "Z" if renewal_not_before else None,
         "balance": (db_user.balance or 0) if db_user else 0,
         "prices": {

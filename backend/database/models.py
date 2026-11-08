@@ -207,6 +207,7 @@ class Payment(BaseModel):
     amount: Mapped[Optional[int]] = mapped_column(Integer(), nullable=True)
     autorenew_consent_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     autorenew_terms_version: Mapped[Optional[str]] = mapped_column(String(32))
+    autorenew_method_label: Mapped[Optional[str]] = mapped_column(String(100))
     premium_period_days: Mapped[Optional[int]] = mapped_column(Integer)
     renewal_due_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     renewal_key: Mapped[Optional[str]] = mapped_column(String(36), unique=True)
