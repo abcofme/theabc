@@ -9,7 +9,7 @@ from backend.api.common import AI_MODEL, GENDER_NEUTRAL_RULE, ai_endpoint, get_s
 from backend.api.security import validate_twa_data
 from backend.billing import charge, refund
 from backend.bonuses import award
-from backend.database.models import DiaryEntry, PersonalityPortrait
+from backend.database.models import ContentLog, DiaryEntry, PersonalityPortrait
 from settings import settings
 
 router = APIRouter()
@@ -143,14 +143,16 @@ async def create_diary_entry(
     user_id = user_data.get("id")
     entry_date = datetime.strptime(data["date"], "%Y-%m-%d").date()
 
+    created_at = datetime.utcnow()
     new_entry = DiaryEntry(
         user_id=user_id,
+        created_at=created_at,
         date=entry_date,
         event=data["event"],
         reaction=data["reaction"],
         rating=data.get("rating")
     )
-    session.add(new_entry)
+    session.add_all([new_entry, ContentLog(user_id=user_id, kind="diary_entry", created_at=created_at)])
     await session.commit()
     await session.refresh(new_entry)
 

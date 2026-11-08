@@ -1,19 +1,19 @@
 import time
 import uuid
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import selectinload
 
+from backend.admin_stats import collect_stats, stats_period, test_catalog
 from backend.api.common import AI_MODEL, ai_endpoint, get_session, require_admin
 from backend.api.security import validate_twa_data
 from backend.database.models import (
-    User, Category, Test, Question, Answer, Progress, Result, DiaryEntry, PersonalityPortrait, BehavioralReport,
-    TrackingLink, AdminAlert,
+    User, Test, Question, Answer, Result, TrackingLink, AdminAlert,
 )
 
 router = APIRouter()
@@ -88,134 +88,33 @@ async def admin_revoke_access(
 
 @router.get("/api/admin/stats")
 async def get_admin_stats(
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
     unique: bool = False,
+    period: Literal["today", "week", "month", "all", "custom"] | None = None,
     user_data: dict = Depends(validate_twa_data),
-    session: AsyncSession = Depends(get_session)
+    session: AsyncSession = Depends(get_session),
 ):
-    import traceback
     await require_admin(user_data, session)
     try:
-        from sqlalchemy import or_
+        dates, bounds = stats_period(period, start_date, end_date)
+    except OverflowError as exc:
+        raise HTTPException(status_code=422, detail="Проверьте даты начала и окончания периода") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
-        start_dt = None
-        end_dt = None
-        if start_date:
-            start_dt = datetime.fromisoformat(start_date)
-        if end_date:
-            end_dt = datetime.fromisoformat(end_date)
-            
-        def apply_filters(query, model):
-            if start_dt:
-                query = query.where(model.created_at >= start_dt)
-            if end_dt:
-                query = query.where(model.created_at <= end_dt)
-            return query
-            
-        def get_count_expr(model):
-            if unique:
-                if getattr(model, "__name__", "") == "User":
-                    return func.count(func.distinct(model.id))
-                return func.count(func.distinct(model.user_id))
-            return func.count(model.id)
+    stats = await collect_stats(session, *bounds, unique)
+    return {**stats, "start_date": dates[0], "end_date": dates[1]}
 
-        diary_q = select(get_count_expr(DiaryEntry))
-        diary_q = apply_filters(diary_q, DiaryEntry)
-        diary_count = (await session.execute(diary_q)).scalar() or 0
-        
-        # New counters
-        users_count_q = select(get_count_expr(User))
-        users_count_q = apply_filters(users_count_q, User)
-        total_users = (await session.execute(users_count_q)).scalar() or 0
-        
-        active_users_q = select(get_count_expr(User)).where(User.has_opened_app == True)
-        active_users_q = apply_filters(active_users_q, User)
-        active_users = (await session.execute(active_users_q)).scalar() or 0
-        
-        reports_q = select(get_count_expr(BehavioralReport))
-        reports_q = apply_filters(reports_q, BehavioralReport)
-        reports_count = (await session.execute(reports_q)).scalar() or 0
-        
-        from backend.database.models import PortraitLog, ProgressLog
-        if not unique:
-            portraits_q = select(get_count_expr(PortraitLog))
-            portraits_q = apply_filters(portraits_q, PortraitLog)
-        else:
-            portraits_q = select(get_count_expr(PersonalityPortrait))
-            portraits_q = apply_filters(portraits_q, PersonalityPortrait)
-        portraits_count = (await session.execute(portraits_q)).scalar() or 0
-        
-        # Compatibility Reports
-        from backend.database.models import CompatibilityReport
-        compat_q = select(get_count_expr(CompatibilityReport))
-        compat_q = apply_filters(compat_q, CompatibilityReport)
-        compat_reports = (await session.execute(compat_q)).scalar() or 0
 
-        # Reports by type
-        reports_types = ['repeating_events', 'effective_reactions', 'energy', 'competence']
-        reports_by_type_list = []
-        for r_type in reports_types:
-            r_title = ""
-            r_name = ""
-            if r_type == 'repeating_events': 
-                r_title = 'Какие события чаще всего повторяются в моей жизни?'
-                r_name = 'Повторяющиеся события'
-            elif r_type == 'effective_reactions': 
-                r_title = 'На какие ситуации я реагирую эффективно, а на какие нет?'
-                r_name = 'Эффективные реакции'
-            elif r_type == 'energy': 
-                r_title = 'Энергия'
-                r_name = 'Энергия'
-            elif r_type == 'competence': 
-                r_title = 'Чувство компетентности'
-                r_name = 'Чувство компетентности'
+@router.get("/api/admin/test_catalog")
+async def get_admin_test_catalog(
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session),
+):
+    await require_admin(user_data, session)
+    return await test_catalog(session)
 
-            r_type_q = select(get_count_expr(BehavioralReport)).where(BehavioralReport.title == r_title)
-            r_type_q = apply_filters(r_type_q, BehavioralReport)
-            count = (await session.execute(r_type_q)).scalar() or 0
-            
-            reports_by_type_list.append({"type": r_type, "name": r_name, "count": count})
-        
-        cats_query = select(Category).options(joinedload(Category.tests))
-        categories = (await session.execute(cats_query)).scalars().unique().all()
-        categories = sorted(categories, key=lambda c: 0 if c.name.lower() == "темперамент" else (2 if c.name.lower() == "профориентация" else 1))
-        
-        test_counts = []
-        for cat in categories:
-            cat_data = {"id": cat.id, "name": cat.name, "tests": []}
-            for t in cat.tests:
-                if not unique:
-                    prog_q = select(get_count_expr(ProgressLog)).where(ProgressLog.test_id == t.id)
-                    prog_q = apply_filters(prog_q, ProgressLog)
-                else:
-                    prog_q = select(get_count_expr(Progress)).where(Progress.test_id == t.id)
-                    prog_q = apply_filters(prog_q, Progress)
-                    prog_q = prog_q.where(or_(Progress.value.isnot(None), Progress.hardcode_value.isnot(None)))
-                
-                count = (await session.execute(prog_q)).scalar() or 0
-                cat_data["tests"].append({
-                    "id": t.id,
-                    "name": t.name,
-                    "count": count
-                })
-            test_counts.append(cat_data)
-            
-        return {
-            "total_users": total_users,
-            "active_users": active_users,
-            "diary_entries": diary_count,
-            "reports_generated": reports_count,
-            "reports_by_type": reports_by_type_list,
-            "portraits_generated": portraits_count,
-            "compat_reports_generated": compat_reports,
-            "tests": test_counts
-        }
-    except Exception as e:
-        with open("admin_error.txt", "w", encoding="utf-8") as f:
-            f.write(traceback.format_exc())
-        from fastapi import HTTPException
-        raise HTTPException(status_code=500, detail=str(e))
 
 class AnswerCreate(BaseModel):
     name: str

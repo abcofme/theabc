@@ -13,7 +13,7 @@ from backend.api.common import AI_MODEL, GENDER_NEUTRAL_RULE, ai_endpoint, get_s
 from backend.api.security import validate_twa_data
 from backend.billing import charge, refund
 from backend.bonuses import award
-from backend.database.models import Category, Test, Progress, Result, DiaryEntry, PersonalityPortrait, BehavioralReport
+from backend.database.models import Category, Test, Progress, Result, DiaryEntry, PersonalityPortrait, BehavioralReport, ContentLog
 
 router = APIRouter()
 
@@ -120,7 +120,7 @@ async def _notify_if_unread(user_id: int, report_id: int, title: str):
 
 
 async def _generate_report_bg(user_id: int, report_type: str, report_title: str, report_prompt: str, start_d, end_d, ai_url: str, ai_token: str, num_entries: int, charged: int):
-    result = await _generate_report(user_id, report_title, report_prompt, start_d, end_d, ai_url, ai_token, num_entries)
+    result = await _generate_report(user_id, report_type, report_title, report_prompt, start_d, end_d, ai_url, ai_token, num_entries)
     if result.get("status") == "success":
         await award(user_id, f"report_{report_type}")
         run_in_background(_notify_if_unread(user_id, result["report"].id, REPORT_TITLES_SHORT.get(report_title, report_title)))
@@ -129,7 +129,7 @@ async def _generate_report_bg(user_id: int, report_type: str, report_title: str,
     return result
 
 
-async def _generate_report(user_id: int, report_title: str, report_prompt: str, start_d, end_d, ai_url: str, ai_token: str, num_entries: int) -> dict:
+async def _generate_report(user_id: int, report_type: str, report_title: str, report_prompt: str, start_d, end_d, ai_url: str, ai_token: str, num_entries: int) -> dict:
     import httpx
     from backend.database import async_session
     try:
@@ -165,16 +165,20 @@ async def _generate_report(user_id: int, report_title: str, report_prompt: str, 
             ai_response.raise_for_status()
             ai_data = ai_response.json()
             generated_text = ai_data["choices"][0]["message"]["content"].strip()
+            if not generated_text:
+                return {"detail": "Не удалось сформировать отчет. Попробуйте позже — токены с баланса не списаны."}
             
             async with async_session() as db:
+                created_at = datetime.utcnow()
                 new_report = BehavioralReport(
                     user_id=user_id,
+                    created_at=created_at,
                     title=report_title,
                     period_start=start_d,
                     period_end=end_d,
                     content=generated_text
                 )
-                db.add(new_report)
+                db.add_all([new_report, ContentLog(user_id=user_id, kind=report_type, created_at=created_at)])
                 await db.commit()
                 await db.refresh(new_report)
             return {"status": "success", "report": new_report}

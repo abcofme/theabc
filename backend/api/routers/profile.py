@@ -9,6 +9,7 @@ from sqlalchemy.orm import joinedload
 from backend.api.common import get_session, is_admin, run_in_background
 from backend.api.routers.diary import _count_streak, _longest_streak
 from backend.api.security import validate_twa_data
+from backend.app_activity import record_app_opening
 from backend.billing import is_premium
 from backend.dictation import trial_used as dictation_trial_used
 from backend.bonuses import award, bonus_list, mark_seen
@@ -90,15 +91,13 @@ async def get_profile(
     photo_url = user_data.get("photo_url")
     db_user = await session.get(User, user_id)
     if db_user:
-        changed = False
+        opened_at = datetime.utcnow()
         if photo_url and db_user.photo_url != photo_url:
             db_user.photo_url = photo_url
-            changed = True
         if not db_user.has_opened_app:
             db_user.has_opened_app = True
-            db_user.first_opened_at = datetime.utcnow()
+            db_user.first_opened_at = db_user.first_opened_at or opened_at
             db_user.balance = (db_user.balance or 0) + DEMO_BALANCE
-            changed = True
 
         # Метка источника для статистики админов (ссылки invite_<код> из админки бота)
         start_param = user_data.get("start_param")
@@ -106,10 +105,9 @@ async def get_profile(
             invited_id = start_param.replace("invite_", "")
             if not db_user.invited_id and str(db_user.id) != invited_id:
                 db_user.invited_id = invited_id
-                changed = True
 
-        if changed:
-            await session.commit()
+        await record_app_opening(session, user_id, opened_at)
+        await session.commit()
 
         inviter_id = inviter_from_payload(start_param)
         if inviter_id and await befriend(session, user_id, inviter_id):

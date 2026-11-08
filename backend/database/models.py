@@ -277,6 +277,24 @@ class PortraitLog(BaseModel):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
+
+class AppOpening(Base):
+    __tablename__ = "app_openings"
+
+    day: Mapped[date] = mapped_column(Date(), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    opened_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, index=True)
+
+
+class ContentLog(BaseModel):
+    """Событие создания записи дневника или отчёта. Живёт отдельно от самого материала."""
+    __tablename__ = "content_logs"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+
+
 class BehavioralReport(BaseModel):
     __tablename__ = "behavioral_reports"
 

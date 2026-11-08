@@ -82,7 +82,9 @@ async def _generate_portrait(user_id: int, user_tests_count: int, prompt: str, a
             ai_response.raise_for_status()
             ai_data = ai_response.json()
             generated_text = ai_data["choices"][0]["message"]["content"].strip()
-            
+            if not generated_text:
+                return {"status": "error", "message": "Не удалось сформировать портрет"}
+
             content = generated_text
 
             async with async_session() as db:

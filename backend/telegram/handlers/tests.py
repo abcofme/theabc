@@ -1,9 +1,12 @@
+from datetime import datetime
+
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, FSInputFile
+from sqlalchemy import delete, select
 from sqlalchemy.orm import joinedload
 
-from backend.database.models import Progress, Test
+from backend.database.models import Progress, ProgressLog, Test
 from backend.database.patterns.result import ResultDAO
 from backend.telegram.bot import dp, bot
 from backend.telegram.callback_data.base import SliderPage
@@ -18,6 +21,7 @@ from backend.telegram.utils.message import (
 )
 from backend.telegram.utils.text import split_string
 from backend.telegram.views.hardcoded_tests import get_hardcoded_test_result
+from backend.progress import lock_user_progress, save_test_progress
 from backend.utils.text import question_mark
 from paths import IMAGES
 
@@ -164,7 +168,7 @@ async def TestAcceptChoose_callback(
 
     await state.update_data(
         dict(
-            test_id=test.id, index_question=0, answer_ids=[]
+            test_id=test.id, index_question=0, answer_ids=[], test_started_at=datetime.utcnow().isoformat()
         )
     )
 
@@ -217,11 +221,8 @@ async def AnswerChoose_callback(
 
     if len(test.questions) - 1 == data.get("index_question"):
         answers = await dao.get_objects_by_ids(Answer, answer_ids)
-
-        conditions = dict(test_id=data.get("test_id"), user_id=user.id)
-        old_progresses = await dao.filter(Progress, conditions)
-        for old_progress in old_progresses:
-            await dao.delete_object(Progress, old_progress.id)
+        if {answer.question_id for answer in answers} != {question.id for question in test.questions}:
+            return await callback.answer(text=gettext("messages.tests.result_does_not_exist"))
 
         if test.hardcode_test:
             result = get_hardcoded_test_result(answers, test)
@@ -231,7 +232,6 @@ async def AnswerChoose_callback(
                 value=0,  # NOQA
                 hardcode_value=result  # NOQA
             )
-            await dao.add_object(progress)  # NOQA
         else:
             points = 0
             for answer in answers:
@@ -242,8 +242,20 @@ async def AnswerChoose_callback(
                 user_id=user.id,  # NOQA
                 value=points  # NOQA
             )
-            await dao.add_object(progress)  # NOQA
             result = upcase_first_letter(result_obj.name) if result_obj else ""
+        async with dao.session.begin():
+            await lock_user_progress(dao.session, user.id)
+            started_at = data.get("test_started_at")
+            already_completed = started_at and await dao.session.scalar(select(ProgressLog.id).where(
+                ProgressLog.test_id == test.id,
+                ProgressLog.user_id == user.id,
+                ProgressLog.created_at >= datetime.fromisoformat(started_at),
+            ).limit(1)) is not None
+            if not already_completed:
+                await dao.session.execute(delete(Progress).where(Progress.test_id == test.id, Progress.user_id == user.id))
+                save_test_progress(dao.session, progress)
+        if already_completed:
+            return await callback.answer()
         if result:
             text = gettext("messages.tests.result").format(
                 result=result

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Check, LoaderCircle, RefreshCw } from '../../components/ClayIcon';
 import ScreenState from '../../components/ScreenState';
 import { api } from '../../utils/api';
+import { AdminRow, AdminSection } from './AdminReport';
 
 // Мониторинг: алерты (backend/alerts.py) и отчет о производительности (backend/performance.py)
 
@@ -21,34 +22,16 @@ const plural = (n, [one, few, many]) => {
 const when = (iso) => new Date(iso).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 const uptime = (s) => s == null ? '—' : s < 3600 ? `${Math.round(s / 60)} мин` : s < 86400 ? `${Math.round(s / 3600)} ч` : `${Math.round(s / 86400)} дн`;
 
-function Row({ label, value, hint }) {
-  return (
-    <div className="admin-row">
-      <span>{label}{hint && <small>{hint}</small>}</span>
-      <b>{value}</b>
-    </div>
-  );
-}
-
-function Section({ title, children }) {
-  return (
-    <section className="ui-card flex flex-col gap-1">
-      <h3 className="text-lg font-bold text-[var(--ui-text)] mb-2">{title}</h3>
-      {children}
-    </section>
-  );
-}
-
 function Alerts({ alerts }) {
   if (!alerts.length) {
     return (
-      <Section title="Алерты">
+      <AdminSection title="Алерты">
         <p className="flex items-center gap-2 ui-secondary"><Check size={18} />Алертов не было — все в норме</p>
-      </Section>
+      </AdminSection>
     );
   }
   return (
-    <Section title="Алерты">
+    <AdminSection title="Алерты">
       <ul className="flex flex-col gap-3">
         {alerts.map(alert => (
           <li key={alert.id} className={`admin-alert${alert.seen ? '' : ' is-new'}`}>
@@ -63,7 +46,7 @@ function Alerts({ alerts }) {
           </li>
         ))}
       </ul>
-    </Section>
+    </AdminSection>
   );
 }
 
@@ -72,30 +55,30 @@ function Report({ report }) {
   const memoryUsed = server.memory_total - server.memory_free;
   return (
     <>
-      <Section title="Сервер">
-        <Row label="Процессор сейчас" value={pct(server.cpu)} hint={`ядер: ${server.cpus}, нагрузка ${num(server.load, 2)}`} />
-        <Row label="Процессор в среднем / пик" value={`${pct(server.cpu_avg)} / ${pct(server.cpu_peak)}`} />
-        <Row label="Память" value={`${gb(memoryUsed)} из ${gb(server.memory_total)}`} hint={`пик за период ${pct(server.memory_peak)}`} />
-        <Row label="Диск" value={`${gb(server.disk_used)} из ${gb(server.disk_total)}`} />
-        <Row label="База данных" value={gb(server.db_size)} />
-      </Section>
+      <AdminSection title="Сервер">
+        <AdminRow label="Процессор сейчас" value={pct(server.cpu)} hint={`ядер: ${server.cpus}, нагрузка ${num(server.load, 2)}`} />
+        <AdminRow label="Процессор в среднем / пик" value={`${pct(server.cpu_avg)} / ${pct(server.cpu_peak)}`} />
+        <AdminRow label="Память" value={`${gb(memoryUsed)} из ${gb(server.memory_total)}`} hint={`пик за период ${pct(server.memory_peak)}`} />
+        <AdminRow label="Диск" value={`${gb(server.disk_used)} из ${gb(server.disk_total)}`} />
+        <AdminRow label="База данных" value={gb(server.db_size)} />
+      </AdminSection>
 
-      <Section title="Диктовка">
-        <Row label="Сервис распознавания" value={stt.up ? 'работает' : 'не отвечает'} hint={stt.up ? `без перезапуска ${uptime(stt.uptime)}` : undefined} />
-        <Row label="Память" value={`${gb(stt.memory)} из ${gb(stt.memory_limit)}`} hint={`пик ${gb(stt.memory_peak)}`} />
-        <Row label="Процессор в среднем / пик" value={`${pct(stt.cpu_avg)} / ${pct(stt.cpu_peak)}`} hint="доля всех ядер сервера" />
-        <Row label="Очередь сейчас / пик" value={`${stt.queue ?? '—'} / ${stt.queue_peak ?? '—'}`} />
-        <Row label="Диктовок" value={dictation.count} hint={`людей ${dictation.users}, пробных ${dictation.trials}`} />
-        <Row label="Записано речи" value={`${num(dictation.audio_minutes ?? 0)} мин`} />
-        <Row label="Ответ в среднем / 95%" value={`${sec(dictation.avg_seconds)} / ${sec(dictation.p95_seconds)}`} hint="очередь и распознавание" />
-        <Row label="Дольше всех ждали очереди" value={sec(dictation.max_wait_seconds)} />
-        <Row label="Минута речи распознается за" value={sec(dictation.ratio == null ? null : dictation.ratio * 60)} />
-        <Row label="Без слов / ошибок" value={`${dictation.empty} / ${dictation.errors}`} />
-      </Section>
+      <AdminSection title="Диктовка">
+        <AdminRow label="Сервис распознавания" value={stt.up ? 'работает' : 'не отвечает'} hint={stt.up ? `без перезапуска ${uptime(stt.uptime)}` : undefined} />
+        <AdminRow label="Память" value={`${gb(stt.memory)} из ${gb(stt.memory_limit)}`} hint={`пик ${gb(stt.memory_peak)}`} />
+        <AdminRow label="Процессор в среднем / пик" value={`${pct(stt.cpu_avg)} / ${pct(stt.cpu_peak)}`} hint="доля всех ядер сервера" />
+        <AdminRow label="Очередь сейчас / пик" value={`${stt.queue ?? '—'} / ${stt.queue_peak ?? '—'}`} />
+        <AdminRow label="Диктовок" value={dictation.count} hint={`людей ${dictation.users}, пробных ${dictation.trials}`} />
+        <AdminRow label="Записано речи" value={`${num(dictation.audio_minutes ?? 0)} мин`} />
+        <AdminRow label="Ответ в среднем / 95%" value={`${sec(dictation.avg_seconds)} / ${sec(dictation.p95_seconds)}`} hint="очередь и распознавание" />
+        <AdminRow label="Дольше всех ждали очереди" value={sec(dictation.max_wait_seconds)} />
+        <AdminRow label="Минута речи распознается за" value={sec(dictation.ratio == null ? null : dictation.ratio * 60)} />
+        <AdminRow label="Без слов / ошибок" value={`${dictation.empty} / ${dictation.errors}`} />
+      </AdminSection>
 
-      <Section title="API">
-        <Row label="Запросов" value={requests.count.toLocaleString('ru-RU')} hint={`ошибок сервера ${requests.errors}`} />
-        <Row label="Ответ в среднем / 95%" value={`${ms(requests.avg_ms)} / ${ms(requests.p95_ms)}`} />
+      <AdminSection title="API">
+        <AdminRow label="Запросов" value={requests.count.toLocaleString('ru-RU')} hint={`ошибок сервера ${requests.errors}`} />
+        <AdminRow label="Ответ в среднем / 95%" value={`${ms(requests.avg_ms)} / ${ms(requests.p95_ms)}`} />
         <ul className="flex flex-col gap-2 mt-3">
           {requests.routes.slice(0, 15).map(route => (
             <li key={route.route} className="admin-route">
@@ -107,7 +90,7 @@ function Report({ report }) {
           ))}
         </ul>
         <p className="ui-muted mt-2">95% — так быстро отвечают 95 запросов из 100. Генерация ИИ считается до последнего байта ответа.</p>
-      </Section>
+      </AdminSection>
     </>
   );
 }

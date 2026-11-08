@@ -1,8 +1,9 @@
 import Select from '../../components/Select';
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronDown, ChevronUp, Users, Calendar, Brain, FileText, Check, Trash2, Edit, Plus, Heart, Link2, Download, LoaderCircle, X } from '../../components/ClayIcon';
+import { ChevronDown, ChevronUp, Users, Brain, Check, Trash2, Edit, Plus, Link2, Download, X } from '../../components/ClayIcon';
 import AdminTestEditor from './AdminTestEditor';
 import AdminMonitoring from './AdminMonitoring';
+import AdminStats from './AdminStats';
 import ScreenState from '../../components/ScreenState';
 import { authHeader, isSignedIn } from '../../utils/platform';
 import { api } from '../../utils/api';
@@ -17,15 +18,9 @@ export default function AdminPanel({ section }) {
   useEffect(() => {
     api('/api/admin/alerts').then(data => setUnseenAlerts(data.unseen)).catch(() => {});
   }, []);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [isUnique, setIsUnique] = useState(false);
-  const [stats, setStats] = useState(null);
-  const [statsError, setStatsError] = useState(false);
+  const [catalog, setCatalog] = useState(null);
+  const [catalogError, setCatalogError] = useState(false);
   const [linksError, setLinksError] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [openCategory, setOpenCategory] = useState(null);
-  const [openReports, setOpenReports] = useState(false);
   const [openDeleteCategory, setOpenDeleteCategory] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editingTestId, setEditingTestId] = useState(undefined); // null - create, number - edit, undefined - list
@@ -101,24 +96,16 @@ export default function AdminPanel({ section }) {
     });
   };
 
-  const fetchStats = useCallback(() => {
-    if (!isSignedIn()) return Promise.resolve();
-    const params = new URLSearchParams();
-    if (startDate) params.append('start_date', startDate);
-    if (endDate) params.append('end_date', endDate);
-    if (isUnique) params.append('unique', 'true');
-    return fetch(`${API_URL}/api/admin/stats?${params}`, { headers: { Authorization: authHeader() } })
-      .then(async response => {
-        if (!response.ok) throw new Error(`Ошибка ${response.status}: ${await response.text()}`);
-        setStats(await response.json());
-        setStatsError(false);
-      })
-      .catch(error => { console.error(error); setStatsError(true); })
-      .finally(() => setLoading(false));
-  }, [startDate, endDate, isUnique]);
+  const fetchTestCatalog = useCallback(() => api('/api/admin/test_catalog')
+    .then(data => { setCatalog(data); setCatalogError(false); })
+    .catch(() => setCatalogError(true)), []);
 
-  useEffect(() => { fetchStats(); }, [fetchStats]);
-  useEffect(() => { fetchTrackingLinks(); }, [fetchTrackingLinks]);
+  useEffect(() => {
+    if (view === 'tools') {
+      fetchTestCatalog();
+      fetchTrackingLinks();
+    }
+  }, [view, fetchTestCatalog, fetchTrackingLinks]);
 
   const handleGrantAccess = async () => {
     if (!grantTargetUsername) {
@@ -218,7 +205,7 @@ export default function AdminPanel({ section }) {
       }
       
       WebApp.showAlert("Тест успешно удален");
-      fetchStats();
+      fetchTestCatalog();
     } catch (error) {
       console.error(error);
       WebApp.showAlert(error.message || "Ошибка при удалении теста");
@@ -227,11 +214,7 @@ export default function AdminPanel({ section }) {
     }
   };
 
-  const toggleCategory = (id) => {
-    setOpenCategory(openCategory === id ? null : id);
-  };
-
-  const allTestIds = (stats?.tests || []).flatMap(cat => cat.tests.map(t => t.id));
+  const allTestIds = (catalog ?? []).flatMap(cat => cat.tests.map(t => t.id));
 
   const toggleExportTest = (id) => {
     setExportSelectedIds(prev =>
@@ -262,7 +245,7 @@ export default function AdminPanel({ section }) {
       if (!response.ok) throw new Error(data.detail || 'Ошибка');
       setAiImportResult({ success: true, ...data });
       setAiImportText('');
-      fetchStats();
+      fetchTestCatalog();
     } catch (e) {
       setAiImportResult({ success: false, error: e.message });
     } finally {
@@ -298,60 +281,31 @@ export default function AdminPanel({ section }) {
     return (
       <AdminTestEditor 
         testId={editingTestId} 
-        categories={stats?.tests ? stats.tests.map(c => ({ id: c.id, name: c.name })) : []} 
-        onClose={() => { setEditingTestId(undefined); fetchStats(); }} 
+        categories={catalog ?? []}
+        onClose={() => { setEditingTestId(undefined); fetchTestCatalog(); }}
       />
     );
   }
 
   return (
     <div className="admin-content flex flex-col w-full">
-      <div role="tablist" aria-label="Разделы админ-панели" className="ui-segmented mb-6">
+      <div role="tablist" aria-label="Разделы админ-панели" className="ui-segmented admin-tabs mb-6">
         <button type="button" role="tab" aria-selected={view === 'stats'} onClick={() => setView('stats')}>Статистика</button>
         <button type="button" role="tab" aria-selected={view === 'monitoring'} onClick={() => setView('monitoring')}>
-          Мониторинг{unseenAlerts > 0 && <span className="admin-badge" aria-label={`новых алертов: ${unseenAlerts}`}>{unseenAlerts}</span>}
+          Мониторинг{unseenAlerts > 0 && <span className="admin-badge" aria-label={`новых алертов: ${unseenAlerts}`}>{unseenAlerts > 99 ? '99+' : unseenAlerts}</span>}
         </button>
+        <button type="button" role="tab" aria-selected={view === 'tools'} onClick={() => setView('tools')}>Управление</button>
       </div>
-      {view === 'monitoring' ? <AdminMonitoring onAlertsSeen={() => setUnseenAlerts(0)} /> : <>
+      <div hidden={view !== 'stats'}><AdminStats active={view === 'stats'} /></div>
+      {view === 'monitoring' && <AdminMonitoring onAlertsSeen={() => setUnseenAlerts(0)} />}
+      {view === 'tools' && <>
 
-      <div className="ui-card mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div>
-          <label className="text-[var(--ui-text)] text-sm font-medium mb-1 block">С:</label>
-          <input 
-            type="datetime-local" 
-            value={startDate} 
-            onChange={(e) => setStartDate(e.target.value)}
-            className="w-full bg-rose-950/50 text-[var(--ui-text)] p-3 rounded-xl focus:outline-none"
-          />
-        </div>
-        <div>
-          <label className="text-[var(--ui-text)] text-sm font-medium mb-1 block">По:</label>
-          <input 
-            type="datetime-local" 
-            value={endDate} 
-            onChange={(e) => setEndDate(e.target.value)}
-            className="w-full bg-rose-950/50 text-[var(--ui-text)] p-3 rounded-xl focus:outline-none"
-          />
-        </div>
-        <div>
-          <label className="text-[var(--ui-text)] text-sm font-medium mb-1 block">Режим:</label>
-          <Select
-            value={isUnique ? 'unique' : 'total'}
-            onChange={(e) => setIsUnique(e.target.value === 'unique')}
-            className="w-full bg-rose-950/50 text-[var(--ui-text)] p-3 rounded-xl focus:outline-none"
-          >
-            <option value="total">Общее</option>
-            <option value="unique">Уникальное</option>
-          </Select>
-        </div>
-      </div>
-
-      {/* НОВЫЙ БЛОК: ССЫЛКИ */}
       <div className="ui-card mb-6">
         <h3 className="text-xl font-bold text-[var(--ui-text)] mb-4 flex items-center gap-2">
           <Link2 size={24} className="text-[var(--ui-secondary)]" />
           Ссылки
         </h3>
+        <p className="ui-muted mb-4">Счётчик показывает, сколько пользователей привязано к ссылке.</p>
         
         <div className="flex flex-wrap gap-2 mb-4">
           <input 
@@ -379,7 +333,7 @@ export default function AdminPanel({ section }) {
                 <div className="flex justify-between items-start pr-8">
                   <div className="font-medium text-[var(--ui-text)]">{link.name}</div>
                   <div className="flex items-center gap-1 text-[var(--ui-sage)] bg-emerald-900/30 px-2 py-1 rounded-lg text-sm font-bold">
-                    <Users size={14} /> {link.clicks_count}
+                    <Users size={14} aria-hidden="true" /> {link.clicks_count.toLocaleString('ru-RU')}
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -415,81 +369,7 @@ export default function AdminPanel({ section }) {
         )}
       </div>
 
-      {statsError && <ScreenState error title="Не удалось обновить статистику" onRetry={fetchStats} />}
-      {loading && !stats ? (
-        <div className="flex justify-center items-center py-12">
-          <LoaderCircle size={40} className="animate-spin" aria-label="Загрузка" />
-        </div>
-      ) : stats ? (
         <div className="flex flex-col gap-4">
-          <div className="admin-metrics">
-          <div className="ui-card flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Users className="text-[var(--ui-secondary)]" size={24} />
-              <span className="text-[var(--ui-text)] font-medium">Всего пользователей</span>
-            </div>
-            <span className="text-xl font-bold text-[var(--ui-text)]">{stats.total_users || 0}</span>
-          </div>
-
-          <div className="ui-card flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Check className="text-[var(--ui-sage)]" size={24} />
-              <span className="text-[var(--ui-text)] font-medium">Активных пользователей</span>
-            </div>
-            <span className="text-xl font-bold text-[var(--ui-text)]">{stats.active_users || 0}</span>
-          </div>
-          
-          <div className="ui-card flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Calendar className="text-[var(--ui-sage)]" size={24} />
-              <span className="text-[var(--ui-text)] font-medium">Записи дневника</span>
-            </div>
-            <span className="text-xl font-bold text-[var(--ui-text)]">{stats.diary_entries || 0}</span>
-          </div>
-
-          <div className="bg-rose-900 border border-[var(--ui-text)]/10 rounded-3xl overflow-hidden clay-raised transition-all duration-300">
-            <button
-              onClick={() => setOpenReports(!openReports)}
-              className="w-full flex items-center justify-between p-5 hover:bg-rose-800/70 transition-colors active:bg-rose-800"
-            >
-              <div className="flex items-center gap-3">
-                <Brain className="text-orange-500" size={24} />
-                <span className="text-[var(--ui-text)] font-medium">Отчеты</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xl font-bold text-[var(--ui-text)]">{stats.reports_generated || 0}</span>
-                {openReports ? <ChevronUp size={22} className="text-[var(--ui-text)]" /> : <ChevronDown size={22} className="text-[var(--ui-text)]" />}
-              </div>
-            </button>
-            {openReports && stats.reports_by_type && stats.reports_by_type.length > 0 && (
-              <div className="bg-rose-950/30 px-5 py-3 flex flex-col gap-3 border-t border-rose-800/50">
-                {stats.reports_by_type.map(rt => (
-                  <div key={rt.type} className="flex justify-between items-center text-sm">
-                    <span className="text-[var(--ui-secondary)]">{rt.name}</span>
-                    <span className="font-bold text-[var(--ui-text)]">{rt.count}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="ui-card flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <FileText className="text-[var(--ui-sage)]" size={24} />
-              <span className="text-[var(--ui-text)] font-medium">Портреты личности</span>
-            </div>
-            <span className="text-xl font-bold text-[var(--ui-text)]">{stats.portraits_generated || 0}</span>
-          </div>
-
-          <div className="ui-card flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Heart className="text-[#D0B8A5]" size={24} />
-              <span className="text-[var(--ui-text)] font-medium">Отчеты совместимости</span>
-            </div>
-            <span className="text-xl font-bold text-[var(--ui-text)]">{stats.compat_reports_generated || 0}</span>
-          </div>
-
-          </div>
           <h3 className="text-xl font-bold text-[var(--ui-text)] mt-8 mb-4">Управление доступом</h3>
           <div className="ui-card flex flex-col gap-4">
             <div>
@@ -552,43 +432,8 @@ export default function AdminPanel({ section }) {
             </button>
           </div>
 
-          <h3 className="text-xl font-bold text-[var(--ui-text)] mt-8 mb-2">Статистика по тестам</h3>
-          {(stats.tests || []).map(cat => (
-            <div key={cat.id} className="bg-rose-900 border border-[var(--ui-text)]/10 rounded-3xl overflow-hidden clay-raised transition-all duration-300">
-              <button
-                onClick={() => toggleCategory(cat.id)}
-                className="w-full flex items-center justify-between p-4 hover:bg-rose-800/70 transition-colors active:bg-rose-800"
-              >
-                <span className="font-semibold text-[var(--ui-text)] text-left text-base sm:text-lg pr-4 leading-tight">
-                  {cat.name}
-                </span>
-                {openCategory === cat.id ? (
-                  <ChevronUp size={22} className="text-[var(--ui-text)] shrink-0" />
-                ) : (
-                  <ChevronDown size={22} className="text-[var(--ui-text)] shrink-0" />
-                )}
-              </button>
-
-              {openCategory === cat.id && (
-                <div className="bg-rose-950/40 px-4 py-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                  {cat.tests.length === 0 ? (
-                    <div className="text-[var(--ui-text)] text-sm py-3 italic">В этой категории пока нет тестов.</div>
-                  ) : (
-                    cat.tests.map(test => (
-                      <div key={test.id} className="flex items-center justify-between py-3.5">
-                        <span className="text-sm sm:text-base font-medium pr-3 text-[var(--ui-text)]">
-                          {test.name}
-                        </span>
-                        <span className="text-[var(--ui-text)] font-bold">{test.count}</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
-
-
+          {catalogError ? <ScreenState error title="Не удалось загрузить каталог тестов" onRetry={fetchTestCatalog} />
+            : !catalog ? <ScreenState loading title="Загрузка каталога тестов…" /> : <>
           <div className="flex items-center justify-between mt-8 mb-4">
             <h3 className="text-xl font-bold text-[var(--ui-text)]">ИИ-импорт теста</h3>
           </div>
@@ -601,7 +446,7 @@ export default function AdminPanel({ section }) {
                 className="w-full bg-rose-950/60 text-[var(--ui-text)] p-3 rounded-xl focus:outline-none text-sm"
               >
                 <option value="">— выберите категорию —</option>
-                {(stats.tests || []).map(cat => (
+                {catalog.map(cat => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </Select>
@@ -653,7 +498,7 @@ export default function AdminPanel({ section }) {
             </div>
 
             <div className="flex flex-col gap-1 mb-4 max-h-64 overflow-y-auto pr-1">
-              {(stats.tests || []).map(cat => (
+              {catalog.map(cat => (
                 <div key={`exp-cat-${cat.id}`}>
                   <div className="text-xs font-bold text-[var(--ui-muted)] uppercase tracking-wider px-1 py-1.5">{cat.name}</div>
                   {cat.tests.map(test => (
@@ -697,7 +542,7 @@ export default function AdminPanel({ section }) {
             </button>
           </div>
           <div className="bg-rose-900/40 p-4 rounded-3xl">
-            {(stats.tests || []).map(cat => (
+            {catalog.map(cat => (
               <div key={`edit-cat-${cat.id}`} className="bg-rose-900 border border-[var(--ui-text)]/10 rounded-3xl overflow-hidden clay-raised transition-all duration-300 mb-3 last:mb-0">
                 <button
                   onClick={() => setOpenDeleteCategory(openDeleteCategory === cat.id ? null : cat.id)}
@@ -747,8 +592,8 @@ export default function AdminPanel({ section }) {
             ))}
           </div>
 
+          </>}
         </div>
-      ) : null}
       </>}
     </div>
   );

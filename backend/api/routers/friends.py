@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -11,7 +12,7 @@ from backend.api.security import validate_twa_data
 from backend.billing import charge, refund
 from backend.bonuses import award
 from backend.database import async_session
-from backend.database.models import User, Friendship, PersonalityPortrait, CompatibilityReport
+from backend.database.models import User, Friendship, PersonalityPortrait, CompatibilityReport, ContentLog
 from backend.friends import friend_invite_link
 from settings import settings
 
@@ -273,15 +274,16 @@ async def _generate_compatibility(user_id: int, friend_id: int, compat_type: str
                 )
             ))).scalars().first()
             
+            created_at = datetime.utcnow()
             if existing:
                 existing.content = content
                 existing.compat_type = compat_type
                 existing.my_gender = my_gender
                 existing.friend_gender = friend_gender
-                await db_session.commit()
             else:
                 new_report = CompatibilityReport(
                     user_id=user_id,
+                    created_at=created_at,
                     friend_id=friend_id,
                     compat_type=compat_type,
                     my_gender=my_gender,
@@ -289,7 +291,8 @@ async def _generate_compatibility(user_id: int, friend_id: int, compat_type: str
                     content=content
                 )
                 db_session.add(new_report)
-                await db_session.commit()
+            db_session.add(ContentLog(user_id=user_id, kind="compatibility", created_at=created_at))
+            await db_session.commit()
                 
         return {"status": "success", "content": content}
     except Exception as e:

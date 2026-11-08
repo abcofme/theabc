@@ -11,6 +11,7 @@ from backend.api.security import validate_twa_data
 from backend.bonuses import award, passed_all_portrait_tests
 from backend.database.models import Test, Question, Answer, Progress, Result
 from backend.telegram.views.hardcoded_tests import get_hardcoded_test_result
+from backend.progress import lock_user_progress, save_test_progress
 
 router = APIRouter()
 
@@ -66,6 +67,7 @@ async def submit_test(
 ):
     try:
         user_id = user_data.get("id")
+        await lock_user_progress(session, user_id)
         progress_query = select(Progress).where(Progress.test_id == test_id, Progress.user_id == user_id)
         progress = (await session.execute(progress_query)).scalars().first()
         if progress:
@@ -79,6 +81,14 @@ async def submit_test(
 
         answers_query = select(Answer).where(Answer.id.in_(payload.answer_ids))
         answers = (await session.execute(answers_query)).scalars().all()
+        question_ids = set((await session.scalars(select(Question.id).where(Question.test_id == test_id))).all())
+        if (
+            not question_ids
+            or len(answers) != len(payload.answer_ids)
+            or len(answers) != len(question_ids)
+            or {answer.question_id for answer in answers} != question_ids
+        ):
+            raise HTTPException(status_code=422, detail="Нужен один ответ на каждый вопрос теста")
         
         if test.hardcode_test:
             result_text = get_hardcoded_test_result(answers, test)
@@ -88,11 +98,6 @@ async def submit_test(
                 value=0,
                 hardcode_value=result_text
             )
-            session.add(progress)
-            
-            # Логируем прохождение для статистики
-            from backend.database.models import ProgressLog
-            session.add(ProgressLog(user_id=user_id, test_id=test_id))
         else:
             points = sum((a.value or 0) for a in answers)
             result_query = select(Result).where(
@@ -107,19 +112,17 @@ async def submit_test(
                 user_id=user_id,
                 value=points
             )
-            session.add(progress)
-            
-            # Логируем прохождение для статистики
-            from backend.database.models import ProgressLog
-            session.add(ProgressLog(user_id=user_id, test_id=test_id))
             result_text = result_obj.name if result_obj and result_obj.name else "Результат не найден"
             
+        save_test_progress(session, progress)
         await session.commit()
 
         await award(user_id, "first_test")
         if await passed_all_portrait_tests(session, user_id):
             await award(user_id, "all_tests")
         return {"result": result_text}
+    except HTTPException:
+        raise
     except Exception:
         import traceback
         traceback.print_exc()
@@ -133,6 +136,7 @@ async def delete_test_progress(
 ):
     user_id = user_data.get("id")
     from sqlalchemy import delete
+    await lock_user_progress(session, user_id)
     await session.execute(delete(Progress).where(Progress.test_id == test_id, Progress.user_id == user_id))
     await session.commit()
     return {"status": "ok"}
