@@ -2,6 +2,7 @@ import asyncio
 import re
 import uuid
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from decimal import Decimal
 from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
 
@@ -29,6 +30,7 @@ class PaymentInfo:
     cancel_reason: str | None
     renewal_key: str | None = None
     payment_method_label: str | None = None
+    captured_at: datetime | None = None
 
 
 CARD_BRANDS = {
@@ -117,6 +119,14 @@ async def _check_payment(payment_id) -> PaymentInfo:
     payment = await _request_payment("GET", f"/{quote(payment_id, safe='')}")
     method = payment.payment_method
     saved_method_id = method.id if method and getattr(method, "saved", False) else None
+    captured_at = None
+    if payment.captured_at:
+        try:
+            captured_at = datetime.fromisoformat(str(payment.captured_at))
+            if captured_at.tzinfo:
+                captured_at = captured_at.astimezone(timezone.utc).replace(tzinfo=None)
+        except ValueError:
+            pass
     return PaymentInfo(
         status=payment.status,
         amount=Decimal(payment.amount.value),
@@ -125,4 +135,5 @@ async def _check_payment(payment_id) -> PaymentInfo:
         cancel_reason=payment.cancellation_details.reason if payment.cancellation_details else None,
         renewal_key=(payment.metadata or {}).get("renewal_key"),
         payment_method_label=_payment_method_label(method) if saved_method_id else None,
+        captured_at=captured_at,
     )

@@ -1,12 +1,14 @@
+from html import escape
+from secrets import token_urlsafe
+
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from aiogram.utils.i18n import gettext
-from loguru import logger
+from sqlalchemy import exists, func, select
 
-from backend.database.models import User
+from backend.database.models import Payment, ReferralAttribution, TrackingLink, User
 from backend.database.patterns.dao import DataAccessObject
-from backend.database.patterns.user import UserDAO
 from backend.telegram.bot import dp, bot
 from backend.telegram.callback_data.admin import AdminMenu
 from backend.telegram.filters.admin import AdminCallbackFilter, AdminMessageFilter
@@ -15,7 +17,7 @@ from backend.telegram.states.admin import AdminStates
 from backend.telegram.utils.message import (
     edit_scheduled_message, schedule_previous_message, Message, schedule_message_deletion, delete_pending_messages
 )
-from settings import settings
+from backend.referrals import link_url
 
 
 @dp.callback_query(AdminMenu.filter(), AdminCallbackFilter())
@@ -26,19 +28,20 @@ async def AdminMenu_callback(
     await schedule_previous_message(user, callback.message, state)
     # await delete_pending_messages(user)
     await state.set_state(AdminStates.link)
-    counts = await UserDAO(dao).get_invited_id_counts()
-    by_links = ""
-    logger.info(f"LINKS: {counts}")
-    for key, value in counts.items():
-        key: str
-        if key is None or key.isdigit():
-            continue
-        else:
-            by_links += (
-                f"<blockquote>{settings.BOT_LINK}?start=invite_{key}</blockquote>\n"
-                f"Всего: {value[0]} чел.\n"
-                f"Совершили покупку: {value[1]} чел.\n\n"
-            )
+    paid = exists().where(Payment.user_id == ReferralAttribution.user_id, Payment.success.is_(True))
+    invited = func.count(ReferralAttribution.id)
+    async with dao.session.begin():
+        rows = (await dao.session.execute(
+            select(TrackingLink, invited, invited.filter(paid))
+            .outerjoin(ReferralAttribution, ReferralAttribution.source_id == TrackingLink.id)
+            .where(TrackingLink.partner_id.is_(None), TrackingLink.archived.is_(False))
+            .group_by(TrackingLink.id).order_by(TrackingLink.id.desc()).limit(12)
+        )).all()
+    by_links = "".join(
+        f"<b>{escape(link.name)}</b>\n<blockquote>{escape(link_url(link.code, partner=False))}</blockquote>\n"
+        f"Всего: {total} чел.\nСовершили оплату: {payers} чел.\n\n"
+        for link, total, payers in rows
+    )
 
     await edit_scheduled_message(
         user=user,
@@ -51,11 +54,15 @@ async def AdminMenu_callback(
 
 @dp.message(StateFilter(AdminStates.link), AdminMessageFilter())
 async def AdminStatesLink_handler(
-        message: Message, user: User, state: FSMContext
+        message: Message, user: User, state: FSMContext, dao: DataAccessObject
 ):
-    msg = await bot.send_message(
-        chat_id=user.id,
-        text=f"{settings.BOT_LINK}?start=invite_{message.text}"
-    )
+    name = (message.text or "").strip()
+    if not name or len(name) > 100:
+        await message.answer("Введите название кампании до 100 символов.")
+        return
+    link = TrackingLink(name=name, code=token_urlsafe(10))
+    async with dao.session.begin():
+        dao.session.add(link)
+    msg = await bot.send_message(chat_id=user.id, text=link_url(link.code, partner=False))
     await message.delete()
     await schedule_message_deletion(user, msg)

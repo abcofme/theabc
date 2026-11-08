@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp, Users, Brain, Check, Trash2, Edit, Plus, Link2,
 import AdminTestEditor from './AdminTestEditor';
 import AdminMonitoring from './AdminMonitoring';
 import AdminStats from './AdminStats';
+import AdminPartners from './AdminPartners';
 import ScreenState from '../../components/ScreenState';
 import { authHeader, isSignedIn } from '../../utils/platform';
 import { api } from '../../utils/api';
@@ -13,7 +14,7 @@ const API_URL = window.location.origin;
 
 // section=monitoring — сразу раздел мониторинга (ссылка из алерта в Telegram)
 export default function AdminPanel({ section }) {
-  const [view, setView] = useState(section === 'monitoring' ? 'monitoring' : 'stats');
+  const [view, setView] = useState(['monitoring', 'partners'].includes(section) ? section : 'stats');
   const [unseenAlerts, setUnseenAlerts] = useState(0);
   useEffect(() => {
     api('/api/admin/alerts').then(data => setUnseenAlerts(data.unseen)).catch(() => {});
@@ -80,7 +81,7 @@ export default function AdminPanel({ section }) {
   };
 
   const handleDeleteLink = async (id) => {
-    WebApp.showConfirm("Удалить эту ссылку?", async (confirmed) => {
+    WebApp.showConfirm("Закрыть эту ссылку? История кампании сохранится.", async (confirmed) => {
       if (!confirmed) return;
       try {
         const response = await fetch(`${API_URL}/api/admin/tracking_links/${id}`, {
@@ -289,15 +290,17 @@ export default function AdminPanel({ section }) {
 
   return (
     <div className="admin-content flex flex-col w-full">
-      <div role="tablist" aria-label="Разделы админ-панели" className="ui-segmented admin-tabs mb-6">
+      <div role="tablist" aria-label="Разделы админ-панели" className="ui-segmented admin-tabs grid! grid-cols-2 sm:flex! mb-6">
         <button type="button" role="tab" aria-selected={view === 'stats'} onClick={() => setView('stats')}>Статистика</button>
         <button type="button" role="tab" aria-selected={view === 'monitoring'} onClick={() => setView('monitoring')}>
           Мониторинг{unseenAlerts > 0 && <span className="admin-badge" aria-label={`новых алертов: ${unseenAlerts}`}>{unseenAlerts > 99 ? '99+' : unseenAlerts}</span>}
         </button>
         <button type="button" role="tab" aria-selected={view === 'tools'} onClick={() => setView('tools')}>Управление</button>
+        <button type="button" role="tab" aria-selected={view === 'partners'} onClick={() => setView('partners')}>Партнёры</button>
       </div>
       <div hidden={view !== 'stats'}><AdminStats active={view === 'stats'} /></div>
       {view === 'monitoring' && <AdminMonitoring onAlertsSeen={() => setUnseenAlerts(0)} />}
+      {view === 'partners' && <AdminPartners />}
       {view === 'tools' && <>
 
       <div className="ui-card mb-6">

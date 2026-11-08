@@ -10,6 +10,7 @@ from backend.api.security import validate_twa_data
 from backend.billing import charge, refund
 from backend.bonuses import award
 from backend.database.models import ContentLog, DiaryEntry, PersonalityPortrait
+from backend.token_usage import complete_charge
 from settings import settings
 
 router = APIRouter()
@@ -377,8 +378,8 @@ DIARY_ANALYSIS_OUTPUT_FORMAT = """ТЕХНИЧЕСКИЙ ФОРМАТ ВЫВОД
 NO_ANALYSIS_SCORE = -1
 
 
-async def _analyze_reaction_bg(user_id: int, entry_id: int, charged: int = 0, follow_up: dict | None = None):
-    result = await _run_reaction_analysis(user_id, entry_id, follow_up)
+async def _analyze_reaction_bg(user_id: int, entry_id: int, charged: int | None = None, follow_up: dict | None = None):
+    result = await _run_reaction_analysis(user_id, entry_id, follow_up, charged)
     # Платят только за разбор: сбой ИИ или просьба дописать запись бесплатны
     if result is None or result["score"] == NO_ANALYSIS_SCORE:
         await refund(user_id, charged)
@@ -416,7 +417,7 @@ def _follow_up_messages(follow_up: dict) -> list:
     ]
 
 
-async def _run_reaction_analysis(user_id: int, entry_id: int, follow_up: dict | None = None):
+async def _run_reaction_analysis(user_id: int, entry_id: int, follow_up: dict | None = None, charged: int | None = None):
     import httpx
     import re
     from backend.database import async_session
@@ -511,6 +512,9 @@ async def _run_reaction_analysis(user_id: int, entry_id: int, follow_up: dict | 
 
                 entry.portrait_match_score = score
                 entry.portrait_match_explanation = explanation
+                if score != NO_ANALYSIS_SCORE:
+                    await complete_charge(db, charged)
+                    db.add(ContentLog(user_id=user_id, kind="diary_answer"))
                 await db.commit()
                 return {"score": score, "explanation": explanation}
                 

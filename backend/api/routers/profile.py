@@ -15,10 +15,12 @@ from backend.dictation import trial_used as dictation_trial_used
 from backend.bonuses import award, bonus_list, mark_seen
 from backend.database.models import (
     User, Category, Progress, Result, PersonalityPortrait,
-    DiaryEntry, BehavioralReport, CompatibilityReport, Friendship, Payment,
+    DiaryEntry, BehavioralReport, CompatibilityReport, Friendship, PartnerAccount, Payment,
 )
 from backend.friends import befriend, inviter_from_payload
 from backend.pricing import AI_PRICES, AUTORENEW_TERMS_VERSION, DEMO_BALANCE, MAX_TOPUP, MIN_TOPUP, PREMIUM_PERIOD_DAYS, PREMIUM_PRICE, TOKENS_PER_RUBLE
+from backend.referrals import capture_referral
+from backend.token_usage import credit_tokens
 from settings import settings
 
 router = APIRouter()
@@ -92,19 +94,17 @@ async def get_profile(
     db_user = await session.get(User, user_id)
     if db_user:
         opened_at = datetime.utcnow()
+        start_param = user_data.get("start_param")
+        if not db_user.has_opened_app:
+            await session.refresh(db_user, with_for_update={"key_share": True})
+            if not db_user.has_opened_app:
+                await capture_referral(session, db_user, start_param, now=opened_at)
+                db_user.has_opened_app = True
+                db_user.first_opened_at = db_user.first_opened_at or opened_at
+                db_user.balance = (db_user.balance or 0) + DEMO_BALANCE
+                credit_tokens(session, user_id, DEMO_BALANCE, "demo")
         if photo_url and db_user.photo_url != photo_url:
             db_user.photo_url = photo_url
-        if not db_user.has_opened_app:
-            db_user.has_opened_app = True
-            db_user.first_opened_at = db_user.first_opened_at or opened_at
-            db_user.balance = (db_user.balance or 0) + DEMO_BALANCE
-
-        # Метка источника для статистики админов (ссылки invite_<код> из админки бота)
-        start_param = user_data.get("start_param")
-        if start_param and start_param.startswith("invite_"):
-            invited_id = start_param.replace("invite_", "")
-            if not db_user.invited_id and str(db_user.id) != invited_id:
-                db_user.invited_id = invited_id
 
         await record_app_opening(session, user_id, opened_at)
         await session.commit()
@@ -204,6 +204,7 @@ async def get_profile(
     elif db_user and db_user.yookassa_payment_method_id == "demo-autorenew-screenshot-2026-11-08":
         renewal_method_label = "Мир •••• 4242"
 
+    partner_account = await session.get(PartnerAccount, user_id) if db_user else None
     return {
         "categories": result_data,
         "total_tests": total_tests,
@@ -228,6 +229,7 @@ async def get_profile(
         },
         "diary_reminders": db_user.diary_reminders if db_user else True,
         "is_admin": is_admin(db_user, user_data.get("username")),
+        "is_partner": bool(partner_account and partner_account.enabled and not db_user.banned),
         "bonuses": await bonus_list(session, user_id) if db_user else [],
         # Без Premium одна диктовка — пробная (backend/dictation.py)
         "dictation_trial": not premium and not await dictation_trial_used(session, user_id),

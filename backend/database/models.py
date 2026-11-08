@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from sqlalchemy import (
     String, BigInteger, DateTime, func, Date,
-    Boolean, Text, ForeignKey, Integer, UniqueConstraint, Float,
+    Boolean, Text, ForeignKey, Integer, UniqueConstraint, Float, CheckConstraint, Index,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, relationship
@@ -51,7 +51,7 @@ class User(BaseModel):
     has_career_access: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
 
     tracking_link_id: Mapped[Optional[int]] = mapped_column(ForeignKey("tracking_links.id", ondelete="SET NULL"), nullable=True)
-    tracking_link: Mapped[Optional["TrackingLink"]] = relationship("TrackingLink")
+    tracking_link: Mapped[Optional["TrackingLink"]] = relationship("TrackingLink", foreign_keys=[tracking_link_id])
 
     progresses: Mapped[List["Progress"]] = relationship(
         "Progress", back_populates="user",
@@ -205,6 +205,7 @@ class Payment(BaseModel):
     # Пополнение баланса: сумма в рублях, после подтверждения оплаты зачисляется в токенах
     is_topup: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false", nullable=False)
     amount: Mapped[Optional[int]] = mapped_column(Integer(), nullable=True)
+    paid_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     autorenew_consent_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     autorenew_terms_version: Mapped[Optional[str]] = mapped_column(String(32))
     autorenew_method_label: Mapped[Optional[str]] = mapped_column(String(100))
@@ -292,6 +293,7 @@ class ContentLog(BaseModel):
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    detail: Mapped[Optional[str]] = mapped_column(String(32))
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow, index=True)
 
 
@@ -346,6 +348,68 @@ class TrackingLink(BaseModel):
     
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     code: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    partner_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("users.id", name="fk_tracking_links_partner", use_alter=True, ondelete="CASCADE"), index=True
+    )
+    archived: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false", nullable=False)
+
+
+class PartnerAccount(Base):
+    __tablename__ = "partner_accounts"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    changed_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class ReferralAttribution(BaseModel):
+    __tablename__ = "referral_attributions"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True)
+    inviter_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), index=True)
+    partner_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), index=True)
+    source_id: Mapped[Optional[int]] = mapped_column(ForeignKey("tracking_links.id", ondelete="SET NULL"), index=True)
+    kind: Mapped[str] = mapped_column(String(16), nullable=False)
+
+
+class PartnerEarning(BaseModel):
+    __tablename__ = "partner_earnings"
+    __table_args__ = (CheckConstraint("amount_kopecks > 0", name="ck_partner_earnings_amount"),)
+
+    partner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    payment_id: Mapped[Optional[int]] = mapped_column(ForeignKey("payments.id"), unique=True)
+    amount_kopecks: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    available_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+
+
+class PartnerWithdrawal(BaseModel):
+    __tablename__ = "partner_withdrawals"
+    __table_args__ = (
+        CheckConstraint("amount_kopecks > 0", name="ck_partner_withdrawals_amount"),
+        CheckConstraint("status IN ('pending', 'paid', 'rejected')", name="ck_partner_withdrawals_status"),
+        UniqueConstraint("partner_id", "request_key", name="uq_partner_withdrawals_request"),
+    )
+
+    partner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    amount_kopecks: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    status: Mapped[str] = mapped_column(String(12), nullable=False, default="pending")
+    request_key: Mapped[str] = mapped_column(String(36), nullable=False)
+    resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    resolved_by: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"))
+    note: Mapped[Optional[str]] = mapped_column(String(240))
+
+
+class TokenMovement(BaseModel):
+    __tablename__ = "token_movements"
+    __table_args__ = (Index("ix_token_movements_user_created", "user_id", "created_at"),)
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    kind: Mapped[str] = mapped_column(String(16), nullable=False)
+    feature: Mapped[Optional[str]] = mapped_column(String(32))
+    amount: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    refunded_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
 
 class DictationLog(BaseModel):

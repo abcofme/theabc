@@ -524,7 +524,7 @@ async def get_tracking_links(
 ):
     await require_admin(user_data, session)
     
-    links_query = select(TrackingLink)
+    links_query = select(TrackingLink).where(TrackingLink.partner_id.is_(None), TrackingLink.archived.is_(False))
     links_result = await session.execute(links_query)
     links = links_result.scalars().all()
     
@@ -574,10 +574,10 @@ async def delete_tracking_link(
     await require_admin(user_data, session)
         
     link = await session.get(TrackingLink, link_id)
-    if not link:
+    if not link or link.partner_id is not None:
         raise HTTPException(status_code=404, detail="Link not found")
-        
-    await session.delete(link)
+
+    link.archived = True
     await session.commit()
     return {"status": "success"}
 

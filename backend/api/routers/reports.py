@@ -15,6 +15,8 @@ from backend.billing import charge, refund
 from backend.bonuses import award
 from backend.database.models import Category, Test, Progress, Result, DiaryEntry, PersonalityPortrait, BehavioralReport, ContentLog
 
+from backend.token_usage import complete_charge
+
 router = APIRouter()
 
 # Короткие названия отчётов для сообщений бота
@@ -119,8 +121,8 @@ async def _notify_if_unread(user_id: int, report_id: int, title: str):
                  f"tab=reports&report={report_id}", "📊 Открыть отчет")
 
 
-async def _generate_report_bg(user_id: int, report_type: str, report_title: str, report_prompt: str, start_d, end_d, ai_url: str, ai_token: str, num_entries: int, charged: int):
-    result = await _generate_report(user_id, report_type, report_title, report_prompt, start_d, end_d, ai_url, ai_token, num_entries)
+async def _generate_report_bg(user_id: int, report_type: str, report_title: str, report_prompt: str, start_d, end_d, ai_url: str, ai_token: str, num_entries: int, charged: int | None):
+    result = await _generate_report(user_id, report_type, report_title, report_prompt, start_d, end_d, ai_url, ai_token, num_entries, charged)
     if result.get("status") == "success":
         await award(user_id, f"report_{report_type}")
         run_in_background(_notify_if_unread(user_id, result["report"].id, REPORT_TITLES_SHORT.get(report_title, report_title)))
@@ -129,7 +131,7 @@ async def _generate_report_bg(user_id: int, report_type: str, report_title: str,
     return result
 
 
-async def _generate_report(user_id: int, report_type: str, report_title: str, report_prompt: str, start_d, end_d, ai_url: str, ai_token: str, num_entries: int) -> dict:
+async def _generate_report(user_id: int, report_type: str, report_title: str, report_prompt: str, start_d, end_d, ai_url: str, ai_token: str, num_entries: int, charged: int | None = None) -> dict:
     import httpx
     from backend.database import async_session
     try:
@@ -179,6 +181,7 @@ async def _generate_report(user_id: int, report_type: str, report_title: str, re
                     content=generated_text
                 )
                 db.add_all([new_report, ContentLog(user_id=user_id, kind=report_type, created_at=created_at)])
+                await complete_charge(db, charged, feature=report_type)
                 await db.commit()
                 await db.refresh(new_report)
             return {"status": "success", "report": new_report}

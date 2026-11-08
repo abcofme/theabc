@@ -7,6 +7,7 @@ from backend.api.common import AI_MODEL, GENDER_NEUTRAL_RULE, ai_endpoint, get_s
 from backend.api.security import validate_twa_data
 from backend.billing import charge, refund
 from backend.bonuses import award
+from backend.token_usage import complete_charge
 from backend.database.models import Category, Test, Progress, Result, PersonalityPortrait
 
 router = APIRouter()
@@ -31,8 +32,8 @@ async def clear_personality_portrait(
 
 # Генерация портрета личности
 
-async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str, ai_url: str, ai_token: str, charged: int):
-    result = await _generate_portrait(user_id, user_tests_count, prompt, ai_url, ai_token)
+async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str, ai_url: str, ai_token: str, charged: int | None):
+    result = await _generate_portrait(user_id, user_tests_count, prompt, ai_url, ai_token, charged)
     if result["status"] != "success":
         await refund(user_id, charged)
         return
@@ -44,7 +45,7 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
                  "tab=profile&page=portrait", "✨ Открыть портрет")
 
 
-async def _generate_portrait(user_id: int, user_tests_count: int, prompt: str, ai_url: str, ai_token: str) -> dict:
+async def _generate_portrait(user_id: int, user_tests_count: int, prompt: str, ai_url: str, ai_token: str, charged: int | None = None) -> dict:
     import httpx
     from backend.database import async_session
     from backend.database.models import PortraitLog
@@ -100,6 +101,7 @@ async def _generate_portrait(user_id: int, user_tests_count: int, prompt: str, a
                 # Записываем генерацию в лог для не-уникальной статистики
                 db.add(PortraitLog(user_id=user_id))
                 
+                await complete_charge(db, charged)
                 await db.commit()
                 await db.refresh(new_portrait)
                 

@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.database import async_session
 from backend.database.models import Bonus, Category, Progress, Test, User
 from backend.pricing import BONUSES
+from backend.token_usage import credit_tokens
 
 # Задание на странице бонусов и за что начислено — в сообщении о бонусе.
 # Порядок — путь по приложению: в нем бонусы и показываются
@@ -42,6 +43,7 @@ async def award(user_id: int, kind: str) -> int:
             if inserted.first() is None:
                 return 0
             await session.execute(update(User).where(User.id == user_id).values(balance=User.balance + amount))
+            credit_tokens(session, user_id, amount, "bonus")
             await session.commit()
     except Exception:
         logger.exception(f"Bonus {kind} for {user_id} failed")

@@ -1,6 +1,7 @@
+from datetime import datetime
 import html
 
-from aiogram.filters import CommandStart, StateFilter
+from aiogram.filters import CommandObject, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, FSInputFile, InputMediaPhoto
 from aiogram.utils.i18n import gettext
@@ -8,15 +9,13 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardButton
 from aiogram.types.web_app_info import WebAppInfo
 
-from backend.database.models import User, TrackingLink
-from sqlalchemy import select
+from backend.database.models import User
 from backend.database.patterns.dao import DataAccessObject
 from backend.friends import befriend, inviter_from_payload
 from backend.telegram.notify import greet_new_friend
-from backend.database.patterns.user import UserDAO
 from backend.telegram.bot import dp, bot
 from backend.telegram.callback_data.profile import Psychologist, TechSupport, MainMenu, AboutDiary, AboutTests, TestCategoryDesc
-from backend.telegram.filters.invite import InvitedFilter
+from backend.referrals import capture_referral
 from backend.telegram.keyboards.base import back_kb
 from backend.telegram.keyboards.start import start_kb, main_menu_btn, menu_kb, categories_kb, about_diary_kb
 from backend.telegram.states.user import TechStates
@@ -39,16 +38,15 @@ START_TEXT = (
     "<i>Начни с личного дневника или узнай, как всё устроено</i> 👇"
 )
 
-@dp.message(CommandStart(), InvitedFilter())
+@dp.message(CommandStart())
 async def start_handler(
-        message: Message, user: User, state: FSMContext, dao: DataAccessObject
+        message: Message, command: CommandObject, user: User, state: FSMContext, dao: DataAccessObject
 ):
-    payload = message.text.split(" ")[-1] if message.text and message.text.startswith("/start ") else None
-    if user.tracking_link_id is None and payload and payload.startswith("tr_"):
-        code = payload[3:]
-        link = await dao.session.scalar(select(TrackingLink).where(TrackingLink.code == code))
-        if link:
-            await dao.update_object(User, user.id, dict(tracking_link_id=link.id))
+    payload = command.args
+    if payload and not user.has_opened_app:
+        async with dao.session.begin():
+            await dao.session.refresh(user, with_for_update={"key_share": True})
+            await capture_referral(dao.session, user, payload, now=datetime.utcnow())
 
     # Личная ссылка-приглашение друга: дружба сразу принята, пригласившему — сообщение
     inviter_id = inviter_from_payload(payload)

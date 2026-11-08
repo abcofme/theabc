@@ -6,9 +6,12 @@ from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.database import async_session
-from backend.database.models import Payment, User
+from backend.database.models import Payment, TokenMovement, User
 from backend.integrations.payment.yoo import PaymentInfo
 from backend.pricing import AI_PRICES, PREMIUM_PERIOD_DAYS, TOKENS_PER_RUBLE, tokens
+
+from backend.referrals import accrue_commission
+from backend.token_usage import credit_tokens
 
 PREMIUM_PERIOD = timedelta(days=PREMIUM_PERIOD_DAYS)
 # Отказы, после которых сохранённым способом больше не списать: автопродление выключаем
@@ -24,40 +27,47 @@ def can_use(user, feature: str) -> bool:
     return is_premium(user) or bool(user and (user.balance or 0) >= AI_PRICES[feature])
 
 
-async def charge(session: AsyncSession, user_id: int, feature: str) -> int:
-    """Списывает цену функции в токенах с баланса до запуска ИИ. Возвращает списанные токены: 0 у Premium.
-    Если ИИ не справится, их возвращает refund. Не хватает токенов — 402"""
+async def charge(session: AsyncSession, user_id: int, feature: str) -> int | None:
+    """Списывает токены и возвращает ID операции; Premium использует функцию бесплатно."""
     user = await session.get(User, user_id)
     if not user:
         raise HTTPException(status_code=403, detail="User not found")
     if is_premium(user):
-        return 0
+        return None
     price = AI_PRICES[feature]
-    # Условие в самом UPDATE: два одновременных запроса не уведут баланс в минус
     result = await session.execute(
         update(User).where(User.id == user_id, User.balance >= price).values(balance=User.balance - price)
     )
-    await session.commit()
-    if result.rowcount == 0:
+    if not result.rowcount:
         raise HTTPException(
             status_code=402,
             detail=f"Недостаточно токенов на балансе: нужно {tokens(price)}. Пополните баланс или оформите Premium.",
         )
-    return price
+    movement = TokenMovement(user_id=user_id, kind="spend", feature=feature, amount=price)
+    session.add(movement)
+    await session.flush()
+    await session.commit()
+    return movement.id
 
 
-async def refund(user_id: int, amount: int):
-    if not amount:
+async def refund(user_id: int, charge_id: int | None):
+    if charge_id is None:
         return
     async with async_session() as session:
-        await session.execute(update(User).where(User.id == user_id).values(balance=User.balance + amount))
-        await session.commit()
+        amount = await session.scalar(update(TokenMovement).where(
+            TokenMovement.id == charge_id, TokenMovement.user_id == user_id,
+            TokenMovement.kind == "spend", TokenMovement.completed_at.is_(None), TokenMovement.refunded_at.is_(None),
+        ).values(refunded_at=datetime.utcnow()).returning(TokenMovement.amount))
+        if amount is not None:
+            await session.execute(update(User).where(User.id == user_id).values(balance=User.balance + amount))
+            await session.commit()
 
 
 async def top_up(session: AsyncSession, user_id: int, rubles: int):
-    """Зачисляет оплаченное пополнение: рубли переводятся в токены по курсу TOKENS_PER_RUBLE"""
+    """Зачисляет токены за оплаченное пополнение."""
     amount = rubles * TOKENS_PER_RUBLE
     await session.execute(update(User).where(User.id == user_id).values(balance=User.balance + amount))
+    credit_tokens(session, user_id, amount, "topup")
 
 
 def disable_autorenew(user: User):
@@ -100,9 +110,10 @@ async def settle_payment(session: AsyncSession, payment: Payment, info: PaymentI
         raise HTTPException(status_code=502, detail="Не удалось подтвердить параметры платежа.")
     rubles = int(info.amount)
     # Одинаковый порядок блокировок у продления, вебхука и отключения.
-    user = await session.get(User, payment.user_id, with_for_update=payment.is_premium_subscription, populate_existing=True)
+    user = await session.get(User, payment.user_id, with_for_update={"key_share": True}, populate_existing=True)
+    paid_at = info.captured_at or datetime.utcnow()
     claimed = await session.execute(
-        update(Payment).where(Payment.id == payment.id, Payment.success.is_(False)).values(success=True)
+        update(Payment).where(Payment.id == payment.id, Payment.success.is_(False)).values(success=True, paid_at=paid_at, amount=rubles)
     )
     if claimed.rowcount == 0:
         return
@@ -117,6 +128,7 @@ async def settle_payment(session: AsyncSession, payment: Payment, info: PaymentI
     else:
         # Платежи за бывший блок «Профориентация», начатые до его отмены
         user.has_career_access = True
+    await accrue_commission(session, payment, rubles, paid_at)
     await session.commit()
 
     from backend.telegram.notify import notify

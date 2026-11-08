@@ -14,6 +14,7 @@ from backend.bonuses import award
 from backend.database import async_session
 from backend.database.models import User, Friendship, PersonalityPortrait, CompatibilityReport, ContentLog
 from backend.friends import friend_invite_link
+from backend.token_usage import complete_charge
 from settings import settings
 
 router = APIRouter()
@@ -117,12 +118,13 @@ async def accept_friend_request(
     session: AsyncSession = Depends(get_session)
 ):
     user_id = user_data.get("id")
-    f = await session.get(Friendship, request_id)
+    f = await session.get(Friendship, request_id, with_for_update=True)
     if not f or f.friend_id != user_id or f.status != "pending":
         from fastapi import HTTPException
         raise HTTPException(status_code=400, detail="Invalid request")
         
     f.status = "accepted"
+    session.add(ContentLog(user_id=f.user_id, kind="friendship"))
     await session.commit()
     await award(f.user_id, "friend_invited")
     return {"status": "success"}
@@ -219,8 +221,8 @@ COMPATIBILITY_OUTPUT_FORMAT = """ФОРМАТ ОТВЕТА (обязателен
 COMPATIBILITY_MAX_TOKENS = 16000
 
 
-async def _generate_compatibility_bg(user_id: int, friend_id: int, compat_type: str, my_gender: str, friend_gender: str, messages: list, ai_url: str, ai_token: str, charged: int):
-    result = await _generate_compatibility(user_id, friend_id, compat_type, my_gender, friend_gender, messages, ai_url, ai_token)
+async def _generate_compatibility_bg(user_id: int, friend_id: int, compat_type: str, my_gender: str, friend_gender: str, messages: list, ai_url: str, ai_token: str, charged: int | None):
+    result = await _generate_compatibility(user_id, friend_id, compat_type, my_gender, friend_gender, messages, ai_url, ai_token, charged)
     if result["status"] != "success":
         await refund(user_id, charged)
     else:
@@ -228,7 +230,7 @@ async def _generate_compatibility_bg(user_id: int, friend_id: int, compat_type: 
     return result
 
 
-async def _generate_compatibility(user_id: int, friend_id: int, compat_type: str, my_gender: str, friend_gender: str, messages: list, ai_url: str, ai_token: str) -> dict:
+async def _generate_compatibility(user_id: int, friend_id: int, compat_type: str, my_gender: str, friend_gender: str, messages: list, ai_url: str, ai_token: str, charged: int | None = None) -> dict:
     import httpx
     try:
         async with httpx.AsyncClient(timeout=180.0) as client:
@@ -291,7 +293,8 @@ async def _generate_compatibility(user_id: int, friend_id: int, compat_type: str
                     content=content
                 )
                 db_session.add(new_report)
-            db_session.add(ContentLog(user_id=user_id, kind="compatibility", created_at=created_at))
+            db_session.add(ContentLog(user_id=user_id, kind="compatibility", detail=compat_type, created_at=created_at))
+            await complete_charge(db_session, charged, feature=f"compatibility_{compat_type}")
             await db_session.commit()
                 
         return {"status": "success", "content": content}

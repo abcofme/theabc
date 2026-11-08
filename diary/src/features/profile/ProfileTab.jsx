@@ -22,6 +22,7 @@ import './profile-header.css';
 
 const API_URL = window.location.origin;
 const WebApp = window.Telegram.WebApp;
+const ReferralPage = lazyScreen(() => import('../referrals/ReferralCabinet'));
 const AdminPanel = lazyScreen(() => import('../admin/AdminPanel'));
 const OfferPage = lazyScreen(() => import('../legal/OfferPage'));
 const PortraitPage = lazyScreen(() => import('./PortraitPage'));
@@ -29,7 +30,7 @@ const PortraitPage = lazyScreen(() => import('./PortraitPage'));
 const SITE_URL = window.location.origin;
 const SITE_HOST = window.location.host;
 
-const PAGES = ['portrait', 'offer', 'contacts', 'admin', 'install', 'bonuses'];
+const PAGES = ['portrait', 'offer', 'contacts', 'admin', 'install', 'bonuses', 'referral'];
 
 const PORTRAIT_CAPTIONS = {
   tests: (p) => `Пройдено ${p.passed_tests} из ${p.total_tests} тестов`,
@@ -193,6 +194,9 @@ export default function ProfileTab({ request, active }) {
           )}
           <MenuRow icon={FileText} label="Публичная оферта" onClick={() => { setPageOrigin(null); setPage('offer'); }} />
           <MenuRow icon={FileText} label="Контакты и реквизиты" onClick={() => { setPageOrigin(null); setPage('contacts'); }} />
+          {profile?.is_partner && <MenuRow icon={Users} label="Партнёрская программа"
+            hint="Приглашения, аналитика и вознаграждения"
+            onClick={() => { setPageOrigin(null); setPage('referral'); }} />}
           {profile?.is_admin && <MenuRow icon={Shield} label="Админ-панель" onClick={() => { setPageOrigin(null); setPage('admin'); }} />}
           {!isTelegram && <MenuRow icon={ArrowRight} label="Выйти" onClick={logout}>{false}</MenuRow>}
         </div>
@@ -214,6 +218,7 @@ export default function ProfileTab({ request, active }) {
       {page === 'contacts' && <Page title="Контакты и реквизиты" onBack={closePage}><div className="ui-card"><ContactInformation /></div></Page>}
       {page === 'install' && <InstallPage onBack={closePage} />}
       {page === 'bonuses' && <BonusesPage onBack={closePage} onGo={goFromBonuses} />}
+      {page === 'referral' && profile?.is_partner && <ReferralPage onBack={closePage} />}
       {page === 'admin' && (
         <Page title="Админ-панель" onBack={closePage}>
           <AdminPanel section={request?.page === 'admin' ? request.section : null} />
