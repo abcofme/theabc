@@ -146,8 +146,15 @@ export default function BillingPage({ onBack }) {
     updatePending(null);
     setMode(payment.kind === 'topup' ? 'balance' : 'premium');
   };
-  const cancelAutoRenewal = () => WebApp.showConfirm('Отменить автопродление Premium? Подписка будет действовать до конца оплаченного периода.', async confirmed => {
-    if (!confirmed || requestLock.current) return;
+  const cancelSubscription = () => WebApp.showPopup({
+    title: 'Отмена подписки',
+    message: 'Автопродление отключится, а способ оплаты отвяжется. Доступ к Premium сохранится до конца оплаченного периода.',
+    buttons: [
+      { id: 'back', type: 'cancel', text: 'Назад' },
+      { id: 'cancel_subscription', type: 'destructive', text: 'Отменить подписку' },
+    ],
+  }, async action => {
+    if (action !== 'cancel_subscription' || requestLock.current) return;
     requestLock.current = true;
     setBusy('cancel');
     try {
@@ -179,8 +186,8 @@ export default function BillingPage({ onBack }) {
           <h3 className="font-semibold">Автопродление Premium</h3>
           {profile.autorenew_amount != null && <Row label="Сумма списания" value={`${profile.autorenew_amount} ₽`} />}
           {profile.autorenew_not_before && <Row label="Списание не раньше" value={formatDate(profile.autorenew_not_before)} />}
-          <button type="button" onClick={cancelAutoRenewal} disabled={!!busy} className="ui-button ui-button--outline mt-4">
-            {busy === 'cancel' ? 'Отмена…' : 'Отменить автопродление'}
+          <button type="button" onClick={cancelSubscription} disabled={!!busy} className="ui-button ui-button--outline mt-4">
+            {busy === 'cancel' ? 'Отмена…' : 'Отменить подписку'}
           </button>
         </section>}
         {pending && <PendingNote
