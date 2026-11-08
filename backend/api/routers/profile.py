@@ -204,7 +204,7 @@ async def get_profile(
         if renewal_not_before and db_user.autorenew_reminded_for == renewal_not_before and db_user.autorenew_reminded_at:
             renewal_not_before = max(renewal_not_before, db_user.autorenew_reminded_at + timedelta(days=1))
     elif db_user and db_user.yookassa_payment_method_id == "demo-autorenew-screenshot-2026-11-08":
-        renewal_method_label = "Visa •••• 4242"
+        renewal_method_label = "Мир •••• 4242"
 
     return {
         "categories": result_data,
