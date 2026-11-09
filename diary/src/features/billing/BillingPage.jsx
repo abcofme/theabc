@@ -232,18 +232,18 @@ export default function BillingPage({ onBack }) {
               <p className="ui-secondary mt-5">Чтобы оплатить новый период вручную, сначала отключи текущее автопродление.</p>
             ) : <>
               <p className="ui-secondary text-sm mt-4">
-                {purchaseTerms ? 'ЮKassa сохранит способ оплаты. О списании сообщим в Telegram не менее чем за сутки. Отключить продление можно в этом разделе.' : `Разовая оплата за ${premiumDays} дней доступа.`}
+                {purchaseTerms ? 'ЮKassa сохранит банковскую карту. О списании сообщим в Telegram не менее чем за сутки. Отключить продление можно в этом разделе.' : `Разовая оплата за ${premiumDays} дней доступа.`}
               </p>
               {profile.premium_autorenew && <label className="flex items-start gap-3 ui-secondary mt-4">
                 <input type="checkbox" checked={autorenewAccepted} onChange={event => setAutorenewAccepted(event.target.checked)} disabled={!!busy || !!pending} className="ui-checkbox mt-px" />
-                <span>Согласен на автоматическое списание {prices.premium} ₽ каждые {premiumDays} дней с сохранённого способа оплаты</span>
+                <span>Согласен на автоматическое списание {prices.premium} ₽ каждые {premiumDays} дней с привязанной карты</span>
               </label>}
-              {purchaseTerms && <p className="ui-secondary text-sm mt-2">Для автопродления через СБП нужен банк, который поддерживает автоплатежи.</p>}
               {consent}
               <CheckoutActions
                 onPay={method => pay('premium', '/api/subscription/buy', purchaseTerms, method)}
                 disabled={!offerAccepted || !!busy || !!pending}
                 creating={busy === 'premium'}
+                cardOnly={!!purchaseTerms}
               />
             </>}
           </>}
@@ -259,14 +259,14 @@ export default function BillingPage({ onBack }) {
   );
 }
 
-function CheckoutActions({ onPay, disabled, creating }) {
+function CheckoutActions({ onPay, disabled, creating, cardOnly = false }) {
   return (
     <div className="flex flex-col gap-2" aria-busy={creating}>
-      <button type="button" onClick={() => onPay('sbp')} disabled={disabled} className="ui-button ui-button--primary">
+      {!cardOnly && <button type="button" onClick={() => onPay('sbp')} disabled={disabled} className="ui-button ui-button--primary">
         Оплатить через СБП
-      </button>
-      <button type="button" onClick={() => onPay()} disabled={disabled} className="ui-button ui-button--outline">
-        Другие способы оплаты
+      </button>}
+      <button type="button" onClick={() => onPay()} disabled={disabled} className={`ui-button ${cardOnly ? 'ui-button--primary' : 'ui-button--outline'}`}>
+        {cardOnly ? 'Оплатить картой' : 'Другие способы оплаты'}
       </button>
       {creating && <p className="ui-secondary text-center" role="status">Создаю платёж…</p>}
     </div>

@@ -80,6 +80,8 @@ async def buy_subscription(
         or consent.period_days != PREMIUM_PERIOD_DAYS
     ):
         raise HTTPException(status_code=409, detail="Условия автопродления изменились. Обнови страницу перед оплатой.")
+    if consent and method == "sbp":
+        raise HTTPException(status_code=409, detail="Для автопродления оплати банковской картой. СБП доступна для разовой оплаты.")
     consent_at = datetime.utcnow() if consent else None
 
     url, payment_id = await _start_payment(
@@ -88,7 +90,7 @@ async def buy_subscription(
         chat_id=str(user_id),
         description=f"Premium «Азбука Я» ({PREMIUM_PERIOD_DAYS} дней)",
         save_payment_method=bool(consent),
-        method=method,
+        method="bank_card" if consent else method,
     )
 
     payment = Payment(
