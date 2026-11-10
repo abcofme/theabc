@@ -97,7 +97,7 @@
   background: var(--ui-inset);
 }
 .bonus-section__steps > li + li { border-top: 1px solid var(--ui-line); }
-.bonus-section__note { display: grid; gap: 4px; margin-top: 10px; }
+.bonus-section__note { margin-top: 10px; }
 
 .bonus-step {
   display: flex;

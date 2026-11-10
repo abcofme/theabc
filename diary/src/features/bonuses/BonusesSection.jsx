@@ -53,7 +53,6 @@ export default function BonusesSection({ bonuses, expanded, onToggle, onGo }) {
   const done = bonuses.length - pending.length;
   const available = pending.reduce((sum, bonus) => sum + bonus.amount, 0);
   const steps = expanded ? bonuses : pending.slice(0, 1);
-  const hasEarlierSteps = bonuses.some(bonus => bonus.done && !bonus.amount);
 
   return (
     <section className="bonus-section" aria-labelledby="profile-bonuses-title">
@@ -91,10 +90,7 @@ export default function BonusesSection({ bonuses, expanded, onToggle, onGo }) {
           </ul>
         )}
         {expanded && (
-          <div className="bonus-section__note ui-muted">
-            <p>Бонус за каждый шаг начисляется один раз. Токены можно потратить на функции с ИИ.</p>
-            {hasEarlierSteps && <p>Шаги, сделанные до появления бонусов, отмечены без начисления.</p>}
-          </div>
+          <p className="bonus-section__note ui-muted">Бонус за каждый шаг начисляется один раз. Токены можно потратить на функции с ИИ.</p>
         )}
       </div>
     </section>
