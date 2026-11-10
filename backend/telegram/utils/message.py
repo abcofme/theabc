@@ -4,7 +4,7 @@ import typing
 from aiogram import types
 from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
 from aiogram.fsm.context import FSMContext
-from aiogram.methods import EditMessageCaption, SendPhoto
+from aiogram.methods import EditMessageCaption, SendPhoto, SendVideo
 from aiogram.types import InputMediaDocument, InputMediaPhoto, InputMediaAudio, InputMediaVideo
 from loguru import logger
 
@@ -172,6 +172,17 @@ async def back_to_previous_message(user: User, state: FSMContext, delete: bool =
 
             await state.set_state(msg[-1])
             if delete:
+                if message.video:
+                    return await bot(SendVideo(
+                        chat_id=user.id,
+                        video=message.video.file_id,
+                        caption=message.caption,
+                        caption_entities=message.caption_entities,
+                        show_caption_above_media=getattr(message, "show_caption_above_media", None),
+                        parse_mode=None,
+                        reply_markup=message.reply_markup,
+                        supports_streaming=True,
+                    ))
                 if message.photo:
                     return await bot(SendPhoto(
                         chat_id=user.id,
@@ -190,6 +201,15 @@ async def back_to_previous_message(user: User, state: FSMContext, delete: bool =
                     reply_markup=message.reply_markup,
                 )
             text = message.html_text
+            if message.video:
+                return await edit_scheduled_message(
+                    user, text, kb=message.reply_markup,
+                    media_group=[InputMediaVideo(
+                        media=message.video.file_id,
+                        show_caption_above_media=getattr(message, "show_caption_above_media", None),
+                        supports_streaming=True,
+                    )],
+                )
             if not message.photo:
                 return await edit_scheduled_message(user, text, kb=message.reply_markup)
             else:

@@ -4,7 +4,7 @@ from pathlib import Path, PurePath
 
 from aiogram.filters import CommandObject, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.methods import SendPhoto
+from aiogram.methods import SendPhoto, SendVideo
 from aiogram.types import Message, CallbackQuery, FSInputFile, InlineKeyboardMarkup
 from aiogram.utils.i18n import gettext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -30,6 +30,9 @@ from paths import IMAGES
 from settings import settings
 
 
+WELCOME_VIDEO = Path(IMAGES.parent / "videos" / "welcome.mp4")
+
+
 START_TEXT = (
     "<b><u>Азбука Я</u></b>\n"
     "<i>Что стоит за твоими реакциями и что тебе нужно?</i>\n\n"
@@ -47,6 +50,23 @@ async def send_section_card(user: User, image: PurePath, caption: str, keyboard:
         caption=caption,
         show_caption_above_media=True,
         reply_markup=keyboard,
+    ))
+    await schedule_message_edition(user, msg)
+
+
+async def send_welcome(user: User) -> None:
+    keyboard = start_kb(user)
+    if not WELCOME_VIDEO.is_file():
+        await send_section_card(user, IMAGES / "приветствие.jpg", START_TEXT, keyboard)
+        return
+
+    msg = await bot(SendVideo(
+        chat_id=user.id,
+        video=FSInputFile(WELCOME_VIDEO),
+        caption=START_TEXT,
+        show_caption_above_media=True,
+        reply_markup=keyboard,
+        supports_streaming=True,
     ))
     await schedule_message_edition(user, msg)
 
@@ -70,7 +90,7 @@ async def start_handler(
     await delete_editing_message(user)
     await state.clear()
 
-    await send_section_card(user, IMAGES / "приветствие.jpg", START_TEXT, start_kb(user))
+    await send_welcome(user)
 
 
 @dp.callback_query(MainMenu.filter())
@@ -83,7 +103,7 @@ async def start_callback(
     await delete_editing_message(user)
     await state.clear()
 
-    await send_section_card(user, IMAGES / "приветствие.jpg", START_TEXT, start_kb(user))
+    await send_welcome(user)
 
 @dp.callback_query(AboutDiary.filter())
 async def AboutDiary_callback(callback: CallbackQuery, user: User, state: FSMContext):

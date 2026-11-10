@@ -31,6 +31,8 @@
 Автоматический: `theabc-autodeploy.timer` раз в минуту делает `git fetch` и при новом коммите в `main`
 запускает `docker compose up -d --build`. Упавший коммит повторно не собирается — нужен следующий.
 
+Ролик приветствия загружается на сервер в `/opt/theabc/backend/resources/videos/welcome.mp4` перед сборкой. Docker включает его в образ. Если файла нет, бот отправляет приветственную картинку.
+
 ```bash
 journalctl -u theabc-autodeploy -n 50     # лог деплоя
 docker compose ps                          # состояние контейнеров
