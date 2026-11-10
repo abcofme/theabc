@@ -118,7 +118,7 @@ async def edit_details_video(message: Message, video: str | FSInputFile) -> Mess
     return await bot(message.edit_media(
         media=InputMediaVideo(
             media=video,
-            width=1080,
+            width=1072,
             height=1920,
             duration=139,
             caption="Узнать, как это работает внутри",
