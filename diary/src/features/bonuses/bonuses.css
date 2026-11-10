@@ -5,7 +5,7 @@
   padding: clamp(14px, 4vw, 22px);
   border: 1px solid var(--ui-accent-border);
   border-radius: 26px;
-  background: linear-gradient(150deg, color-mix(in srgb, var(--color-rose-900), #d8a46d 13%), var(--color-rose-900) 65%);
+  background: var(--color-rose-900);
   box-shadow: var(--clay-raised);
 }
 
@@ -36,7 +36,7 @@
   place-items: center;
   border: 1px solid #eac69e;
   border-radius: 16px;
-  background: linear-gradient(145deg, #f4e1bf, #d6ac7b);
+  background: #e5c398;
   box-shadow: inset 0 2px 1px #fff4dfb3, inset 0 -3px 2px #9e6a4066, 0 4px 9px #24101138;
 }
 
@@ -70,7 +70,7 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--ui-gold), #c87d50 30%), var(--ui-gold));
+  background: var(--ui-gold);
   transition: width 400ms ease;
 }
 .bonus-progress[data-complete] > span { background: var(--ui-sage); }
