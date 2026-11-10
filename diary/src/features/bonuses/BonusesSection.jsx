@@ -2,6 +2,8 @@ import { Check, ChevronDown, ChevronRight, ChevronUp, Sparkles } from '../../com
 import { formatTokens } from '../diary/utils';
 import './bonuses.css';
 
+const stepArt = import.meta.glob('../../assets/bonuses/*.webp', { eager: true, query: '?url&no-inline', import: 'default' });
+
 // Куда вести за невыполненным шагом
 function targetOf(kind) {
   if (kind.startsWith('report_')) return { tab: 'reports', type: kind.slice('report_'.length) };
@@ -18,6 +20,7 @@ function targetOf(kind) {
 }
 
 function BonusRow({ bonus, onGo }) {
+  const art = stepArt[`../../assets/bonuses/${bonus.kind}.webp`];
   const target = !bonus.done && targetOf(bonus.kind);
   const Tag = target ? 'button' : 'div';
   return (
@@ -27,8 +30,13 @@ function BonusRow({ bonus, onGo }) {
         onClick={target ? () => onGo(target) : undefined}
         className="bonus-step"
       >
-        <span className="bonus-step__mark" data-done={bonus.done || undefined} aria-hidden="true">
-          {bonus.done && <Check size={14} />}
+        <span className="bonus-step__visual" aria-hidden="true">
+          {art && <img className="bonus-step__art" src={art} alt="" width={36} height={36} loading="lazy" decoding="async" draggable="false" />}
+          {(!art || bonus.done) && (
+            <span className="bonus-step__mark" data-done={bonus.done || undefined}>
+              {bonus.done && <Check size={art ? 10 : 14} />}
+            </span>
+          )}
         </span>
         <span className="bonus-step__title">
           {bonus.title}
