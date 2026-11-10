@@ -176,6 +176,9 @@ async def back_to_previous_message(user: User, state: FSMContext, delete: bool =
                     return await bot(SendVideo(
                         chat_id=user.id,
                         video=message.video.file_id,
+                        width=message.video.width,
+                        height=message.video.height,
+                        duration=message.video.duration,
                         caption=message.caption,
                         caption_entities=message.caption_entities,
                         show_caption_above_media=getattr(message, "show_caption_above_media", None),
@@ -206,6 +209,9 @@ async def back_to_previous_message(user: User, state: FSMContext, delete: bool =
                     user, text, kb=message.reply_markup,
                     media_group=[InputMediaVideo(
                         media=message.video.file_id,
+                        width=message.video.width,
+                        height=message.video.height,
+                        duration=message.video.duration,
                         show_caption_above_media=getattr(message, "show_caption_above_media", None),
                         supports_streaming=True,
                     )],

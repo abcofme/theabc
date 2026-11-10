@@ -45,14 +45,14 @@ main_menu_btn = InlineKeyboardButton(
 
 
 def start_kb(user: User, *, has_details_video: bool = False) -> InlineKeyboardMarkup:
-    buttons = [
-        [diary_btn],
-        [about_diary_btn],
-        [about_tests_btn],
-        [tech_support_btn]
-    ]
+    buttons = [[diary_btn]]
     if has_details_video:
         buttons.append([about_project_btn])
+    buttons.extend([
+        [about_diary_btn],
+        [about_tests_btn],
+        [tech_support_btn],
+    ])
     if user.admin:
         buttons.append([admin_menu_btn])
     return InlineKeyboardBuilder(buttons).as_markup()

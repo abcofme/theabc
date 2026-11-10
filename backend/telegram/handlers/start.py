@@ -68,6 +68,9 @@ async def send_welcome(user: User) -> None:
     msg = await bot(SendVideo(
         chat_id=user.id,
         video=FSInputFile(WELCOME_VIDEO),
+        width=1080,
+        height=1920,
+        duration=26,
         caption=START_TEXT,
         show_caption_above_media=True,
         reply_markup=keyboard,
@@ -115,6 +118,9 @@ async def edit_details_video(message: Message, video: str | FSInputFile) -> Mess
     return await bot(message.edit_media(
         media=InputMediaVideo(
             media=video,
+            width=1080,
+            height=1920,
+            duration=139,
             caption="Узнать, как это работает внутри",
             show_caption_above_media=True,
             supports_streaming=True,
