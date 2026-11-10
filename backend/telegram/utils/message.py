@@ -4,6 +4,7 @@ import typing
 from aiogram import types
 from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
 from aiogram.fsm.context import FSMContext
+from aiogram.methods import EditMessageCaption, SendPhoto
 from aiogram.types import InputMediaDocument, InputMediaPhoto, InputMediaAudio, InputMediaVideo
 from loguru import logger
 
@@ -102,9 +103,10 @@ async def edit_scheduled_message(
                             chat_id=chat_id, message_id=message_id, text=text, reply_markup=kb
                         )
                     except:
-                        msg = await bot.edit_message_caption(
-                            chat_id=chat_id, message_id=message_id, caption=text, reply_markup=kb
-                        )
+                        msg = await bot(EditMessageCaption(
+                            chat_id=chat_id, message_id=message_id, caption=text,
+                            show_caption_above_media=True, reply_markup=kb,
+                        ))
                 else:
                     msg = await bot.edit_message_reply_markup(
                         chat_id=chat_id, message_id=message_id, reply_markup=kb
@@ -168,17 +170,26 @@ async def back_to_previous_message(user: User, state: FSMContext, delete: bool =
                 continue
             message: types.Message = types.Message.model_validate_json(str(msg[0]))
 
-            text = message.html_text
-
             await state.set_state(msg[-1])
             if delete:
-                if not message.photo:
-                    return await bot.send_message(chat_id=user.id, text=text, reply_markup=message.reply_markup)
-                else:
-                    return await bot.send_photo(
-                        chat_id=user.id, caption=text, reply_markup=message.reply_markup,
-                        photo=message.photo[0].file_id
-                    )
+                if message.photo:
+                    return await bot(SendPhoto(
+                        chat_id=user.id,
+                        photo=message.photo[0].file_id,
+                        caption=message.caption,
+                        caption_entities=message.caption_entities,
+                        show_caption_above_media=getattr(message, "show_caption_above_media", None),
+                        parse_mode=None,
+                        reply_markup=message.reply_markup,
+                    ))
+                return await bot.send_message(
+                    chat_id=user.id,
+                    text=message.text or message.caption,
+                    entities=message.entities or message.caption_entities,
+                    parse_mode=None,
+                    reply_markup=message.reply_markup,
+                )
+            text = message.html_text
             if not message.photo:
                 return await edit_scheduled_message(user, text, kb=message.reply_markup)
             else:

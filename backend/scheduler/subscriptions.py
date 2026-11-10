@@ -84,8 +84,8 @@ async def _remind(session: AsyncSession, user: User, amount: int, now: datetime)
         sent = await notify(
             user.id,
             "<b>Premium продлится автоматически</b>\n\n"
-            f"Сумма — <b>{amount} ₽</b>\n"
-            f"Ожидаемое списание — <b>{when:%d.%m.%Y в %H:%M} МСК</b>\n\n"
+            f"<blockquote>Сумма — <b>{amount} ₽</b>\n"
+            f"Ожидаемое списание — <b>{when:%d.%m.%Y в %H:%M} МСК</b></blockquote>\n\n"
             "Отключить автопродление можно в разделе подписки.",
             "page=billing",
             "Открыть подписку",

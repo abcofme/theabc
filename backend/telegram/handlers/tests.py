@@ -33,7 +33,11 @@ def question_text(question: Question, answers: list[Answer], number: int, total:
         f"{i}. {escape(upcase_first_letter(answer.name), quote=False)}"
         for i, answer in enumerate(answers, start=1)
     )
-    return f"<i>Вопрос {number} из {total}</i>\n\n<b>{prompt}</b>\n\n{options}"
+    return (
+        f"<i>Вопрос {number} из {total}</i>\n"
+        f"<blockquote><b>{prompt}</b></blockquote>\n\n"
+        f"<u>Варианты ответа</u>\n{options}"
+    )
 
 
 @dp.callback_query(Tests.filter())

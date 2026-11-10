@@ -1,12 +1,13 @@
 from datetime import datetime
 import html
+from pathlib import Path, PurePath
 
 from aiogram.filters import CommandObject, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery, FSInputFile, InputMediaPhoto
+from aiogram.methods import SendPhoto
+from aiogram.types import Message, CallbackQuery, FSInputFile, InlineKeyboardMarkup
 from aiogram.utils.i18n import gettext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram.types import InlineKeyboardButton
 from aiogram.types.web_app_info import WebAppInfo
 
 from backend.database.models import User
@@ -30,13 +31,25 @@ from settings import settings
 
 
 START_TEXT = (
-    "<b>Это «Азбука Я»</b>\n\n"
-    "Здесь ты узнаешь свои <b>настоящие потребности</b> и увидишь, как их реализовать.\n\n"
-    "• <b>Дневник</b> — события дня и твои реакции на них\n"
-    "• <b>Тесты</b> — твой психологический портрет\n"
-    "• <b>Отчёты</b> — что повторяется и куда уходит энергия\n\n"
-    "<i>Начни с личного дневника или узнай, как всё устроено.</i>"
+    "<b><u>Азбука Я</u></b>\n"
+    "<i>Что стоит за твоими реакциями и что тебе нужно?</i>\n\n"
+    "<blockquote><b>Дневник</b> — замечай, как реагируешь на события.\n"
+    "<b>Тесты</b> — узнавай свои особенности.\n"
+    "<b>Отчёты</b> — смотри, что повторяется и куда уходит энергия.</blockquote>\n\n"
+    "Начни с <b>личного дневника</b> или выбери раздел ниже."
 )
+
+
+async def send_section_card(user: User, image: PurePath, caption: str, keyboard: InlineKeyboardMarkup) -> None:
+    msg = await bot(SendPhoto(
+        chat_id=user.id,
+        photo=FSInputFile(image),
+        caption=caption,
+        show_caption_above_media=True,
+        reply_markup=keyboard,
+    ))
+    await schedule_message_edition(user, msg)
+
 
 @dp.message(CommandStart())
 async def start_handler(
@@ -57,13 +70,7 @@ async def start_handler(
     await delete_editing_message(user)
     await state.clear()
 
-    msg = await bot.send_photo(
-        chat_id=user.id,
-        photo=FSInputFile(IMAGES / f"приветствие.jpg"),
-        caption=START_TEXT,
-        reply_markup=start_kb(user)
-    )
-    await schedule_message_edition(user, msg)
+    await send_section_card(user, IMAGES / "приветствие.jpg", START_TEXT, start_kb(user))
 
 
 @dp.callback_query(MainMenu.filter())
@@ -76,13 +83,7 @@ async def start_callback(
     await delete_editing_message(user)
     await state.clear()
 
-    msg = await bot.send_photo(
-        chat_id=user.id,
-        photo=FSInputFile(IMAGES / f"приветствие.jpg"),
-        caption=START_TEXT,
-        reply_markup=start_kb(user)
-    )
-    await schedule_message_edition(user, msg)
+    await send_section_card(user, IMAGES / "приветствие.jpg", START_TEXT, start_kb(user))
 
 @dp.callback_query(AboutDiary.filter())
 async def AboutDiary_callback(callback: CallbackQuery, user: User, state: FSMContext):
@@ -91,24 +92,18 @@ async def AboutDiary_callback(callback: CallbackQuery, user: User, state: FSMCon
     await delete_editing_message(user)
     
     text = (
-        "<b>Личный дневник</b>\n\n"
-        "Мы живём в эпоху бесконечного потребления. Удержать в голове все свои потребности, желания "
-        "и неудовлетворённости мозг уже не может — для выживания это давно не нужно. "
-        "<b>Зато нам помогают технологии.</b> Например, дневник.\n\n"
-        "<b>Как он работает</b>\n"
-        "1. <b>Записываешь</b> событие и свою реакцию.\n"
-        "2. <b>Получаешь подсказку.</b> Дневник сверяет реакцию с результатами тестов и подсказывает, "
-        "какая реакция ближе к твоей натуре.\n"
-        "3. <b>Смотришь отчёты.</b> Они складываются из записей и помогают понять, что можно изменить.\n\n"
-        "<blockquote>Чем чаще пишешь, тем точнее отчёты.</blockquote>"
+        "<b>Личный дневник</b>\n"
+        "<i>Одна запись — одно событие и твоя реакция.</i>\n\n"
+        "<u>Как он работает</u>\n"
+        "<blockquote>1. <b>Записываешь</b> событие и свою реакцию.\n"
+        "2. <b>Получаешь подсказку</b> с опорой на результаты тестов.\n"
+        "3. <b>Смотришь отчёты</b> о том, что повторяется в записях.</blockquote>\n\n"
+        "<u>Пример записи</u> · <i>нажми, чтобы открыть</i>\n"
+        "<tg-spoiler><b>Событие</b> — встречу перенесли в последний момент.\n"
+        "<b>Реакция</b> — меня это разозлило, потому что весь день был распланирован.</tg-spoiler>\n\n"
+        "<i>Чем чаще пишешь, тем точнее отчёты.</i>"
     )
-    msg = await bot.send_photo(
-        chat_id=user.id,
-        photo=FSInputFile(IMAGES / "о_дневнике.jpg"),
-        caption=text,
-        reply_markup=about_diary_kb()
-    )
-    await schedule_message_edition(user, msg)
+    await send_section_card(user, IMAGES / "о_дневнике.jpg", text, about_diary_kb())
 
 @dp.callback_query(AboutTests.filter())
 async def AboutTests_callback(callback: CallbackQuery, user: User, state: FSMContext):
@@ -118,25 +113,18 @@ async def AboutTests_callback(callback: CallbackQuery, user: User, state: FSMCon
     await delete_editing_message(user)
     
     text = (
-        "<b>Тесты</b>\n\n"
-        "Мозг склонен переоценивать собственный опыт. Поэтому учёные веками создавали и выверяли "
-        "психодиагностические тесты, которые <b>объективно описывают личность целиком</b>. "
-        "Мы собрали лучшие из них в удобном формате.\n\n"
-        "<b>Что ты получишь</b>\n"
-        "• <b>Психологический портрет</b> с твоими особенностями, сильными и слабыми сторонами.\n"
-        "• <b>Связь с дневником.</b> Записи дополнят портрет твоим опытом и помогут применить результаты на практике.\n\n"
-        "<blockquote><b>Как проходить</b>\n"
-        "В спокойном, расслабленном состоянии. Выбирай ответ, "
-        "который первым пришёл в голову и правда кажется тебе точнее.</blockquote>\n\n"
-        "<i>Выбери раздел, чтобы узнать о нём подробнее.</i>"
+        "<b>Психологические тесты</b>\n"
+        "<i>Выбери тему, о которой хочешь узнать больше.</i>\n\n"
+        "<u>Что дадут результаты</u>\n"
+        "<blockquote><b>Портрет личности</b> соберёт твои особенности, сильные стороны и зоны роста.\n"
+        "<b>Дневник</b> поможет увидеть, как эти особенности проявляются в жизни.</blockquote>\n\n"
+        "<u>Как проходить тесты</u>\n"
+        "<blockquote expandable>Начни, когда есть время и ничто не отвлекает.\n"
+        "Вспомни, как обычно ведёшь себя в такой ситуации.\n"
+        "Отметь вариант, который первым кажется точным.\n"
+        "Если подходят два ответа, выбери тот, который лучше описывает твой обычный день.</blockquote>"
     )
-    msg = await bot.send_photo(
-        chat_id=user.id,
-        photo=FSInputFile(IMAGES / "о_тестах.jpg"),
-        caption=text,
-        reply_markup=categories_kb()
-    )
-    await schedule_message_edition(user, msg)
+    await send_section_card(user, IMAGES / "о_тестах.jpg", text, categories_kb())
 
 @dp.callback_query(TestCategoryDesc.filter())
 async def TestCategoryDesc_callback(callback: CallbackQuery, callback_data: TestCategoryDesc, user: User, state: FSMContext):
@@ -148,47 +136,40 @@ async def TestCategoryDesc_callback(callback: CallbackQuery, callback_data: Test
     descriptions = {
         "Личность": (
             "<b>Личность</b>\n\n"
-            "Личность складывается из того, как ты идёшь по жизни:\n"
-            "• из привычек\n"
-            "• из сценариев поведения\n"
-            "• из того, что для тебя по-настоящему важно\n\n"
-            "Отсюда — <b>твои сильные и слабые стороны</b>.\n\n"
-            "<blockquote>Их важно понимать и учиться с ними работать, чтобы жить так хорошо, "
-            "как только можешь.</blockquote>"
+            "<blockquote>Какие привычки и сценарии повторяются в твоей жизни? "
+            "Что для тебя по-настоящему важно?</blockquote>\n\n"
+            "<u>Что покажут тесты</u>\n"
+            "Какие <b>сильные стороны</b> помогают тебе и с какими особенностями стоит научиться работать."
         ),
         "Самооценка": (
             "<b>Самооценка</b>\n\n"
-            "<i>Каждый ощущает себя по-своему. А как ощущаешь себя ты? "
-            "И что этим транслируешь окружающим?</i>\n\n"
-            "Можно жить в неудовлетворённости из-за завышенных ожиданий. А можно — в свободе, "
-            "с ощущением полёта и наполненности, когда не пытаешься ничего заслужить и всё контролировать, "
-            "а доверяешь принципам.\n\n"
-            "<blockquote><b>Своим, а не навязанным.</b></blockquote>"
+            "<blockquote>Как ты воспринимаешь себя? Что замечают окружающие?</blockquote>\n\n"
+            "<u>Что покажут тесты</u>\n"
+            "Какие ожидания давят на тебя и на какие <b>собственные принципы</b> ты можешь опереться."
         ),
         "Темперамент": (
             "<b>Темперамент</b>\n\n"
             "Темперамент — <b>фундамент твоей психики</b>. Тест выявляет врождённые свойства, "
             "которые не меняются и остаются с тобой навсегда.\n\n"
-            "<b>Результат объяснит</b>\n"
-            "• почему в стрессе или в радости ты ведёшь себя именно так\n"
-            "• как обратить это себе на пользу"
+            "<u>Что покажут тесты</u>\n"
+            "<blockquote>Почему ты по-разному реагируешь в стрессе и в радости "
+            "и как учитывать свой темперамент в обычной жизни.</blockquote>"
         ),
         "Общительность": (
             "<b>Общительность</b>\n\n"
-            "<i>Вспомни людей, с которыми общаешься. Насколько глубоко ты обычно включаешься в разговор?</i>\n\n"
-            "Общение становится интереснее и полезнее, когда ты точно знаешь, "
-            "<b>в каком стиле тебе приятно общаться</b>."
+            "<blockquote>Вспомни недавний разговор. В какой момент тебе стало интересно включиться?</blockquote>\n\n"
+            "<u>Что покажут тесты</u>\n"
+            "В каком <b>стиле общения</b> тебе комфортно и в каких разговорах ты охотнее проявляешь инициативу."
         ),
         "Профориентация": (
             "<b>Профориентация</b>\n\n"
-            "Согласись, в работе есть то, что наполняет, и то, что выжигает. Профориентация помогает их разделить:\n"
-            "• <b>Что даёт энергию</b> и во что хочется вкладываться\n"
-            "• <b>Что выматывает</b> и чего лучше избегать\n\n"
-            "Многим успешным людям просто повезло попасть на своё место. <b>Ты можешь прийти к нему "
-            "осознанно</b> — и всегда видеть, куда идёшь.\n\n"
-            "<blockquote>Сделай и отчёты по профориентации — <b>«Энергия»</b> и <b>«Чувство компетентности»</b>. "
-            "Они покажут, какую ответственность тебе по силам взять на себя. Когда это понятно, появляется баланс. "
-            "А дневник поможет бережно встроить всё это в жизнь — так, как свойственно именно тебе.</blockquote>"
+            "<blockquote>Какие задачи дают тебе энергию, а какие выматывают?</blockquote>\n\n"
+            "<u>Что покажут тесты</u>\n"
+            "К каким видам работы тебя тянет и во что хочется вкладываться.\n\n"
+            "<u>Какие отчёты дополнят результат</u>\n"
+            "<blockquote expandable><b>«Энергия»</b> покажет, какие задачи дают силы и какие их забирают.\n"
+            "<b>«Чувство компетентности»</b> поможет понять, какую ответственность ты можешь взять на себя.\n"
+            "Сопоставь их с записями в дневнике, чтобы увидеть, как это проявляется в твоей работе.</blockquote>"
         ),
     }
     
@@ -202,23 +183,11 @@ async def TestCategoryDesc_callback(callback: CallbackQuery, callback_data: Test
     builder.button(text="← Назад", callback_data=AboutTests().pack())
     builder.adjust(1)
     
-    image_name = f"{callback_data.name.lower()}.png"
-    image_path = IMAGES / image_name
-    
-    import pathlib
-    real_path = pathlib.Path(image_path)
-    if not real_path.exists():
-        image_name = f"{callback_data.name.lower()}.jpg"
-        image_path = IMAGES / image_name
-    
-    msg = await bot.send_photo(
-        chat_id=user.id,
-        photo=FSInputFile(image_path),
-        caption=text,
-        reply_markup=builder.as_markup()
-    )
-        
-    await schedule_message_edition(user, msg)
+    image_path = Path(IMAGES) / f"{callback_data.name.lower()}.png"
+    if not image_path.exists():
+        image_path = image_path.with_suffix(".jpg")
+
+    await send_section_card(user, image_path, text, builder.as_markup())
 
 @dp.callback_query(Psychologist.filter())
 async def Psychologist_callback(
@@ -247,21 +216,15 @@ async def TechSupport_callback(
     await delete_editing_message(user)
     
     await state.set_state(TechStates.message)
-    msg = await bot.send_photo(
-        chat_id=user.id,
-        photo=FSInputFile(IMAGES / "связь.jpg"),
-        caption=(
-            "<b>Связь</b>\n\n"
-            "<b>С чем можно обратиться</b>\n"
-            "• оставить обратную связь\n"
-            "• обратиться в техподдержку\n"
-            "• подобрать психолога, который подойдёт именно тебе\n"
-            "• найти качественное обучение по близкому тебе направлению\n\n"
-            "<i>Просто напиши сообщение в этот чат.</i>"
-        ),
-        reply_markup=menu_kb()
+    text = (
+        "<b>Связь</b>\n"
+        "<i>Напиши сообщение прямо в этот чат.</i>\n\n"
+        "<u>С чем можно обратиться</u>\n"
+        "<blockquote><b>Поддержка</b> — что-то не работает или есть предложение.\n"
+        "<b>Психолог</b> — нужно подобрать специалиста.\n"
+        "<b>Обучение</b> — ищешь программу по интересующему направлению.</blockquote>"
     )
-    await schedule_message_edition(user, msg)
+    await send_section_card(user, IMAGES / "связь.jpg", text, menu_kb())
 
 
 @dp.message(StateFilter(TechStates.message))

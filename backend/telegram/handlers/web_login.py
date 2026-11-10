@@ -1,3 +1,4 @@
+from html import escape
 from urllib.parse import urlsplit
 
 from aiogram import F
@@ -26,10 +27,10 @@ async def web_login_handler(message: Message, command: CommandObject):
     keyboard = InlineKeyboardBuilder()
     keyboard.button(text="Войти", callback_data=WebLogin(code=code))
     await message.answer(
-        f"<b>Вход в «Азбуку Я»</b>\n\n"
-        f"Сайт — <code>{SITE}</code>\n\n"
+        "<b>Вход в «Азбуку Я»</b>\n"
+        f"<u>Сайт</u> · <code>{escape(SITE, quote=False)}</code>\n\n"
         "Нажми <b>«Войти»</b>, и дневник откроется в браузере под этим аккаунтом Telegram.\n\n"
-        "<i>Если вход начат не тобой, ничего не нажимай.</i>",
+        "<blockquote><b>Если это не ты</b>\nОставь запрос без ответа.</blockquote>",
         reply_markup=keyboard.as_markup(),
     )
 
