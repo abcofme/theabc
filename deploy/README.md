@@ -32,6 +32,7 @@
 запускает `docker compose up -d --build`. Упавший коммит повторно не собирается — нужен следующий.
 
 Ролик приветствия загружается на сервер в `/opt/theabc/backend/resources/videos/welcome.mp4` перед сборкой. Docker включает его в образ. Если файла нет, бот отправляет приветственную картинку.
+Для кнопки «Узнать подробнее» перед сборкой загружается `/opt/theabc/backend/resources/videos/details.mp4`.
 
 ```bash
 journalctl -u theabc-autodeploy -n 50     # лог деплоя

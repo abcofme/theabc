@@ -1,11 +1,13 @@
+from asyncio import Lock
 from datetime import datetime
 import html
 from pathlib import Path, PurePath
 
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import CommandObject, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.methods import SendPhoto, SendVideo
-from aiogram.types import Message, CallbackQuery, FSInputFile, InlineKeyboardMarkup
+from aiogram.types import Message, CallbackQuery, FSInputFile, InlineKeyboardMarkup, InputMediaVideo
 from aiogram.utils.i18n import gettext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types.web_app_info import WebAppInfo
@@ -15,7 +17,7 @@ from backend.database.patterns.dao import DataAccessObject
 from backend.friends import befriend, inviter_from_payload
 from backend.telegram.notify import greet_new_friend
 from backend.telegram.bot import dp, bot
-from backend.telegram.callback_data.profile import Psychologist, TechSupport, MainMenu, AboutDiary, AboutTests, TestCategoryDesc
+from backend.telegram.callback_data.profile import Psychologist, TechSupport, MainMenu, AboutDiary, AboutProject, AboutTests, TestCategoryDesc
 from backend.referrals import capture_referral
 from backend.telegram.keyboards.base import back_kb
 from backend.telegram.keyboards.start import start_kb, main_menu_btn, menu_kb, categories_kb, about_diary_kb
@@ -31,6 +33,9 @@ from settings import settings
 
 
 WELCOME_VIDEO = Path(IMAGES.parent / "videos" / "welcome.mp4")
+DETAILS_VIDEO = WELCOME_VIDEO.with_name("details.mp4")
+_details_upload_lock = Lock()
+_details_video_file_id: str | None = None
 
 
 START_TEXT = (
@@ -55,7 +60,7 @@ async def send_section_card(user: User, image: PurePath, caption: str, keyboard:
 
 
 async def send_welcome(user: User) -> None:
-    keyboard = start_kb(user)
+    keyboard = start_kb(user, has_details_video=DETAILS_VIDEO.is_file())
     if not WELCOME_VIDEO.is_file():
         await send_section_card(user, IMAGES / "приветствие.jpg", START_TEXT, keyboard)
         return
@@ -104,6 +109,44 @@ async def start_callback(
     await state.clear()
 
     await send_welcome(user)
+
+
+async def edit_details_video(message: Message, video: str | FSInputFile) -> Message | bool:
+    return await bot(message.edit_media(
+        media=InputMediaVideo(
+            media=video,
+            caption="Узнать, как это работает внутри",
+            show_caption_above_media=True,
+            supports_streaming=True,
+        ),
+        reply_markup=menu_kb(),
+    ), request_timeout=120)
+
+
+@dp.callback_query(AboutProject.filter())
+async def about_project_callback(callback: CallbackQuery):
+    global _details_video_file_id
+
+    if not isinstance(callback.message, Message) or not DETAILS_VIDEO.is_file():
+        await callback.answer("Видео пока недоступно.", show_alert=True)
+        return
+
+    await callback.answer("Открываю видео…" if _details_video_file_id is None else None)
+    try:
+        if _details_video_file_id is not None:
+            await edit_details_video(callback.message, _details_video_file_id)
+            return
+
+        async with _details_upload_lock:
+            msg = await edit_details_video(
+                callback.message, _details_video_file_id or FSInputFile(DETAILS_VIDEO)
+            )
+            if isinstance(msg, Message) and msg.video:
+                _details_video_file_id = msg.video.file_id
+    except TelegramBadRequest as exc:
+        if "message is not modified" not in exc.message:
+            raise
+
 
 @dp.callback_query(AboutDiary.filter())
 async def AboutDiary_callback(callback: CallbackQuery, user: User, state: FSMContext):

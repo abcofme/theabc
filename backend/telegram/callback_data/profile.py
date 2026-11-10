@@ -23,5 +23,10 @@ class AboutDiary(CallbackData, prefix="about_diary"):
 class AboutTests(CallbackData, prefix="about_tests"):
     pass
 
+
+class AboutProject(CallbackData, prefix="about_project"):
+    pass
+
+
 class TestCategoryDesc(CallbackData, prefix="test_cat_desc"):
     name: str

@@ -174,5 +174,6 @@ local_logs*.txt
 # Рабочие материалы (аудио, расшифровки, референсы) — не в репозитории
 materials/
 
-# Приветственный ролик хранится на сервере
+# Ролики бота хранятся на сервере
 /backend/resources/videos/welcome.mp4
+/backend/resources/videos/details.mp4
