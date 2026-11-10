@@ -83,8 +83,10 @@ async def _remind(session: AsyncSession, user: User, amount: int, now: datetime)
     async with asyncio.timeout(15):
         sent = await notify(
             user.id,
-            f"💎 Premium продлится автоматически. Списание <b>{amount} ₽</b> ожидается "
-            f"<b>{when:%d.%m.%Y в %H:%M} МСК</b>.\n\nОтключить автопродление можно в разделе подписки.",
+            "<b>Premium продлится автоматически</b>\n\n"
+            f"Сумма — <b>{amount} ₽</b>\n"
+            f"Ожидаемое списание — <b>{when:%d.%m.%Y в %H:%M} МСК</b>\n\n"
+            "Отключить автопродление можно в разделе подписки.",
             "page=billing",
             "Открыть подписку",
         )

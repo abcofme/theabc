@@ -47,6 +47,6 @@ async def raise_alert(kind: str, title: str, text: str) -> None:
         from backend.telegram.notify import notify
         message = f"🚨 <b>{html.escape(title)}</b>\n\n{html.escape(text)}"
         for admin_id in admins:
-            await notify(admin_id, message, "tab=profile&page=admin&section=monitoring", "📈 Мониторинг")
+            await notify(admin_id, message, "tab=profile&page=admin&section=monitoring", "Мониторинг")
     except Exception as e:
         logger.error(f"Alert {kind} failed: {e!r}")

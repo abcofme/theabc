@@ -12,7 +12,7 @@ from backend.web_auth import LOGIN_PREFIX, confirm_login, parse_login_code
 from settings import settings
 
 SITE = urlsplit(settings.WEB_APP_URL).netloc
-EXPIRED_TEXT = "⌛ <b>Ссылка для входа устарела</b>\n\nНажми «Войти через Telegram» на сайте ещё раз."
+EXPIRED_TEXT = "<b>Ссылка для входа устарела</b>\n\nНажми <b>«Войти через Telegram»</b> на сайте ещё раз."
 
 
 # Сайт и установленное приложение входят через бота (backend/web_auth.py). Ссылку могут подсунуть,
@@ -24,10 +24,11 @@ async def web_login_handler(message: Message, command: CommandObject):
         await message.answer(EXPIRED_TEXT)
         return
     keyboard = InlineKeyboardBuilder()
-    keyboard.button(text="✅ Войти", callback_data=WebLogin(code=code))
+    keyboard.button(text="Войти", callback_data=WebLogin(code=code))
     await message.answer(
-        f"🔐 <b>Вход в «Азбуку Я» на {SITE}</b>\n\n"
-        "Нажми «Войти», и дневник откроется в браузере под этим аккаунтом Telegram.\n\n"
+        f"<b>Вход в «Азбуку Я»</b>\n\n"
+        f"Сайт — <code>{SITE}</code>\n\n"
+        "Нажми <b>«Войти»</b>, и дневник откроется в браузере под этим аккаунтом Telegram.\n\n"
         "<i>Если вход начат не тобой, ничего не нажимай.</i>",
         reply_markup=keyboard.as_markup(),
     )
@@ -39,4 +40,4 @@ async def web_login_confirm(callback: CallbackQuery, callback_data: WebLogin, us
     if not await confirm_login(callback_data.code, user.id):
         await callback.message.edit_text(EXPIRED_TEXT)
         return
-    await callback.message.edit_text("✅ <b>Вход подтвержден</b>\n\nВозвращайся в браузер — дневник уже открывается.")
+    await callback.message.edit_text("<b>Вход подтверждён</b>\n\nВозвращайся в браузер — дневник уже открывается.")

@@ -92,7 +92,10 @@ async def edit_scheduled_message(
                             )
                         except Exception as e:
                             logger.error(f"edit_message_media failed: {e!r}")
-                            await bot.send_message(chat_id=chat_id, text="🔧 Не получилось загрузить картинку. Попробуй ещё раз чуть позже.")
+                            await bot.send_message(
+                                chat_id=chat_id,
+                                text="<b>Не получилось загрузить картинку</b>\n\nПопробуй ещё раз чуть позже.",
+                            )
                 elif text:
                     try:
                         msg = await bot.edit_message_text(
@@ -165,7 +168,7 @@ async def back_to_previous_message(user: User, state: FSMContext, delete: bool =
                 continue
             message: types.Message = types.Message.model_validate_json(str(msg[0]))
 
-            text = message.text or message.caption
+            text = message.html_text
 
             await state.set_state(msg[-1])
             if delete:

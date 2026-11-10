@@ -27,52 +27,55 @@ msgstr "Приветствуем на пути к самопознанию!\n"
 "- Личностный рост: Тесты помогут вам определить направления для саморазвития и профессионального роста.\n\n"
 "- Научный подход: Наши тесты основаны только на проверенных методиках, их разработкой занималась команда ведущих психологов и психодиагностов, что гарантирует точный и информативный результат.\n\n"
 "Начните тестирование прямо сейчас и откройте новые горизонты вашего внутреннего мира!\n\n"
-"Если вам что-либо не понятно в ваших результатах, вы хотите более подробную диагностику или остались не раскрытые вопросы, то после прохождения тестов советуем записаться на консультацию к нашим квалифицированным специалистам через кнопку «👨‍💼Связаться с психологом»"
+"Если вам что-либо не понятно в ваших результатах, вы хотите более подробную диагностику или остались не раскрытые вопросы, то после прохождения тестов советуем записаться на консультацию к нашим квалифицированным специалистам через кнопку «Связаться с психологом»"
 
 msgid "message.admin.choose_category"
 msgstr "Бот «Азбука Я» предлагаем тесты в следующих категориях:"
 
 msgid "message.admin.insert_or_choose_test_name"
-msgstr "🔍 Введите или выберите название теста"
+msgstr "Введите или выберите <b>название теста</b>."
 
 msgid "message.admin.insert_test_description"
-msgstr "🔍 Введите описание теста"
+msgstr "Введите <b>описание теста</b>."
 
 msgid "message.admin.insert_or_choose_question_name"
-msgstr "🔍 Введите или выберите название вопроса"
+msgstr "Введите или выберите <b>название вопроса</b>."
 
 msgid "message.admin.insert_or_choose_answer_name"
-msgstr "🔍 Введите название ответа или нажмите, чтобы удалить"
+msgstr "Введите <b>название ответа</b> или нажмите кнопку удаления."
 
 msgid "message.successful.deleted"
-msgstr "✅ Успешно удалено!"
+msgstr "Успешно удалено."
 
 msgid "message.admin.insert_answer_points"
 msgstr "Введите число баллов за ответ"
 
 msgid "message.tests.choose_category"
-msgstr "📂 Выберите категорию тестов"
+msgstr "<b>Категории тестов</b>\n\n<i>Выберите категорию.</i>"
 
 msgid "message.tests.choose_type"
-msgstr "📝 Выберите тип тестов"
+msgstr "<b>Выберите тип тестов</b>"
 
 msgid "message.tests.payment"
-msgstr "💳 Ссылка на оплату: {url}\n\n"
+msgstr "<b>Ссылка на оплату</b>\n\n{url}\n\n"
 
 msgid "messages.test.choose_test"
-msgstr "📋 Выберите тест из списка\n\n"
+msgstr "<b>Тесты</b>\n\n<i>Выберите тест из списка.</i>\n\n"
 
 msgid "messages.test.choose_test.no_free_tests"
-msgstr "📋 В данной категории нет бесплатных пробных тестов\n\n"
+msgstr "<b>В этой категории нет бесплатных пробных тестов</b>\n\n"
 
 msgid "messages.tests.result_does_not_exist"
-msgstr "❌ Результатов для данного тестирования ещё нет"
+msgstr "Результатов для этого теста ещё нет."
 
 msgid "messages.tests.result"
-msgstr "Бот «Азбука Я» поздравляет вас! Вы завершили тест. Вот ваш результат:\n\n"
+msgstr "<b>Тест завершён</b>\n\n"
+"<b>Ваш результат</b>\n"
 "{result}\n\n"
-"Понравилось? Пройдите ещё тесты и узнайте о себе больше. Выберите следующий тест из списка или получите полный доступ ко всем тестам за 999 рублей!\n\n"
-"Бот «Азбука Я» благодарит вас, что прошли тест! 😊 Я рад быть вашим проводником на пути к самопознанию. Не забудьте поделиться ботом «Азбука Я» с друзьями и возвращайтесь за новыми познаниями себя и профессиональным разбором вашей проблемы специалистом!"
+"<b>Что дальше</b>\n"
+"• Выберите следующий тест из списка или получите полный доступ ко всем тестам за 999 рублей.\n"
+"• Поделитесь ботом «Азбука Я» с друзьями.\n"
+"• Чтобы обсудить результат со специалистом, нажмите «Связаться с психологом»."
 
 msgid "message.payment_description.buy_all_tests"
 msgstr "Покупка всех тестирований в боте"
@@ -96,19 +99,19 @@ msgstr "Здравствуйте, {name},\n\n"
 "Команда «Азбука Я»\n"
 
 msgid "message.payment.not_correct"
-msgstr "🚫 Оплата ещё не прошла или произошла ошибка..."
+msgstr "Оплата ещё не прошла или произошла ошибка."
 
 msgid "messages.profile.results"
-msgstr "📊<b>Результаты ваших тестирований</b>📊\n\n"
+msgstr "<b>Результаты тестов</b>\n\n"
 
 msgid "messages.psychologist.request_success.for_chat"
-msgstr "🙋 <b>Новая заявка психологу</b>\n\n"
+msgstr "<b>Новая заявка психологу</b>\n\n"
 "ID: <code>{user_id}</code>\n"
 "Username: {username}\n"
 "Имя в Telegram: {name}"
 
 msgid "messages.tech_support.request_success.for_chat"
-msgstr "💬 <b>Новое обращение в «Связь»</b>\n\n"
+msgstr "<b>Новое обращение в «Связь»</b>\n\n"
 "ID: <code>{user_id}</code>\n"
 "Username: {username}\n"
 "Имя в Telegram: {name}\n\n"
@@ -119,69 +122,69 @@ msgstr "Заявка отправлена психологу и уже на ра
 "Чтобы с тобой могли связаться, проверь, что твой профиль в Telegram открыт для сообщений."
 
 msgid "messages.tech_support.request_success.for_user"
-msgstr "✅ <b>Сообщение отправлено</b>\n\n"
+msgstr "<b>Сообщение отправлено</b>\n\n"
 "Мы уже его рассматриваем.\n\n"
-"<blockquote>🔓 Чтобы мы смогли с тобой связаться, проверь, что твой профиль в Telegram открыт для сообщений.</blockquote>"
+"<blockquote>Чтобы мы смогли с тобой связаться, проверь, что твой профиль в Telegram открыт для сообщений.</blockquote>"
 
 msgid "messages.admin.menu"
-msgstr "👨‍💻 <b>Админ-панель</b>\n\n"
+msgstr "<b>Админ-панель</b>\n\n"
 "<b>Переходы по ссылкам</b>\n\n"
 "{by_links}\n\n"
-"🔑 Чтобы получить новую ссылку, отправь её уникальный идентификатор."
+"Чтобы получить новую ссылку, отправь её <b>уникальный идентификатор</b>."
 
 msgid "messages.admin.mailings.create.insert_message"
-msgstr "📨 Отправь сообщение для рассылки — его получат все пользователи бота."
+msgstr "<b>Новая рассылка</b>\n\nОтправь сообщение, которое получат все пользователи бота."
 
 msgid "messages.admin.mailings.accept_create"
-msgstr "Проверь сообщение выше. Запустить рассылку прямо сейчас?"
+msgstr "<b>Запустить рассылку?</b>\n\nПроверь сообщение выше перед отправкой."
 
 msgid "messages.admin.mailings.create.successful"
-msgstr "✅ Рассылка создана и начнётся в течение минуты."
+msgstr "<b>Рассылка создана</b>\n\nОтправка начнётся в течение минуты."
 
 msgid "buttons.admin.mailings.create"
-msgstr "📨 Создать рассылку"
+msgstr "Создать рассылку"
 
 msgid "buttons.admin.mailings.accept"
-msgstr "🚀 Запустить рассылку"
+msgstr "Запустить рассылку"
 
 msgid "buttons.back"
-msgstr "🔙 Назад"
+msgstr "← Назад"
 
 msgid "buttons.left"
-msgstr "Назад ⏪"
+msgstr "← Назад"
 
 msgid "buttons.right"
-msgstr "Далее ⏩"
+msgstr "Далее →"
 
 msgid "buttons.profile"
-msgstr "📓 Профиль"
+msgstr "Профиль"
 
 msgid "buttons.tests"
-msgstr "🧑‍💻 Тесты"
+msgstr "Тесты"
 
 msgid "buttons.free_tests"
-msgstr "🆓 Пробные тесты"
+msgstr "Пробные тесты"
 
 msgid "buttons.full_tests"
-msgstr "💵 Полная версия - {price}Р"
+msgstr "Полная версия — {price} ₽"
 
 msgid "buttons.full_tests.opened"
-msgstr "💎 Полная версия"
+msgstr "Полная версия"
 
 msgid "buttons.buy_all_tests_btn"
-msgstr "💰 Купить все тесты - 999Р"
+msgstr "Купить все тесты — 999 ₽"
 
 msgid "buttons.psychologist"
-msgstr "👨‍⚕️ Связаться с психологом"
+msgstr "Связаться с психологом"
 
 msgid "buttons.previous_question"
-msgstr "🔙 Предыдущий вопрос"
+msgstr "← Предыдущий вопрос"
 
 msgid "buttons.check_payment"
 msgstr "Я оплатил!"
 
 msgid "buttons.admin.menu"
-msgstr "📜 Админ-панель"
+msgstr "Админ-панель"
 
 msgid "buttons.tech_support"
 msgstr "Техническая поддержка"

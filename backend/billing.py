@@ -135,14 +135,15 @@ async def settle_payment(session: AsyncSession, payment: Payment, info: PaymentI
     if payment.is_premium_subscription:
         until = user.premium_until.strftime("%d.%m.%Y")
         title = "Подписка Premium продлена" if payment.is_recurring else "Premium подключён"
-        await notify(user.id, f"💎 <b>{title}</b>\n\n"
-                              f"Все возможности «Азбуки Я» — <b>без ограничений</b> до {until}.",
-                     "page=billing", "💎 Открыть")
+        await notify(user.id, f"<b>{title}</b>\n\n"
+                              f"Все возможности «Азбуки Я» доступны без ограничений до <b>{until}</b>.",
+                     "page=billing", "Открыть подписку")
     elif payment.is_topup:
         await session.refresh(user)
-        await notify(user.id, f"💳 <b>Баланс пополнен на {tokens(rubles * TOKENS_PER_RUBLE)}</b>\n\n"
-                              f"Сейчас на балансе <b>{tokens(user.balance)}</b>.",
-                     "page=billing", "💳 Открыть")
+        await notify(user.id, "<b>Баланс пополнен</b>\n\n"
+                              f"Зачислено — <b>{tokens(rubles * TOKENS_PER_RUBLE)}</b>\n"
+                              f"На балансе — <b>{tokens(user.balance)}</b>",
+                     "page=billing", "Открыть баланс")
 
 
 async def handle_canceled_payment(session: AsyncSession, payment: Payment, info: PaymentInfo):
@@ -171,4 +172,4 @@ async def handle_canceled_payment(session: AsyncSession, payment: Payment, info:
     from backend.telegram.notify import notify
     hint = ("Автопродление выключено: сохранённым способом больше не оплатить. Оформи Premium заново, "
             "когда будет удобно." if final else "Если хочешь оплатить вручную, сначала отключи автопродление в разделе подписки.")
-    await notify(user.id, f"⚠️ <b>Не удалось продлить Premium</b>\n\n{hint}", "page=billing", "💎 Открыть")
+    await notify(user.id, f"<b>Не удалось продлить Premium</b>\n\n{hint}", "page=billing", "Открыть подписку")

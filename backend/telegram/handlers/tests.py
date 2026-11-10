@@ -1,4 +1,5 @@
 from datetime import datetime
+from html import escape
 
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
@@ -26,6 +27,15 @@ from backend.utils.text import question_mark
 from paths import IMAGES
 
 
+def question_text(question: Question, answers: list[Answer], number: int, total: int) -> str:
+    prompt = escape(question_mark(question.name), quote=False)
+    options = "\n".join(
+        f"{i}. {escape(upcase_first_letter(answer.name), quote=False)}"
+        for i, answer in enumerate(answers, start=1)
+    )
+    return f"<i>Вопрос {number} из {total}</i>\n\n<b>{prompt}</b>\n\n{options}"
+
+
 @dp.callback_query(Tests.filter())
 async def Tests_callback(
         callback: CallbackQuery, callback_data: Tests,
@@ -36,8 +46,7 @@ async def Tests_callback(
     await edit_scheduled_message(
         user=user,
         text=gettext("message.tests.choose_category"),
-        kb=await category_tests_kb(dao=dao, user=user, profile=False),
-        media_group=True
+        kb=await category_tests_kb(dao=dao, user=user, profile=False)
     )
 
 
@@ -51,7 +60,10 @@ async def CategoryChoose_callback(
     category = await dao.get_object(Category, callback_data.category_id)
     if callback_data.profile:
         await state.update_data(dict(is_profile=True))
-        text = f"{category.name.capitalize()}\n📋 Выберите результат теста из списка\n"
+        text = (
+            f"<b>{escape(category.name.capitalize(), quote=False)}</b>\n\n"
+            "<i>Выберите результат теста из списка.</i>\n\n"
+        )
     else:
         await state.update_data(dict(is_profile=False))
         text = f"{category.description}\n\n" + gettext("messages.test.choose_test")
@@ -67,7 +79,7 @@ async def CategoryChoose_callback(
     except:
         pass
     for i, test in enumerate(tests, start=1):
-        text += f"{i}. {test.name}\n"
+        text += f"{i}. {escape(test.name, quote=False)}\n"
     kb = await slider_kb(
         db_model=Test, callback_data=TestChoose, dao=dao,
         part=4, conditions=dict(category_id=callback_data.category_id)
@@ -105,19 +117,19 @@ async def TestChoose_callback(
             Progress, dict(user_id=user.id, test_id=callback_data.id),
             options=[joinedload(Progress.test)]
         )
-        text = "Вы ещё не проходили этот тест!"
+        text = "<b>Вы ещё не проходили этот тест</b>"
         kb = back_kb()
         for progress in progresses:
             if progress.hardcode_value:
-                text = f"{progress.test.name}\n{progress.hardcode_value}\n\n"
+                text = f"<b>{escape(progress.test.name, quote=False)}</b>\n\n{progress.hardcode_value}"
             else:
                 result = await ResultDAO(dao).get_by_points(progress.test_id, progress.value)
                 result_text = upcase_first_letter(result.name) if result else ""
                 test_name = upcase_first_letter(progress.test.name) if progress.test else ""
-                text = f"{test_name}\n{result_text}\n\n"
+                text = f"<b>{escape(test_name, quote=False)}</b>\n\n{result_text}"
     else:
         test = await dao.get_object(Test, callback_data.id, options=[joinedload(Test.questions)])
-        text = f"{test.name}\n\n{test.description}"
+        text = f"<b>{escape(test.name, quote=False)}</b>\n\n{test.description or ''}"
         kb = test_accept_choose_kb(test.id)
 
     if len(text) < 1024:
@@ -162,9 +174,7 @@ async def TestAcceptChoose_callback(
     question = test.questions[0]
 
     answers = await dao.filter(Answer, dict(question_id=question.id))
-    text = f"{0 + 1}/{len(test.questions)}. {question_mark(question.name)}\n\n"
-    for i, answer in enumerate(answers, start=1):
-        text += f"{i}. {upcase_first_letter(answer.name)}\n"
+    text = question_text(question, answers, 1, len(test.questions))
 
     await state.update_data(
         dict(
@@ -196,9 +206,7 @@ async def BackQuestion_callback(
     await state.update_data(dict(index_question=new_index, answer_ids=answer_ids))
 
     answers = await dao.filter(Answer, dict(question_id=question.id))
-    text = f"{new_index + 1}/{len(test.questions)}. {question_mark(question.name)}\n\n"
-    for i, answer in enumerate(answers, start=1):
-        text += f"{i}. {upcase_first_letter(answer.name)}\n"
+    text = question_text(question, answers, new_index + 1, len(test.questions))
 
     await edit_scheduled_message(
         user=user,
@@ -272,17 +280,14 @@ async def AnswerChoose_callback(
         question = test.questions[new_index]
         await state.update_data(dict(answer_ids=answer_ids, index_question=new_index))
         answers = await dao.filter(Answer, dict(question_id=question.id))
-        text = f"{new_index + 1}/{len(test.questions)}. {question_mark(question.name)}\n\n"
-        for i, answer in enumerate(answers, start=1):
-            text += f"{i}. {upcase_first_letter(answer.name)}\n"
+        text = question_text(question, answers, new_index + 1, len(test.questions))
         kb = await question_kb(dao, question)
 
     if len(text) < 1024:
         await edit_scheduled_message(
             user=user,
             text=text,
-            kb=kb,
-            media_group=True
+            kb=kb
         )
     else:
         await delete_editing_message(user)
@@ -310,7 +315,7 @@ async def FreeTests_callback(
     if tests:
         text = f"{category.description}\n\n" + gettext("messages.test.choose_test")
         for i, test in enumerate(tests, start=1):
-            text += f"{i}. {test.name}\n"
+            text += f"{i}. {escape(test.name, quote=False)}\n"
     else:
         text = f"{category.description}\n\n" + gettext("messages.test.choose_test.no_free_tests")
     kb = await slider_kb(
@@ -358,7 +363,7 @@ async def FullTests_callback(
         tests = await dao.filter(Test, conditions)
         text = f"{category.description}\n\n" + gettext("messages.test.choose_test")
         for i, test in enumerate(tests, start=1):
-            text += f"{i}. {test.name}\n"
+            text += f"{i}. {escape(test.name, quote=False)}\n"
         kb = await slider_kb(
             db_model=Test, callback_data=TestChoose, dao=dao,
             part=4, conditions=conditions

@@ -28,8 +28,8 @@ async def greet_new_friend(friend: User, inviter_id: int) -> bool:
     name = html.escape(friend.tg_first_name or (f"@{friend.username}" if friend.username else "Человек по твоей ссылке"))
     return await notify(
         inviter_id,
-        f"🤝 <b>Приглашение принято</b>\n\n"
+        "<b>Приглашение принято</b>\n\n"
         f"<b>{name}</b> — теперь в твоих друзьях в «Азбуке Я».\n\n"
-        "<i>Посмотри, насколько вы совместимы</i> 👇",
-        "tab=reports&section=compatibility", "🤝 Открыть совместимость",
+        "<i>Теперь можно посмотреть вашу совместимость.</i>",
+        "tab=reports&section=compatibility", "Открыть совместимость",
     )
