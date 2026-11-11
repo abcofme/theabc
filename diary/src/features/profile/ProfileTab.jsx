@@ -216,7 +216,7 @@ export default function ProfileTab({ request, active }) {
       {page === 'contacts' && <Page title="Контакты и реквизиты" onBack={closePage}><div className="ui-card"><ContactInformation /></div></Page>}
       {page === 'install' && <InstallPage onBack={closePage} />}
       {page === 'referral' && profile?.is_partner && <ReferralPage onBack={closePage} />}
-      {page === 'admin' && (
+      {page === 'admin' && profile?.is_admin && (
         <Page title="Админ-панель" onBack={closePage}>
           <AdminPanel section={request?.page === 'admin' ? request.section : null} />
         </Page>

@@ -247,6 +247,24 @@ class Mailing(BaseModel):
     user_id: Mapped[int] = mapped_column(BigInteger(), nullable=True)
 
 
+class AppMailing(Base):
+    __tablename__ = "app_mailings"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    created_by: Mapped[int] = mapped_column(BigInteger)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    text: Mapped[str] = mapped_column(Text)
+
+
+class AppMailingRecipient(Base):
+    __tablename__ = "app_mailing_recipients"
+
+    mailing_id: Mapped[str] = mapped_column(ForeignKey("app_mailings.id", ondelete="CASCADE"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    status: Mapped[str] = mapped_column(String(12), server_default="pending", index=True)
+    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+
 class DiaryEntry(BaseModel):
     __tablename__ = "diary_entries"
 

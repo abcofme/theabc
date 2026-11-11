@@ -126,27 +126,6 @@ msgid "messages.tech_support.request_success.for_user"
 msgstr "<b>Сообщение отправлено</b>\n\n"
 "Если потребуется ответ, команда напишет тебе в Telegram. Проверь, что ты можешь получать сообщения от новых собеседников."
 
-msgid "messages.admin.menu"
-msgstr "<b>Админ-панель</b>\n\n"
-"<b>Переходы по ссылкам</b>\n\n"
-"{by_links}\n\n"
-"Чтобы получить новую ссылку, отправь её <b>уникальный идентификатор</b>."
-
-msgid "messages.admin.mailings.create.insert_message"
-msgstr "<b>Новая рассылка</b>\n\nОтправь сообщение, которое получат все пользователи бота."
-
-msgid "messages.admin.mailings.accept_create"
-msgstr "<b>Запустить рассылку?</b>\n\nПроверь сообщение выше перед отправкой."
-
-msgid "messages.admin.mailings.create.successful"
-msgstr "<b>Рассылка создана</b>\n\nОтправка начнётся в течение минуты."
-
-msgid "buttons.admin.mailings.create"
-msgstr "Создать рассылку"
-
-msgid "buttons.admin.mailings.accept"
-msgstr "Запустить рассылку"
-
 msgid "buttons.back"
 msgstr "← Назад"
 
@@ -182,9 +161,6 @@ msgstr "← Предыдущий вопрос"
 
 msgid "buttons.check_payment"
 msgstr "Я оплатил!"
-
-msgid "buttons.admin.menu"
-msgstr "Админ-панель"
 
 msgid "buttons.tech_support"
 msgstr "Техническая поддержка"

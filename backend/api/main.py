@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.api.common import run_in_background
-from backend.api.routers import admin, auth, diary, friends, payments, portrait, profile, referral, reports, tests
+from backend.api.routers import admin, auth, diary, friends, mailings, payments, portrait, profile, referral, reports, tests
 from backend.performance import record_request
 from settings import settings
 
@@ -55,5 +55,5 @@ class TimingMiddleware:
 
 app.add_middleware(TimingMiddleware)
 
-for module in (auth, profile, diary, portrait, reports, tests, admin, friends, payments, referral):
+for module in (auth, profile, diary, portrait, reports, tests, admin, mailings, friends, payments, referral):
     app.include_router(module.router)

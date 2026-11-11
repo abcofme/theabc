@@ -3,12 +3,10 @@ from aiogram.types.web_app_info import WebAppInfo
 from aiogram.utils.i18n import gettext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from backend.database.models import User
 from backend.telegram.callback_data.profile import (
     AboutDiary, AboutProject, AboutTests, ContactTopic, ContactTopicChoice, MainMenu, Psychologist, TechSupport,
     TestCategoryDesc,
 )
-from backend.telegram.keyboards.admin.menu import admin_menu_btn
 from settings import settings
 
 diary_btn = InlineKeyboardButton(
@@ -48,7 +46,7 @@ main_menu_btn = InlineKeyboardButton(
 )
 
 
-def start_kb(user: User, *, has_details_video: bool = False) -> InlineKeyboardMarkup:
+def start_kb(*, has_details_video: bool = False) -> InlineKeyboardMarkup:
     buttons = [[diary_btn]]
     if has_details_video:
         buttons.append([about_project_btn])
@@ -57,8 +55,6 @@ def start_kb(user: User, *, has_details_video: bool = False) -> InlineKeyboardMa
         [about_tests_btn],
         [tech_support_btn],
     ])
-    if user.admin:
-        buttons.append([admin_menu_btn])
     return InlineKeyboardBuilder(buttons).as_markup()
 
 def menu_kb() -> InlineKeyboardMarkup:

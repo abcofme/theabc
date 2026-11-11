@@ -22,6 +22,7 @@ async def back_handler(
     except:
         pass
     msg = await back_to_previous_message(user, state, True)
-    await schedule_message_edition(user, msg)
+    if msg is not None:
+        await schedule_message_edition(user, msg)
     # else:
     #     await back_to_previous_message(user, state)

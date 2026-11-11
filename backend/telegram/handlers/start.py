@@ -70,7 +70,7 @@ async def send_section_card(user: User, image: PurePath, caption: str, keyboard:
 
 
 async def send_welcome(user: User) -> None:
-    keyboard = start_kb(user, has_details_video=DETAILS_VIDEO.is_file())
+    keyboard = start_kb(has_details_video=DETAILS_VIDEO.is_file())
     if not WELCOME_VIDEO.is_file():
         await send_section_card(user, IMAGES / "приветствие.jpg", START_TEXT, keyboard)
         return

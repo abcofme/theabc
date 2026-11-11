@@ -161,6 +161,11 @@ async def delete_previous_messages(user: User):
 async def back_to_previous_message(user: User, state: FSMContext, delete: bool = False):
     async with MessageManager(user, PREVIOUS_KEY) as messages:
         messages: list[tuple[str, bool, str]]
+        # В Redis могут остаться экраны удалённой админ-панели.
+        messages[:] = [
+            entry for entry in messages
+            if not (entry[2] or "").startswith(("AdminStates:", "AdminMailingStates:"))
+        ]
         flag_check = True
         for msg in messages[::-1]:
             if flag_check:
@@ -169,6 +174,14 @@ async def back_to_previous_message(user: User, state: FSMContext, delete: bool =
                 flag_check = False
                 continue
             message: types.Message = types.Message.model_validate_json(str(msg[0]))
+
+            keyboard = message.reply_markup
+            if keyboard:
+                # В старом меню админ-панель занимала отдельную строку.
+                keyboard.inline_keyboard = [
+                    row for row in keyboard.inline_keyboard
+                    if all(button.callback_data != "admin_menu" for button in row)
+                ]
 
             await state.set_state(msg[-1])
             if delete:
@@ -183,7 +196,7 @@ async def back_to_previous_message(user: User, state: FSMContext, delete: bool =
                         caption_entities=message.caption_entities,
                         show_caption_above_media=getattr(message, "show_caption_above_media", None),
                         parse_mode=None,
-                        reply_markup=message.reply_markup,
+                        reply_markup=keyboard,
                         supports_streaming=True,
                     ))
                 if message.photo:
@@ -194,19 +207,19 @@ async def back_to_previous_message(user: User, state: FSMContext, delete: bool =
                         caption_entities=message.caption_entities,
                         show_caption_above_media=getattr(message, "show_caption_above_media", None),
                         parse_mode=None,
-                        reply_markup=message.reply_markup,
+                        reply_markup=keyboard,
                     ))
                 return await bot.send_message(
                     chat_id=user.id,
                     text=message.text or message.caption,
                     entities=message.entities or message.caption_entities,
                     parse_mode=None,
-                    reply_markup=message.reply_markup,
+                    reply_markup=keyboard,
                 )
             text = message.html_text
             if message.video:
                 return await edit_scheduled_message(
-                    user, text, kb=message.reply_markup,
+                    user, text, kb=keyboard,
                     media_group=[InputMediaVideo(
                         media=message.video.file_id,
                         width=message.video.width,
@@ -217,10 +230,10 @@ async def back_to_previous_message(user: User, state: FSMContext, delete: bool =
                     )],
                 )
             if not message.photo:
-                return await edit_scheduled_message(user, text, kb=message.reply_markup)
+                return await edit_scheduled_message(user, text, kb=keyboard)
             else:
                 return await edit_scheduled_message(
-                    user, text, kb=message.reply_markup,
+                    user, text, kb=keyboard,
                     media_group=[InputMediaPhoto(media=message.photo[0].file_id)]
                 )
 

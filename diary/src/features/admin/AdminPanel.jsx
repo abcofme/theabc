@@ -2,6 +2,7 @@ import Select from '../../components/Select';
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronDown, ChevronUp, Users, Brain, Check, Trash2, Edit, Plus, Link2, Download, X } from '../../components/ClayIcon';
 import AdminTestEditor from './AdminTestEditor';
+import AdminMailings from './AdminMailings';
 import AdminMonitoring from './AdminMonitoring';
 import AdminStats from './AdminStats';
 import AdminPartners from './AdminPartners';
@@ -295,12 +296,14 @@ export default function AdminPanel({ section }) {
         <button type="button" role="tab" aria-selected={view === 'monitoring'} onClick={() => setView('monitoring')}>
           Мониторинг{unseenAlerts > 0 && <span className="admin-badge" aria-label={`новых алертов: ${unseenAlerts}`}>{unseenAlerts > 99 ? '99+' : unseenAlerts}</span>}
         </button>
+        <button type="button" role="tab" aria-selected={view === 'mailings'} onClick={() => setView('mailings')}>Рассылки</button>
         <button type="button" role="tab" aria-selected={view === 'tools'} onClick={() => setView('tools')}>Управление</button>
         <button type="button" role="tab" aria-selected={view === 'partners'} onClick={() => setView('partners')}>Партнёры</button>
       </div>
       <div hidden={view !== 'stats'}><AdminStats active={view === 'stats'} /></div>
       {view === 'monitoring' && <AdminMonitoring onAlertsSeen={() => setUnseenAlerts(0)} />}
       {view === 'partners' && <AdminPartners />}
+      <div hidden={view !== 'mailings'}><AdminMailings active={view === 'mailings'} /></div>
       {view === 'tools' && <>
 
       <div className="ui-card mb-6">
