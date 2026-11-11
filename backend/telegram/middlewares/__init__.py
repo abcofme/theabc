@@ -7,6 +7,7 @@ from aiogram.client.session.middlewares.request_logging import RequestLogging
 from backend.database import engine
 from backend.redis_db import async_redis
 from backend.telegram.bot import dp
+from backend.telegram.contact_replies import handle_contact_replies
 from backend.telegram.middlewares.album import AlbumMiddleware
 from backend.telegram.middlewares.anitspam import AntiSpamMiddleware, AntiSpam
 from backend.telegram.middlewares.localization import DatabaseI18nMiddleware
@@ -43,6 +44,7 @@ async def show_group_chat_id(handler, event: Update, data):
 
 def register_dp_middlewares():
     dp.update.outer_middleware(show_group_chat_id)
+    dp.update.outer_middleware(handle_contact_replies)
     dp.update.outer_middleware(SessionMiddleware(engine=engine))
     dp.update.outer_middleware(UserMiddleware())
     dp.update.outer_middleware(DatabaseI18nMiddleware())

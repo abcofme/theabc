@@ -19,6 +19,7 @@ from backend.database.patterns.dao import DataAccessObject
 from backend.friends import befriend, inviter_from_payload
 from backend.telegram.notify import greet_new_friend
 from backend.telegram.bot import dp, bot
+from backend.telegram.contact_replies import contact_reply_button
 from backend.telegram.callback_data.profile import (
     AboutDiary, AboutProject, AboutTests, ContactTopic, ContactTopicChoice, MainMenu, Psychologist, TechSupport,
     TestCategoryDesc,
@@ -379,27 +380,30 @@ async def send_contact_request(message: Message, user: User, state: FSMContext) 
         request=html.escape(message.text or ""),
     )
 
+    is_text_notice = bool(message.text) and len(notice.encode("utf-16-le")) <= 2 * 4096
+    author = username if user.username else str(user.id)
+    profile_label = "Открыть личный чат" if is_text_notice else f"Личный чат · {author} · {topic}"
+    buttons = [[InlineKeyboardButton(text=profile_label, url=profile_url)]]
+    if chat_id < 0:
+        buttons.insert(0, [await contact_reply_button(message, chat_id)])
+    reply_markup = InlineKeyboardMarkup(inline_keyboard=buttons)
+
     try:
         # Копирование сохраняет вложение, подпись и длинный текст целиком.
-        if message.text and len(notice.encode("utf-16-le")) <= 2 * 4096:
+        if is_text_notice:
             await bot.send_message(
                 chat_id=chat_id,
                 message_thread_id=thread_id,
                 text=notice,
-                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
-                    InlineKeyboardButton(text="Ответить автору", url=profile_url),
-                ]]),
+                reply_markup=reply_markup,
             )
         else:
-            author = username if user.username else str(user.id)
             await bot.copy_message(
                 chat_id=chat_id,
                 message_thread_id=thread_id,
                 from_chat_id=message.chat.id,
                 message_id=message.message_id,
-                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
-                    InlineKeyboardButton(text=f"Ответить · {author} · {topic}", url=profile_url),
-                ]]),
+                reply_markup=reply_markup,
             )
     except TelegramAPIError as exc:
         if isinstance(exc, TelegramBadRequest) and "chat not found" in exc.message.lower():
@@ -415,8 +419,6 @@ async def send_contact_request(message: Message, user: User, state: FSMContext) 
     text = gettext("messages.tech_support.request_success.for_user")
     keyboard = contact_back_kb("Написать ещё")
     await confirm_contact_request(message, data.get("contact_card_id"), text, keyboard)
-    with suppress(TelegramAPIError):
-        await message.delete()
 
 
 async def confirm_contact_request(
