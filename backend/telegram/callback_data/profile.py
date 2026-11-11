@@ -20,9 +20,8 @@ class TechSupport(CallbackData, prefix="tech_support"):
 
 
 class ContactTopic(str, Enum):
-    SUPPORT = "Поддержка"
-    PSYCHOLOGIST = "Подбор психолога"
-    TRAINING = "Подбор обучения"
+    SUPPORT = "Техподдержка"
+    PARTNERSHIP = "Партнёрство"
 
 
 class ContactTopicChoice(CallbackData, prefix="contact_topic"):

@@ -4,6 +4,7 @@ from datetime import datetime
 import html
 from pathlib import Path, PurePath
 
+from aiogram import F
 from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
 from aiogram.filters import CommandObject, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
@@ -49,9 +50,8 @@ START_TEXT = "<b>Что такое азбука Я.</b>"
 
 
 CONTACT_PROMPTS = {
-    ContactTopic.SUPPORT: "Опиши, что случилось или что хотелось бы улучшить. Можно отправить скриншот с подписью.",
-    ContactTopic.PSYCHOLOGIST: "Напиши, с каким запросом хочешь обратиться и какой формат встреч тебе удобен.",
-    ContactTopic.TRAINING: "Напиши, какое направление тебя интересует и чему ты хочешь научиться.",
+    ContactTopic.SUPPORT: "Опиши, что не работает или какой вопрос возник. Можно отправить скриншот с подписью.",
+    ContactTopic.PARTNERSHIP: "Расскажи о себе или своей организации и предложи, как мы можем сотрудничать.",
 }
 contact_isolation = dp.storage.create_isolation()
 
@@ -332,6 +332,11 @@ async def contact_topic_callback(
         await state.update_data(contact_topic=topic.value)
 
 
+@dp.callback_query(F.data.startswith("contact_topic:"))
+async def reopen_contact_topics(callback: CallbackQuery, user: User, state: FSMContext):
+    await TechSupport_callback(callback, user, state)
+
+
 @dp.message(StateFilter(TechStates.message))
 async def TechStatesMessage_handler(
         message: Message, user: User, state: FSMContext
@@ -348,6 +353,8 @@ async def send_contact_request(message: Message, user: User, state: FSMContext) 
 
     data = await state.get_data()
     topic = data.get("contact_topic", ContactTopic.SUPPORT.value)
+    if topic == "Поддержка":
+        topic = ContactTopic.SUPPORT.value
     username = f"@{user.username}" if user.username else "нет"
     notice = gettext("messages.tech_support.request_success.for_chat").format(
         user_id=user.id,
@@ -373,8 +380,12 @@ async def send_contact_request(message: Message, user: User, state: FSMContext) 
                 ]]),
             )
     except TelegramAPIError as exc:
-        logger.warning("Не удалось отправить обращение в поддержку: {}", type(exc).__name__)
-        await message.answer("Не удалось отправить обращение. Попробуй отправить сообщение ещё раз.")
+        if isinstance(exc, TelegramBadRequest) and "chat not found" in exc.message.lower():
+            logger.warning("Чат для обращений недоступен: Telegram не нашёл SUPPORT_CHAT_ID")
+            await message.answer("Чат команды временно недоступен. Напиши нам на info@abcofme.ru.")
+        else:
+            logger.warning("Не удалось отправить обращение: {}", type(exc).__name__)
+            await message.answer("Не удалось отправить обращение. Попробуй ещё раз или напиши нам на info@abcofme.ru.")
         return
 
     if await state.get_state() == TechStates.message.state:
