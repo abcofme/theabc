@@ -1,8 +1,14 @@
 from dotenv import load_dotenv
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Явная загрузка файла .env
 load_dotenv()
+
+
+class ContactDestination(BaseModel):
+    chat_id: int
+    message_thread_id: int | None = None
 
 
 class Settings(BaseSettings):
@@ -20,6 +26,7 @@ class Settings(BaseSettings):
     YOOKASSA_AUTORENEW: bool = False
     REQUESTS_CHAT_ID: int
     SUPPORT_CHAT_ID: int
+    CONTACT_DESTINATIONS: dict[str, ContactDestination] = Field(default_factory=dict)
 
     # Отдельный браузерный аккаунт; без настройки вход по паролю отключён.
     BROWSER_LOGIN_NAME: str = ""

@@ -1,4 +1,7 @@
 from aiogram import Bot
+from aiogram.enums import ChatType
+from aiogram.filters import Command
+from aiogram.types import ReplyParameters, Update
 from aiogram.client.session.middlewares.request_logging import RequestLogging
 
 from backend.database import engine
@@ -20,7 +23,26 @@ def register_bot_middlewares(bot: Bot):
     bot.session.middleware(RequestLogging())
 
 
+chat_id_command = Command("chatid")
+
+
+async def show_group_chat_id(handler, event: Update, data):
+    message = event.message
+    if (
+        message is not None
+        and message.chat.type in (ChatType.GROUP, ChatType.SUPERGROUP)
+        and await chat_id_command(message, data["bot"])
+    ):
+        text = f"ID чата <code>{message.chat.id}</code>"
+        if message.is_topic_message and message.message_thread_id is not None:
+            text += f"\nID темы <code>{message.message_thread_id}</code>"
+        await message.answer(text, reply_parameters=ReplyParameters(message_id=message.message_id))
+        return
+    return await handler(event, data)
+
+
 def register_dp_middlewares():
+    dp.update.outer_middleware(show_group_chat_id)
     dp.update.outer_middleware(SessionMiddleware(engine=engine))
     dp.update.outer_middleware(UserMiddleware())
     dp.update.outer_middleware(DatabaseI18nMiddleware())

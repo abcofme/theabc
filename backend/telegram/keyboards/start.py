@@ -68,10 +68,14 @@ def menu_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardBuilder(buttons).as_markup()
 
 
+def contact_topics() -> tuple[str, ...]:
+    return tuple(settings.CONTACT_DESTINATIONS) or tuple(topic.value for topic in ContactTopic)
+
+
 def contact_topics_kb() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    for topic in ContactTopic:
-        builder.button(text=topic.value, callback_data=ContactTopicChoice(topic=topic))
+    for label in contact_topics():
+        builder.button(text=label, callback_data=ContactTopicChoice.for_label(label))
     builder.adjust(1)
     builder.row(main_menu_btn)
     return builder.as_markup()

@@ -1,4 +1,5 @@
 from enum import Enum
+from hashlib import blake2s
 
 from aiogram.filters.callback_data import CallbackData
 
@@ -25,7 +26,11 @@ class ContactTopic(str, Enum):
 
 
 class ContactTopicChoice(CallbackData, prefix="contact_topic"):
-    topic: ContactTopic
+    topic: str
+
+    @classmethod
+    def for_label(cls, label: str) -> "ContactTopicChoice":
+        return cls(topic=blake2s(label.encode(), digest_size=8).hexdigest())
 
 
 class AboutDiary(CallbackData, prefix="about_diary"):

@@ -4,7 +4,6 @@ from datetime import datetime
 import html
 from pathlib import Path, PurePath
 
-from aiogram import F
 from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
 from aiogram.filters import CommandObject, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
@@ -27,7 +26,7 @@ from backend.telegram.callback_data.profile import (
 from backend.referrals import capture_referral
 from backend.telegram.keyboards.base import back_kb
 from backend.telegram.keyboards.start import (
-    about_diary_kb, categories_kb, contact_back_kb, contact_topics_kb, menu_kb, start_kb,
+    about_diary_kb, categories_kb, contact_back_kb, contact_topics, contact_topics_kb, menu_kb, start_kb,
 )
 from backend.telegram.states.user import TechStates
 from backend.telegram.utils.message import (
@@ -52,6 +51,8 @@ START_TEXT = "<b>Что такое азбука Я.</b>"
 CONTACT_PROMPTS = {
     ContactTopic.SUPPORT: "Опиши, что не работает или какой вопрос возник. Можно отправить скриншот с подписью.",
     ContactTopic.PARTNERSHIP: "Расскажи о себе или своей организации и предложи, как мы можем сотрудничать.",
+    "Подбор психолога": "Расскажи, с каким вопросом нужна помощь и какой формат встреч тебе удобен.",
+    "Подбор обучения": "Напиши, какое направление тебя интересует и чему ты хочешь научиться.",
 }
 contact_isolation = dp.storage.create_isolation()
 
@@ -294,11 +295,10 @@ async def TechSupport_callback(
                 await bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
         await state.clear()
 
-        text = (
-            "<b>Связь</b>\n\n"
-            "Выбери тему или напиши сообщение прямо в этот чат. "
-            "Можно отправить скриншот с подписью."
-        )
+        instruction = "Выбери тему и напиши сообщение в этот чат."
+        if not settings.CONTACT_DESTINATIONS:
+            instruction = "Выбери тему или напиши сообщение прямо в этот чат."
+        text = f"<b>Связь</b>\n\n{instruction} Можно отправить скриншот с подписью."
         card = await send_section_card(user, IMAGES / "связь.jpg", text, contact_topics_kb())
         await state.set_data({"contact_card_id": card.message_id})
         await state.set_state(TechStates.message)
@@ -316,25 +316,28 @@ async def edit_contact_card(chat_id: int, message_id: int, text: str, keyboard: 
 
 @dp.callback_query(ContactTopicChoice.filter())
 async def contact_topic_callback(
-        callback: CallbackQuery, callback_data: ContactTopicChoice, state: FSMContext
+        callback: CallbackQuery, callback_data: ContactTopicChoice, user: User, state: FSMContext
 ):
+    topic = next((
+        label for label in contact_topics()
+        if callback_data.topic in (label, ContactTopicChoice.for_label(label).topic)
+    ), None)
+    if topic is None:
+        await TechSupport_callback(callback, user, state)
+        return
+
     async with contact_isolation.lock(state.key):
         data = await state.get_data()
         if not isinstance(callback.message, Message) or data.get("contact_card_id") != callback.message.message_id:
             await callback.answer("Открой раздел «Связь» ещё раз.")
             return
         await callback.answer()
-        topic = callback_data.topic
+        prompt = CONTACT_PROMPTS.get(topic, "Напиши, с чем хочешь обратиться. Можно отправить скриншот с подписью.")
         await edit_contact_card(
             callback.message.chat.id, callback.message.message_id,
-            f"<b>{topic.value}</b>\n\n{CONTACT_PROMPTS[topic]}", contact_back_kb("← К темам"),
+            f"<b>{html.escape(topic)}</b>\n\n{prompt}", contact_back_kb("← К темам"),
         )
-        await state.update_data(contact_topic=topic.value)
-
-
-@dp.callback_query(F.data.startswith("contact_topic:"))
-async def reopen_contact_topics(callback: CallbackQuery, user: User, state: FSMContext):
-    await TechSupport_callback(callback, user, state)
+        await state.update_data(contact_topic=topic)
 
 
 @dp.message(StateFilter(TechStates.message))
@@ -352,36 +355,55 @@ async def send_contact_request(message: Message, user: User, state: FSMContext) 
         return
 
     data = await state.get_data()
-    topic = data.get("contact_topic", ContactTopic.SUPPORT.value)
+    topic = data.get("contact_topic", "")
     if topic == "Поддержка":
         topic = ContactTopic.SUPPORT.value
+    destination = settings.CONTACT_DESTINATIONS.get(topic)
+    if settings.CONTACT_DESTINATIONS and destination is None:
+        await message.answer(
+            "Выбери тему, затем отправь сообщение ещё раз.",
+            reply_markup=contact_back_kb("Выбрать тему"),
+        )
+        return
+
+    topic = topic or ContactTopic.SUPPORT.value
+    chat_id = destination.chat_id if destination else settings.SUPPORT_CHAT_ID
+    thread_id = destination.message_thread_id if destination else None
     username = f"@{user.username}" if user.username else "нет"
+    profile_url = f"https://t.me/{user.username}" if user.username else f"tg://user?id={user.id}"
     notice = gettext("messages.tech_support.request_success.for_chat").format(
         user_id=user.id,
         username=html.escape(username),
         name=html.escape(user.tg_first_name or "нет"),
-        topic=topic,
+        topic=html.escape(topic),
         request=html.escape(message.text or ""),
     )
 
     try:
         # Копирование сохраняет вложение, подпись и длинный текст целиком.
         if message.text and len(notice.encode("utf-16-le")) <= 2 * 4096:
-            await bot.send_message(chat_id=settings.SUPPORT_CHAT_ID, text=notice)
+            await bot.send_message(
+                chat_id=chat_id,
+                message_thread_id=thread_id,
+                text=notice,
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                    InlineKeyboardButton(text="Ответить автору", url=profile_url),
+                ]]),
+            )
         else:
-            author = username if user.username else "Автор"
-            profile_url = f"https://t.me/{user.username}" if user.username else f"tg://user?id={user.id}"
+            author = username if user.username else str(user.id)
             await bot.copy_message(
-                chat_id=settings.SUPPORT_CHAT_ID,
+                chat_id=chat_id,
+                message_thread_id=thread_id,
                 from_chat_id=message.chat.id,
                 message_id=message.message_id,
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
-                    InlineKeyboardButton(text=f"{topic} · {author} ({user.id})", url=profile_url),
+                    InlineKeyboardButton(text=f"Ответить · {author} · {topic}", url=profile_url),
                 ]]),
             )
     except TelegramAPIError as exc:
         if isinstance(exc, TelegramBadRequest) and "chat not found" in exc.message.lower():
-            logger.warning("Чат для обращений недоступен: Telegram не нашёл SUPPORT_CHAT_ID")
+            logger.warning("Telegram не нашёл чат для темы «{}»", topic)
             await message.answer("Чат команды временно недоступен. Напиши нам на info@abcofme.ru.")
         else:
             logger.warning("Не удалось отправить обращение: {}", type(exc).__name__)
