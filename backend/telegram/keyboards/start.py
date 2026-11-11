@@ -29,7 +29,7 @@ tech_support_btn = InlineKeyboardButton(
 )
 
 about_project_btn = InlineKeyboardButton(
-    text="Узнать подробнее",
+    text="Как это выглядит изнутри",
     callback_data=AboutProject().pack()
 )
 
@@ -73,10 +73,7 @@ def about_diary_kb() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 def categories_kb() -> InlineKeyboardMarkup:
-    # Символы категорий — деревья из концепции «Азбуки Я»
-    categories = {
-        "Личность": "🍁", "Самооценка": "🍇", "Темперамент": "🌳", "Общительность": "🫒", "Профориентация": "🌿"
-    }
+    categories = ("Личность", "Самооценка", "Темперамент", "Общительность", "Профориентация")
     builder = InlineKeyboardBuilder()
     
     builder.row(InlineKeyboardButton(
@@ -84,8 +81,8 @@ def categories_kb() -> InlineKeyboardMarkup:
         web_app=WebAppInfo(url=settings.WEB_APP_URL + "?tab=tests")
     ))
     
-    for cat, icon in categories.items():
-        builder.row(InlineKeyboardButton(text=f"{icon} {cat}", callback_data=TestCategoryDesc(name=cat).pack()))
+    for category in categories:
+        builder.row(InlineKeyboardButton(text=category, callback_data=TestCategoryDesc(name=category).pack()))
     
     builder.row(main_menu_btn)
     return builder.as_markup()
