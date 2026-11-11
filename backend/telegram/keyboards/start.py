@@ -10,7 +10,8 @@ from settings import settings
 
 diary_btn = InlineKeyboardButton(
     text="Личный дневник",
-    web_app=WebAppInfo(url=settings.WEB_APP_URL)
+    web_app=WebAppInfo(url=settings.WEB_APP_URL),
+    style="primary",
 )
 
 about_diary_btn = InlineKeyboardButton(

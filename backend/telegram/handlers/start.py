@@ -38,7 +38,7 @@ _details_upload_lock = Lock()
 _details_video_file_id: str | None = None
 
 
-START_TEXT = "<blockquote><b>Что такое азбука Я.</b></blockquote>"
+START_TEXT = "<b>Что такое азбука Я.</b>"
 
 
 async def send_section_card(user: User, image: PurePath, caption: str, keyboard: InlineKeyboardMarkup) -> None:
@@ -114,7 +114,7 @@ async def edit_details_video(message: Message, video: str | FSInputFile) -> Mess
             width=1072,
             height=1920,
             duration=139,
-            caption="<blockquote><b>Как это выглядит изнутри</b></blockquote>",
+            caption="<b>Как это выглядит изнутри</b>",
             show_caption_above_media=True,
             supports_streaming=True,
         ),
@@ -154,17 +154,17 @@ async def AboutDiary_callback(callback: CallbackQuery, user: User, state: FSMCon
     await delete_editing_message(user)
     
     text = (
-        "<b><u>О дневнике:</u></b>\n"
+        "<b>О дневнике:</b>\n"
         "- это твой <b>личный говорящий дневник</b>, соблюдающий 152-ФЗ, "
         "поэтому никто кроме тебя не видит записи.\n\n"
         "<b><u>Как это работает:</u></b>\n"
-        "<blockquote expandable>Он отлично тебя понимает, так как раскладывает на событие "
-        "и реакцию на слои, потом прогоняет через оси, состоящие из <b>результатов тестов</b>.\n\n"
+        "Он отлично тебя понимает, так как раскладывает на событие и реакцию на слои, "
+        "потом прогоняет через оси, состоящие из результатов тестов.\n\n"
         "Он дает хорошие советы, так как берет их из классических правил и авторитетов "
-        "психодиагностики, психологии личности, поведенческой активации, теории мотивации "
-        "и психологии действия.</blockquote>\n\n"
-        "Вообще, работа дневника гораздо сложнее, но лучше пользоваться и видеть качество "
-        "на практике, чем понимать все.\n\n"
+        "<tg-spoiler>психодиагностики, психологии личности, поведенческой активации, "
+        "теории мотивации и психологии действия</tg-spoiler>.\n\n"
+        "<blockquote>Вообще, работа дневника гораздо сложнее, но лучше пользоваться "
+        "и видеть качество на практике, чем понимать все.</blockquote>\n\n"
         "<i>Желаем приятного и полезного использования!</i>"
     )
     await send_section_card(user, IMAGES / "о_дневнике.jpg", text, about_diary_kb())
@@ -177,10 +177,10 @@ async def AboutTests_callback(callback: CallbackQuery, user: User, state: FSMCon
     await delete_editing_message(user)
     
     text = (
-        "<b><u>О тестах:</u></b>\n"
-        "<blockquote>- мы собрали <b>классику психодиагностики</b>, описывающую всю личность, "
+        "<b>О тестах:</b>\n"
+        "- мы собрали классику психодиагностики, описывающую всю личность, "
         "кроме живого опыта, который вы описываете в дневнике, и можете увидеть реальное "
-        "пересечение опыта и предрасположенности в отчетах.</blockquote>"
+        "<b>пересечение опыта и предрасположенности</b> в отчетах."
     )
     await send_section_card(user, IMAGES / "о_тестах.jpg", text, categories_kb())
 
@@ -275,10 +275,10 @@ async def TechSupport_callback(
     
     await state.set_state(TechStates.message)
     text = (
-        "<b><u>Связь</u></b>\n"
-        "<blockquote>- Мы рады любой обратной связи, профессиональному общению, "
+        "<b>Связь</b>\n"
+        "- Мы рады любой обратной связи, профессиональному общению, "
         "с радостью поможем <b>подобрать обучение и психолога</b> "
-        "идеально подходящие именно под тебя.</blockquote>"
+        "идеально подходящие именно под тебя."
     )
     await send_section_card(user, IMAGES / "связь.jpg", text, menu_kb())
 
