@@ -1,31 +1,38 @@
 from asyncio import Lock
+from contextlib import suppress
 from datetime import datetime
 import html
 from pathlib import Path, PurePath
 
-from aiogram.exceptions import TelegramBadRequest
+from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
 from aiogram.filters import CommandObject, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.methods import SendPhoto, SendVideo
-from aiogram.types import Message, CallbackQuery, FSInputFile, InlineKeyboardMarkup, InputMediaVideo
+from aiogram.methods import EditMessageCaption, SendPhoto, SendVideo
+from aiogram.types import Message, CallbackQuery, FSInputFile, InlineKeyboardButton, InlineKeyboardMarkup, InputMediaVideo
 from aiogram.utils.i18n import gettext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types.web_app_info import WebAppInfo
+from loguru import logger
 
 from backend.database.models import User
 from backend.database.patterns.dao import DataAccessObject
 from backend.friends import befriend, inviter_from_payload
 from backend.telegram.notify import greet_new_friend
 from backend.telegram.bot import dp, bot
-from backend.telegram.callback_data.profile import Psychologist, TechSupport, MainMenu, AboutDiary, AboutProject, AboutTests, TestCategoryDesc
+from backend.telegram.callback_data.profile import (
+    AboutDiary, AboutProject, AboutTests, ContactTopic, ContactTopicChoice, MainMenu, Psychologist, TechSupport,
+    TestCategoryDesc,
+)
 from backend.referrals import capture_referral
 from backend.telegram.keyboards.base import back_kb
-from backend.telegram.keyboards.start import start_kb, main_menu_btn, menu_kb, categories_kb, about_diary_kb
+from backend.telegram.keyboards.start import (
+    about_diary_kb, categories_kb, contact_back_kb, contact_topics_kb, menu_kb, start_kb,
+)
 from backend.telegram.states.user import TechStates
 from backend.telegram.utils.message import (
     schedule_message_edition,
     delete_pending_messages,
-    delete_editing_message, edit_scheduled_message,
+    delete_editing_message,
     schedule_previous_message
 )
 from paths import IMAGES
@@ -41,7 +48,15 @@ _details_video_file_id: str | None = None
 START_TEXT = "<b>Что такое азбука Я.</b>"
 
 
-async def send_section_card(user: User, image: PurePath, caption: str, keyboard: InlineKeyboardMarkup) -> None:
+CONTACT_PROMPTS = {
+    ContactTopic.SUPPORT: "Опиши, что случилось или что хотелось бы улучшить. Можно отправить скриншот с подписью.",
+    ContactTopic.PSYCHOLOGIST: "Напиши, с каким запросом хочешь обратиться и какой формат встреч тебе удобен.",
+    ContactTopic.TRAINING: "Напиши, какое направление тебя интересует и чему ты хочешь научиться.",
+}
+contact_isolation = dp.storage.create_isolation()
+
+
+async def send_section_card(user: User, image: PurePath, caption: str, keyboard: InlineKeyboardMarkup) -> Message:
     msg = await bot(SendPhoto(
         chat_id=user.id,
         photo=FSInputFile(image),
@@ -50,6 +65,7 @@ async def send_section_card(user: User, image: PurePath, caption: str, keyboard:
         reply_markup=keyboard,
     ))
     await schedule_message_edition(user, msg)
+    return msg
 
 
 async def send_welcome(user: User) -> None:
@@ -269,38 +285,114 @@ async def Psychologist_callback(
 async def TechSupport_callback(
         callback: CallbackQuery, user: User, state: FSMContext
 ):
-    await callback.message.delete()
-    await delete_pending_messages(user)
-    await delete_editing_message(user)
-    
-    await state.set_state(TechStates.message)
-    text = (
-        "<b>Связь</b>\n"
-        "- Мы рады любой обратной связи, профессиональному общению, "
-        "с радостью поможем <b>подобрать обучение и психолога</b> "
-        "идеально подходящие именно под тебя."
-    )
-    await send_section_card(user, IMAGES / "связь.jpg", text, menu_kb())
+    await callback.answer()
+    async with contact_isolation.lock(state.key):
+        await delete_pending_messages(user)
+        await delete_editing_message(user)
+        if callback.message:
+            with suppress(TelegramAPIError):
+                await bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
+        await state.clear()
+
+        text = (
+            "<b>Связь</b>\n\n"
+            "Выбери тему или напиши сообщение прямо в этот чат. "
+            "Можно отправить скриншот с подписью."
+        )
+        card = await send_section_card(user, IMAGES / "связь.jpg", text, contact_topics_kb())
+        await state.set_data({"contact_card_id": card.message_id})
+        await state.set_state(TechStates.message)
+
+
+async def edit_contact_card(chat_id: int, message_id: int, text: str, keyboard: InlineKeyboardMarkup) -> None:
+    await bot(EditMessageCaption(
+        chat_id=chat_id,
+        message_id=message_id,
+        caption=text,
+        show_caption_above_media=True,
+        reply_markup=keyboard,
+    ))
+
+
+@dp.callback_query(ContactTopicChoice.filter())
+async def contact_topic_callback(
+        callback: CallbackQuery, callback_data: ContactTopicChoice, state: FSMContext
+):
+    async with contact_isolation.lock(state.key):
+        data = await state.get_data()
+        if not isinstance(callback.message, Message) or data.get("contact_card_id") != callback.message.message_id:
+            await callback.answer("Открой раздел «Связь» ещё раз.")
+            return
+        await callback.answer()
+        topic = callback_data.topic
+        await edit_contact_card(
+            callback.message.chat.id, callback.message.message_id,
+            f"<b>{topic.value}</b>\n\n{CONTACT_PROMPTS[topic]}", contact_back_kb("← К темам"),
+        )
+        await state.update_data(contact_topic=topic.value)
 
 
 @dp.message(StateFilter(TechStates.message))
 async def TechStatesMessage_handler(
         message: Message, user: User, state: FSMContext
 ):
-    await bot.send_message(
-        chat_id=settings.SUPPORT_CHAT_ID,
-        text=gettext("messages.tech_support.request_success.for_chat").format(
-            user_id=user.id,
-            username=f"@{user.username}" if user.username else "нет",
-            name=html.escape(user.tg_first_name or "нет"),
-            # Текст пользователя уходит в HTML-сообщение: «<» без экранирования ломает отправку
-            request=html.escape(message.text or message.caption or "—")
-        )
+    async with contact_isolation.lock(state.key):
+        if await state.get_state() == TechStates.message.state:
+            await send_contact_request(message, user, state)
+
+
+async def send_contact_request(message: Message, user: User, state: FSMContext) -> None:
+    if message.media_group_id or not (message.text or message.caption or message.photo or message.document):
+        await message.answer("Отправь текст, один скриншот или один файл отдельным сообщением.")
+        return
+
+    data = await state.get_data()
+    topic = data.get("contact_topic", ContactTopic.SUPPORT.value)
+    username = f"@{user.username}" if user.username else "нет"
+    notice = gettext("messages.tech_support.request_success.for_chat").format(
+        user_id=user.id,
+        username=html.escape(username),
+        name=html.escape(user.tg_first_name or "нет"),
+        topic=topic,
+        request=html.escape(message.text or ""),
     )
-    await message.delete()
-    await state.clear()
-    await edit_scheduled_message(
-        user=user,
-        text=gettext("messages.tech_support.request_success.for_user"),
-        kb=menu_kb()
-    )
+
+    try:
+        # Копирование сохраняет вложение, подпись и длинный текст целиком.
+        if message.text and len(notice.encode("utf-16-le")) <= 2 * 4096:
+            await bot.send_message(chat_id=settings.SUPPORT_CHAT_ID, text=notice)
+        else:
+            author = username if user.username else "Автор"
+            profile_url = f"https://t.me/{user.username}" if user.username else f"tg://user?id={user.id}"
+            await bot.copy_message(
+                chat_id=settings.SUPPORT_CHAT_ID,
+                from_chat_id=message.chat.id,
+                message_id=message.message_id,
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                    InlineKeyboardButton(text=f"{topic} · {author} ({user.id})", url=profile_url),
+                ]]),
+            )
+    except TelegramAPIError as exc:
+        logger.warning("Не удалось отправить обращение в поддержку: {}", type(exc).__name__)
+        await message.answer("Не удалось отправить обращение. Попробуй отправить сообщение ещё раз.")
+        return
+
+    if await state.get_state() == TechStates.message.state:
+        await state.clear()
+    text = gettext("messages.tech_support.request_success.for_user")
+    keyboard = contact_back_kb("Написать ещё")
+    await confirm_contact_request(message, data.get("contact_card_id"), text, keyboard)
+    with suppress(TelegramAPIError):
+        await message.delete()
+
+
+async def confirm_contact_request(
+        message: Message, card_id: int | None, text: str, keyboard: InlineKeyboardMarkup
+) -> None:
+    if card_id is not None:
+        try:
+            await edit_contact_card(message.chat.id, card_id, text, keyboard)
+            return
+        except TelegramAPIError:
+            pass
+    await message.answer(text, reply_markup=keyboard)

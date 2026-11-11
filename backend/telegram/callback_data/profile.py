@@ -1,3 +1,5 @@
+from enum import Enum
+
 from aiogram.filters.callback_data import CallbackData
 
 
@@ -15,6 +17,16 @@ class MainMenu(CallbackData, prefix="main_menu"):
 
 class TechSupport(CallbackData, prefix="tech_support"):
     pass
+
+
+class ContactTopic(str, Enum):
+    SUPPORT = "Поддержка"
+    PSYCHOLOGIST = "Подбор психолога"
+    TRAINING = "Подбор обучения"
+
+
+class ContactTopicChoice(CallbackData, prefix="contact_topic"):
+    topic: ContactTopic
 
 
 class AboutDiary(CallbackData, prefix="about_diary"):

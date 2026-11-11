@@ -4,7 +4,10 @@ from aiogram.utils.i18n import gettext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from backend.database.models import User
-from backend.telegram.callback_data.profile import AboutDiary, AboutProject, AboutTests, TestCategoryDesc, TechSupport, MainMenu, Psychologist
+from backend.telegram.callback_data.profile import (
+    AboutDiary, AboutProject, AboutTests, ContactTopic, ContactTopicChoice, MainMenu, Psychologist, TechSupport,
+    TestCategoryDesc,
+)
 from backend.telegram.keyboards.admin.menu import admin_menu_btn
 from settings import settings
 
@@ -63,6 +66,23 @@ def menu_kb() -> InlineKeyboardMarkup:
         [main_menu_btn],
     ]
     return InlineKeyboardBuilder(buttons).as_markup()
+
+
+def contact_topics_kb() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    for topic in ContactTopic:
+        builder.button(text=topic.value, callback_data=ContactTopicChoice(topic=topic))
+    builder.adjust(1)
+    builder.row(main_menu_btn)
+    return builder.as_markup()
+
+
+def contact_back_kb(text: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=text, callback_data=TechSupport().pack())],
+        [InlineKeyboardButton(text="← В меню", callback_data=MainMenu().pack())],
+    ])
+
 
 def about_diary_kb() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()

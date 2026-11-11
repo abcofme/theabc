@@ -112,6 +112,7 @@ msgstr "<b>Новая заявка психологу</b>\n\n"
 
 msgid "messages.tech_support.request_success.for_chat"
 msgstr "<b>Новое обращение в «Связь»</b>\n\n"
+"Тема: <b>{topic}</b>\n"
 "ID: <code>{user_id}</code>\n"
 "Username: {username}\n"
 "Имя в Telegram: <a href=\"tg://user?id={user_id}\">{name}</a>\n\n"
@@ -123,8 +124,7 @@ msgstr "Заявка отправлена психологу и уже на ра
 
 msgid "messages.tech_support.request_success.for_user"
 msgstr "<b>Сообщение отправлено</b>\n\n"
-"Мы уже его рассматриваем.\n\n"
-"<blockquote><b>Чтобы получить ответ</b>\nПроверь, что твой профиль в Telegram открыт для сообщений.</blockquote>"
+"Если потребуется ответ, команда напишет тебе в Telegram. Проверь, что ты можешь получать сообщения от новых собеседников."
 
 msgid "messages.admin.menu"
 msgstr "<b>Админ-панель</b>\n\n"
