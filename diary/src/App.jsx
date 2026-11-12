@@ -19,7 +19,7 @@ import { markInstallOffered, shouldOfferInstall } from './features/install/offer
 import { overviewPath } from './features/diary/useDiary';
 import { dayKey } from './features/diary/utils';
 import { api, prefetch } from './utils/api';
-import { getSession, isStandalone, isTelegram, onSessionChange, saveSession } from './utils/platform';
+import { getSession, isMobile, isStandalone, isTelegram, onSessionChange, saveSession } from './utils/platform';
 import diaryIcon from './assets/navigation/diary-clay.webp';
 import testsIcon from './assets/navigation/tests-clay.webp';
 import reportsIcon from './assets/navigation/reports-clay.webp';
@@ -39,7 +39,15 @@ const TABS = [
 // Через столько после первого экрана монтируем остальные вкладки и подгружаем редкие экраны
 const BACKGROUND_LOAD_DELAY_MS = 2000;
 
-const isTextField = (el) => el?.tagName === 'INPUT' || el?.tagName === 'TEXTAREA';
+// Панели мобильного браузера тоже меняют видимую высоту, но обычно меньше клавиатуры.
+const MIN_KEYBOARD_HEIGHT = 120;
+const KEYBOARD_INPUT_TYPES = ['text', 'search', 'email', 'password', 'tel', 'url', 'number'];
+
+function isKeyboardInput(el) {
+  const isTextField = el instanceof HTMLTextAreaElement ||
+    (el instanceof HTMLInputElement && KEYBOARD_INPUT_TYPES.includes(el.type));
+  return isTextField && !el.readOnly && !el.disabled && el.inputMode !== 'none';
+}
 
 // Ссылки из бота открывают нужный экран: ?tab=reports&report=12, ?tab=reports&section=compatibility,
 // ?tab=profile&page=portrait, ?page=billing, ?tab=profile&page=install
@@ -110,24 +118,42 @@ function useBrowserSession() {
   return { isSignedIn: isTelegram || isSignedIn, isClaiming, notice };
 }
 
-// Клавиатура открыта, пока фокус в поле ввода: прячем нижнее меню, чтобы оно не прыгало над ней
+// Прячем меню, пока экранная клавиатура занимает часть окна. Фокус может остаться после её закрытия.
 function useKeyboardOpen() {
   const [isOpen, setIsOpen] = useState(false);
   useEffect(() => {
-    const onFocus = (e) => {
-      if (isTextField(e.target)) setIsOpen(true);
+    if (!isMobile) return;
+    const viewport = window.visualViewport;
+    let lastWidth = window.innerWidth;
+    let fullHeight = window.innerHeight;
+    let frame = 0;
+
+    const sync = () => {
+      const { innerWidth, innerHeight } = window;
+      const isEditing = isKeyboardInput(document.activeElement);
+      // Некоторые WebView уменьшают всё окно. Сохраняем высоту до этого изменения до поворота или ухода из поля.
+      fullHeight = isEditing && innerWidth === lastWidth ? Math.max(fullHeight, innerHeight) : innerHeight;
+      lastWidth = innerWidth;
+      const visibleHeight = viewport ? viewport.height * viewport.scale : innerHeight;
+      setIsOpen(isEditing && fullHeight - visibleHeight >= MIN_KEYBOARD_HEIGHT);
     };
-    const onBlur = () => {
-      // Небольшая задержка, чтобы меню не мигало при переходе между полями
-      setTimeout(() => {
-        if (!isTextField(document.activeElement)) setIsOpen(false);
-      }, 50);
+
+    const scheduleSync = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(sync);
     };
-    document.addEventListener('focusin', onFocus);
-    document.addEventListener('focusout', onBlur);
+    document.addEventListener('focusin', scheduleSync);
+    document.addEventListener('focusout', scheduleSync);
+    window.addEventListener('resize', scheduleSync);
+    viewport?.addEventListener('resize', scheduleSync);
+    scheduleSync();
+
     return () => {
-      document.removeEventListener('focusin', onFocus);
-      document.removeEventListener('focusout', onBlur);
+      document.removeEventListener('focusin', scheduleSync);
+      document.removeEventListener('focusout', scheduleSync);
+      window.removeEventListener('resize', scheduleSync);
+      viewport?.removeEventListener('resize', scheduleSync);
+      cancelAnimationFrame(frame);
     };
   }, []);
   return isOpen;
