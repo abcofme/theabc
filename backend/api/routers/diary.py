@@ -5,11 +5,12 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.analysis_results import format_test_results, load_analysis_test_results
 from backend.api.common import AI_MODEL, GENDER_NEUTRAL_RULE, ai_endpoint, get_session, run_in_background
 from backend.api.security import validate_twa_data
 from backend.billing import charge, refund
 from backend.bonuses import award
-from backend.database.models import ContentLog, DiaryEntry, PersonalityPortrait
+from backend.database.models import ContentLog, DiaryEntry
 from backend.token_usage import complete_charge
 from settings import settings
 
@@ -49,18 +50,16 @@ def _count_streak(dates, today):
     return streak
 
 async def _start_reaction_analysis(user_id: int, entry_id: int, session: AsyncSession, follow_up: dict | None = None) -> bool:
-    """Запускает разбор записи в фоне, если он возможен: есть портрет и Premium или хватает баланса.
+    """Запускает разбор записи в фоне, если есть результат в каждой категории и Premium или хватает баланса.
     Фронт по ответу решает, ждать ли разбор. follow_up — прежний разбор и дополнение к нему (см. add_diary_addition)."""
-    portrait = (await session.execute(
-        select(PersonalityPortrait.id).where(PersonalityPortrait.user_id == user_id)
-    )).first()
-    if not portrait:
+    test_results = await load_analysis_test_results(session, user_id)
+    if not test_results:
         return False
     try:
         charged = await charge(session, user_id, "diary_answer")
     except HTTPException:
         return False
-    run_in_background(_analyze_reaction_bg(user_id, entry_id, charged, follow_up))
+    run_in_background(_analyze_reaction_bg(user_id, entry_id, format_test_results(test_results), charged, follow_up))
     return True
 
 # Эндпоинт 2: Получение записей дневника за месяц
@@ -255,7 +254,7 @@ async def update_diary_entry(
     return {"status": "success", "analysis_started": analysis_started}
 
 # Эндпоинт 3.2: Дополнить запись — текст дописывается к записи, не меняя её, и дневник читает её заново.
-# Если новый разбор не запустить (нет портрета, не хватает баланса), прежний ответ остаётся: он оплачен
+# Если новый разбор не запустить (нет результатов тестов или не хватает баланса), сохраняем прежний ответ
 @router.post("/api/diary/{entry_id}/addition")
 async def add_diary_addition(
     entry_id: int,
@@ -347,7 +346,7 @@ DIARY_ANALYSIS_OUTPUT_FORMAT = """ТЕХНИЧЕСКИЙ ФОРМАТ ВЫВОД
 
 Шаги гейт, парсер, аналитик, валидатор и самопроверка выполняй про себя и в ответ не выводи.
 
-Первая строка — одно число от 0 до 100: насколько реакция соответствует портрету личности.
+Первая строка — одно число от 0 до 100: насколько описанная реакция согласуется с относящимися к ситуации результатами тестов. Это приблизительная оценка, не оценка правильности реакции. Учитывай только доступные данные.
 Вторая строка — ровно три знака: ===
 Дальше — только текст для человека в Markdown: пять частей генератора, каждая начинается с заголовка на отдельной строке:
 ## Зеркало
@@ -371,8 +370,8 @@ DIARY_ANALYSIS_OUTPUT_FORMAT = """ТЕХНИЧЕСКИЙ ФОРМАТ ВЫВОД
 NO_ANALYSIS_SCORE = -1
 
 
-async def _analyze_reaction_bg(user_id: int, entry_id: int, charged: int | None = None, follow_up: dict | None = None):
-    result = await _run_reaction_analysis(user_id, entry_id, follow_up, charged)
+async def _analyze_reaction_bg(user_id: int, entry_id: int, test_results_text: str, charged: int | None, follow_up: dict | None = None):
+    result = await _run_reaction_analysis(user_id, entry_id, test_results_text, follow_up, charged)
     # Платят только за разбор: сбой ИИ или просьба дописать запись бесплатны
     if result is None or result["score"] == NO_ANALYSIS_SCORE:
         await refund(user_id, charged)
@@ -403,14 +402,14 @@ def _follow_up_messages(follow_up: dict) -> list:
             "Человек дополнил эту запись после твоего ответа.\n"
             "Дополнение: " + follow_up["text"] + "\n\n"
             "Сделай новый полный разбор записи вместе с дополнением в том же формате. "
-            "Опирайся на свой прежний ответ: не повторяй его, а уточни, подтверди или пересмотри выводы с учётом нового. "
+            "Учитывай прежний ответ как контекст разговора, а выводы проверь по записи и переданным результатам тестов. "
             "Если дополнение отвечает на «Что можно дополнить» или проверяет твоё предположение, скажи, что это меняет. "
             "Оценку пересчитай по записи целиком."
         )},
     ]
 
 
-async def _run_reaction_analysis(user_id: int, entry_id: int, follow_up: dict | None = None, charged: int | None = None):
+async def _run_reaction_analysis(user_id: int, entry_id: int, test_results_text: str, follow_up: dict | None = None, charged: int | None = None):
     import httpx
     import re
     from backend.database import async_session
@@ -426,23 +425,13 @@ async def _run_reaction_analysis(user_id: int, entry_id: int, follow_up: dict | 
             if not entry:
                 return
                 
-            portrait = (await db.execute(select(PersonalityPortrait).where(PersonalityPortrait.user_id == user_id))).scalars().first()
-            if not portrait:
-                return
-            portrait_text = portrait.content or ""
-            # Портрет передаём целиком (сейчас 6–7 тыс. символов): промпт сверяет все 20 тестов,
-            # и обрезка выдала бы часть из них за непройденные. Лимит — только от аномально длинных
-            if len(portrait_text) > 20000:
-                portrait_text = portrait_text[:20000] + "\n[портрет обрезан]"
-            print(f"Portrait len: {len(portrait_text)}, event len: {len(entry.event)}, reaction len: {len(entry.reaction)}")
-            
             SYSTEM_PROMPT = DIARY_ANALYSIS_PROMPT + "\n\n" + DIARY_ANALYSIS_OUTPUT_FORMAT + "\n\n" + GENDER_NEUTRAL_RULE
 
             # При дополнении первая реплика — запись в том виде, в каком дневник её уже разобрал
             addition = follow_up["earlier_addition"] if follow_up else entry.addition
             user_message = (
-                "Портрет пользователя (все результаты тестов с полными описаниями):\n"
-                + portrait_text
+                "Результаты всех пройденных тестов пользователя:\n"
+                + test_results_text
                 + "\n\nСобытие: " + entry.event
                 + "\nРеакция: " + entry.reaction
                 + ("\nДополнение (дописано позже): " + addition if addition else "")
@@ -521,12 +510,14 @@ async def analyze_reaction(
     session: AsyncSession = Depends(get_session)
 ):
     user_id = user_data.get("id")
+    test_results = await load_analysis_test_results(session, user_id)
+    if not test_results:
+        raise HTTPException(status_code=400, detail="Чтобы получить разбор записи, пройдите хотя бы по одному тесту в каждой категории.")
     charged = await charge(session, user_id, "diary_answer")
 
     # Повторный разбор пользователь запускает сам и ждёт его — выполняем сразу, без фона
-    result = await _analyze_reaction_bg(user_id, entry_id, charged)
+    result = await _analyze_reaction_bg(user_id, entry_id, format_test_results(test_results), charged)
     if result is not None:
         return {"status": "success", "score": result["score"], "explanation": result["explanation"]}
     else:
-        from fastapi import HTTPException
         raise HTTPException(status_code=500, detail="Failed to analyze reaction")

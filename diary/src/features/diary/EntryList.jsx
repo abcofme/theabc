@@ -14,7 +14,6 @@ export function AnalysisHint({ lock, onNavigate }) {
   const go = () => {
     onNavigate?.();
     if (lock.action === 'billing') openBilling();
-    else if (lock.action === 'portrait') navigate({ tab: 'profile', page: 'portrait' });
     else navigate({ tab: lock.action });
   };
   return (

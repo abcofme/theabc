@@ -13,7 +13,7 @@ from backend.database.models import Category, Test, Progress, Result, Personalit
 router = APIRouter()
 
 
-# Удаление портрета: дневник перестаёт отвечать, пока портрет не сформируют заново
+# Удаление сохранённого портрета
 @router.delete("/api/portrait/clear")
 async def clear_personality_portrait(
     user_data: dict = Depends(validate_twa_data),
@@ -40,8 +40,7 @@ async def _generate_portrait_bg(user_id: int, user_tests_count: int, prompt: str
     await award(user_id, "portrait")
     from backend.telegram.notify import notify
     await notify(user_id, "<b>Портрет личности готов</b>\n\n"
-                          "В нём описаны <b>твои сильные стороны и особенности</b>. "
-                          "Дневник будет сверять с портретом твои реакции.",
+                          "В нём описаны <b>твои сильные стороны и особенности</b>.",
                  "tab=profile&page=portrait", "Открыть портрет")
 
 

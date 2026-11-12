@@ -18,5 +18,5 @@ export function syncTelegramTheme(webApp, theme) {
     catch { /* Старые клиенты Telegram могут не поддерживать один из методов. */ }
   }
   // Вне Telegram цвет панели браузера и строки состояния установленного приложения
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', background);
+  globalThis.document?.querySelector('meta[name="theme-color"]')?.setAttribute('content', background);
 }

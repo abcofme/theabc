@@ -55,7 +55,7 @@ export default function PortraitPage({ onBack }) {
   let content = portrait?.content || '';
   if (content && !content.includes('```json')) content = content.replace(/(\[\s*\{[\s\S]*"leftValue"[\s\S]*\}\s*\])/, '```json\n$1\n```');
   const generate = () => generatePortrait().catch(err => handleError(err));
-  const remove = () => WebApp.showConfirm('Удалить портрет личности? Дневник перестанет отвечать на записи, пока портрет не сформирован заново.', async (confirmed) => {
+  const remove = () => WebApp.showConfirm('Удалить портрет личности?', async (confirmed) => {
     if (!confirmed) return;
     try {
       await api('/api/portrait/clear', { method: 'DELETE' });
@@ -77,7 +77,7 @@ export default function PortraitPage({ onBack }) {
         </section>}
         {portrait ? <ResultContent content={content} titles={['Портрет личности', 'Мой портрет личности']} components={portraitComponents} contents={false} variant="document" clayHeadings /> : state === 'ready' ? <section className="ui-card">
           <h3 className="text-lg font-semibold mb-3"><ClayText text="Все тесты пройдены" /></h3>
-          <p className="ui-secondary mb-5">Можно сформировать портрет личности. Он поможет дневнику лучше понимать твои реакции.</p>
+          <p className="ui-secondary mb-5">Портрет соберёт твои сильные стороны и особенности по результатам тестов.</p>
           <button type="button" onClick={generate} className="ui-button ui-button--primary"><Wand2 size={20} /> Сформировать портрет</button>
         </section> : <section className="ui-card">
           <h3 className="text-lg font-semibold mb-3"><ClayText text="Портрет складывается из тестов" /></h3>

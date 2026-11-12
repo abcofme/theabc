@@ -13,7 +13,7 @@ const Label = ({ children }) => (
   <span className="entry-label">{children}</span>
 );
 
-// Шкала соответствия портрету: заполняется один раз при появлении
+// Шкала типичности реакции заполняется один раз при появлении
 function MatchScale({ score }) {
   const [shown, setShown] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches ? score : 0);
 
@@ -161,7 +161,7 @@ export default function EntryCard({ entry, analysis, onDelete, onRetry, onEdit, 
 
       {analysis === 'done' && (
         <div className="mt-5">
-          <Label>Насколько это похоже на тебя</Label>
+          <Label>Насколько реакция для тебя типична</Label>
           <MatchScale score={score} />
           {entry.portrait_match_explanation && <Reply text={entry.portrait_match_explanation} />}
         </div>

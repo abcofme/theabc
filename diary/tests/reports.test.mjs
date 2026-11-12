@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { entriesLevel, groupLock, newEntriesStart, reportExcerpt } from '../src/features/reports/reportHelpers.js';
+import { entriesLevel, newEntriesStart, reportExcerpt, reportLock } from '../src/features/reports/reportHelpers.js';
 
 test('Превью отчета — первый абзац без заголовков, разметки и блоков кода', () => {
   const content = '# Повторяющиеся события\n\n```json\n{"a": 1}\n```\n\n## Главный паттерн\n\nЧаще всего записи касаются **рабочих встреч**, где ты *сдерживаешься*.\n\nВторой абзац.';
@@ -22,14 +22,15 @@ test('Шкала полноты отчета растет с числом зап
   assert.equal(entriesLevel(null), 0);
 });
 
-test('Отчеты по дневнику ждут портрет, профориентация — свои тесты', () => {
-  const career = (passed) => [{ name: 'Профориентация', tests: [{ id: 1, passed }] }];
-  const base = { total_tests: 6, passed_tests: 4, portrait: null, categories: career(false) };
-  assert.equal(groupLock('general', base).target.tab, 'tests');
-  assert.deepEqual(groupLock('general', { ...base, passed_tests: 6 }).target, { tab: 'profile', page: 'portrait' });
-  assert.equal(groupLock('general', { ...base, portrait: { content: '' } }), null);
-  assert.equal(groupLock('career', base).label, 'Нужны тесты профориентации · 0\u00a0из\u00a01');
-  assert.equal(groupLock('career', { ...base, categories: career(true) }), null);
-  assert.equal(groupLock('career', { ...base, categories: [] }).label, 'Нужны тесты профориентации');
-  assert.equal(groupLock('general', null), null);
+test('У всех личных отчётов общий порог: по одному тесту из каждой непустой категории', () => {
+  const profile = { total_tests: 2, passed_tests: 2, portrait: { content: 'Сохранённый портрет' } };
+  const career = { name: 'Профориентация', tests: [{ id: 1, passed: true }] };
+  const temperament = { name: 'Темперамент', tests: [{ id: 2, passed: true }, { id: 3, passed: false }] };
+  const empty = { name: 'Пустая категория', tests: [] };
+  const withCategories = (...categories) => ({ ...profile, categories });
+  assert.deepEqual(reportLock(profile).target, { tab: 'tests' });
+  assert.deepEqual(reportLock(withCategories(empty)).target, { tab: 'tests' });
+  assert.match(reportLock(withCategories(temperament, { ...career, has_test_result: false })).text, /по одному тесту в каждой категории/);
+  assert.match(reportLock(withCategories({ ...temperament, has_test_result: false }, career)).text, /по одному тесту в каждой категории/);
+  assert.equal(reportLock(withCategories(temperament, career, empty)), null);
 });

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../../utils/api';
 
 const POLL_INTERVAL = 3000;
-// Разбор идёт по всему портрету и может занять до пары минут; дольше — считаем, что он не удался
+// Разбор записи может занять до пары минут.
 const POLL_TIMEOUT = 150000;
 
 export const overviewPath = (today) => `/api/diary/overview?today=${today}`;
@@ -80,7 +80,7 @@ export default function useDiary(today) {
     loadOverview();
   }, [stopWaiting, loadOverview]);
 
-  // Повторный разбор, если фоновый не удался или запись старше портрета
+  // Ручной разбор записи, если у неё ещё нет ответа.
   const retryAnalysis = useCallback(async (id) => {
     startWaiting(id);
     try {

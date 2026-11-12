@@ -1,4 +1,5 @@
 import { addDays, format, parseISO } from 'date-fns';
+import { analysisTestProgress } from '../../context/profile.js';
 
 // Меньше записей — отчет получается неточным
 export const FEW_ENTRIES = 5;
@@ -29,37 +30,17 @@ export function reportExcerpt(content = '', limit = 180) {
   return plain.length > limit ? `${plain.slice(0, limit).replace(/\s+\S*$/, '')}…` : plain;
 }
 
-// Почему отчеты группы пока недоступны и куда вести пользователя. null — доступны.
-// Отчеты по дневнику сверяются с портретом, отчеты профориентации — с ее тестами (так их строит бэкенд)
-export function groupLock(groupId, profile) {
+// Почему новый отчёт пока недоступен и куда вести пользователя. null — доступен.
+export function reportLock(profile) {
   if (!profile) return null;
-  if (groupId === 'general' && !profile.portrait) {
-    const left = Math.max((profile.total_tests || 0) - (profile.passed_tests || 0), 0);
-    if (left === 0 && profile.total_tests > 0) {
-      return {
-        label: 'Нужен портрет личности',
-        text: 'Эти отчеты сверяют записи с портретом личности. Все тесты пройдены — осталось сформировать портрет.',
-        action: 'К портрету',
-        target: { tab: 'profile', page: 'portrait' },
-      };
-    }
+  const { covered, total } = analysisTestProgress(profile);
+  if (total === 0 || covered < total) {
     return {
-      label: 'Нужен портрет личности',
-      text: 'Эти отчеты сверяют записи с портретом личности. Он складывается из тестов — пройди оставшиеся.',
+      label: 'Нужны результаты тестов',
+      text: 'Пройди хотя бы по одному тесту в каждой категории, чтобы сформировать отчёт.',
       action: 'К тестам',
       target: { tab: 'tests' },
     };
-  }
-  if (groupId === 'career') {
-    const tests = profile.categories?.find(c => c.name === 'Профориентация')?.tests || [];
-    if (!tests.some(t => t.passed)) {
-      return {
-        label: tests.length ? `Нужны тесты профориентации · 0\u00a0из\u00a0${tests.length}` : 'Нужны тесты профориентации',
-        text: 'Эти отчеты строятся по тестам профориентации — сначала пройди их.',
-        action: 'К тестам профориентации',
-        target: { tab: 'tests', category: 'Профориентация' },
-      };
-    }
   }
   return null;
 }

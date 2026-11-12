@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { analysisTestProgress } from '../../context/profile.js';
 
 // Такую оценку бэкенд ставит, когда ИИ не делал разбор (см. NO_ANALYSIS_SCORE в backend/api/main.py)
 export const NO_ANALYSIS_SCORE = -1;
@@ -24,15 +25,13 @@ export const formatLeaves = n => `${n.toLocaleString('ru-RU')} ${plural(Math.abs
 // Почему дневник не может ответить и куда вести пользователя (action: tests | billing). null — ответ доступен
 export function analysisLock(profile) {
   if (!profile) return { text: null };
-  if (!profile.portrait) {
-    const left = Math.max(profile.total_tests - profile.passed_tests, 0);
-    if (left > 0) {
-      return {
-        text: `Ответ дневника появится после портрета личности. Осталось ${left} ${plural(left, ['тест', 'теста', 'тестов'])}`,
-        action: 'tests',
-      };
-    }
-    return { text: 'Все тесты пройдены — сформируй портрет личности, и дневник начнет отвечать', action: 'portrait' };
+  const testProgress = analysisTestProgress(profile);
+  if (testProgress.total === 0 || testProgress.covered < testProgress.total) {
+    return {
+      text: 'Пройди хотя бы по одному тесту в каждой категории, чтобы дневник мог ответить',
+      action: 'tests',
+      testProgress,
+    };
   }
   if (profile.access_level !== 'Premium' && profile.balance < profile.prices.diary_answer) {
     return { text: 'Баланс закончился — пополни его или оформи Premium, и дневник снова будет отвечать', action: 'billing' };

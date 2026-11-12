@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readDraft, saveDraft, clearDraft, readTextDraft, saveTextDraft } from '../src/features/diary/drafts.js';
 import { readTestProgress, resumeTestProgress, saveTestProgress, clearTestProgress } from '../src/features/tests/testProgress.js';
 import { parseScales, scaleValue } from '../src/features/profile/portraitScales.js';
-import { newestEntryFirst } from '../src/features/diary/utils.js';
+import { analysisLock, analysisState, newestEntryFirst } from '../src/features/diary/utils.js';
 import { formatResultText, remarkResultLabels } from '../src/components/resultFormatting.js';
 
 class MemoryStorage {
@@ -91,6 +91,32 @@ test('Новая запись остается первой после сохр�
   const entries = [{ id: 31, event: 'Старая' }, { id: 7, event: 'Дополненная старая' }, { id: 42, event: 'Новая' }];
   assert.deepEqual([...entries].sort(newestEntryFirst).map(entry => entry.id), [42, 31, 7]);
   assert.deepEqual([entries[2], entries[1], entries[0]].sort(newestEntryFirst).map(entry => entry.id), [42, 31, 7]);
+});
+
+test('Дневник требует по одному результату из каждой категории и показывает сохранённые ответы', () => {
+  const profile = { balance: 47, prices: { diary_answer: 47 }, passed_tests: 2, portrait: null };
+  const missingCategory = {
+    ...profile,
+    categories: [
+      { name: 'Темперамент', tests: [{ id: 1, passed: true }, { id: 2, passed: true }] },
+      { name: 'Профориентация', has_test_result: false, tests: [{ id: 3, passed: true }] },
+      { name: 'Пустая категория', tests: [] },
+    ],
+  };
+  assert.equal(analysisLock({ ...profile, portrait: { content: 'Сохранённый портрет' } }).action, 'tests');
+  const lock = analysisLock(missingCategory);
+  assert.equal(lock.action, 'tests');
+  assert.deepEqual(lock.testProgress, { covered: 1, total: 2 });
+  assert.equal(analysisState({ portrait_match_score: 0 }, false, lock), 'done');
+  const ready = {
+    ...missingCategory,
+    categories: missingCategory.categories.map(category => category.name === 'Профориентация'
+      ? { ...category, has_test_result: true }
+      : category),
+  };
+  assert.equal(analysisLock(ready), null);
+  assert.equal(analysisLock({ ...ready, balance: 0 }).action, 'billing');
+  assert.equal(analysisLock({ ...ready, balance: 0, access_level: 'Premium' }), null);
 });
 
 test('Сохраненный ответ получает заголовки и списки, текст и JSON шкал не теряются', () => {

@@ -6,6 +6,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
+from backend.analysis_results import has_test_result
 from backend.api.common import get_session, is_admin, run_in_background
 from backend.api.routers.diary import _count_streak, _longest_streak
 from backend.api.security import validate_twa_data
@@ -121,8 +122,10 @@ async def get_profile(
     categories = sorted(categories, key=lambda c: 0 if c.name.lower() == "темперамент" else (2 if c.name.lower() == "профориентация" else 1))
 
     # Получаем прогресс пользователя
-    prog_query = select(Progress).where(Progress.user_id == user_id).options(joinedload(Progress.test))
-    progresses = (await session.execute(prog_query)).scalars().all()
+    prog_query = select(Progress).where(Progress.user_id == user_id).order_by(Progress.created_at, Progress.id)
+    latest_progress = {p.test_id: p for p in (await session.execute(prog_query)).scalars()}
+    progresses = latest_progress.values()
+    tests_with_results = {p.test_id for p in progresses if has_test_result(p.hardcode_value, p.value)}
 
     # Собираем словарь прогресса: test_id -> результат
     user_results = {}
@@ -134,7 +137,7 @@ async def get_profile(
     # Загружаем все результаты для этих тестов за один запрос
     test_results_map = {}
     if test_ids:
-        res_query = select(Result).where(Result.test_id.in_(test_ids))
+        res_query = select(Result).where(Result.test_id.in_(test_ids)).order_by(Result.id)
         all_results = (await session.execute(res_query)).scalars().all()
         for r in all_results:
             if r.test_id not in test_results_map:
@@ -153,19 +156,24 @@ async def get_profile(
             results_for_test = test_results_map.get(p.test_id, [])
             matched_name = None
             for r in results_for_test:
-                if r.range_from <= p.value and r.range_to >= p.value:
+                if r.range_from <= p.value and (r.range_to is None or r.range_to >= p.value):
                     matched_name = r.name
                     break
 
             user_results[p.test_id] = matched_name if matched_name else f"Балл: {p.value}"
 
-    # Портрет строится по всем тестам, кроме профориентации: она — для отчётов о работе
+    # Счётчики портрета не включают тесты профориентации
     result_data = []
     total_tests = 0
     passed_tests = 0
 
     for cat in categories:
-        cat_data = {"id": cat.id, "name": cat.name, "tests": []}
+        cat_data = {
+            "id": cat.id,
+            "name": cat.name,
+            "has_test_result": any(t.id in tests_with_results for t in cat.tests),
+            "tests": [],
+        }
         for t in cat.tests:
             if cat.name != "Профориентация":
                 total_tests += 1

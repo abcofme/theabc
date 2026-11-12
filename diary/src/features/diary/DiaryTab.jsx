@@ -11,7 +11,7 @@ import MonthSheet from './MonthSheet';
 import DaySheet from './DaySheet';
 import ScreenState from '../../components/ScreenState';
 import ClayText from '../../components/ClayText';
-import PortraitPath from './PortraitPath';
+import AnalysisPath from './AnalysisPath';
 import { dayKey, plural, analysisLock, newestEntryFirst } from './utils';
 
 // Дневник открывается на сегодняшнем дне: что произошло сегодня, ответ дневника и неделя вокруг.
@@ -29,8 +29,7 @@ export default function DiaryTab() {
   const [savedEntryId, setSavedEntryId] = useState(null);
 
   const lock = analysisLock(profile);
-  // Без портрета путь к ответам показывает отдельная карточка, строка-подсказка нужна только про баланс
-  const showPath = !!profile && !profile.portrait;
+  const showPath = lock?.action === 'tests';
 
   // Вернулись в приложение — мог смениться день, а записи — добавиться с другого устройства
   useEffect(() => {
@@ -107,7 +106,7 @@ export default function DiaryTab() {
 
       <WeekStrip today={today} daysWithEntries={daysWithEntries} onSelect={selectDay} />
 
-      {showPath && <div className="mb-4"><PortraitPath onNavigate={closeSheets} /></div>}
+      {showPath && <div className="mb-4"><AnalysisPath testProgress={lock.testProgress} onNavigate={closeSheets} /></div>}
 
       {overviewStatus === 'loading' ? (
         <ScreenState loading title="Загружаем записи…" />
@@ -164,8 +163,7 @@ export default function DiaryTab() {
         </section>
       ) : overviewStatus === 'ready' && todayEntries.length === 0 && !showPath && (
         <p className="mt-6 px-2 text-sm text-[var(--ui-secondary)] text-center leading-relaxed">
-          Записывай, что произошло и какой была твоя реакция. Дневник знает твои сильные и слабые стороны,
-          сверит реакцию с портретом личности и ответит — без искажений.
+          Записывай, что произошло и какой была твоя реакция. Дневник сопоставит её с результатами всех пройденных тестов.
         </p>
       )}
 

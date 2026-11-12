@@ -5,7 +5,7 @@ import ClayBanner from '../../components/ClayBanner';
 import ClayText from '../../components/ClayText';
 import GenerationProgress from '../../components/GenerationProgress';
 import { PERIODS, formatDay, periodLabel } from './reportTypes';
-import { FEW_ENTRIES, entriesLevel, groupLock, reportExcerpt } from './reportHelpers';
+import { FEW_ENTRIES, entriesLevel, reportLock, reportExcerpt } from './reportHelpers';
 import { plural } from '../diary/utils';
 import { useProfile } from '../../context/profile';
 import { useAppNav, useErrorHandler } from '../../navigation/appNav';
@@ -109,7 +109,7 @@ function NewReportForm({ type, onCreated, isGenerating, onGeneratingChange }) {
 export default function ReportTypePage({ type, reports, onOpenReport, onCreated, onBack, isGenerating, onGeneratingChange }) {
   const { profile } = useProfile();
   const { navigate } = useAppNav();
-  const lock = groupLock(type.group, profile);
+  const lock = reportLock(profile);
   const [latest, ...earlier] = reports;
   const excerpt = latest ? reportExcerpt(latest.content) : '';
   const goToLock = () => { onBack(); navigate(lock.target); };

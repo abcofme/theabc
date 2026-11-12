@@ -3,7 +3,7 @@ import ClayBanner from '../../components/ClayBanner';
 import ClayText from '../../components/ClayText';
 import Spinner from '../../components/Spinner';
 import { REPORT_GROUPS, REPORT_TYPES, reportTypeOf, formatDay } from './reportTypes';
-import { groupLock } from './reportHelpers';
+import { reportLock } from './reportHelpers';
 import useNewEntries from './useNewEntries';
 import { plural } from '../diary/utils';
 import { useProfile } from '../../context/profile';
@@ -45,6 +45,7 @@ export default function ReportsCatalog({ reports, jobs, active, onOpenType, onOp
   if (!reports) return <Spinner />;
   const unread = reports.filter(r => r.is_read === false && reportTypeOf(r)).slice(0, 2);
   const generating = REPORT_TYPES.filter(t => jobs[t.id]);
+  const lock = reportLock(profile);
 
   return (
     <div className="ui-stack">
@@ -73,27 +74,25 @@ export default function ReportsCatalog({ reports, jobs, active, onOpenType, onOp
         </div>
       )}
 
-      {REPORT_GROUPS.map(group => {
-        const lock = groupLock(group.id, profile);
-        return (
-          <section key={group.id} id={`reports-group-${group.id}`} className="flex flex-col gap-4 scroll-mt-4" aria-labelledby={`reports-group-title-${group.id}`}>
-            <header className="px-1">
-              <ClayText as="h2" id={`reports-group-title-${group.id}`} text={group.title} className="report-group-title" />
-            </header>
-            {REPORT_TYPES.filter(t => t.group === group.id).map(type => (
-              <TypeCard
-                key={type.id}
-                type={type}
-                reports={reports}
-                lock={lock}
-                isGenerating={!!jobs[type.id]}
-                newCount={newEntries[type.id]}
-                onOpen={() => onOpenType(type)}
-              />
-            ))}
-          </section>
-        );
-      })}
+      {REPORT_GROUPS.map(group => (
+        <section key={group.id} id={`reports-group-${group.id}`} className="flex flex-col gap-4 scroll-mt-4" aria-labelledby={`reports-group-title-${group.id}`}>
+          <header className="px-1">
+            <ClayText as="h2" id={`reports-group-title-${group.id}`} text={group.title} className="report-group-title" />
+            <p className="ui-secondary mt-1">{group.desc}</p>
+          </header>
+          {REPORT_TYPES.filter(t => t.group === group.id).map(type => (
+            <TypeCard
+              key={type.id}
+              type={type}
+              reports={reports}
+              lock={lock}
+              isGenerating={!!jobs[type.id]}
+              newCount={newEntries[type.id]}
+              onOpen={() => onOpenType(type)}
+            />
+          ))}
+        </section>
+      ))}
     </div>
   );
 }

@@ -7,7 +7,7 @@ export const REPORT_GROUPS = [
   {
     id: 'general',
     title: 'Поведенческий код',
-    desc: 'По дневнику и портрету личности',
+    desc: 'По дневнику и результатам всех пройденных тестов',
     items: [
       {
         id: 'repeating_events',
@@ -34,7 +34,7 @@ export const REPORT_GROUPS = [
   {
     id: 'career',
     title: 'Профориентация',
-    desc: 'По дневнику и тестам профориентации',
+    desc: 'По дневнику и результатам тестов с фокусом на профориентацию',
     items: [
       {
         id: 'energy',
