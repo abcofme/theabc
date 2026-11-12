@@ -165,6 +165,7 @@ input[type='date']::-webkit-calendar-picker-indicator { background: url('./asset
 .portrait-path > li[data-current], .portrait-path > li[data-done] { color: var(--ui-text); }
 .portrait-path__mark { display: flex; flex-shrink: 0; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1.5px solid var(--ui-stroke); border-radius: 50%; font-size: 13px; font-weight: 700; }
 .portrait-path > li[data-current] .portrait-path__mark { border-color: var(--ui-text); background: var(--ui-text); color: var(--color-rose-950); }
+.portrait-path > li[data-current] .portrait-path__mark .clay-text__glyph { filter: var(--clay-inverse-filter); }
 .portrait-path > li[data-done] .portrait-path__mark { border-color: var(--ui-sage); background: var(--ui-sage); color: var(--color-rose-950); }
 .result-reader { width: 100%; min-width: 0; }
 .result-content { width: 100%; max-width: 64ch; margin-inline: auto; font-size: 16px; line-height: 1.75; font-weight: 400; overflow-wrap: anywhere; }
