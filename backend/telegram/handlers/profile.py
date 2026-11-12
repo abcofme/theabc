@@ -61,6 +61,6 @@ async def Profile_callback(
     await delete_pending_messages(user)
     await edit_scheduled_message(
         user=user,
-        text=gettext("messages.profile.results") + "<i>Выберите категорию тестов.</i>",
+        text=gettext("messages.profile.results") + "<i>Выбери категорию тестов.</i>",
         kb=await category_tests_kb(dao=dao, user=user, profile=True, is_profile=True)
     )

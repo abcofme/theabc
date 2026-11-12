@@ -68,7 +68,7 @@ async def CategoryChoose_callback(
         await state.update_data(dict(is_profile=True))
         text = (
             f"<b>{escape(category.name.capitalize(), quote=False)}</b>\n\n"
-            "<i>Выберите результат теста из списка.</i>\n\n"
+            "<i>Выбери результат теста из списка.</i>\n\n"
         )
     else:
         await state.update_data(dict(is_profile=False))
@@ -123,7 +123,7 @@ async def TestChoose_callback(
             Progress, dict(user_id=user.id, test_id=callback_data.id),
             options=[joinedload(Progress.test)]
         )
-        text = "<b>Вы ещё не проходили этот тест</b>"
+        text = "<b>У тебя ещё нет результата по этому тесту</b>"
         kb = back_kb()
         for progress in progresses:
             if progress.hardcode_value:
