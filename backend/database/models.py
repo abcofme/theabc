@@ -417,6 +417,8 @@ class PartnerWithdrawal(BaseModel):
     note: Mapped[Optional[str]] = mapped_column(String(240))
     payout_phone: Mapped[Optional[str]] = mapped_column(String(12))
     payout_bank: Mapped[Optional[str]] = mapped_column(String(100))
+    payout_card_encrypted: Mapped[Optional[str]] = mapped_column(Text)
+    payout_card_last4: Mapped[Optional[str]] = mapped_column(String(4))
 
 
 class TokenMovement(BaseModel):

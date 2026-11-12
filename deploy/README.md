@@ -40,6 +40,10 @@ docker compose ps                          # состояние контейне
 docker compose logs -f bot api             # логи
 ```
 
+## Партнёрские выплаты
+
+Для выплат по номеру карты задайте `REFERRAL_PAYOUT_CARD_KEY` в `/etc/theabc/referral-payouts.env` с правами `0600`. Значение генерирует `cryptography.fernet.Fernet.generate_key()`. Файл загружается только в контейнер API. Храните резервную копию ключа отдельно от дампов БД, чтобы можно было обработать открытые заявки после восстановления.
+
 ## ЮKassa
 
 - Оферта, тарифы и контакты доступны в раскрываемом блоке на экране входа сайта. После входа цены и порядок получения услуг есть в разделе «Подписка и баланс»: `https://abcofme.ru/?page=billing`. Контакты и реквизиты: `https://abcofme.ru/?tab=profile&page=contacts`. Оферта: `https://abcofme.ru/?tab=profile&page=offer`.

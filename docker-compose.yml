@@ -33,6 +33,10 @@ services:
 
   api:
     <<: *backend
+    env_file:
+      - .env
+      - path: /etc/theabc/referral-payouts.env
+        required: false
     command: ["python", "run.py", "api"]
     depends_on:
       migrate:

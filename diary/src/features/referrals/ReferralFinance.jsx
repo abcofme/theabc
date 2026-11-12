@@ -7,12 +7,16 @@ import { STATUS, displayDate, kopecks, useReferralData } from './referralData';
 export default function ReferralFinance({ query }) {
   const [page, setPage] = useState(1);
   const [withdrawalPage, setWithdrawalPage] = useState(1);
+  const [payoutMethod, setPayoutMethod] = useState('sbp');
   const [payoutPhone, setPayoutPhone] = useState('');
   const [payoutBank, setPayoutBank] = useState('');
+  const [payoutCardNumber, setPayoutCardNumber] = useState('');
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const requestKey = useRef(null);
   const data = useReferralData(query === null ? null : `/api/referral/finance?${query}&page=${page}&withdrawal_page=${withdrawalPage}`);
+  const cardPayoutsEnabled = data.data?.card_payouts_enabled === true;
+  const byCard = cardPayoutsEnabled && payoutMethod === 'card';
 
   async function withdraw(amount) {
     if (busy) return;
@@ -25,18 +29,21 @@ export default function ReferralFinance({ query }) {
         body: {
           request_key: requestKey.current,
           amount_kopecks: amount,
-          payout_phone: payoutPhone,
-          payout_bank: payoutBank,
+          ...(byCard
+            ? { payout_method: 'card', payout_card_number: payoutCardNumber }
+            : { payout_method: 'sbp', payout_phone: payoutPhone, payout_bank: payoutBank }),
         },
       });
       requestKey.current = null;
       setPayoutPhone('');
       setPayoutBank('');
+      setPayoutCardNumber('');
       setFeedback({ message: 'Заявка создана. Статус появится в истории выплат.' });
       setWithdrawalPage(1);
       data.reload();
     } catch (error) {
-      setFeedback({ message: error.status === 422 ? 'Проверьте телефон и банк для выплаты.' : error.message, error: true });
+      const invalidDetails = byCard ? 'Проверьте номер карты.' : 'Проверьте телефон и банк для выплаты.';
+      setFeedback({ message: error.status === 422 ? invalidDetails : error.message, error: true });
     } finally {
       setBusy(false);
     }
@@ -59,15 +66,34 @@ export default function ReferralFinance({ query }) {
           if (canWithdraw) withdraw(balance.available);
         }}>
           {canWithdraw && <>
-            <label className="flex flex-col gap-1 ui-secondary text-sm">Телефон для СБП
-              <input className="ui-input" type="tel" autoComplete="tel" placeholder="+7 (___) ___-__-__"
-                value={payoutPhone} onChange={event => setPayoutPhone(event.target.value)}
-                maxLength={32} disabled={busy} required />
-            </label>
-            <label className="flex flex-col gap-1 ui-secondary text-sm">Банк получателя
-              <input className="ui-input" value={payoutBank} onChange={event => setPayoutBank(event.target.value)}
-                maxLength={100} disabled={busy} required />
-            </label>
+            {cardPayoutsEnabled && <div className="ui-segmented" role="group" aria-label="Способ выплаты">
+              <button type="button" aria-pressed={!byCard} disabled={busy} onClick={() => {
+                setPayoutMethod('sbp');
+                setPayoutCardNumber('');
+                setFeedback(null);
+              }}>СБП</button>
+              <button type="button" aria-pressed={byCard} disabled={busy} onClick={() => {
+                setPayoutMethod('card');
+                setFeedback(null);
+              }}>По номеру карты</button>
+            </div>}
+            {byCard ? (
+              <label className="flex flex-col gap-1 ui-secondary text-sm">Номер карты
+                <input className="ui-input" type="text" inputMode="numeric" autoComplete="off"
+                  placeholder="0000 0000 0000 0000" value={payoutCardNumber}
+                  onChange={event => setPayoutCardNumber(event.target.value)} maxLength={32} disabled={busy} required />
+              </label>
+            ) : <>
+              <label className="flex flex-col gap-1 ui-secondary text-sm">Телефон для СБП
+                <input className="ui-input" type="tel" autoComplete="tel" placeholder="+7 (___) ___-__-__"
+                  value={payoutPhone} onChange={event => setPayoutPhone(event.target.value)}
+                  maxLength={32} disabled={busy} required />
+              </label>
+              <label className="flex flex-col gap-1 ui-secondary text-sm">Банк получателя
+                <input className="ui-input" value={payoutBank} onChange={event => setPayoutBank(event.target.value)}
+                  maxLength={100} disabled={busy} required />
+              </label>
+            </>}
           </>}
           <button type="submit" className="ui-button ui-button--primary" disabled={busy || !canWithdraw}>
             {busy ? 'Отправляем заявку…' : 'Запросить вывод'}

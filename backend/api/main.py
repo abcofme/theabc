@@ -1,8 +1,11 @@
 import time
 from urllib.parse import urlsplit
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from backend.api.common import run_in_background
 from backend.api.routers import admin, auth, diary, friends, mailings, payments, portrait, profile, referral, reports, tests
@@ -10,6 +13,15 @@ from backend.performance import record_request
 from settings import settings
 
 app = FastAPI(title="TheABC Diary API")
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error(request: Request, error: RequestValidationError):
+    if request.url.path == "/api/referral/withdraw":
+        return JSONResponse({"detail": "Проверьте сумму и реквизиты для выплаты."}, status_code=422,
+                            headers={"Cache-Control": "no-store"})
+    return await request_validation_exception_handler(request, error)
+
 
 # Фронтенд отдаётся с домена WEB_APP_URL. Когда прямой путь быстрый, он ходит в API через direct.<домен> —
 # это другой origin, поэтому разрешаем фронтенд. max_age: preflight кэшируется (Chromium — до 2 часов)

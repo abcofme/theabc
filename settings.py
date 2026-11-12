@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field, PositiveInt
+from pydantic import BaseModel, Field, PositiveInt, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Явная загрузка файла .env
@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     SUPPORT_CHAT_ID: int
     CONTACT_DESTINATIONS: dict[str, ContactDestination] = Field(default_factory=dict)
     REFERRAL_WITHDRAWAL_ADMIN_ID: PositiveInt | None = None
+    REFERRAL_PAYOUT_CARD_KEY: SecretStr | None = None
 
     # Отдельный браузерный аккаунт; без настройки вход по паролю отключён.
     BROWSER_LOGIN_NAME: str = ""

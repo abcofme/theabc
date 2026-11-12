@@ -3,8 +3,10 @@ from datetime import datetime
 from typing import Annotated, Literal
 from uuid import UUID
 
+from cryptography.fernet import Fernet, InvalidToken
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response
-from pydantic import BaseModel, Field, StringConstraints, field_validator
+from loguru import logger
+from pydantic import BaseModel, Field, SecretStr, StringConstraints, field_validator, model_validator
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import aliased
 
@@ -97,6 +99,17 @@ def withdrawal_data(withdrawal):
     )}
 
 
+def payout_card_cipher() -> Fernet | None:
+    key = settings.REFERRAL_PAYOUT_CARD_KEY
+    if key is None:
+        return None
+    try:
+        return Fernet(key.get_secret_value())
+    except ValueError:
+        logger.error("Invalid REFERRAL_PAYOUT_CARD_KEY")
+        return None
+
+
 @router.get("/api/referral/finance")
 async def get_finance(
     dates=Depends(date_filter), page: PageNumber = 1, withdrawal_page: PageNumber = 1,
@@ -125,6 +138,7 @@ async def get_finance(
                                          .offset((withdrawal_page - 1) * PAGE_SIZE).limit(PAGE_SIZE + 1))).all()
     return {
         "balance": await partner_balance(session, user_id),
+        "card_payouts_enabled": payout_card_cipher() is not None,
         "earnings": [{"id": row.id, "amount_kopecks": row.amount_kopecks, "created_at": row.created_at,
                       "available_at": row.created_at, "member_id": member_id, "is_topup": topup}
                      for row, member_id, topup in earnings[:PAGE_SIZE]],
@@ -136,16 +150,45 @@ async def get_finance(
 class WithdrawalRequest(BaseModel):
     request_key: UUID
     amount_kopecks: int | None = Field(default=None, ge=MIN_WITHDRAWAL)
-    payout_phone: str = Field(min_length=1, max_length=32)
-    payout_bank: Name
+    payout_method: Literal["sbp", "card"] = "sbp"
+    payout_phone: str | None = Field(default=None, min_length=1, max_length=32)
+    payout_bank: Name | None = None
+    payout_card_number: SecretStr | None = Field(default=None, max_length=32)
 
     @field_validator("payout_phone")
     @classmethod
-    def normalize_payout_phone(cls, phone: str) -> str:
+    def normalize_payout_phone(cls, phone: str | None) -> str | None:
+        if phone is None:
+            return None
         digits = re.sub(r"[\s()-]", "", phone)
         if not re.fullmatch(r"(?:\+7|[78])?[0-9]{10}", digits):
             raise ValueError("Укажите телефон для СБП в формате +7 и 10 цифр")
         return "+7" + digits[-10:]
+
+    @field_validator("payout_card_number")
+    @classmethod
+    def normalize_card_number(cls, value: SecretStr | None) -> SecretStr | None:
+        if value is None:
+            return None
+        number = re.sub(r"[\s-]", "", value.get_secret_value())
+        if not re.fullmatch(r"[0-9]{13,19}", number):
+            raise ValueError("Проверьте номер карты")
+        checksum = sum(map(int, number[::-2]))
+        for digit in map(int, number[-2::-2]):
+            doubled = digit * 2
+            checksum += doubled - 9 if doubled > 9 else doubled
+        if checksum % 10:
+            raise ValueError("Проверьте номер карты")
+        return SecretStr(number)
+
+    @model_validator(mode="after")
+    def check_payout_details(self):
+        if self.payout_method == "card":
+            if self.payout_card_number is None or self.payout_phone is not None or self.payout_bank is not None:
+                raise ValueError("Для перевода по карте укажите только номер карты")
+        elif self.payout_phone is None or self.payout_bank is None or self.payout_card_number is not None:
+            raise ValueError("Для СБП укажите телефон и банк получателя")
+        return self
 
 
 @router.post("/api/referral/withdraw")
@@ -176,6 +219,13 @@ async def request_withdrawal(
         partner_id=user_id, amount_kopecks=amount, request_key=request_key,
         payout_phone=req.payout_phone, payout_bank=req.payout_bank,
     )
+    if req.payout_card_number is not None:
+        cipher = payout_card_cipher()
+        if cipher is None:
+            raise HTTPException(503, "Перевод по карте временно недоступен")
+        number = req.payout_card_number.get_secret_value()
+        withdrawal.payout_card_encrypted = cipher.encrypt(number.encode("ascii")).decode("ascii")
+        withdrawal.payout_card_last4 = number[-4:]
     session.add(withdrawal)
     await session.commit()
     if settings.REFERRAL_WITHDRAWAL_ADMIN_ID is not None:
@@ -264,8 +314,33 @@ async def admin_withdrawals(
     response.headers["Cache-Control"] = "no-store"
     return {"withdrawals": [{**withdrawal_data(row), "partner_id": str(row.partner_id),
                              "username": username, "name": name,
-                             "payout_phone": row.payout_phone, "payout_bank": row.payout_bank}
+                             "payout_phone": row.payout_phone, "payout_bank": row.payout_bank,
+                             "payout_card_last4": row.payout_card_last4}
                             for row, username, name in rows[:PAGE_SIZE]], "more": len(rows) > PAGE_SIZE}
+
+
+@router.get("/api/admin/referral/withdrawals/{withdrawal_id}/card")
+async def admin_withdrawal_card(
+    withdrawal_id: int, response: Response,
+    user_data: dict = Depends(validate_twa_data), session=Depends(get_session),
+):
+    await require_admin(user_data, session)
+    encrypted = await session.scalar(select(PartnerWithdrawal.payout_card_encrypted).where(
+        PartnerWithdrawal.id == withdrawal_id, PartnerWithdrawal.status == "pending",
+    ))
+    if not encrypted:
+        raise HTTPException(404, "Номер карты недоступен")
+    cipher = payout_card_cipher()
+    if cipher is None:
+        raise HTTPException(503, "Не удалось открыть номер карты")
+    try:
+        number = cipher.decrypt(encrypted.encode("ascii")).decode("ascii")
+    except InvalidToken as exc:
+        logger.error("Could not decrypt card for withdrawal {}", withdrawal_id)
+        raise HTTPException(503, "Не удалось открыть номер карты") from exc
+    logger.info("Admin {} viewed card for withdrawal {}", user_data["id"], withdrawal_id)
+    response.headers["Cache-Control"] = "no-store"
+    return {"card_number": number}
 
 
 class ResolveWithdrawal(BaseModel):
@@ -292,5 +367,6 @@ async def resolve_withdrawal(
     row.resolved_at = datetime.utcnow()
     row.resolved_by = admin.id if admin else None
     row.note = (req.note or "").strip() or None
+    row.payout_card_encrypted = None
     await session.commit()
     return withdrawal_data(row)

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Select from '../../components/Select';
 import { api } from '../../utils/api';
 import { ReferralCabinet } from '../referrals/ReferralCabinet';
@@ -63,6 +63,44 @@ function Access() {
   );
 }
 
+function PayoutCard({ row }) {
+  const [number, setNumber] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!number) return;
+    const timer = setTimeout(() => setNumber(null), 30_000);
+    return () => clearTimeout(timer);
+  }, [number]);
+
+  async function toggleNumber() {
+    if (number) {
+      setNumber(null);
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const card = await api(`/api/admin/referral/withdrawals/${row.id}/card`);
+      setNumber(card.card_number);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="pb-2 ui-secondary text-sm">
+      <p>Карта <span className="select-text tabular-nums">{number || `•••• ${row.payout_card_last4}`}</span></p>
+      {row.status === 'pending' && <button type="button" className="ui-button ui-button--quiet"
+        disabled={busy} onClick={toggleNumber}>{number ? 'Скрыть номер' : 'Показать номер карты'}</button>}
+      {error && <p role="alert">{error}</p>}
+    </div>
+  );
+}
+
 function Withdrawals() {
   const [status, setStatus] = useState('pending');
   const [page, setPage] = useState(1);
@@ -109,7 +147,7 @@ function Withdrawals() {
             <AdminRow label={`№${row.id} · ${row.username ? '@' + row.username : row.name || 'Партнёр'}`}
               hint={`ID ${row.partner_id} · ${displayDate(row.created_at, true)} · ${STATUS[row.status]}`}
               value={kopecks(row.amount_kopecks)} />
-            {row.payout_phone && row.payout_bank ? (
+            {row.payout_card_last4 ? <PayoutCard key={row.status} row={row} /> : row.payout_phone && row.payout_bank ? (
               <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 pb-2 text-sm ui-secondary">
                 <dt>Телефон для СБП</dt><dd className="select-text">{row.payout_phone}</dd>
                 <dt>Банк получателя</dt><dd className="select-text [overflow-wrap:anywhere]">{row.payout_bank}</dd>
