@@ -12,6 +12,7 @@ import { lazyScreen, preloadScreens } from './components/lazyScreen';
 import TelegramChrome from './components/TelegramChrome';
 import DepthMotion from './components/DepthMotion';
 import { useProfile } from './context/profile';
+import { useTheme } from './context/theme';
 import LoginScreen from './features/auth/LoginScreen';
 import InstallOffer from './features/install/InstallOffer';
 import BonusToast from './features/bonuses/BonusToast';
@@ -161,6 +162,7 @@ function useKeyboardOpen() {
 
 function Shell() {
   const { profile, profileError, refreshProfile } = useProfile();
+  const { theme } = useTheme();
   const [request, setRequest] = useState(readDeepLink);
   const [activeTab, setActiveTab] = useState(request.tab);
   // Скрытые вкладки монтируем при первом переходе или когда первый экран уже показан:
@@ -185,6 +187,17 @@ function Shell() {
   useEffect(() => {
     if (isInstallBonusDue) api('/api/bonuses/install', { method: 'POST' }).then(refreshProfile).catch(() => {});
   }, [isInstallBonusDue, refreshProfile]);
+
+  const lightThemeBonusRequest = useRef(false);
+  const isLightThemeBonusDue = theme === 'light' && Boolean(profile?.bonuses?.some(b => b.kind === 'light_theme' && !b.done));
+  useEffect(() => {
+    if (!isLightThemeBonusDue || lightThemeBonusRequest.current) return;
+    lightThemeBonusRequest.current = true;
+    api('/api/bonuses/light-theme', { method: 'POST' })
+      .then(refreshProfile)
+      .catch(() => {})
+      .finally(() => { lightThemeBonusRequest.current = false; });
+  }, [isLightThemeBonusDue, refreshProfile]);
 
   const isLoaded = Boolean(profile);
   useEffect(() => {

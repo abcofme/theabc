@@ -325,3 +325,8 @@ async def bonuses_seen(
 @router.post("/api/bonuses/install")
 async def app_installed(user_data: dict = Depends(validate_twa_data)):
     return {"amount": await award(user_data.get("id"), "install_app")}
+
+
+@router.post("/api/bonuses/light-theme")
+async def light_theme_enabled(user_data: dict = Depends(validate_twa_data)):
+    return {"amount": await award(user_data.get("id"), "light_theme")}

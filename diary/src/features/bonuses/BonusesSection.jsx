@@ -1,4 +1,4 @@
-import { Check, ChevronDown, ChevronRight, ChevronUp, Sparkles } from '../../components/ClayIcon';
+import { Check, ChevronDown, ChevronRight, ChevronUp, Leaf, Sparkles } from '../../components/ClayIcon';
 import { formatLeaves } from '../diary/utils';
 import './bonuses.css';
 
@@ -13,11 +13,14 @@ function targetOf(kind) {
     friend_invited: { tab: 'reports', section: 'compatibility' },
     compatibility: { tab: 'reports', section: 'compatibility' },
     install_app: { tab: 'profile', page: 'install' },
+    light_theme: { theme: 'light' },
   }[kind] || null;
 }
 
 function BonusRow({ bonus, onGo }) {
   const art = stepArt[`../../assets/bonuses/${bonus.test_id ? 'first_test' : bonus.kind}.webp`];
+  const isLightTheme = bonus.kind === 'light_theme';
+  const hasArt = Boolean(art || isLightTheme);
   const target = !bonus.done && (bonus.test_id ? { tab: 'tests', testId: bonus.test_id } : targetOf(bonus.kind));
   const Tag = target ? 'button' : 'div';
   return (
@@ -28,10 +31,11 @@ function BonusRow({ bonus, onGo }) {
         className="bonus-step"
       >
         <span className="bonus-step__visual" aria-hidden="true">
-          {art && <img className="bonus-step__art" src={art} alt="" width={36} height={36} loading="lazy" decoding="async" draggable="false" />}
-          {(!art || bonus.done) && (
+          {art ? <img className="bonus-step__art" src={art} alt="" width={36} height={36} loading="lazy" decoding="async" draggable="false" />
+            : isLightTheme && <Leaf size={24} className="bonus-step__art" />}
+          {(!hasArt || bonus.done) && (
             <span className="bonus-step__mark" data-done={bonus.done || undefined}>
-              {bonus.done && <Check size={art ? 10 : 14} />}
+              {bonus.done && <Check size={hasArt ? 10 : 14} />}
             </span>
           )}
         </span>

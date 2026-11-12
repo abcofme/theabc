@@ -75,6 +75,7 @@ export default function ProfileTab({ request, active }) {
 
   const tgUser = currentUser() || { first_name: 'Пользователь', username: '' };
   const state = portraitState(profile);
+  const lightThemeBonus = profile?.bonuses?.find(b => b.kind === 'light_theme' && !b.done);
 
   const openPortrait = () => { setPageOrigin(null); setPage('portrait'); };
 
@@ -104,6 +105,10 @@ export default function ProfileTab({ request, active }) {
   };
 
   const goFromBonuses = (target) => {
+    if (target.theme === 'light') {
+      if (theme !== 'light') toggleTheme();
+      return;
+    }
     setPageOrigin(null);
     if (target.tab === 'profile') {
       setPage(target.page);
@@ -177,7 +182,7 @@ export default function ProfileTab({ request, active }) {
             hint={isPremium ? 'Premium активен' : 'Баланс расходуется по мере использования'}
             onClick={openBilling}
           />
-          <MenuRow icon={Leaf} label="Светлая тема">
+          <MenuRow icon={Leaf} label="Светлая тема" hint={lightThemeBonus && `За первое включение · +${formatLeaves(lightThemeBonus.amount)}`}>
             <Switch checked={theme === 'light'} label="Светлая тема" onClick={toggleTheme} />
           </MenuRow>
           {tgUser.auth_provider !== 'password' && <MenuRow icon={Bell} label="Напоминания о дневнике" hint="Вечером, если за день не было записей">

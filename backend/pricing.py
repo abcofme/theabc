@@ -37,6 +37,7 @@ BONUSES = {
     "friend_invited": 150,
     "compatibility": 100,
     "install_app": 50,
+    "light_theme": 50,
 }
 
 
