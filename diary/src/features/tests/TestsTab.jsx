@@ -30,9 +30,19 @@ export default function TestsTab({ request }) {
     window.addEventListener('test-progress:changed', update);
     return () => window.removeEventListener('test-progress:changed', update);
   }, []);
-  if (request && request.id !== handledRequest) {
+  if (request && request.id !== handledRequest && profile) {
     setHandledRequest(request.id);
-    if (request.category) setOpenCategory(categories.find(c => c.name === request.category || c.id === request.category)?.id || null);
+    if (request.testId) {
+      const category = categories.find(c => c.tests.some(t => t.id === request.testId));
+      const test = category?.tests.find(t => t.id === request.testId);
+      if (test) {
+        setOpenCategory(category.id);
+        setSelectedResult(test.passed ? test : null);
+        setRunningTest(test.passed ? null : test);
+      }
+    } else if (request.category) {
+      setOpenCategory(categories.find(c => c.name === request.category || c.id === request.category)?.id || null);
+    }
   }
   const requestedCategoryId = categories.find(category => category.name === request?.category || category.id === request?.category)?.id;
   useEffect(() => {

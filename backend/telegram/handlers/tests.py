@@ -7,8 +7,10 @@ from aiogram.types import CallbackQuery, FSInputFile
 from sqlalchemy import delete, select
 from sqlalchemy.orm import joinedload
 
+from backend.bonuses import available_test_bonus, award_test_bonus
 from backend.database.models import Progress, ProgressLog, Test
 from backend.database.patterns.result import ResultDAO
+from backend.pricing import tokens
 from backend.telegram.bot import dp, bot
 from backend.telegram.callback_data.base import SliderPage
 from backend.telegram.keyboards.base import back_kb
@@ -134,6 +136,10 @@ async def TestChoose_callback(
     else:
         test = await dao.get_object(Test, callback_data.id, options=[joinedload(Test.questions)])
         text = f"<b>{escape(test.name, quote=False)}</b>\n\n{test.description or ''}"
+        async with dao.session.begin():
+            bonus = await available_test_bonus(dao.session, user.id, test.id, len(test.questions))
+        if bonus:
+            text += f"\n\n<b>Бонус за первое прохождение</b> · +{tokens(bonus['amount'])}"
         kb = test_accept_choose_kb(test.id)
 
     if len(text) < 1024:
@@ -233,7 +239,11 @@ async def AnswerChoose_callback(
 
     if len(test.questions) - 1 == data.get("index_question"):
         answers = await dao.get_objects_by_ids(Answer, answer_ids)
-        if {answer.question_id for answer in answers} != {question.id for question in test.questions}:
+        if (
+            len(answers) != len(answer_ids)
+            or len(answers) != len(test.questions)
+            or {answer.question_id for answer in answers} != {question.id for question in test.questions}
+        ):
             return await callback.answer(text=gettext("messages.tests.result_does_not_exist"))
 
         if test.hardcode_test:
@@ -264,14 +274,17 @@ async def AnswerChoose_callback(
                 ProgressLog.created_at >= datetime.fromisoformat(started_at),
             ).limit(1)) is not None
             if not already_completed:
+                bonus_amount = await award_test_bonus(dao.session, user.id, test.id, len(test.questions))
                 await dao.session.execute(delete(Progress).where(Progress.test_id == test.id, Progress.user_id == user.id))
                 save_test_progress(dao.session, progress)
         if already_completed:
             return await callback.answer()
-        if result:
+        if result or bonus_amount:
             text = gettext("messages.tests.result").format(
-                result=result
+                result=result or gettext("messages.tests.result_does_not_exist")
             )
+            if bonus_amount:
+                text += f"\n\n<b>Бонус за первое прохождение</b> · +{tokens(bonus_amount)} на баланс"
             kb = InlineKeyboardBuilder([
                 [back_btn()], [psychologist_btn], [main_menu_btn]
             ]).as_markup()

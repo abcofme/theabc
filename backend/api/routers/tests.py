@@ -2,14 +2,14 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from backend.api.common import get_session
 from backend.api.security import validate_twa_data
-from backend.bonuses import award, passed_all_portrait_tests
-from backend.database.models import Test, Question, Answer, Progress, Result
+from backend.bonuses import available_test_bonus, award_test_bonus
+from backend.database.models import Test, Question, Answer, Progress, ProgressLog, Result
 from backend.telegram.views.hardcoded_tests import get_hardcoded_test_result
 from backend.progress import lock_user_progress, save_test_progress
 
@@ -36,14 +36,16 @@ async def get_test_details(
     
     user_id = user_data.get("id")
 
-    progress_query = select(Progress).where(Progress.test_id == test_id, Progress.user_id == user_id)
-    progress = (await session.execute(progress_query)).scalar_one_or_none()
+    progress_query = select(Progress.id).where(Progress.test_id == test_id, Progress.user_id == user_id).limit(1)
+    passed = await session.scalar(progress_query) is not None
+    bonus = None if passed else await available_test_bonus(session, user_id, test_id, len(test.questions))
     
     return {
         "id": test.id,
         "name": test.name,
         "description": test.description,
-        "passed": bool(progress),
+        "passed": passed,
+        "bonus": bonus,
         "questions": [
             {
                 "id": q.id,
@@ -71,7 +73,7 @@ async def submit_test(
         progress_query = select(Progress).where(Progress.test_id == test_id, Progress.user_id == user_id)
         progress = (await session.execute(progress_query)).scalars().first()
         if progress:
-            return {"result": "Вы уже прошли этот тест."}
+            return {"result": "Вы уже прошли этот тест.", "bonus_amount": 0}
         
         query = select(Test).options(selectinload(Test.category)).where(Test.id == test_id)
         test = (await session.execute(query)).scalar_one_or_none()
@@ -114,13 +116,11 @@ async def submit_test(
             )
             result_text = result_obj.name if result_obj and result_obj.name else "Результат не найден"
             
+        bonus_amount = await award_test_bonus(session, user_id, test_id, len(question_ids))
         save_test_progress(session, progress)
         await session.commit()
 
-        await award(user_id, "first_test")
-        if await passed_all_portrait_tests(session, user_id):
-            await award(user_id, "all_tests")
-        return {"result": result_text}
+        return {"result": result_text, "bonus_amount": bonus_amount}
     except HTTPException:
         raise
     except Exception:
@@ -135,9 +135,16 @@ async def delete_test_progress(
     session: AsyncSession = Depends(get_session)
 ):
     user_id = user_data.get("id")
-    from sqlalchemy import delete
     await lock_user_progress(session, user_id)
-    await session.execute(delete(Progress).where(Progress.test_id == test_id, Progress.user_id == user_id))
+    deleted_dates = (await session.scalars(
+        delete(Progress).where(Progress.test_id == test_id, Progress.user_id == user_id).returning(Progress.created_at)
+    )).all()
+    if deleted_dates:
+        logged = await session.scalar(select(ProgressLog.id).where(
+            ProgressLog.test_id == test_id, ProgressLog.user_id == user_id,
+        ).limit(1))
+        if logged is None:
+            session.add(ProgressLog(user_id=user_id, test_id=test_id, created_at=min(deleted_dates)))
     await session.commit()
     return {"status": "ok"}
 

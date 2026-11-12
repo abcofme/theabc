@@ -8,11 +8,8 @@ const stepArt = import.meta.glob('../../assets/bonuses/*.webp', { eager: true, q
 function targetOf(kind) {
   if (kind.startsWith('report_')) return { tab: 'reports', type: kind.slice('report_'.length) };
   return {
-    first_test: { tab: 'tests' },
-    all_tests: { tab: 'tests' },
     portrait: { tab: 'profile', page: 'portrait' },
     diary_answer: { tab: 'diary' },
-    diary_week: { tab: 'diary' },
     friend_invited: { tab: 'reports', section: 'compatibility' },
     compatibility: { tab: 'reports', section: 'compatibility' },
     install_app: { tab: 'profile', page: 'install' },
@@ -20,8 +17,8 @@ function targetOf(kind) {
 }
 
 function BonusRow({ bonus, onGo }) {
-  const art = stepArt[`../../assets/bonuses/${bonus.kind}.webp`];
-  const target = !bonus.done && targetOf(bonus.kind);
+  const art = stepArt[`../../assets/bonuses/${bonus.test_id ? 'first_test' : bonus.kind}.webp`];
+  const target = !bonus.done && (bonus.test_id ? { tab: 'tests', testId: bonus.test_id } : targetOf(bonus.kind));
   const Tag = target ? 'button' : 'div';
   return (
     <li>

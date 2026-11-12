@@ -13,6 +13,7 @@ import { useBackHandler } from '../../navigation/backStack';
 import { useAppNav, useErrorHandler } from '../../navigation/appNav';
 import { useProfile, portraitState } from '../../context/profile';
 import { api } from '../../utils/api';
+import { formatTokens } from '../diary/utils';
 import './test-runner.css';
 
 const WebApp = window.Telegram.WebApp;
@@ -43,7 +44,8 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const submissionLock = useRef(false);
-  const [result, setResult] = useState(null);
+  const [submission, setSubmission] = useState(null);
+  const result = submission?.result;
   const [showTutorial, setShowTutorial] = useState(() => !storage(s => s.getItem(TUTORIAL_KEY)));
 
   // Start while the introduction and question data are loading, with the resumed card first.
@@ -105,7 +107,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
     setSubmitError(null);
     try {
       const data = await api(`/api/tests/${details.id}/submit`, { method: 'POST', body: { answer_ids: submittedAnswers } });
-      setResult(data.result);
+      setSubmission(data);
       clearTestProgress(test.id);
       WebApp.HapticFeedback?.notificationOccurred('success');
       refreshProfile();
@@ -136,11 +138,11 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
   };
 
   const handleTouchStart = (e) => {
+    if (swipingOut) return;
     dismissTutorial();
     startXRef.current = e.touches[0].clientX;
     currentXRef.current = startXRef.current;
     setIsDragging(true);
-    setSwipingOut(null);
   };
 
   const handleTouchMove = (e) => {
@@ -198,6 +200,19 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
     void questionImages.load(nextIllustration);
   }, [illustration, nextIllustration]);
   const minutes = Math.max(1, Math.round((questions.length * SECONDS_PER_QUESTION) / 60));
+  const isAnswering = isStarted && questions.length > 0 && !result && !isSubmitting && !submitError;
+  const bonus = details?.bonus;
+  const answerBonusTotal = bonus ? bonus.amount - bonus.completion : 0;
+  const answerBonusEarned = bonus ? answers.length * bonus.per_question : 0;
+  const bonusNote = bonus && (
+    <p className="mt-3 text-center text-sm ui-secondary">
+      Бонус за первое прохождение · <strong className="text-[var(--ui-gold)]">+{formatTokens(bonus.amount)}</strong>
+      {bonus.per_question > 0 && <span className="block">
+        {bonus.completion > 0 && `${formatTokens(bonus.completion)} за завершение и `}
+        {formatTokens(bonus.per_question)} за каждый вопрос
+      </span>}
+    </p>
+  );
 
   return createPortal(
     <div className="app-overlay test-runner fixed inset-0 z-[60] flex flex-col bg-rose-950" data-test-theme={categoryStyle?.theme || 'personality'}>
@@ -212,7 +227,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
             </div>
             <button
               onClick={handleGoBack}
-              disabled={index === 0 || isSubmitting || !!submitError}
+              disabled={index === 0 || !isAnswering || !!swipingOut}
               aria-label="Предыдущий вопрос"
               className="ui-icon-button disabled:opacity-35 shrink-0"
             >
@@ -224,13 +239,18 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
         )}
       </header>
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-8 pt-2 flex flex-col relative z-10">
+      <div className={`flex-1 min-h-0 overflow-y-auto px-4 pt-2 flex flex-col relative z-10 ${isAnswering ? 'pb-2' : 'pb-8'}`}>
         {!details ? (
           <Spinner className="flex-1" />
         ) : questions.length === 0 ? (
           <ScreenState title="В этом тесте пока нет вопросов" />
         ) : result ? (
           <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
+            {submission.bonus_amount > 0 && (
+              <p className="ui-secondary mb-4" role="status">
+                Бонус за первое прохождение · <strong className="text-[var(--ui-gold)]">+{formatTokens(submission.bonus_amount)}</strong> на баланс
+              </p>
+            )}
             <ResultContent content={result} titles={[test.name, 'Результат']} contents={false} variant="document" clayHeadings testResult />
               {portraitState(profile) === 'ready' ? (
                 <div className="mt-6 border-t border-[var(--ui-text)]/10 pt-6">
@@ -268,6 +288,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
             >
               {index > 0 ? 'Продолжить тест' : 'Пройти тест'}
             </button>
+            {bonusNote}
           </div>
         ) : (
           <div className="flex-1 flex flex-col max-w-md mx-auto w-full relative">
@@ -276,7 +297,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
                 <ArrowLeft size={16} /> Нет · смахни карточку · Да <ArrowRight size={16} />
               </p>
             )}
-            <div className="relative flex-1 flex flex-col w-full min-h-[340px] mb-4">
+            <div className="relative flex-1 flex flex-col w-full min-h-[340px]">
               {/* Следующая карточка — под текущей */}
               {index + 1 < questions.length && <div className="test-question-back absolute inset-x-1 top-0 bottom-4 rounded-3xl" aria-hidden="true" />}
 
@@ -328,18 +349,35 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
                 </span>
               </div>
             </div>
-            {/* Кнопки под карточкой, в зоне большого пальца; ответы выглядят одинаково */}
-            <div className="grid grid-cols-2 gap-3">
-              <button type="button" onClick={() => triggerSwipe('left')} className="ui-button ui-button--outline min-h-14!">
-                <ArrowLeft size={20} /> Нет
-              </button>
-              <button type="button" onClick={() => triggerSwipe('right')} className="ui-button ui-button--outline min-h-14!">
-                Да <ArrowRight size={20} />
-              </button>
-            </div>
           </div>
         )}
       </div>
+
+      {isAnswering && (
+        <div className="shrink-0 w-full max-w-md mx-auto px-4 pb-4">
+          <div className="grid grid-cols-2 gap-3">
+            <button type="button" onClick={() => triggerSwipe('left')} className="ui-button ui-button--outline min-h-14!">
+              <ArrowLeft size={20} /> Нет
+            </button>
+            <button type="button" onClick={() => triggerSwipe('right')} className="ui-button ui-button--outline min-h-14!">
+              Да <ArrowRight size={20} />
+            </button>
+          </div>
+          {bonus && (
+            <div className="mt-2 text-center">
+              <p className="ui-secondary" role="status">
+                {answerBonusTotal > 0 ? 'Бонус за ответы' : 'Бонус за первое прохождение'} ·{' '}
+                <strong className="tabular-nums text-[var(--ui-gold)]">
+                  {answerBonusEarned.toLocaleString('ru-RU')}/{formatTokens(answerBonusTotal || bonus.amount)}
+                </strong>
+              </p>
+              {answerBonusTotal > 0 && bonus.completion > 0 && (
+                <p className="ui-muted">+{formatTokens(bonus.completion)} за завершение</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>,
     document.body,
   );

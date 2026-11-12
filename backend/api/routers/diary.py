@@ -15,9 +15,6 @@ from settings import settings
 
 router = APIRouter()
 
-# Бонус «7 дней подряд» (backend/bonuses.py)
-DIARY_WEEK_DAYS = 7
-
 
 def _serialize_diary_entry(e: DiaryEntry) -> dict:
     return {
@@ -156,10 +153,6 @@ async def create_diary_entry(
     session.add_all([new_entry, ContentLog(user_id=user_id, kind="diary_entry", created_at=created_at)])
     await session.commit()
     await session.refresh(new_entry)
-
-    dates = (await session.execute(select(DiaryEntry.date).distinct().where(DiaryEntry.user_id == user_id))).scalars().all()
-    if _longest_streak(dates) >= DIARY_WEEK_DAYS:
-        await award(user_id, "diary_week")
 
     # Разбор запускается только здесь: фронт его не дублирует, а ждёт, опрашивая запись
     analysis_started = await _start_reaction_analysis(user_id, new_entry.id, session)
