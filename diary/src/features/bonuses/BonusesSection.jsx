@@ -56,7 +56,7 @@ function groupSteps(bonuses, categories) {
   const groups = categories.map(category => {
     const steps = [];
     for (const test of category.tests) stepsByTest.set(test.id, steps);
-    return { key: category.id, title: category.name, steps };
+    return { key: category.id, title: category.name, steps, collapsible: true };
   });
   const otherSteps = [];
   for (const bonus of bonuses) {
@@ -109,14 +109,27 @@ export default function BonusesSection({ bonuses, categories = [], expanded, onT
       </div>
       <div id="profile-bonus-steps">
         <div className="space-y-3">
-          {groups.map(({ key, title, steps }) => steps.length > 0 && (
-            <div key={key}>
-              {title && <h3 className="ui-section-label mb-2">{title}</h3>}
-              <ul className="bonus-section__steps" role="list" aria-label={title}>
+          {groups.map(({ key, title, steps, collapsible }) => {
+            if (steps.length === 0) return null;
+            const list = (
+              <ul className={`bonus-section__steps${collapsible ? ' mt-2' : ''}`} role="list" aria-label={title}>
                 {steps.map(bonus => <BonusRow key={bonus.kind} bonus={bonus} onGo={onGo} />)}
               </ul>
-            </div>
-          ))}
+            );
+            return collapsible ? (
+              <details key={key} className="ui-disclosure">
+                <summary className="min-h-11 cursor-pointer rounded-[15px] border border-[var(--ui-line)] bg-[var(--ui-inset)] px-3 py-2 text-sm font-semibold">
+                  {title}
+                </summary>
+                {list}
+              </details>
+            ) : (
+              <div key={key}>
+                {title && <h3 className="ui-section-label mb-2">{title}</h3>}
+                {list}
+              </div>
+            );
+          })}
         </div>
         {expanded && (
           <p className="bonus-section__note ui-muted">Бонус за каждый шаг начисляется один раз. Токены можно потратить на функции с ИИ.</p>
