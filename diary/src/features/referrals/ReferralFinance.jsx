@@ -7,6 +7,8 @@ import { STATUS, displayDate, kopecks, useReferralData } from './referralData';
 export default function ReferralFinance({ query }) {
   const [page, setPage] = useState(1);
   const [withdrawalPage, setWithdrawalPage] = useState(1);
+  const [payoutPhone, setPayoutPhone] = useState('');
+  const [payoutBank, setPayoutBank] = useState('');
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const requestKey = useRef(null);
@@ -18,13 +20,23 @@ export default function ReferralFinance({ query }) {
     setBusy(true);
     setFeedback(null);
     try {
-      await api('/api/referral/withdraw', { method: 'POST', body: { request_key: requestKey.current, amount_kopecks: amount } });
+      await api('/api/referral/withdraw', {
+        method: 'POST',
+        body: {
+          request_key: requestKey.current,
+          amount_kopecks: amount,
+          payout_phone: payoutPhone,
+          payout_bank: payoutBank,
+        },
+      });
       requestKey.current = null;
+      setPayoutPhone('');
+      setPayoutBank('');
       setFeedback({ message: 'Заявка создана. Статус появится в истории выплат.' });
       setWithdrawalPage(1);
       data.reload();
     } catch (error) {
-      setFeedback({ message: error.message, error: true });
+      setFeedback({ message: error.status === 422 ? 'Проверьте телефон и банк для выплаты.' : error.message, error: true });
     } finally {
       setBusy(false);
     }
@@ -32,6 +44,7 @@ export default function ReferralFinance({ query }) {
 
   if (!data.data) return <LoadState request={data} title="Не удалось загрузить вознаграждения" />;
   const { balance, earnings, withdrawals, more_earnings, more_withdrawals } = data.data;
+  const canWithdraw = balance.reserved === 0 && balance.available >= balance.minimum;
 
   return (
     <div className="flex flex-col gap-4">
@@ -41,11 +54,25 @@ export default function ReferralFinance({ query }) {
         <AdminRow label="Уже выплачено" value={kopecks(balance.paid)} />
         <AdminRow label="Всего начислено" value={kopecks(balance.earned)} />
         <p className="ui-muted text-sm my-2">Минимум для заявки {kopecks(balance.minimum)}. Администратор переводит деньги вручную.</p>
-        <button type="button" className="ui-button ui-button--primary"
-          disabled={busy || balance.reserved > 0 || balance.available < balance.minimum}
-          onClick={() => withdraw(balance.available)}>
-          {busy ? 'Отправляем заявку…' : 'Запросить вывод'}
-        </button>
+        <form className="flex flex-col gap-2" onSubmit={event => {
+          event.preventDefault();
+          if (canWithdraw) withdraw(balance.available);
+        }}>
+          {canWithdraw && <>
+            <label className="flex flex-col gap-1 ui-secondary text-sm">Телефон для СБП
+              <input className="ui-input" type="tel" autoComplete="tel" placeholder="+7 (___) ___-__-__"
+                value={payoutPhone} onChange={event => setPayoutPhone(event.target.value)}
+                maxLength={32} disabled={busy} required />
+            </label>
+            <label className="flex flex-col gap-1 ui-secondary text-sm">Банк получателя
+              <input className="ui-input" value={payoutBank} onChange={event => setPayoutBank(event.target.value)}
+                maxLength={100} disabled={busy} required />
+            </label>
+          </>}
+          <button type="submit" className="ui-button ui-button--primary" disabled={busy || !canWithdraw}>
+            {busy ? 'Отправляем заявку…' : 'Запросить вывод'}
+          </button>
+        </form>
         {feedback && <p role={feedback.error ? 'alert' : 'status'} className="ui-secondary text-sm">{feedback.message}</p>}
       </AdminSection>
 

@@ -415,6 +415,8 @@ class PartnerWithdrawal(BaseModel):
     resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     resolved_by: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"))
     note: Mapped[Optional[str]] = mapped_column(String(240))
+    payout_phone: Mapped[Optional[str]] = mapped_column(String(12))
+    payout_bank: Mapped[Optional[str]] = mapped_column(String(100))
 
 
 class TokenMovement(BaseModel):

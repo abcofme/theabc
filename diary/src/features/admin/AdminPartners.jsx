@@ -109,6 +109,12 @@ function Withdrawals() {
             <AdminRow label={`№${row.id} · ${row.username ? '@' + row.username : row.name || 'Партнёр'}`}
               hint={`ID ${row.partner_id} · ${displayDate(row.created_at, true)} · ${STATUS[row.status]}`}
               value={kopecks(row.amount_kopecks)} />
+            {row.payout_phone && row.payout_bank ? (
+              <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 pb-2 text-sm ui-secondary">
+                <dt>Телефон для СБП</dt><dd className="select-text">{row.payout_phone}</dd>
+                <dt>Банк получателя</dt><dd className="select-text [overflow-wrap:anywhere]">{row.payout_bank}</dd>
+              </dl>
+            ) : row.status === 'pending' && <p className="ui-muted text-sm mb-2">Реквизиты не указаны.</p>}
             {row.status === 'pending' && <div className="flex flex-wrap gap-2 mb-2">
               <button type="button" className="ui-button ui-button--primary" disabled={busy}
                 onClick={() => resolve(row, 'paid')}>Отметить выплату</button>

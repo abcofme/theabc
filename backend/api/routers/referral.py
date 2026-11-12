@@ -1,9 +1,10 @@
+import re
 from datetime import datetime
 from typing import Annotated, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
-from pydantic import BaseModel, Field, StringConstraints
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response
+from pydantic import BaseModel, Field, StringConstraints, field_validator
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import aliased
 
@@ -135,6 +136,16 @@ async def get_finance(
 class WithdrawalRequest(BaseModel):
     request_key: UUID
     amount_kopecks: int | None = Field(default=None, ge=MIN_WITHDRAWAL)
+    payout_phone: str = Field(min_length=1, max_length=32)
+    payout_bank: Name
+
+    @field_validator("payout_phone")
+    @classmethod
+    def normalize_payout_phone(cls, phone: str) -> str:
+        digits = re.sub(r"[\s()-]", "", phone)
+        if not re.fullmatch(r"(?:\+7|[78])?[0-9]{10}", digits):
+            raise ValueError("Укажите телефон для СБП в формате +7 и 10 цифр")
+        return "+7" + digits[-10:]
 
 
 @router.post("/api/referral/withdraw")
@@ -161,7 +172,10 @@ async def request_withdrawal(
         raise HTTPException(409, f"Минимальная сумма вывода {MIN_WITHDRAWAL / 100:g} ₽")
     if amount > available:
         raise HTTPException(409, "Доступная сумма изменилась. Обновите баланс.")
-    withdrawal = PartnerWithdrawal(partner_id=user_id, amount_kopecks=amount, request_key=request_key)
+    withdrawal = PartnerWithdrawal(
+        partner_id=user_id, amount_kopecks=amount, request_key=request_key,
+        payout_phone=req.payout_phone, payout_bank=req.payout_bank,
+    )
     session.add(withdrawal)
     await session.commit()
     if settings.REFERRAL_WITHDRAWAL_ADMIN_ID is not None:
@@ -236,6 +250,7 @@ async def set_access(req: AccessRequest, user_data: dict = Depends(validate_twa_
 
 @router.get("/api/admin/referral/withdrawals")
 async def admin_withdrawals(
+    response: Response,
     status: Literal["pending", "paid", "rejected", "all"] = "pending", page: PageNumber = 1,
     user_data: dict = Depends(validate_twa_data), session=Depends(get_session),
 ):
@@ -246,8 +261,10 @@ async def admin_withdrawals(
         query = query.where(PartnerWithdrawal.status == status)
     rows = (await session.execute(query.order_by(PartnerWithdrawal.created_at.desc(), PartnerWithdrawal.id.desc())
                                    .offset((page - 1) * PAGE_SIZE).limit(PAGE_SIZE + 1))).all()
+    response.headers["Cache-Control"] = "no-store"
     return {"withdrawals": [{**withdrawal_data(row), "partner_id": str(row.partner_id),
-                             "username": username, "name": name}
+                             "username": username, "name": name,
+                             "payout_phone": row.payout_phone, "payout_bank": row.payout_bank}
                             for row, username, name in rows[:PAGE_SIZE]], "more": len(rows) > PAGE_SIZE}
 
 
