@@ -81,7 +81,11 @@
 .app-shell { background: transparent; }
 .app-overlay--modal { background: var(--ui-scrim); }
 .clay-text { color: var(--ui-text); }
-.clay-text__glyph, .clay-icon, .clay-navigation__icon, .clay-leaf,
+:root[data-theme='light'] .clay-text { color: #782E43; }
+:root[data-theme='light'] .clay-text__glyph {
+  filter: grayscale(1) brightness(.24) sepia(1) saturate(3.3) hue-rotate(296deg);
+}
+.clay-icon, .clay-navigation__icon, .clay-leaf,
 .ui-disclosure > summary::after, .result-reader--document .result-points > li::before {
   filter: var(--clay-filter);
 }

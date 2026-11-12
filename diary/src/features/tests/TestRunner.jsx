@@ -203,13 +203,14 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
   const isAnswering = isStarted && questions.length > 0 && !result && !isSubmitting && !submitError;
   const bonus = details?.bonus;
   const answerBonusTotal = bonus ? bonus.amount - bonus.completion : 0;
-  const answerBonusEarned = bonus ? answers.length * bonus.per_question : 0;
+  const answerBonusGain = swipingOut ? (bonus?.per_question ?? 0) : 0;
+  const answerBonusEarned = bonus ? answers.length * bonus.per_question + answerBonusGain : 0;
   const bonusNote = bonus && (
     <p className="mt-3 text-center text-sm ui-secondary">
       Бонус за первое прохождение · <strong className="text-[var(--ui-gold)]">+{formatTokens(bonus.amount)}</strong>
       {bonus.per_question > 0 && <span className="block">
         {bonus.completion > 0 && `${formatTokens(bonus.completion)} за завершение и `}
-        {formatTokens(bonus.per_question)} за каждый вопрос
+        {formatTokens(bonus.per_question)} за каждый ответ · на баланс после завершения
       </span>}
     </p>
   );
@@ -354,7 +355,12 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
       </div>
 
       {isAnswering && (
-        <div className="shrink-0 w-full max-w-md mx-auto px-4 pb-4">
+        <div className="relative z-20 shrink-0 w-full max-w-md mx-auto px-4 pb-4">
+          {answerBonusGain > 0 && (
+            <div className="test-answer-bonus" aria-hidden="true">
+              <ClayText text={`+${answerBonusGain}`} />
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <button type="button" onClick={() => triggerSwipe('left')} className="ui-button ui-button--outline min-h-14!">
               <ArrowLeft size={20} /> Нет

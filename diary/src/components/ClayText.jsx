@@ -1,25 +1,32 @@
 import sheetUrl from '../assets/clay-font/glyphs.webp';
 import font from '../assets/clay-font/glyphs.json';
+import symbolsUrl from '../assets/clay-font/symbols.webp';
+import symbols from '../assets/clay-font/symbols.json';
 import './clay-text.css';
 
-// Пластилиновые буквы из спрайта: заглавные и строчные кириллицы.
-// Остальные символы (цифры, знаки) выводятся обычным текстом в том же цвете.
+// Оба спрайта используют общую высоту клетки и базовую линию.
 const { height: H, ascent, sheet, glyphs } = font;
-const sheetStyle = {
-  '--clay-sheet': `url(${sheetUrl})`,
-  '--clay-sheet-w': sheet[0] / H,
-  '--clay-sheet-h': sheet[1] / H,
-  '--clay-descent': (H - ascent) / H,
-};
+
+function spriteStyle(url, [width, height]) {
+  return {
+    '--clay-sheet': `url(${url})`,
+    '--clay-sheet-w': width / H,
+    '--clay-sheet-h': height / H,
+  };
+}
+
+const sheetStyle = { ...spriteStyle(sheetUrl, sheet), '--clay-descent': (H - ascent) / H };
+const symbolStyle = spriteStyle(symbolsUrl, symbols.sheet);
 
 function Glyph({ char }) {
-  const glyph = glyphs[char];
+  const symbol = symbols.glyphs[char];
+  const glyph = symbol ?? glyphs[char];
   if (!glyph) return <span className="clay-text__fallback">{char}</span>;
   const [x, y, w] = glyph;
   return (
     <span
       className="clay-text__glyph"
-      style={{ '--clay-x': x / H, '--clay-y': y / H, '--clay-w': w / H }}
+      style={{ ...(symbol && symbolStyle), '--clay-x': x / H, '--clay-y': y / H, '--clay-w': w / H }}
     />
   );
 }
