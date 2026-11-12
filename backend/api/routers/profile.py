@@ -19,9 +19,8 @@ from backend.database.models import (
     DiaryEntry, BehavioralReport, CompatibilityReport, Friendship, PartnerAccount, Payment,
 )
 from backend.friends import befriend, inviter_from_payload
-from backend.pricing import AI_PRICES, AUTORENEW_TERMS_VERSION, DEMO_BALANCE, MAX_TOPUP, MIN_TOPUP, PREMIUM_PERIOD_DAYS, PREMIUM_PRICE, TOKENS_PER_RUBLE
+from backend.pricing import AI_PRICES, AUTORENEW_TERMS_VERSION, MAX_TOPUP, MIN_TOPUP, PREMIUM_PERIOD_DAYS, PREMIUM_PRICE, TOKENS_PER_RUBLE
 from backend.referrals import capture_referral
-from backend.token_usage import credit_tokens
 from settings import settings
 
 router = APIRouter()
@@ -102,8 +101,6 @@ async def get_profile(
                 await capture_referral(session, db_user, start_param, now=opened_at)
                 db_user.has_opened_app = True
                 db_user.first_opened_at = db_user.first_opened_at or opened_at
-                db_user.balance = (db_user.balance or 0) + DEMO_BALANCE
-                credit_tokens(session, user_id, DEMO_BALANCE, "demo")
         if photo_url and db_user.photo_url != photo_url:
             db_user.photo_url = photo_url
 

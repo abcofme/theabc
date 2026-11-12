@@ -67,7 +67,7 @@ class MemorySession:
         assert params['id'] == BROWSER_USER_ID
         assert params['admin'] is False
         if self.user is None:
-            self.user = SimpleNamespace(**{**params, 'banned': False, 'balance': 1000})
+            self.user = SimpleNamespace(**{**params, 'banned': False, 'balance': 0})
 
     async def commit(self):
         pass
