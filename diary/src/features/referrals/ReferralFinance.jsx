@@ -37,7 +37,6 @@ export default function ReferralFinance({ query }) {
     <div className="flex flex-col gap-4">
       <AdminSection title="Баланс вознаграждений">
         <AdminRow label="Доступно к выводу" value={kopecks(balance.available)} />
-        <AdminRow label="Ожидает начала следующего месяца" value={kopecks(balance.locked)} />
         <AdminRow label="В заявке на вывод" value={kopecks(balance.reserved)} />
         <AdminRow label="Уже выплачено" value={kopecks(balance.paid)} />
         <AdminRow label="Всего начислено" value={kopecks(balance.earned)} />
@@ -54,7 +53,7 @@ export default function ReferralFinance({ query }) {
         {earnings.length === 0 && <p className="ui-muted">Начислений за период не было.</p>}
         {earnings.map(earning => (
           <AdminRow key={earning.id} label={earning.member_id ? `Участник №${earning.member_id}` : 'Перенесённое начисление'}
-            hint={`${displayDate(earning.created_at, true)} · к выводу с ${displayDate(earning.available_at)}`}
+            hint={displayDate(earning.created_at, true)}
             value={kopecks(earning.amount_kopecks)} />
         ))}
         <Pages page={page} more={more_earnings} onChange={setPage} label="Страницы начислений" />

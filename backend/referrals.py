@@ -1,12 +1,10 @@
 import re
-from datetime import datetime, timedelta, timezone
 from hashlib import md5
 from secrets import token_urlsafe
 
 from fastapi import HTTPException
 from sqlalchemy import func, select
 
-from backend.app_activity import APP_TIMEZONE
 from backend.database.models import (
     PartnerAccount, PartnerEarning, PartnerWithdrawal, Payment, ReferralAttribution, TrackingLink, User,
 )
@@ -108,12 +106,6 @@ async def capture_referral(session, user, payload, *, now):
     ))
 
 
-def commission_release(paid_at):
-    local_day = paid_at.replace(tzinfo=timezone.utc).astimezone(APP_TIMEZONE).date()
-    first_next = (local_day.replace(day=28) + timedelta(days=4)).replace(day=1)
-    return APP_TIMEZONE.localize(datetime.combine(first_next, datetime.min.time())).astimezone(timezone.utc).replace(tzinfo=None)
-
-
 async def accrue_commission(session, payment, rubles, paid_at):
     partner_id = await session.scalar(select(ReferralAttribution.partner_id).where(
         ReferralAttribution.user_id == payment.user_id, ReferralAttribution.created_at <= paid_at,
@@ -121,21 +113,18 @@ async def accrue_commission(session, payment, rubles, paid_at):
     if partner_id is not None:
         session.add(PartnerEarning(
             partner_id=partner_id, payment_id=payment.id, amount_kopecks=rubles * COMMISSION_KOPECKS_PER_RUBLE,
-            created_at=paid_at, available_at=commission_release(paid_at),
+            created_at=paid_at, available_at=paid_at,
         ))
 
 
 async def partner_balance(session, user_id):
-    now = datetime.utcnow()
-    earnings = PartnerEarning.amount_kopecks
-    earned, locked = (await session.execute(select(
-        func.coalesce(func.sum(earnings), 0),
-        func.coalesce(func.sum(earnings).filter(PartnerEarning.available_at > now), 0),
-    ).where(PartnerEarning.partner_id == user_id))).one()
+    earned = await session.scalar(select(func.coalesce(func.sum(PartnerEarning.amount_kopecks), 0))
+                                  .where(PartnerEarning.partner_id == user_id))
     amount = PartnerWithdrawal.amount_kopecks
     pending, paid = (await session.execute(select(
         func.coalesce(func.sum(amount).filter(PartnerWithdrawal.status == "pending"), 0),
         func.coalesce(func.sum(amount).filter(PartnerWithdrawal.status == "paid"), 0),
     ).where(PartnerWithdrawal.partner_id == user_id))).one()
-    return {"earned": earned, "locked": locked, "available": earned - locked - pending - paid,
+    # Старые версии кабинета по-прежнему читают поле locked.
+    return {"earned": earned, "locked": 0, "available": earned - pending - paid,
             "reserved": pending, "paid": paid, "minimum": MIN_WITHDRAWAL}

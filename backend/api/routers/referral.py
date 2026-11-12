@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Annotated, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, StringConstraints
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import aliased
@@ -14,6 +14,7 @@ from backend.database.models import PartnerAccount, PartnerEarning, PartnerWithd
 from backend.friends import friend_invite_link
 from backend.referral_analytics import PAGE_SIZE, referral_member, referral_report
 from backend.referrals import MIN_WITHDRAWAL, link_data, new_partner_link, partner_balance, require_partner
+from backend.telegram.notify import notify
 from settings import settings
 
 router = APIRouter()
@@ -124,7 +125,7 @@ async def get_finance(
     return {
         "balance": await partner_balance(session, user_id),
         "earnings": [{"id": row.id, "amount_kopecks": row.amount_kopecks, "created_at": row.created_at,
-                      "available_at": row.available_at, "member_id": member_id, "is_topup": topup}
+                      "available_at": row.created_at, "member_id": member_id, "is_topup": topup}
                      for row, member_id, topup in earnings[:PAGE_SIZE]],
         "withdrawals": [withdrawal_data(row) for row in withdrawals[:PAGE_SIZE]],
         "more_earnings": len(earnings) > PAGE_SIZE, "more_withdrawals": len(withdrawals) > PAGE_SIZE,
@@ -138,7 +139,8 @@ class WithdrawalRequest(BaseModel):
 
 @router.post("/api/referral/withdraw")
 async def request_withdrawal(
-    req: WithdrawalRequest, user_data: dict = Depends(validate_twa_data), session=Depends(get_session),
+    req: WithdrawalRequest, background_tasks: BackgroundTasks,
+    user_data: dict = Depends(validate_twa_data), session=Depends(get_session),
 ):
     user_id = user_data["id"]
     await require_partner(session, user_id, lock=True)
@@ -162,6 +164,15 @@ async def request_withdrawal(
     withdrawal = PartnerWithdrawal(partner_id=user_id, amount_kopecks=amount, request_key=request_key)
     session.add(withdrawal)
     await session.commit()
+    if settings.REFERRAL_WITHDRAWAL_ADMIN_ID is not None:
+        rubles, kopecks = divmod(amount, 100)
+        background_tasks.add_task(
+            notify, settings.REFERRAL_WITHDRAWAL_ADMIN_ID,
+            "<b>Новая заявка на вывод</b>\n\n"
+            f"Заявка №{withdrawal.id} на {rubles},{kopecks:02d} ₽.\n"
+            "В разделе «Партнёры» откройте вкладку «Заявки».",
+            "tab=profile&page=admin&section=partners", "Открыть раздел «Партнёры»",
+        )
     return withdrawal_data(withdrawal)
 
 
