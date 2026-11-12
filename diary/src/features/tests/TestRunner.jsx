@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowLeft, ArrowRight, Undo2, Wand2, LoaderCircle } from '../../components/ClayIcon';
+import { ArrowLeft, ArrowRight, Undo2, Wand2, LoaderCircle, TokenCoin } from '../../components/ClayIcon';
 import Spinner from '../../components/Spinner';
 import ClayBanner from '../../components/ClayBanner';
 import ClayText from '../../components/ClayText';
@@ -359,6 +359,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
           {answerBonusGain > 0 && (
             <div className="test-answer-bonus" aria-hidden="true">
               <ClayText text={`+${answerBonusGain}`} />
+              <TokenCoin size={18} />
             </div>
           )}
           <div className="grid grid-cols-2 gap-3">

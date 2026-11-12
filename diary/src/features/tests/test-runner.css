@@ -49,8 +49,10 @@
   left: 50%;
   bottom: calc(100% + 4px);
   translate: -50% 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-width: 52px;
   min-height: 42px;
   padding-inline: 8px;
