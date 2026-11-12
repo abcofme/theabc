@@ -368,7 +368,9 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
               <p className="ui-secondary" role="status">
                 {answerBonusTotal > 0 ? 'Бонус за ответы' : 'Бонус за первое прохождение'} ·{' '}
                 <strong className="tabular-nums text-[var(--ui-gold)]">
-                  {answerBonusEarned.toLocaleString('ru-RU')}/{formatTokens(answerBonusTotal || bonus.amount)}
+                  {answerBonusTotal > 0
+                    ? `${answerBonusEarned.toLocaleString('ru-RU')}/${formatTokens(answerBonusTotal)}`
+                    : `+${formatTokens(bonus.amount)}`}
                 </strong>
               </p>
               {answerBonusTotal > 0 && bonus.completion > 0 && (

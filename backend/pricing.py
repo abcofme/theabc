@@ -23,18 +23,18 @@ MAX_TOPUP = 50000
 DEMO_BALANCE = 1000
 
 # Токены за первое прохождение теста и за каждый его вопрос. 0 отключает соответствующую часть.
-TEST_COMPLETION_BONUS = 10
-TEST_QUESTION_BONUS = 1
+TEST_COMPLETION_BONUS = 20
+TEST_QUESTION_BONUS = 0
 
 # Бонусы за первые шаги в приложении: каждый начисляется один раз, в токенах (backend/bonuses.py)
 BONUSES = {
-    "portrait": 100,
+    "portrait": 50,
     "diary_answer": 50,
     "report_repeating_events": 50,
     "report_effective_reactions": 50,
     "report_energy": 50,
     "report_competence": 50,
-    "friend_invited": 100,
+    "friend_invited": 150,
     "compatibility": 100,
     "install_app": 50,
 }
