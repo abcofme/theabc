@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, useId } from 'react';
-import { Check, Sparkles, Wallet } from '../../components/ClayIcon';
+import { Check, Sparkles, TokenCoin } from '../../components/ClayIcon';
 import Page from '../../components/Page';
 import Spinner from '../../components/Spinner';
 import OfferPage from '../legal/OfferPage';
@@ -179,7 +179,7 @@ export default function BillingPage({ onBack }) {
             <Row label="Действует до" value={formatDate(profile.access_expires_at)} />
             {!profile.has_active_subscription && <Row label="Автопродление" value="выключено" />}
           </> : <>
-            <h3 className="text-lg font-semibold flex items-center gap-2 mb-2"><Wallet size={20} /> Баланс: {formatTokens(balance)}</h3>
+            <h3 className="text-lg font-semibold flex items-center gap-2 mb-2"><TokenCoin size={20} /> Баланс: {formatTokens(balance)}</h3>
             <p className="ui-secondary">Оплачивай функции токенами по мере использования или подключи Premium. Если функция не сработала, токены возвращаются.</p>
           </>}
         </section>
@@ -198,7 +198,7 @@ export default function BillingPage({ onBack }) {
           canChangeAmount={!isPremium && pending.kind === 'topup'}
         />}
         {!isPremium && <div className="ui-segmented" role="tablist" aria-label="Способ оплаты">
-          {['balance', 'premium'].map(value => <button key={value} id={`${id}-${value}`} type="button" role="tab" aria-controls={`${id}-panel-${value}`} aria-selected={mode === value} onClick={() => setMode(value)} disabled={!!busy}>{value === 'balance' ? <><Wallet size={16} aria-hidden="true" /> С баланса</> : <><Sparkles size={16} aria-hidden="true" /> Premium</>}</button>)}
+          {['balance', 'premium'].map(value => <button key={value} id={`${id}-${value}`} type="button" role="tab" aria-controls={`${id}-panel-${value}`} aria-selected={mode === value} onClick={() => setMode(value)} disabled={!!busy}>{value === 'balance' ? <><TokenCoin size={16} aria-hidden="true" /> С баланса</> : <><Sparkles size={16} aria-hidden="true" /> Premium</>}</button>)}
         </div>}
         <section id={`${id}-panel-${mode}`} role={isPremium ? undefined : 'tabpanel'} aria-labelledby={isPremium ? undefined : `${id}-${mode}`} className={`ui-card ${mode === 'premium' ? 'billing-premium' : ''}`}>
           {mode === 'balance' ? <>

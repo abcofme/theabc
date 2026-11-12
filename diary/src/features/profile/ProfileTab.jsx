@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { User, Sparkles, Wallet, Bell, FileText, Shield, ChevronRight, Users, Leaf, Download, ArrowRight } from '../../components/ClayIcon';
+import { User, Sparkles, TokenCoin, Bell, FileText, Shield, ChevronRight, Users, Leaf, Download, ArrowRight } from '../../components/ClayIcon';
 import Avatar from '../../components/Avatar';
 import ClayBanner from '../../components/ClayBanner';
 import Switch from '../../components/Switch';
@@ -139,7 +139,7 @@ export default function ProfileTab({ request, active }) {
             <span className={`font-bold px-3 py-1.5 rounded-xl text-sm sm:text-base flex items-center gap-1.5 clay-raised-sm ${
               isPremium ? 'profile-header__premium' : 'bg-rose-900 border border-[var(--ui-border)] text-[var(--ui-text)]'
             }`}>
-              {!profile ? '…' : isPremium ? <><Sparkles size={16} /> Premium</> : <><Wallet size={16} /> {formatTokens(profile.balance)}</>}
+              {!profile ? '…' : isPremium ? <><Sparkles size={16} /> Premium</> : <><TokenCoin size={16} /> {formatTokens(profile.balance)}</>}
             </span>
             <ChevronRight size={20} className="text-[var(--ui-muted)] shrink-0" />
           </button>
@@ -172,7 +172,7 @@ export default function ProfileTab({ request, active }) {
         <div className="ui-card py-1! divide-y divide-[var(--ui-text)]/10">
           <MenuRow icon={Users} label="Друзья и совместимость" onClick={() => navigate({ tab: 'reports', section: 'compatibility' })} />
           <MenuRow
-            icon={isPremium ? Sparkles : Wallet}
+            icon={isPremium ? Sparkles : TokenCoin}
             label={isPremium ? 'Подписка' : 'Подписка и баланс'}
             hint={isPremium ? 'Premium активен' : 'Баланс расходуется по мере использования'}
             onClick={openBilling}
