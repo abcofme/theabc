@@ -13,7 +13,7 @@ from backend.database.models import (
 from backend.friends import inviter_from_payload
 from settings import settings
 
-MIN_WITHDRAWAL = 10_000
+MIN_WITHDRAWAL = 1_000
 COMMISSION_KOPECKS_PER_RUBLE = 50
 PARTNER_PREFIX = "partner_"
 CAMPAIGN_PREFIX = "tr_"

@@ -156,7 +156,7 @@ async def request_withdrawal(
     available = (await partner_balance(session, user_id))["available"]
     amount = req.amount_kopecks if req.amount_kopecks is not None else available
     if amount < MIN_WITHDRAWAL:
-        raise HTTPException(409, "Минимальная сумма вывода 100 ₽")
+        raise HTTPException(409, f"Минимальная сумма вывода {MIN_WITHDRAWAL / 100:g} ₽")
     if amount > available:
         raise HTTPException(409, "Доступная сумма изменилась. Обновите баланс.")
     withdrawal = PartnerWithdrawal(partner_id=user_id, amount_kopecks=amount, request_key=request_key)
