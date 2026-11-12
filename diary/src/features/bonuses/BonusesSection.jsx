@@ -51,13 +51,32 @@ function BonusRow({ bonus, onGo }) {
   );
 }
 
-export default function BonusesSection({ bonuses, expanded, onToggle, onGo }) {
+function groupSteps(bonuses, categories) {
+  const stepsByTest = new Map();
+  const groups = categories.map(category => {
+    const steps = [];
+    for (const test of category.tests) stepsByTest.set(test.id, steps);
+    return { key: category.id, title: category.name, steps };
+  });
+  const otherSteps = [];
+  for (const bonus of bonuses) {
+    const steps = stepsByTest.get(bonus.test_id) ?? otherSteps;
+    steps.push(bonus);
+  }
+  const testGroups = groups.filter(group => group.steps.length > 0);
+  if (otherSteps.length > 0) {
+    testGroups.push({ key: 'other', title: testGroups.length ? 'Другие достижения' : undefined, steps: otherSteps });
+  }
+  return testGroups;
+}
+
+export default function BonusesSection({ bonuses, categories = [], expanded, onToggle, onGo }) {
   if (!bonuses?.length) return null;
 
   const pending = bonuses.filter(bonus => !bonus.done);
   const done = bonuses.length - pending.length;
   const available = pending.reduce((sum, bonus) => sum + bonus.amount, 0);
-  const steps = expanded ? bonuses : pending.slice(0, 1);
+  const groups = expanded ? groupSteps(bonuses, categories) : [{ key: 'next', steps: pending.slice(0, 1) }];
 
   return (
     <section className="bonus-section" aria-labelledby="profile-bonuses-title">
@@ -89,11 +108,16 @@ export default function BonusesSection({ bonuses, expanded, onToggle, onGo }) {
         </button>
       </div>
       <div id="profile-bonus-steps">
-        {steps.length > 0 && (
-          <ul className="bonus-section__steps" role="list">
-            {steps.map(bonus => <BonusRow key={bonus.kind} bonus={bonus} onGo={onGo} />)}
-          </ul>
-        )}
+        <div className="space-y-3">
+          {groups.map(({ key, title, steps }) => steps.length > 0 && (
+            <div key={key}>
+              {title && <h3 className="ui-section-label mb-2">{title}</h3>}
+              <ul className="bonus-section__steps" role="list" aria-label={title}>
+                {steps.map(bonus => <BonusRow key={bonus.kind} bonus={bonus} onGo={onGo} />)}
+              </ul>
+            </div>
+          ))}
+        </div>
         {expanded && (
           <p className="bonus-section__note ui-muted">Бонус за каждый шаг начисляется один раз. Токены можно потратить на функции с ИИ.</p>
         )}

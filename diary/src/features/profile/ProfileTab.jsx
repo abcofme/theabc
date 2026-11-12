@@ -148,6 +148,7 @@ export default function ProfileTab({ request, active }) {
 
       <BonusesSection
         bonuses={profile?.bonuses}
+        categories={profile?.categories}
         expanded={showAllBonuses}
         onToggle={() => setShowAllBonuses(value => !value)}
         onGo={goFromBonuses}
