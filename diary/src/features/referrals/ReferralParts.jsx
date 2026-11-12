@@ -35,16 +35,16 @@ export function ReferralMetrics({ stats, summary = false }) {
         <AdminRow label="Открывали приложение" value={number(stats.active)} />
         <AdminRow label="Всего в выбранной ветке" value={number(stats.members)} />
       </AdminSection>}
-      <AdminSection title="Оплаты и токены">
+      <AdminSection title="Оплаты и листики">
         <AdminRow label="Пополнения баланса" value={number(stats.topups)} />
         <AdminRow label="Сумма пополнений" value={rubles(stats.topup_rubles)} />
         <AdminRow label="Сумма подтверждённых оплат" value={rubles(stats.paid_rubles)}
           hint={stats.unknown_payments ? `Исторические платежи без суммы · ${number(stats.unknown_payments)}` : undefined} />
-        <AdminRow label="Куплено токенов" value={number(stats.tokens.topup)} />
-        <AdminRow label="Бонусные и стартовые токены" value={number(stats.tokens.bonus + stats.tokens.demo)} />
+        <AdminRow label="Куплено листиков" value={number(stats.tokens.topup)} />
+        <AdminRow label="Бонусные и стартовые листики" value={number(stats.tokens.bonus + stats.tokens.demo)} />
         <AdminRow label="Потрачено на услуги" value={number(stats.tokens.spent)} />
-        {stats.tokens.pending > 0 && <AdminRow label="Токены в обработке" value={number(stats.tokens.pending)} />}
-        <AdminRow label="Возвращено токенов" value={number(stats.tokens.refunded)} />
+        {stats.tokens.pending > 0 && <AdminRow label="Листики в обработке" value={number(stats.tokens.pending)} />}
+        <AdminRow label="Возвращено листиков" value={number(stats.tokens.refunded)} />
         <AdminRow label="Партнёрское вознаграждение" value={kopecks(stats.commission)} />
       </AdminSection>
       <AdminSection title="Купленные услуги">

@@ -35,9 +35,9 @@ export const LABELS = {
   dictation: 'Успешные диктовки',
   app_open: 'Дни открытия приложения',
   friendship: 'Добавления в друзья',
-  refund: 'Возврат токенов',
-  bonus: 'Бонусные токены',
-  demo: 'Стартовые токены',
+  refund: 'Возврат листиков',
+  bonus: 'Бонусные листики',
+  demo: 'Стартовые листики',
 };
 export const STATUS = { pending: 'Ожидает перевода', paid: 'Выплачено', rejected: 'Отклонено' };
 

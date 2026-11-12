@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState, useId } from 'react';
-import { Check, Sparkles, TokenCoin } from '../../components/ClayIcon';
+import { Check, Sparkles, BalanceLeaf } from '../../components/ClayIcon';
 import Page from '../../components/Page';
 import Spinner from '../../components/Spinner';
 import OfferPage from '../legal/OfferPage';
 import { useProfile } from '../../context/profile';
 import { api } from '../../utils/api';
 import { currentUser, isTelegram } from '../../utils/platform';
-import { formatTokens } from '../diary/utils';
+import { formatLeaves } from '../diary/utils';
 import { SERVICE_DESCRIPTIONS, DeliveryInformation, ContactInformation } from '../legal/ServiceInformation';
 
 const WebApp = window.Telegram.WebApp;
@@ -179,8 +179,8 @@ export default function BillingPage({ onBack }) {
             <Row label="Действует до" value={formatDate(profile.access_expires_at)} />
             {!profile.has_active_subscription && <Row label="Автопродление" value="выключено" />}
           </> : <>
-            <h3 className="text-lg font-semibold flex items-center gap-2 mb-2"><TokenCoin size={20} /> Баланс: {formatTokens(balance)}</h3>
-            <p className="ui-secondary">Оплачивай функции токенами по мере использования или подключи Premium. Если функция не сработала, токены возвращаются.</p>
+            <h3 className="text-lg font-semibold flex items-center gap-2 mb-2"><BalanceLeaf size={20} /> Баланс: {formatLeaves(balance)}</h3>
+            <p className="ui-secondary">Оплачивай функции листиками по мере использования или подключи Premium. Если функция не сработала, листики возвращаются.</p>
           </>}
         </section>
         {profile.has_active_subscription && <section className="ui-card">
@@ -198,20 +198,20 @@ export default function BillingPage({ onBack }) {
           canChangeAmount={!isPremium && pending.kind === 'topup'}
         />}
         {!isPremium && <div className="ui-segmented" role="tablist" aria-label="Способ оплаты">
-          {['balance', 'premium'].map(value => <button key={value} id={`${id}-${value}`} type="button" role="tab" aria-controls={`${id}-panel-${value}`} aria-selected={mode === value} onClick={() => setMode(value)} disabled={!!busy}>{value === 'balance' ? <><TokenCoin size={16} aria-hidden="true" /> С баланса</> : <><Sparkles size={16} aria-hidden="true" /> Premium</>}</button>)}
+          {['balance', 'premium'].map(value => <button key={value} id={`${id}-${value}`} type="button" role="tab" aria-controls={`${id}-panel-${value}`} aria-selected={mode === value} onClick={() => setMode(value)} disabled={!!busy}>{value === 'balance' ? <><BalanceLeaf size={16} aria-hidden="true" /> С баланса</> : <><Sparkles size={16} aria-hidden="true" /> Premium</>}</button>)}
         </div>}
         <section id={`${id}-panel-${mode}`} role={isPremium ? undefined : 'tabpanel'} aria-labelledby={isPremium ? undefined : `${id}-${mode}`} className={`ui-card ${mode === 'premium' ? 'billing-premium' : ''}`}>
           {mode === 'balance' ? <>
             <h3 className="text-lg font-semibold mb-3">Оплата с баланса</h3>
-            <div className="mb-6">{FEATURE_PRICES.map(([key, label]) => <div key={key} className="mb-3"><Row label={label} value={formatTokens(prices[key])} /><p className="ui-secondary text-sm">{SERVICE_DESCRIPTIONS[key]}</p></div>)}</div>
+            <div className="mb-6">{FEATURE_PRICES.map(([key, label]) => <div key={key} className="mb-3"><Row label={label} value={formatLeaves(prices[key])} /><p className="ui-secondary text-sm">{SERVICE_DESCRIPTIONS[key]}</p></div>)}</div>
             <h4 className="font-semibold">Пополнить баланс</h4>
-            <p className="ui-secondary mb-3">1 ₽ = {formatTokens(prices.tokens_per_ruble)}</p>
+            <p className="ui-secondary mb-3">1 ₽ = {formatLeaves(prices.tokens_per_ruble)}</p>
             <div className="grid grid-cols-2 min-[360px]:grid-cols-4 gap-2 mb-4">{QUICK_AMOUNTS.map(value => <button key={value} type="button" aria-pressed={sum === value} onClick={() => setAmount(String(value))} className={`clay-raised-sm min-h-11 rounded-xl text-sm font-semibold ${sum === value ? 'bg-[var(--ui-text)] text-rose-950' : 'bg-rose-950 text-[var(--ui-text)]'}`}>{value} ₽</button>)}</div>
             <label className="ui-secondary block" htmlFor={`${id}-amount`}>Своя сумма, от {prices.min_topup} до {prices.max_topup} ₽</label>
             <input id={`${id}-amount`} type="number" inputMode="numeric" min={prices.min_topup} max={prices.max_topup} value={amount} onChange={event => setAmount(event.target.value.replace(/\D/g, ''))} className="ui-input mt-2" />
             {consent}
             <p className="ui-secondary mb-3">
-              {isAmountValid ? `${formatTokens(sum * prices.tokens_per_ruble)} за ${sum.toLocaleString('ru-RU')} ₽` : `Сумма от ${prices.min_topup} до ${prices.max_topup} ₽`}
+              {isAmountValid ? `${formatLeaves(sum * prices.tokens_per_ruble)} за ${sum.toLocaleString('ru-RU')} ₽` : `Сумма от ${prices.min_topup} до ${prices.max_topup} ₽`}
             </p>
             <CheckoutActions
               onPay={method => pay('topup', '/api/balance/topup', { amount: sum }, method)}

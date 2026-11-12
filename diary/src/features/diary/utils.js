@@ -18,8 +18,8 @@ export function plural(n, [one, few, many]) {
   return many;
 }
 
-// Баланс и цены функций — в токенах: formatTokens(50) → '50 токенов'
-export const formatTokens = n => `${n.toLocaleString('ru-RU')} ${plural(n, ['токен', 'токена', 'токенов'])}`;
+// Баланс и цены функций — в листиках: formatLeaves(50) → '50 листиков'
+export const formatLeaves = n => `${n.toLocaleString('ru-RU')} ${plural(Math.abs(n), ['листик', 'листика', 'листиков'])}`;
 
 // Почему дневник не может ответить и куда вести пользователя (action: tests | billing). null — ответ доступен
 export function analysisLock(profile) {

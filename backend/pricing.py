@@ -41,12 +41,13 @@ BONUSES = {
 
 
 def tokens(n: int) -> str:
-    """tokens(3) → '3 токена'"""
-    mod10, mod100 = n % 10, n % 100
+    """Форматирует количество листиков для показа пользователю."""
+    amount = abs(n)
+    mod10, mod100 = amount % 10, amount % 100
     if mod10 == 1 and mod100 != 11:
-        word = "токен"
+        word = "листик"
     elif 2 <= mod10 <= 4 and not 12 <= mod100 <= 14:
-        word = "токена"
+        word = "листика"
     else:
-        word = "токенов"
+        word = "листиков"
     return f"{n} {word}"

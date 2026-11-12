@@ -168,7 +168,7 @@ async def _generate_report(user_id: int, report_type: str, report_title: str, re
             ai_data = ai_response.json()
             generated_text = ai_data["choices"][0]["message"]["content"].strip()
             if not generated_text:
-                return {"detail": "Не удалось сформировать отчет. Попробуйте позже — токены с баланса не списаны."}
+                return {"detail": "Не удалось сформировать отчет. Попробуйте позже — листики с баланса не списаны."}
             
             async with async_session() as db:
                 created_at = datetime.utcnow()
@@ -189,7 +189,7 @@ async def _generate_report(user_id: int, report_type: str, report_title: str, re
         import traceback
         traceback.print_exc()
         print("BG report failed:", repr(e))
-        return {"detail": "Не удалось сформировать отчет. Попробуйте позже — токены с баланса не списаны."}
+        return {"detail": "Не удалось сформировать отчет. Попробуйте позже — листики с баланса не списаны."}
 
 @router.delete("/api/reports/{report_id}")
 async def delete_report(

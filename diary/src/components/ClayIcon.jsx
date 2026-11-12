@@ -1,10 +1,7 @@
-import { useTheme } from '../context/theme';
+// Лист нужен сразу при появлении короткой анимации бонуса.
+import balanceLeaf from '../assets/leaves/oak.webp?inline';
 
-const files = {
-  ...import.meta.glob(['../assets/icons/*.webp', '!../assets/icons/token-coin*.webp'], { eager: true, query: '?url', import: 'default' }),
-  // Монетка нужна сразу при появлении короткой анимации бонуса.
-  ...import.meta.glob('../assets/icons/token-coin*.webp', { eager: true, query: '?inline', import: 'default' }),
-};
+const files = import.meta.glob('../assets/icons/*.webp', { eager: true, query: '?url', import: 'default' });
 
 const variants = {
   ChevronDown: ['chevron-right', 'rotate(90deg)'],
@@ -17,7 +14,7 @@ const variants = {
 };
 
 // Единые растровые пластилиновые иконки; кнопка вокруг сохраняет область нажатия.
-function ClayIcon({ name, size = 24, className = '', style, ...props }) {
+function ClayIcon({ name, src, size = 24, className = '', style, ...props }) {
   const [file, transform] = variants[name] || [name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()];
   const imageProps = { ...props };
   delete imageProps.strokeWidth;
@@ -25,7 +22,7 @@ function ClayIcon({ name, size = 24, className = '', style, ...props }) {
   delete imageProps.color;
   return <img
     className={`clay-icon ${className}`}
-    src={files[`../assets/icons/${file}.webp`]}
+    src={src ?? files[`../assets/icons/${file}.webp`]}
     alt={props['aria-label'] || ''}
     aria-hidden={props['aria-label'] ? undefined : true}
     draggable="false"
@@ -40,6 +37,14 @@ export function Activity(props) { return <ClayIcon name="Activity" {...props} />
 export function AlertTriangle(props) { return <ClayIcon name="AlertTriangle" {...props} />; }
 export function ArrowLeft(props) { return <ClayIcon name="ArrowLeft" {...props} />; }
 export function ArrowRight(props) { return <ClayIcon name="ArrowRight" {...props} />; }
+export function BalanceLeaf({ className = '', ...props }) {
+  return <ClayIcon
+    name="BalanceLeaf"
+    src={balanceLeaf}
+    className={`clay-icon--balance-leaf ${className}`.trim()}
+    {...props}
+  />;
+}
 export function Bell(props) { return <ClayIcon name="Bell" {...props} />; }
 export function Brain(props) { return <ClayIcon name="Brain" {...props} />; }
 export function Calendar(props) { return <ClayIcon name="Calendar" {...props} />; }
@@ -71,14 +76,6 @@ export function Save(props) { return <ClayIcon name="Save" {...props} />; }
 export function Send(props) { return <ClayIcon name="Send" {...props} />; }
 export function Shield(props) { return <ClayIcon name="Shield" {...props} />; }
 export function Sparkles(props) { return <ClayIcon name="Sparkles" {...props} />; }
-export function TokenCoin({ className = '', ...props }) {
-  const { theme } = useTheme();
-  return <ClayIcon
-    name={theme === 'light' ? 'TokenCoinLight' : 'TokenCoin'}
-    className={`clay-icon--token-coin ${className}`.trim()}
-    {...props}
-  />;
-}
 export function Trash2(props) { return <ClayIcon name="Trash2" {...props} />; }
 export function Undo2(props) { return <ClayIcon name="Undo2" {...props} />; }
 export function User(props) { return <ClayIcon name="User" {...props} />; }

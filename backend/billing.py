@@ -41,7 +41,7 @@ async def charge(session: AsyncSession, user_id: int, feature: str) -> int | Non
     if not result.rowcount:
         raise HTTPException(
             status_code=402,
-            detail=f"Недостаточно токенов на балансе: нужно {tokens(price)}. Пополните баланс или оформите Premium.",
+            detail=f"Недостаточно листиков на балансе. Нужно {tokens(price)}. Пополните баланс или оформите Premium.",
         )
     movement = TokenMovement(user_id=user_id, kind="spend", feature=feature, amount=price)
     session.add(movement)

@@ -1,5 +1,5 @@
 import { Check, ChevronDown, ChevronRight, ChevronUp, Sparkles } from '../../components/ClayIcon';
-import { formatTokens } from '../diary/utils';
+import { formatLeaves } from '../diary/utils';
 import './bonuses.css';
 
 const stepArt = import.meta.glob('../../assets/bonuses/*.webp', { eager: true, query: '?url&no-inline', import: 'default' });
@@ -42,7 +42,7 @@ function BonusRow({ bonus, onGo }) {
         {bonus.amount > 0 && (
           <span className="bonus-step__amount" data-done={bonus.done || undefined}>
             <span aria-hidden="true">+{bonus.amount.toLocaleString('ru-RU')}</span>
-            <span className="sr-only">, {formatTokens(bonus.amount)} на баланс</span>
+            <span className="sr-only">, {formatLeaves(bonus.amount)} на баланс</span>
           </span>
         )}
         {target && <ChevronRight size={16} />}
@@ -84,14 +84,14 @@ export default function BonusesSection({ bonuses, categories = [], expanded, onT
         <span className="bonus-section__emblem"><Sparkles size={28} /></span>
         <div>
           <h2 id="profile-bonuses-title">Бонусы за первые шаги</h2>
-          <p className="ui-secondary">Выполняй задания и получай токены на баланс.</p>
+          <p className="ui-secondary">Выполняй задания и получай листики на баланс.</p>
         </div>
       </header>
 
       <div className="bonus-section__progress">
         <div className="bonus-section__numbers">
           <span>{pending.length ? `Выполнено ${done} из ${bonuses.length}` : 'Все шаги выполнены'}</span>
-          {available > 0 && <span className="bonus-section__available">Впереди +{formatTokens(available)}</span>}
+          {available > 0 && <span className="bonus-section__available">Впереди +{formatLeaves(available)}</span>}
         </div>
         <div className="bonus-progress" data-complete={pending.length === 0 || undefined} role="progressbar" aria-label="Выполнено шагов" aria-valuemin={0} aria-valuemax={bonuses.length} aria-valuenow={done}>
           <span style={{ width: `${done / bonuses.length * 100}%` }} />
@@ -132,7 +132,7 @@ export default function BonusesSection({ bonuses, categories = [], expanded, onT
           })}
         </div>
         {expanded && (
-          <p className="bonus-section__note ui-muted">Бонус за каждый шаг начисляется один раз. Токены можно потратить на функции с ИИ.</p>
+          <p className="bonus-section__note ui-muted">Бонус за каждый шаг начисляется один раз. Листики можно потратить на функции с ИИ.</p>
         )}
       </div>
     </section>

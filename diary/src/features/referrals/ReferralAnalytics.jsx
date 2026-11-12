@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Select from '../../components/Select';
 import { ChevronDown, RefreshCw } from '../../components/ClayIcon';
 import { AdminRow, AdminSection } from '../admin/AdminReport';
+import { formatLeaves } from '../diary/utils';
 import { CountList, LoadState, Pages, ReferralMetrics } from './ReferralParts';
 import { LABELS, displayDate, number, rubles, useReferralData } from './referralData';
 
@@ -57,7 +58,7 @@ function MemberDetails({ id, query, onBranch }) {
           <AdminRow key={`${event.kind}-${event.id}`}
             label={event.kind === 'purchase' ? LABELS[event.feature] || event.feature : LABELS[event.kind]}
             hint={displayDate(event.at, true)}
-            value={event.tokens != null ? `${number(event.tokens)} ток.` : event.rubles == null ? '—' : rubles(event.rubles)} />
+            value={event.tokens != null ? formatLeaves(event.tokens) : event.rubles == null ? '—' : rubles(event.rubles)} />
         ))}
         <Pages page={page} more={member.more} onChange={setPage} label="Страницы операций" />
       </AdminSection>
@@ -100,7 +101,7 @@ export default function ReferralAnalytics({ query, admin }) {
         </Select>
       </div>
       <ReferralMetrics stats={summary} summary />
-      <p className="ui-muted text-sm">По старым операциям показана доступная история. Точный расход токенов собирается с запуска кабинета.</p>
+      <p className="ui-muted text-sm">По старым операциям показана доступная история. Точный расход листиков собирается с запуска кабинета.</p>
       <SourceCards sources={sources} sourceId={sourceId} onSource={onSource} />
       <AdminSection title={selectedSource ? `Сеть · ${selectedSource.name}` : 'Сеть приглашений'}>
         {members.length === 0 && <p className="ui-muted">В этой выборке пока нет участников.</p>}

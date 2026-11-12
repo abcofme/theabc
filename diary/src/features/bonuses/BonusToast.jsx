@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Sparkles } from '../../components/ClayIcon';
 import { useProfile } from '../../context/profile';
 import { api } from '../../utils/api';
-import { formatTokens } from '../diary/utils';
+import { formatLeaves } from '../diary/utils';
 import './bonuses.css';
 
 const WebApp = window.Telegram.WebApp;
@@ -41,7 +41,7 @@ export default function BonusToast() {
       <button key={toast.id} type="button" className="bonus-toast__card" onClick={() => setToast(null)} aria-label="Закрыть сообщение о бонусе">
         <span className="bonus-toast__icon"><Sparkles size={24} /></span>
         <span className="min-w-0">
-          <span className="block font-bold text-[var(--ui-text)]">+{formatTokens(total)}</span>
+          <span className="block font-bold text-[var(--ui-text)]">+{formatLeaves(total)}</span>
           <span className="block ui-secondary">Бонус {joinReasons(toast.items.map(b => b.reason))}</span>
         </span>
       </button>

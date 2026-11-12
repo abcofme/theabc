@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal, preload } from 'react-dom';
-import { ArrowLeft, ArrowRight, Undo2, Wand2, LoaderCircle, TokenCoin } from '../../components/ClayIcon';
+import { ArrowLeft, ArrowRight, Undo2, Wand2, LoaderCircle, BalanceLeaf } from '../../components/ClayIcon';
 import Spinner from '../../components/Spinner';
 import ClayBanner from '../../components/ClayBanner';
 import ClayText from '../../components/ClayText';
@@ -14,7 +14,7 @@ import { useBackHandler } from '../../navigation/backStack';
 import { useAppNav, useErrorHandler } from '../../navigation/appNav';
 import { useProfile, portraitState } from '../../context/profile';
 import { api } from '../../utils/api';
-import { formatTokens } from '../diary/utils';
+import { formatLeaves } from '../diary/utils';
 import './test-runner.css';
 
 const WebApp = window.Telegram.WebApp;
@@ -209,10 +209,10 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
   const answerBonusEarned = bonus ? answers.length * bonus.per_question + answerBonusGain : 0;
   const bonusNote = bonus && (
     <p className="mt-3 text-center text-sm ui-secondary">
-      Бонус за первое прохождение · <strong className="text-[var(--ui-gold)]">+{formatTokens(bonus.amount)}</strong>
+      Бонус за первое прохождение · <strong className="text-[var(--ui-gold)]">+{formatLeaves(bonus.amount)}</strong>
       {bonus.per_question > 0 && <span className="block">
-        {bonus.completion > 0 && `${formatTokens(bonus.completion)} за завершение и `}
-        {formatTokens(bonus.per_question)} за каждый ответ · на баланс после завершения
+        {bonus.completion > 0 && `${formatLeaves(bonus.completion)} за завершение и `}
+        {formatLeaves(bonus.per_question)} за каждый ответ · на баланс после завершения
       </span>}
     </p>
   );
@@ -251,7 +251,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
           <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
             {submission.bonus_amount > 0 && (
               <p className="ui-secondary mb-4" role="status">
-                Бонус за первое прохождение · <strong className="text-[var(--ui-gold)]">+{formatTokens(submission.bonus_amount)}</strong> на баланс
+                Бонус за первое прохождение · <strong className="text-[var(--ui-gold)]">+{formatLeaves(submission.bonus_amount)}</strong> на баланс
               </p>
             )}
             <ResultContent content={result} titles={[test.name, 'Результат']} contents={false} variant="document" clayHeadings testResult />
@@ -361,7 +361,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
           {answerBonusGain > 0 && (
             <div className="test-answer-bonus" aria-hidden="true">
               <ClayText text={`+${answerBonusGain}`} />
-              <TokenCoin size={18} />
+              <BalanceLeaf size={18} />
             </div>
           )}
           <div className="grid grid-cols-2 gap-3">
@@ -378,12 +378,12 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
                 {answerBonusTotal > 0 ? 'Бонус за ответы' : 'Бонус за первое прохождение'} ·{' '}
                 <strong className="tabular-nums text-[var(--ui-gold)]">
                   {answerBonusTotal > 0
-                    ? `${answerBonusEarned.toLocaleString('ru-RU')}/${formatTokens(answerBonusTotal)}`
-                    : `+${formatTokens(bonus.amount)}`}
+                    ? `${answerBonusEarned.toLocaleString('ru-RU')}/${formatLeaves(answerBonusTotal)}`
+                    : `+${formatLeaves(bonus.amount)}`}
                 </strong>
               </p>
               {answerBonusTotal > 0 && bonus.completion > 0 && (
-                <p className="ui-muted">+{formatTokens(bonus.completion)} за завершение</p>
+                <p className="ui-muted">+{formatLeaves(bonus.completion)} за завершение</p>
               )}
             </div>
           )}
