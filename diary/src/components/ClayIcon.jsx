@@ -1,4 +1,10 @@
-const files = import.meta.glob('../assets/icons/*.webp', { eager: true, query: '?url', import: 'default' });
+import { useTheme } from '../context/theme';
+
+const files = {
+  ...import.meta.glob(['../assets/icons/*.webp', '!../assets/icons/token-coin*.webp'], { eager: true, query: '?url', import: 'default' }),
+  // Монетка нужна сразу при появлении короткой анимации бонуса.
+  ...import.meta.glob('../assets/icons/token-coin*.webp', { eager: true, query: '?inline', import: 'default' }),
+};
 
 const variants = {
   ChevronDown: ['chevron-right', 'rotate(90deg)'],
@@ -65,7 +71,14 @@ export function Save(props) { return <ClayIcon name="Save" {...props} />; }
 export function Send(props) { return <ClayIcon name="Send" {...props} />; }
 export function Shield(props) { return <ClayIcon name="Shield" {...props} />; }
 export function Sparkles(props) { return <ClayIcon name="Sparkles" {...props} />; }
-export function TokenCoin(props) { return <ClayIcon name="TokenCoin" {...props} />; }
+export function TokenCoin({ className = '', ...props }) {
+  const { theme } = useTheme();
+  return <ClayIcon
+    name={theme === 'light' ? 'TokenCoinLight' : 'TokenCoin'}
+    className={`clay-icon--token-coin ${className}`.trim()}
+    {...props}
+  />;
+}
 export function Trash2(props) { return <ClayIcon name="Trash2" {...props} />; }
 export function Undo2(props) { return <ClayIcon name="Undo2" {...props} />; }
 export function User(props) { return <ClayIcon name="User" {...props} />; }

@@ -110,6 +110,7 @@ input[type='date']::-webkit-calendar-picker-indicator { filter: var(--clay-filte
 .ui-checkbox:checked::after { content: ''; width: 16px; height: 16px; background: url('./assets/icons/check.webp') center / contain no-repeat; filter: var(--clay-action-filter); }
 .ui-action-surface, .ui-button--primary { background-color: var(--ui-action); color: var(--ui-on-action); }
 .ui-action-surface .clay-icon, .ui-button--primary .clay-icon { filter: var(--clay-action-filter); }
+:root[data-theme='light'] .clay-icon.clay-icon--token-coin { filter: none; }
 .ui-button--primary:hover:not(:disabled), .ui-action-surface:hover:not(:disabled) { background: var(--ui-action-hover); }
 .ui-action-surface:disabled { background: var(--color-rose-800); color: var(--ui-muted); opacity: .65; }
 .ui-action-surface:disabled .clay-icon { opacity: .5; }

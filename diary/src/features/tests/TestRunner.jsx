@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import { createPortal, preload } from 'react-dom';
 import { ArrowLeft, ArrowRight, Undo2, Wand2, LoaderCircle, TokenCoin } from '../../components/ClayIcon';
 import Spinner from '../../components/Spinner';
 import ClayBanner from '../../components/ClayBanner';
 import ClayText from '../../components/ClayText';
 import ResultContent from '../../components/ResultContent';
 import ScreenState from '../../components/ScreenState';
+import symbolSprite from '../../assets/clay-font/symbols.webp';
 import { readTestProgress, saveTestProgress, clearTestProgress, resumeTestProgress } from './testProgress';
 import { questionIllustration, testIllustrationSources } from './questionIllustrations';
 import { questionImages } from '../../utils/imagePreloader';
@@ -32,6 +33,7 @@ function storage(action) {
 
 // Прохождение теста отдельной страницей: старт, карточки-свайпы «да/нет», результат
 export default function TestRunner({ test, categoryStyle, onClose }) {
+  preload(symbolSprite, { as: 'image' });
   const image = categoryStyle?.image;
   const { profile, refreshProfile, generatePortrait, isGeneratingPortrait } = useProfile();
   const { navigate } = useAppNav();
