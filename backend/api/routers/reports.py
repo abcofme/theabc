@@ -4,6 +4,7 @@ from datetime import date as DateType, datetime, timedelta
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -104,6 +105,11 @@ async def mark_report_read(
 
 # Сколько ждать, пока пользователь сам откроет готовый отчёт в приложении, прежде чем написать в боте
 REPORT_READY_NOTIFY_DELAY = 20
+# Timeweb учитывает рассуждения модели в лимите ответа. Стандартных 4096 токенов
+# может не хватить для текста отчёта, особенно за длинный период.
+REPORT_MAX_TOKENS = 16000
+REPORT_AI_TIMEOUT = 180.0
+REPORT_GENERATION_ERROR = "Не удалось сформировать отчет. Попробуйте позже — листики с баланса не списаны."
 
 
 async def _notify_if_unread(user_id: int, report_id: int, title: str):
@@ -136,59 +142,61 @@ async def _generate_report(user_id: int, report_type: str, report_title: str, re
     try:
         payload = {
             "model": AI_MODEL,
+            "max_tokens": REPORT_MAX_TOKENS,
             "messages": [{"role": "user", "content": report_prompt + "\n\n" + GENDER_NEUTRAL_RULE}]
         }
-        print(f"--- Отправка запроса к ИИ ({payload['model']}) ---")
-        print(f"URL: {ai_url}")
-        print(f"Записей дневника передано: {num_entries}")
-        print("-------------------------------------------------", flush=True)
-
-        async with httpx.AsyncClient(timeout=90.0) as client:
+        async with httpx.AsyncClient(timeout=REPORT_AI_TIMEOUT) as client:
             ai_response = await client.post(
                 ai_url,
                 headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                 json=payload
             )
-            
+
             if ai_response.status_code == 404:
-                payload["model"] = AI_MODEL
                 ai_response = await client.post(
                     ai_url,
                     headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
                     json=payload
                 )
 
-            if ai_response.status_code != 200:
-                print(f"ERROR FROM TIMEWEB API: {ai_response.text}")
-            
             ai_response.raise_for_status()
 
-            ai_response.raise_for_status()
-            ai_data = ai_response.json()
-            generated_text = ai_data["choices"][0]["message"]["content"].strip()
-            if not generated_text:
-                return {"detail": "Не удалось сформировать отчет. Попробуйте позже — листики с баланса не списаны."}
-            
-            async with async_session() as db:
-                created_at = datetime.utcnow()
-                new_report = BehavioralReport(
-                    user_id=user_id,
-                    created_at=created_at,
-                    title=report_title,
-                    period_start=start_d,
-                    period_end=end_d,
-                    content=generated_text
-                )
-                db.add_all([new_report, ContentLog(user_id=user_id, kind=report_type, created_at=created_at)])
-                await complete_charge(db, charged, feature=report_type)
-                await db.commit()
-                await db.refresh(new_report)
-            return {"status": "success", "report": new_report}
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        print("BG report failed:", repr(e))
-        return {"detail": "Не удалось сформировать отчет. Попробуйте позже — листики с баланса не списаны."}
+        choice = (ai_response.json().get("choices") or [{}])[0]
+        generated_text = ((choice.get("message") or {}).get("content") or "").strip()
+        finish_reason = choice.get("finish_reason")
+        if not generated_text or finish_reason in {"length", "content_filter", "error"}:
+            logger.warning(
+                "AI report incomplete: type={}, entries={}, chars={}, finish_reason={}",
+                report_type, num_entries, len(generated_text), finish_reason,
+            )
+            return {"detail": REPORT_GENERATION_ERROR}
+
+        async with async_session() as db:
+            created_at = datetime.utcnow()
+            new_report = BehavioralReport(
+                user_id=user_id,
+                created_at=created_at,
+                title=report_title,
+                period_start=start_d,
+                period_end=end_d,
+                content=generated_text
+            )
+            db.add_all([new_report, ContentLog(user_id=user_id, kind=report_type, created_at=created_at)])
+            await complete_charge(db, charged, feature=report_type)
+            await db.commit()
+        return {"status": "success", "report": new_report}
+    except httpx.HTTPStatusError as error:
+        logger.error(
+            "AI report HTTP error: type={}, entries={}, status={}",
+            report_type, num_entries, error.response.status_code,
+        )
+        return {"detail": REPORT_GENERATION_ERROR}
+    except Exception as error:
+        logger.error(
+            "AI report failed: type={}, entries={}, error={}",
+            report_type, num_entries, type(error).__name__,
+        )
+        return {"detail": REPORT_GENERATION_ERROR}
 
 @router.delete("/api/reports/{report_id}")
 async def delete_report(

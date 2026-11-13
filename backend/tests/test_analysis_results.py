@@ -18,6 +18,7 @@ for key, value in {
 from fastapi import HTTPException
 import httpx
 from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from backend.analysis_results import format_test_results, load_analysis_test_results
@@ -206,6 +207,48 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
                     for text in ("Новый результат", "Вторая шкала", "Сильная мотивация", "Шкала самооценки", "Событие дневника"):
                         self.assertIn(text, prompt)
                     self.assertNotIn("Результат другого пользователя", prompt)
+
+    async def test_report_generation_requests_more_tokens_and_refunds_incomplete_output(self):
+        client = AsyncMock()
+        db = AsyncMock(spec=AsyncSession)
+
+        async def request_report(url, *, headers, json):
+            # Модель исчерпывает стандартный лимит на рассуждениях.
+            enough_tokens = json.get("max_tokens", 4096) >= 8192
+            return httpx.Response(200, request=httpx.Request("POST", url), json={"choices": [{
+                "finish_reason": "stop" if enough_tokens else "length",
+                "message": {"content": "Полный отчёт" if enough_tokens else ""},
+            }]})
+
+        client.post.side_effect = request_report
+        args = (1, "energy", "Энергия", "Записи дневника", None, date.today(), "https://ai.example", "test", 77, 10)
+        with (
+            patch("httpx.AsyncClient") as ai_client,
+            patch("backend.database.async_session") as database_session,
+            patch.object(reports, "complete_charge", new_callable=AsyncMock) as complete_charge,
+            patch.object(reports, "refund", new_callable=AsyncMock) as refund,
+        ):
+            ai_client.return_value.__aenter__.return_value = client
+            database_session.return_value.__aenter__.return_value = db
+            report = await reports._generate_report(*args)
+
+            self.assertEqual(report["report"].content, "Полный отчёт")
+            complete_charge.assert_awaited_once_with(db, 10, feature="energy")
+            db.commit.assert_awaited_once()
+
+            client.post.side_effect = None
+            for content in (None, "Начало отчёта"):
+                with self.subTest(content=content):
+                    refund.reset_mock()
+                    client.post.return_value = httpx.Response(
+                        200, request=httpx.Request("POST", "https://ai.example"),
+                        json={"choices": [{"finish_reason": "length", "message": {"content": content}}]},
+                    )
+                    result = await reports._generate_report_bg(*args)
+
+                    self.assertIn("detail", result)
+                    refund.assert_awaited_once_with(1, 10)
+            database_session.assert_called_once()
 
     async def test_all_report_types_require_results_in_every_category_before_charging(self):
         with patch.object(reports, "charge", new_callable=AsyncMock) as charge:
