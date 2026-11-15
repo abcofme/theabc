@@ -6,6 +6,4 @@ from . import (
     tests,
 
     profile,
-
-    echo
 )
