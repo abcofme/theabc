@@ -1,5 +1,4 @@
-# Обновляет копию telegram-web-app.js (раздаём со своего домена: telegram.org в РФ замедляют).
-# Раннеры GitHub за рубежом, им telegram.org доступен. Коммит подхватит автодеплой на сервере.
+# Предлагает обновление локальной копии Telegram WebApp SDK на ревью.
 name: Update Telegram WebApp SDK
 
 on:
@@ -8,24 +7,55 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: telegram-webapp-sdk-update
+  cancel-in-progress: false
 
 jobs:
   update:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: main
 
-      - name: Download telegram-web-app.js
-        run: curl -fsSL https://telegram.org/js/telegram-web-app.js -o diary/public/telegram-web-app.js
-
-      - name: Commit if changed
+      - name: Download and verify SDK
         run: |
-          if git diff --quiet; then
+          sdk="$RUNNER_TEMP/telegram-web-app.js"
+          curl --fail --silent --show-error --proto '=https' --max-time 30 --max-filesize 1048576 \
+            https://telegram.org/js/telegram-web-app.js --output "$sdk"
+          test -s "$sdk"
+          node --check "$sdk"
+          cp "$sdk" diary/public/telegram-web-app.js
+          cd diary
+          sha256sum public/telegram-web-app.js > telegram-web-app.sha256
+
+      - name: Propose changes for review
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- diary/public/telegram-web-app.js diary/telegram-web-app.sha256; then
             echo "No changes"
             exit 0
           fi
+
+          branch=automation/telegram-webapp-sdk
+          if [ "$(gh pr list --base main --head "$branch" --state open --json number --jq length)" -ne 0 ]; then
+            echo "An update is already awaiting review"
+            exit 0
+          fi
+
+          ref="refs/heads/$branch"
+          existing_sha=$(git ls-remote origin "$ref" | cut -f1)
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git commit -am "chore: update telegram-web-app.js"
-          git push
+          git add diary/public/telegram-web-app.js diary/telegram-web-app.sha256
+          git commit -m "chore: update Telegram WebApp SDK"
+          git push --force-with-lease="$ref:$existing_sha" origin "HEAD:$ref"
+          gh pr create --base main --head "$branch" --title "Update Telegram WebApp SDK" \
+            --body "Review the SDK diff from telegram.org and approve the validation checks before merging."

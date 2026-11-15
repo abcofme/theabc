@@ -1,16 +1,21 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+import asyncio
+
+from fastapi import APIRouter, Depends, HTTPException
+from loguru import logger
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
+from backend.api.ai_jobs import check_prompt_size, start_ai_job
 from backend.api.common import AI_MODEL, GENDER_NEUTRAL_RULE, ai_endpoint, get_session
 from backend.api.security import validate_twa_data
-from backend.billing import charge, refund
+from backend.billing import refund
 from backend.bonuses import award
 from backend.token_usage import complete_charge
 from backend.database.models import Category, Test, Progress, Result, PersonalityPortrait
 
 router = APIRouter()
+PORTRAIT_GENERATION_ERROR = "Не удалось сформировать портрет. Попробуй чуть позже."
 
 
 # Удаление сохранённого портрета
@@ -56,7 +61,8 @@ async def _generate_portrait(user_id: int, user_tests_count: int, prompt: str, a
     prompt += '\n\nОФОРМЛЕНИЕ: основные разделы начинай с ##, подзаголовки внутри — с ###. Одна мысль в абзаце, 2–4 предложения; между абзацами, заголовками и списками пустая строка. Названия поведенческих паттернов выделяй жирным в начале отдельного абзаца в формате **Реакция на стресс:** текст. Ключевые выводы выделяй коротким **жирным** фрагментом. Независимые черты и проявления оформляй маркированными списками, последовательность — нумерованными. Для содержательного сравнения допустима короткая таблица из двух колонок. Не выделяй жирным целые абзацы, не добавляй текст или дополнительные разделы ради оформления. Не меняй заданную структуру JSON шкал, не выноси их данные в таблицу.'
 
     try:
-        async with httpx.AsyncClient(timeout=90.0) as client:
+        check_prompt_size(prompt)
+        async with asyncio.timeout(90), httpx.AsyncClient(timeout=90.0) as client:
             ai_response = await client.post(
                 ai_url,
                 headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
@@ -76,8 +82,8 @@ async def _generate_portrait(user_id: int, user_tests_count: int, prompt: str, a
                     }
                 )
             if ai_response.status_code != 200:
-                print(f"ERROR FROM TIMEWEB API PORTRAIT: {ai_response.text}")
-                return {"status": "error", "message": f"Ошибка AI провайдера: {ai_response.text}"}
+                logger.warning("Portrait AI HTTP error: {}", ai_response.status_code)
+                return {"status": "error", "message": PORTRAIT_GENERATION_ERROR}
                 
             ai_response.raise_for_status()
             ai_data = ai_response.json()
@@ -105,15 +111,12 @@ async def _generate_portrait(user_id: int, user_tests_count: int, prompt: str, a
                 await db.refresh(new_portrait)
                 
             return {"status": "success", "portrait": new_portrait}
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        print("BG portrait failed:", repr(e))
-        return {"status": "error", "message": repr(e)}
+    except Exception as error:
+        logger.warning("Portrait generation failed: {}", type(error).__name__)
+        return {"status": "error", "message": PORTRAIT_GENERATION_ERROR}
 
 @router.post("/api/portrait/generate")
 async def generate_personality_portrait(
-    background_tasks: BackgroundTasks,
     user_data: dict = Depends(validate_twa_data),
     session: AsyncSession = Depends(get_session)
 ):
@@ -206,8 +209,8 @@ async def generate_personality_portrait(
     if not ai_url or not ai_token:
         raise HTTPException(status_code=500, detail="AI сервис не настроен")
         
-    charged = await charge(session, user_id, "portrait")
-
-    # Запускаем генерацию в фоне и сразу возвращаем ответ
-    background_tasks.add_task(_generate_portrait_bg, user_id, total_tests, prompt, ai_url, ai_token, charged)
+    check_prompt_size(prompt)
+    await start_ai_job(session, user_id, "portrait", lambda charged: _generate_portrait_bg(
+        user_id, total_tests, prompt, ai_url, ai_token, charged,
+    ))
     return {"status": "generating"}

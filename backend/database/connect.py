@@ -11,7 +11,7 @@ def create_async_engine_db(
         url: str,
         echo: bool,
 ) -> AsyncEngine:
-    return create_async_engine(url=url, echo=echo)
+    return create_async_engine(url=url, echo=echo, hide_parameters=True)
 
 
 def async_session_db(

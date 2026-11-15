@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN npm run build
+RUN sha256sum --check telegram-web-app.sha256 && npm run build
 
 # Раздаёт Caddy (конфиг монтируется из deploy/Caddyfile)
 FROM caddy:2-alpine

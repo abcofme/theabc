@@ -18,4 +18,7 @@ Premium — подписка без ограничений. Без нее фун
 
 ## Запуск и деплой
 
+Для локального запуска бота после установки зависимостей соберите переводы командой
+`pybabel compile -d backend/resources/locales -D messages`.
+
 `python run.py [migrate|api|bot|all]`. В продакшене каждый режим — отдельный контейнер (`docker-compose.yml`), деплой — push в `main`. Подробности — в `deploy/README.md`.

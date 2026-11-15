@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from backend.api.common import run_in_background
+from backend.api.limits import RequestLimits
 from backend.api.routers import admin, auth, diary, friends, mailings, payments, portrait, profile, referral, reports, tests
 from backend.performance import record_request
 from settings import settings
@@ -26,6 +27,7 @@ async def validation_error(request: Request, error: RequestValidationError):
 # Фронтенд отдаётся с домена WEB_APP_URL. Когда прямой путь быстрый, он ходит в API через direct.<домен> —
 # это другой origin, поэтому разрешаем фронтенд. max_age: preflight кэшируется (Chromium — до 2 часов)
 _web_app = urlsplit(settings.WEB_APP_URL)
+app.add_middleware(RequestLimits)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[f"{_web_app.scheme}://{_web_app.netloc}"],

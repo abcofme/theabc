@@ -20,7 +20,7 @@ import { markInstallOffered, shouldOfferInstall } from './features/install/offer
 import { overviewPath } from './features/diary/useDiary';
 import { dayKey } from './features/diary/utils';
 import { api, prefetch } from './utils/api';
-import { getSession, isMobile, isStandalone, isTelegram, onSessionChange, saveSession } from './utils/platform';
+import { clearLegacySession, clearSession, getSession, isMobile, isStandalone, isTelegram, legacySessionToken, onSessionChange, onSessionChangeInAnotherTab, saveSession } from './utils/platform';
 import diaryIcon from './assets/navigation/diary-clay.webp';
 import testsIcon from './assets/navigation/tests-clay.webp';
 import reportsIcon from './assets/navigation/reports-clay.webp';
@@ -29,6 +29,8 @@ import './components/clay-navigation.css';
 
 const WebApp = window.Telegram.WebApp;
 const BillingPage = lazyScreen(() => import('./features/billing/BillingPage'));
+
+const initialHandoff = readBrowserHandoff();
 
 const TABS = [
   { id: 'diary', label: 'Дневник', icon: diaryIcon },
@@ -81,11 +83,12 @@ export default function App() {
   }, []);
 
   const browserAuth = useBrowserSession();
-  if (browserAuth.isClaiming) return <div className="login-screen"><ScreenState loading title="Входим…" /></div>;
+  if (browserAuth.isRestoring) return <div className="login-screen"><ScreenState loading title="Проверяем вход…" /></div>;
+  if (browserAuth.handoff) return <HandoffScreen {...browserAuth.handoff} />;
   if (!browserAuth.isSignedIn) return <LoginScreen notice={browserAuth.notice} />;
 
   return (
-    <ProfileProvider>
+    <ProfileProvider key={browserAuth.session?.user.id ?? 'telegram'}>
       <BackStackProvider>
         <TelegramChrome />
         <DepthMotion />
@@ -95,28 +98,122 @@ export default function App() {
   );
 }
 
-// Вне Telegram нужна сессия. Из мини-аппа приходят по одноразовой ссылке ?login=<код> — меняем ее на сессию
-// и убираем код из адреса, чтобы он не остался в истории и закладках
-function useBrowserSession() {
-  const [handoff] = useState(() => (isTelegram ? null : new URLSearchParams(window.location.search).get('login')));
-  const [isSignedIn, setIsSignedIn] = useState(() => isTelegram || Boolean(getSession()));
-  const [isClaiming, setIsClaiming] = useState(Boolean(handoff));
-  const [notice, setNotice] = useState(null);
-
-  useEffect(() => onSessionChange(session => setIsSignedIn(Boolean(session))), []);
-
-  useEffect(() => {
-    if (!handoff) return;
-    const url = new URL(window.location.href);
+function readBrowserHandoff() {
+  if (isTelegram) return null;
+  const url = new URL(window.location.href);
+  const params = new URLSearchParams(url.hash.slice(1));
+  const code = params.get('login');
+  if (code) url.hash = '';
+  if (code || url.searchParams.has('login')) {
     url.searchParams.delete('login');
     window.history.replaceState(null, '', url);
-    api('/api/auth/handoff/claim', { method: 'POST', body: { code: handoff } })
-      .then(saveSession)
-      .catch(err => { if (!getSession()) setNotice(err.message); })
-      .finally(() => setIsClaiming(false));
-  }, [handoff]);
+  }
+  return code;
+}
 
-  return { isSignedIn: isTelegram || isSignedIn, isClaiming, notice };
+async function restoreBrowserSession() {
+  try {
+    const session = await api('/api/auth/session');
+    clearLegacySession();
+    return session;
+  } catch (error) {
+    if (error.status !== 401) throw error;
+  }
+  const token = legacySessionToken();
+  if (!token) return null;
+  try {
+    const session = await api('/api/auth/session/migrate', { method: 'POST', headers: { Authorization: `Session ${token}` } });
+    clearLegacySession();
+    return session;
+  } catch (error) {
+    if (error.status !== 401 && error.status !== 403) throw error;
+    clearLegacySession();
+    // Другая вкладка могла первой перенести тот же токен в cookie.
+    return api('/api/auth/session').catch(() => null);
+  }
+}
+
+function useBrowserSession() {
+  const [session, setSession] = useState(getSession);
+  const [isRestoring, setIsRestoring] = useState(!isTelegram);
+  const [code, setCode] = useState(initialHandoff);
+  const [account, setAccount] = useState(null);
+  const [isClaiming, setIsClaiming] = useState(false);
+  const [handoffError, setHandoffError] = useState(null);
+  const [notice, setNotice] = useState(null);
+  const startup = useRef(null);
+  const claiming = useRef(false);
+
+  useEffect(() => {
+    if (isTelegram) return;
+    let active = true;
+    let revision = 0;
+    const unsubscribe = onSessionChange(setSession);
+    function applySession(promise) {
+      const current = ++revision;
+      promise.then(next => {
+        if (!active || current !== revision) return;
+        if (next) saveSession(next, { announce: false });
+        else clearSession({ announce: false });
+      }).catch(() => {
+        if (active && current === revision && !getSession()) setNotice('Не удалось проверить вход. Проверь интернет и попробуй снова.');
+      }).finally(() => { if (active && current === revision) setIsRestoring(false); });
+    }
+    startup.current ??= restoreBrowserSession();
+    applySession(startup.current);
+    const unsubscribeTab = onSessionChangeInAnotherTab(() => {
+      clearSession({ announce: false });
+      applySession(restoreBrowserSession());
+    });
+    return () => { active = false; unsubscribe(); unsubscribeTab(); };
+  }, []);
+
+  useEffect(() => {
+    if (!code || isRestoring) return;
+    let active = true;
+    api('/api/auth/handoff/preview', { method: 'POST', body: { code } })
+      .then(user => { if (active) setAccount(user); })
+      .catch(error => { if (active) setHandoffError(error.message); });
+    return () => { active = false; };
+  }, [code, isRestoring]);
+
+  const confirm = async () => {
+    if (!code || !account || claiming.current) return;
+    claiming.current = true;
+    setIsClaiming(true);
+    try {
+      const next = await api('/api/auth/handoff/claim', { method: 'POST', body: { code, user_id: account.id } });
+      saveSession(next);
+      setCode(null);
+    } catch (error) {
+      setHandoffError(error.message);
+    } finally {
+      claiming.current = false;
+      setIsClaiming(false);
+    }
+  };
+
+  return {
+    session,
+    isRestoring,
+    isSignedIn: isTelegram || Boolean(session),
+    notice,
+    handoff: code ? { account, error: handoffError, busy: isClaiming, confirm, cancel: () => setCode(null) } : null,
+  };
+}
+
+function HandoffScreen({ account, error, busy, confirm, cancel }) {
+  if (!account && !error) return <div className="login-screen"><ScreenState loading title="Проверяем ссылку…" /></div>;
+  return <div className="login-screen">
+    <section className="ui-card ui-stack w-full max-w-sm mx-auto my-auto">
+      <h1 className="text-lg font-semibold">Вход в дневник</h1>
+      {error ? <p className="ui-secondary" role="alert">{error}</p> : <>
+        <p>Открыть дневник аккаунта <strong>{account.first_name || 'Telegram'}{account.username ? ` · @${account.username}` : ''}</strong>?</p>
+        <button type="button" className="ui-button ui-button--primary" disabled={busy} onClick={confirm}>{busy ? 'Входим…' : 'Подтвердить вход'}</button>
+      </>}
+      <button type="button" className="ui-button ui-button--quiet" disabled={busy} onClick={cancel}>Отмена</button>
+    </section>
+  </div>;
 }
 
 // Прячем меню, пока экранная клавиатура занимает часть окна. Фокус может остаться после её закрытия.

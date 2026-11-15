@@ -7,7 +7,7 @@ import AdminMonitoring from './AdminMonitoring';
 import AdminStats from './AdminStats';
 import AdminPartners from './AdminPartners';
 import ScreenState from '../../components/ScreenState';
-import { authHeader, isSignedIn } from '../../utils/platform';
+import { apiHeaders, isSignedIn } from '../../utils/platform';
 import { api } from '../../utils/api';
 
 const WebApp = window.Telegram.WebApp;
@@ -45,7 +45,7 @@ export default function AdminPanel({ section }) {
   const [aiImportResult, setAiImportResult] = useState(null); // {test_name, questions_count, results_count} or error string
   const fetchTrackingLinks = useCallback(() => {
     if (!isSignedIn()) return Promise.resolve();
-    return fetch(`${API_URL}/api/admin/tracking_links`, { headers: { Authorization: authHeader() } })
+    return fetch(`${API_URL}/api/admin/tracking_links`, { headers: apiHeaders() })
       .then(async response => {
         if (!response.ok) throw new Error('Не удалось загрузить ссылки');
         setTrackingLinks(await response.json());
@@ -62,7 +62,7 @@ export default function AdminPanel({ section }) {
       const response = await fetch(`${API_URL}/api/admin/tracking_links`, {
         method: 'POST',
         headers: {
-          "Authorization": authHeader(),
+          ...apiHeaders(),
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ name: newLinkName })
@@ -87,7 +87,7 @@ export default function AdminPanel({ section }) {
       try {
         const response = await fetch(`${API_URL}/api/admin/tracking_links/${id}`, {
           method: 'DELETE',
-          headers: { "Authorization": authHeader() }
+          headers: apiHeaders()
         });
         if (response.ok) {
           fetchTrackingLinks();
@@ -134,7 +134,7 @@ export default function AdminPanel({ section }) {
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          "Authorization": authHeader(),
+          ...apiHeaders(),
           "Content-Type": "application/json"
         },
         body: JSON.stringify(bodyData)
@@ -166,7 +166,7 @@ export default function AdminPanel({ section }) {
       const response = await fetch(`${API_URL}/api/admin/revoke`, {
         method: 'POST',
         headers: {
-          "Authorization": authHeader(),
+          ...apiHeaders(),
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -199,7 +199,7 @@ export default function AdminPanel({ section }) {
     try {
       const response = await fetch(`${API_URL}/api/admin/tests/${testId}`, {
         method: 'DELETE',
-        headers: { "Authorization": authHeader() }
+        headers: apiHeaders()
       });
       
       if (!response.ok) {
@@ -240,7 +240,7 @@ export default function AdminPanel({ section }) {
     try {
       const response = await fetch(`${API_URL}/api/admin/tests/ai-import`, {
         method: 'POST',
-        headers: { 'Authorization': authHeader(), 'Content-Type': 'application/json' },
+        headers: { ...apiHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ raw_text: aiImportText, category_id: parseInt(aiImportCategoryId) })
       });
       const data = await response.json();
@@ -265,7 +265,7 @@ export default function AdminPanel({ section }) {
       const params = new URLSearchParams();
       params.append('test_ids', exportSelectedIds.join(','));
       const response = await fetch(`${API_URL}/api/admin/tests/export?${params.toString()}`, {
-        headers: { 'Authorization': authHeader() }
+        headers: apiHeaders()
       });
       if (!response.ok) throw new Error(await response.text());
       const { token } = await response.json();

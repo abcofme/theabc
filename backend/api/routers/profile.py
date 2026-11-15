@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import func, or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -55,26 +55,45 @@ async def _fetch_avatar(user_id: int) -> bytes | None:
 
 
 @router.get("/api/avatar/{user_id}")
-async def get_avatar(user_id: int, session: AsyncSession = Depends(get_session)):
+async def get_avatar(
+    user_id: int,
+    user_data: dict = Depends(validate_twa_data),
+    session: AsyncSession = Depends(get_session),
+):
+    from hashlib import sha256
+
     from fastapi.responses import Response
     from backend.redis_db import async_redis
 
-    cache_key = f"avatar:{user_id}"
+    viewer_id = user_data["id"]
+    if not 0 < user_id < 2**63:
+        raise HTTPException(status_code=404)
+    if viewer_id != user_id:
+        friendship = await session.scalar(select(Friendship.id).where(
+            Friendship.status.in_(("pending", "accepted")),
+            or_(and_(Friendship.user_id == viewer_id, Friendship.friend_id == user_id),
+                and_(Friendship.user_id == user_id, Friendship.friend_id == viewer_id)),
+        ).limit(1))
+        if friendship is None:
+            raise HTTPException(status_code=404)
+    db_user = await session.get(User, user_id)
+    if not db_user or db_user.banned or not db_user.photo_url:
+        raise HTTPException(status_code=404)
+
+    photo_version = sha256(db_user.photo_url.encode()).hexdigest()
+    await session.commit()
+    cache_key = f"avatar:{user_id}:{photo_version}"
     cached = await async_redis.get(cache_key)
     if cached is None:
-        db_user = await session.get(User, user_id)
-        if not db_user or not db_user.photo_url:
-            raise HTTPException(status_code=404)
         try:
             cached = await _fetch_avatar(user_id) or b""
-        except Exception as e:
-            print(f"Avatar fetch failed for {user_id}: {e!r}")
-            raise HTTPException(status_code=502)
+        except Exception:
+            raise HTTPException(status_code=502) from None
         await async_redis.set(cache_key, cached, ex=AVATAR_TTL if cached else AVATAR_MISS_TTL)
 
     if not cached:
         raise HTTPException(status_code=404)
-    return Response(content=cached, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=86400"})
+    return Response(content=cached, media_type="image/jpeg", headers={"Cache-Control": "private, no-store"})
 
 
 async def _greet_new_friends(user: User, inviter_id: int):
@@ -233,7 +252,7 @@ async def get_profile(
             **AI_PRICES,
         },
         "diary_reminders": db_user.diary_reminders if db_user else True,
-        "is_admin": is_admin(db_user, user_data.get("username")),
+        "is_admin": is_admin(db_user),
         "is_partner": bool(partner_account and partner_account.enabled and not db_user.banned),
         "bonuses": await bonus_list(session, user_id) if db_user else [],
         # Без Premium одна диктовка — пробная (backend/dictation.py)

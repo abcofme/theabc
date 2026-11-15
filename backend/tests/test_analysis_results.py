@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from backend.analysis_results import format_test_results, load_analysis_test_results
+from backend.api import ai_jobs
 from backend.api.routers import diary, reports
 from backend.database.models import Category, ContentLog, DiaryEntry, PersonalityPortrait, Progress, Result, Test, User
 
@@ -111,13 +112,21 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
         self.db.commit()
         self.assertEqual(await load_analysis_test_results(self.session, 4), [])
 
-    async def test_diary_sends_all_results_without_a_portrait(self):
+    async def test_diary_sends_all_results_without_holding_database_session(self):
+        open_sessions = 0
+
         @asynccontextmanager
         async def database_session():
-            yield self.session
+            nonlocal open_sessions
+            open_sessions += 1
+            try:
+                yield self.session
+            finally:
+                open_sessions -= 1
 
         @asynccontextmanager
         async def ai_client(**kwargs):
+            self.assertEqual(open_sessions, 0)
             yield client
 
         response = httpx.Response(200, json={"choices": [{"message": {"content": "75\n===\nРазбор"}}]})
@@ -127,7 +136,7 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
             patch("backend.database.async_session", database_session),
             patch("httpx.AsyncClient", ai_client),
             patch.object(diary, "ai_endpoint", return_value=("https://ai.example", "test")),
-            patch.object(diary, "charge", new_callable=AsyncMock, return_value=None) as charge,
+            patch.object(ai_jobs, "charge", new_callable=AsyncMock, return_value=None) as charge,
             patch.object(diary, "award", new_callable=AsyncMock),
         ):
             result = await diary.analyze_reaction(1, {"id": 1}, self.session)
@@ -149,7 +158,9 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
         tasks = []
 
         def run_in_background(coroutine):
-            tasks.append(asyncio.create_task(coroutine))
+            task = asyncio.create_task(coroutine)
+            tasks.append(task)
+            return task
 
         @asynccontextmanager
         async def database_session():
@@ -165,9 +176,9 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
             patch("backend.database.async_session", database_session),
             patch("httpx.AsyncClient", ai_client),
             patch.object(diary, "ai_endpoint", return_value=("https://ai.example", "test")),
-            patch.object(diary, "charge", new_callable=AsyncMock, return_value=None),
+            patch.object(ai_jobs, "charge", new_callable=AsyncMock, return_value=None),
             patch.object(diary, "award", new_callable=AsyncMock),
-            patch.object(diary, "run_in_background", run_in_background),
+            patch.object(ai_jobs, "run_in_background", run_in_background),
         ):
             result = await diary.add_diary_addition(1, {"text": "Дополнительная деталь"}, {"id": 1}, self.session)
             self.assertTrue(result["analysis_started"])
@@ -180,7 +191,7 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(entry.portrait_match_explanation, "Новый разбор")
 
     async def test_diary_requires_results_in_every_category_before_charging(self):
-        with patch.object(diary, "charge", new_callable=AsyncMock) as charge:
+        with patch.object(ai_jobs, "charge", new_callable=AsyncMock) as charge:
             for user_id in (2, 3, 4):
                 with self.subTest(user_id=user_id):
                     self.assertFalse(await diary._start_reaction_analysis(user_id, user_id, self.session))
@@ -194,7 +205,7 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
     async def test_all_report_types_send_all_results_without_a_portrait(self):
         with (
             patch.object(reports, "ai_endpoint", return_value=("https://ai.example", "test")),
-            patch.object(reports, "charge", new_callable=AsyncMock, return_value=None),
+            patch.object(ai_jobs, "charge", new_callable=AsyncMock, return_value=None),
             patch.object(reports, "_generate_report_bg", new_callable=AsyncMock) as generate,
         ):
             for report_type in ("repeating_events", "effective_reactions", "energy", "competence"):
@@ -251,7 +262,7 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
             database_session.assert_called_once()
 
     async def test_all_report_types_require_results_in_every_category_before_charging(self):
-        with patch.object(reports, "charge", new_callable=AsyncMock) as charge:
+        with patch.object(ai_jobs, "charge", new_callable=AsyncMock) as charge:
             for report_type in ("repeating_events", "effective_reactions", "energy", "competence"):
                 req = reports.ReportGenerateRequest(period="all", report_type=report_type)
                 for user_id in (2, 3, 4):
@@ -261,3 +272,84 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
                         self.assertEqual(error.exception.status_code, 400)
                         self.assertIn("в каждой категории", error.exception.detail)
         charge.assert_not_awaited()
+
+    async def test_report_rejects_oversized_history_before_charging(self):
+        self.db.get(DiaryEntry, 1).event = "а" * (ai_jobs.MAX_AI_PROMPT_CHARS + 1)
+        self.db.commit()
+        req = reports.ReportGenerateRequest(period="all", report_type="energy")
+        with patch.object(ai_jobs, "charge", new_callable=AsyncMock) as charge:
+            with self.assertRaises(HTTPException) as error:
+                await reports.generate_report(req, {"id": 1}, self.session)
+        self.assertEqual(error.exception.status_code, 413)
+        charge.assert_not_awaited()
+
+    async def test_ai_jobs_limit_accounts_and_total_before_charging(self):
+        release = asyncio.Event()
+
+        async def job(charged):
+            await release.wait()
+            return charged
+
+        session = AsyncMock(spec=AsyncSession)
+        with (
+            patch.object(ai_jobs, "MAX_ACTIVE_AI_JOBS", 1),
+            patch.object(ai_jobs, "charge", new_callable=AsyncMock, return_value=None) as charge,
+        ):
+            first_job = await ai_jobs.start_ai_job(session, 1, "report", job)
+            try:
+                for user_id, status in ((1, 429), (2, 503)):
+                    with self.assertRaises(HTTPException) as error:
+                        await ai_jobs.start_ai_job(session, user_id, "diary_answer", job)
+                    self.assertEqual(error.exception.status_code, status)
+                charge.assert_awaited_once_with(session, 1, "report")
+                session.commit.assert_awaited_once()
+            finally:
+                release.set()
+                await first_job
+            next_job = await ai_jobs.start_ai_job(session, 2, "report", job)
+            await next_job
+
+    async def test_ai_job_restores_credits_when_cancelled_and_releases_slot(self):
+        started = asyncio.Event()
+
+        async def cancelled_job(charged):
+            started.set()
+            await asyncio.Event().wait()
+
+        session = AsyncMock(spec=AsyncSession)
+        with (
+            patch.object(ai_jobs, "charge", new_callable=AsyncMock, return_value=17),
+            patch.object(ai_jobs, "refund", new_callable=AsyncMock) as refund,
+        ):
+            task = await ai_jobs.start_ai_job(session, 1, "report", cancelled_job)
+            await started.wait()
+            task.cancel()
+            with self.assertRaises(asyncio.CancelledError):
+                await task
+        refund.assert_awaited_once_with(1, 17)
+        self.assertNotIn(1, ai_jobs._active_users)
+
+    async def test_busy_diary_addition_keeps_previous_entry_and_can_be_retried(self):
+        entry = self.db.get(DiaryEntry, 1)
+        entry.portrait_match_score = 60
+        entry.portrait_match_explanation = "Предыдущий ответ"
+        self.db.commit()
+        with (
+            patch.object(ai_jobs, "_active_users", {1}) as active,
+            patch.object(ai_jobs, "charge", new_callable=AsyncMock, return_value=None) as charge,
+            patch.object(diary, "_analyze_reaction_bg", new_callable=AsyncMock) as analyze,
+        ):
+            with self.assertRaises(HTTPException) as error:
+                await diary.add_diary_addition(1, {"text": "Деталь"}, {"id": 1}, self.session)
+            self.assertEqual(error.exception.status_code, 429)
+            self.assertIsNone(entry.addition)
+            self.assertEqual(entry.portrait_match_explanation, "Предыдущий ответ")
+            charge.assert_not_awaited()
+            analyze.assert_not_awaited()
+
+            active.clear()
+            result = await diary.add_diary_addition(1, {"text": "Деталь"}, {"id": 1}, self.session)
+            self.assertTrue(result["analysis_started"])
+            self.assertEqual(result["addition"], "Деталь")
+            await asyncio.sleep(0)
+            analyze.assert_awaited_once()

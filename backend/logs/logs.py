@@ -13,10 +13,13 @@ logger_format = (
 
 
 def hide_secrets(record: dict):
-    record['message'] = record['message'].replace(settings.BOT_TOKEN, '[BOT_TOKEN]')
-    record['message'] = record['message'].replace(settings.POSTGRES_PASSWORD, '[POSTGRES_PASSWORD]')
-    if settings.REDIS_PASSWORD:
-        record['message'] = record['message'].replace(settings.REDIS_PASSWORD, '[REDIS_PASSWORD]')
+    for value in (
+        settings.BOT_TOKEN, settings.POSTGRES_PASSWORD, settings.REDIS_PASSWORD,
+        settings.SECRET_KEY, settings.TIMEWEB_AI_TOKEN, settings.BROWSER_PASSWORD_HASH,
+    ):
+        if value:
+            record['message'] = record['message'].replace(value, '[REDACTED]')
+
 
 
 def configure_logger():
@@ -27,6 +30,7 @@ def configure_logger():
         level=log_level,
         format=logger_format,
         backtrace=False,
+        diagnose=False,
         colorize=True,
     )
     logger.configure(patcher=hide_secrets)

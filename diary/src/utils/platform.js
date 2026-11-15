@@ -28,32 +28,36 @@ if (isIOS && isStandalone) {
   window.matchMedia('(orientation: landscape)').addEventListener?.('change', () => setTimeout(fitScreen, 300));
 }
 
-const SESSION_KEY = 'azbuka-session';
+const LEGACY_SESSION_KEY = 'azbuka-session';
 const listeners = new Set();
+const sessionChannel = !isTelegram && typeof BroadcastChannel === 'function' ? new BroadcastChannel('azbuka-session') : null;
 
-function readStoredSession() {
+export function legacySessionToken() {
   try {
-    const session = JSON.parse(localStorage.getItem(SESSION_KEY));
-    return session?.token ? session : null;
+    const token = JSON.parse(localStorage.getItem(LEGACY_SESSION_KEY))?.token;
+    return typeof token === 'string' ? token : null;
   } catch { return null; }
 }
 
-let session = isTelegram ? null : readStoredSession();
+export function clearLegacySession() {
+  try { localStorage.removeItem(LEGACY_SESSION_KEY); } catch { /* Хранилище может быть недоступно. */ }
+}
+
+let session = null;
 
 export const getSession = () => session;
 
-// { token, user: { id, first_name, username, photo_url } } из /api/auth/login/check или /api/auth/handoff/claim
-export function saveSession(next) {
-  session = { token: next.token, user: next.user };
-  try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch { /* приватный режим: сессия до закрытия вкладки */ }
+export function saveSession(next, { announce = true } = {}) {
+  session = { user: next.user };
   listeners.forEach(listener => listener(session));
+  if (announce) sessionChannel?.postMessage('changed');
 }
 
-export function clearSession() {
+export function clearSession({ announce = true } = {}) {
   if (!session) return;
   session = null;
-  try { localStorage.removeItem(SESSION_KEY); } catch { /* нечего удалять */ }
   listeners.forEach(listener => listener(null));
+  if (announce) sessionChannel?.postMessage('changed');
 }
 
 export function onSessionChange(listener) {
@@ -61,8 +65,18 @@ export function onSessionChange(listener) {
   return () => listeners.delete(listener);
 }
 
+export function onSessionChangeInAnotherTab(listener) {
+  sessionChannel?.addEventListener('message', listener);
+  return () => sessionChannel?.removeEventListener('message', listener);
+}
+
 export const isSignedIn = () => isTelegram || Boolean(session);
-export const authHeader = () => (isTelegram ? `Bearer ${WebApp.initData}` : `Session ${session?.token || ''}`);
+export function apiHeaders() {
+  if (isTelegram) return { Authorization: `Bearer ${WebApp.initData}` };
+  const headers = { 'X-ABC-CSRF': '1' };
+  if (session) headers['X-ABC-Account'] = String(session.user.id);
+  return headers;
+}
 // Пользователь Telegram: имя, ник и фото для шапки профиля, id — для черновиков записей
 export const currentUser = () => (isTelegram ? WebApp.initDataUnsafe?.user : session?.user) || null;
 

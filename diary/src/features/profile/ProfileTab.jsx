@@ -20,7 +20,6 @@ import { clearSession, currentUser, isStandalone, isTelegram } from '../../utils
 import { useTheme } from '../../context/theme';
 import './profile-header.css';
 
-const API_URL = window.location.origin;
 const WebApp = window.Telegram.WebApp;
 const ReferralPage = lazyScreen(() => import('../referrals/ReferralCabinet'));
 const AdminPanel = lazyScreen(() => import('../admin/AdminPanel'));
@@ -94,8 +93,12 @@ export default function ProfileTab({ request, active }) {
   // Выход только из этого браузера: сессия на сервере удаляется, приложение возвращается к экрану входа
   const logout = () => WebApp.showConfirm('Выйти из аккаунта на этом устройстве?', async (confirmed) => {
     if (!confirmed) return;
-    try { await api('/api/auth/logout', { method: 'POST' }); } catch { /* сессия и так забудется на устройстве */ }
-    clearSession();
+    try {
+      await api('/api/auth/logout', { method: 'POST' });
+      clearSession();
+    } catch (error) {
+      handleError(error, 'Не удалось завершить сеанс. Попробуй ещё раз.');
+    }
   });
 
   const closePage = () => {
@@ -128,7 +131,7 @@ export default function ProfileTab({ request, active }) {
         <img className="profile-header__vine profile-header__vine--bottom" src={headerVine} alt="" aria-hidden="true" width="512" height="512" draggable="false" />
         <div className="profile-header__content flex flex-col items-center text-center w-full min-w-0">
           <Avatar
-            src={tgUser.avatar_kind === 'logo' ? logo : tgUser.photo_url && tgUser.id ? `${API_URL}/api/avatar/${tgUser.id}` : null}
+            src={tgUser.avatar_kind === 'logo' ? logo : tgUser.photo_url && tgUser.id ? `/api/avatar/${tgUser.id}` : null}
             className="profile-header__avatar w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover shadow-lg shrink-0"
             fallback={
               <div className="profile-header__avatar w-20 h-20 sm:w-24 sm:h-24 ui-avatar text-[var(--ui-text)] rounded-full flex items-center justify-center font-bold text-3xl shadow-inner shrink-0">

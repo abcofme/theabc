@@ -12,12 +12,14 @@ import { readTestProgress, clearTestProgress } from './testProgress';
 import { useProfile } from '../../context/profile';
 import { useErrorHandler } from '../../navigation/appNav';
 import { api } from '../../utils/api';
+import { currentUser } from '../../utils/platform';
 
 const WebApp = window.Telegram.WebApp;
 const TestRunner = lazyScreen(() => import('./TestRunner'));
 
 export default function TestsTab({ request }) {
   const { profile, refreshProfile } = useProfile();
+  const ownerId = currentUser()?.id;
   const handleError = useErrorHandler();
   const [openCategory, setOpenCategory] = useState(null);
   const [selectedResult, setSelectedResult] = useState(null);
@@ -50,7 +52,7 @@ export default function TestsTab({ request }) {
   }, [request?.id, request?.category, requestedCategoryId]);
   const categoryOf = id => categories.find(c => c.tests.some(t => t.id === id));
   const remaining = categories.filter(c => c.name !== 'Профориентация').flatMap(c => c.tests).filter(test => !test.passed);
-  const nextTest = remaining.find(test => readTestProgress(test.id).index > 0) || remaining[0];
+  const nextTest = remaining.find(test => readTestProgress(ownerId, test.id).index > 0) || remaining[0];
   const openTest = test => {
     if (test.passed) { setSelectedResult(test); WebApp.HapticFeedback?.selectionChanged(); }
     else { WebApp.HapticFeedback?.impactOccurred('light'); setRunningTest(test); }
@@ -62,7 +64,7 @@ export default function TestsTab({ request }) {
       if (!confirmed) return;
       try {
         await api(`/api/tests/${test.id}/progress`, { method: 'DELETE' });
-        clearTestProgress(test.id);
+        clearTestProgress(ownerId, test.id);
         setSelectedResult(null);
         refreshProfile();
         setRunningTest({ ...test, passed: false });
@@ -85,7 +87,7 @@ export default function TestsTab({ request }) {
               <div id={`test-category-panel-${cat.id}`} role="region" aria-labelledby={`clay-banner-title-test-category-${cat.id}`} hidden={!isOpen}>
                 {isOpen && <div className={banner ? 'clay-group__body' : 'px-1 pt-2'}>
                   {cat.tests.length === 0 ? <p className="ui-secondary py-4">В этой категории пока нет тестов.</p> : cat.tests.map(test => {
-                    const saved = readTestProgress(test.id);
+                    const saved = readTestProgress(ownerId, test.id);
                     return <button type="button" key={test.id} onClick={() => openTest(test)} className="ui-row">
                       <span className="flex-1 min-w-0"><span className="font-medium leading-6 block">{test.name}</span>{!test.passed && saved.index > 0 && <span className="ui-muted block mt-1">{saved.total ? `Пройдено ${saved.index} из ${saved.total} вопросов` : 'Есть сохраненный прогресс'}</span>}</span>
                       <span className="flex items-center gap-1 text-sm font-semibold shrink-0">{test.passed ? <><Check size={20} className="text-[var(--ui-sage)]" /> Результат</> : <>{saved.index > 0 ? 'Продолжить' : 'Пройти'}<ChevronRight size={20} /></>}</span>
@@ -104,7 +106,7 @@ export default function TestsTab({ request }) {
         <button type="button" onClick={retake} className="ui-button test-retake-button"><RefreshCw size={24} className="clay-icon--dark" /> Пройти тест заново</button>
         </div>
       </Page>}
-      {runningTest && <TestRunner key={runningTest.id} test={runningTest} categoryStyle={categoryBanners[categoryOf(runningTest.id)?.name.trim()]} onClose={closeTest} />}
+      {runningTest && <TestRunner key={runningTest.id} ownerId={ownerId} test={runningTest} categoryStyle={categoryBanners[categoryOf(runningTest.id)?.name.trim()]} onClose={closeTest} />}
     </div>
   );
 }

@@ -1,13 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readDraft, saveDraft, clearDraft, readTextDraft, saveTextDraft } from '../src/features/diary/drafts.js';
-import { readTestProgress, resumeTestProgress, saveTestProgress, clearTestProgress } from '../src/features/tests/testProgress.js';
+import { clearTestProgress, discardLegacyTestProgress, readTestProgress, resumeTestProgress, saveTestProgress } from '../src/features/tests/testProgress.js';
 import { parseScales, scaleValue } from '../src/features/profile/portraitScales.js';
 import { analysisLock, analysisState, newestEntryFirst } from '../src/features/diary/utils.js';
 import { formatResultText, remarkResultLabels } from '../src/components/resultFormatting.js';
 
 class MemoryStorage {
   entries = new Map();
+  get length() { return this.entries.size; }
+  key(index) { return [...this.entries.keys()][index] ?? null; }
   getItem(key) { return this.entries.get(key) ?? null; }
   setItem(key, value) { this.entries.set(key, value); }
   removeItem(key) { this.entries.delete(key); }
@@ -54,13 +56,13 @@ test('Поврежденный черновик не подменяет сохр
 
 test('После неудачной отправки результата восстанавливается полный набор ответов для повтора без добавления последнего', () => {
   const completed = { answers: [11, 22, 33], index: 2, total: 3 };
-  saveTestProgress(5, completed);
-  const restored = resumeTestProgress(readTestProgress(5), 3);
+  saveTestProgress(7, 5, completed);
+  const restored = resumeTestProgress(readTestProgress(7, 5), 3);
   assert.deepEqual(restored, { answers: [11, 22, 33], index: 2, pending: true });
   // Повторная попытка получает тот же набор, а не [11,22,33,33].
-  assert.deepEqual(resumeTestProgress(readTestProgress(5), 3).answers, completed.answers);
-  clearTestProgress(5);
-  assert.deepEqual(readTestProgress(5).answers, []);
+  assert.deepEqual(resumeTestProgress(readTestProgress(7, 5), 3).answers, completed.answers);
+  clearTestProgress(7, 5);
+  assert.deepEqual(readTestProgress(7, 5).answers, []);
 });
 
 test('Обычное продолжение и изменение длины теста не пропускают вопросы', () => {
@@ -71,10 +73,22 @@ test('Обычное продолжение и изменение длины т�
 });
 
 test('Поврежденный прогресс теста безопасно сбрасывается', () => {
-  storage.setItem('test_progress_9', 'broken');
-  assert.deepEqual(readTestProgress(9), { answers: [], index: 0, total: null });
-  storage.setItem('test_progress_9', JSON.stringify({ index: -1, answers: 'wrong' }));
-  assert.deepEqual(readTestProgress(9), { answers: [], index: 0, total: null });
+  storage.setItem('test_progress_7_9', 'broken');
+  assert.deepEqual(readTestProgress(7, 9), { answers: [], index: 0, total: null });
+  storage.setItem('test_progress_7_9', JSON.stringify({ index: -1, answers: 'wrong' }));
+  assert.deepEqual(readTestProgress(7, 9), { answers: [], index: 0, total: null });
+});
+
+test('Ответы из другой учётной записи и старый черновик без владельца не восстанавливаются', () => {
+  const progress = { answers: [10], index: 1, total: 3 };
+  storage.setItem('test_progress_19', JSON.stringify(progress));
+  saveTestProgress(7, 19, progress);
+  assert.deepEqual(readTestProgress(7, 19), progress);
+  assert.deepEqual(readTestProgress(8, 19).answers, []);
+  assert.deepEqual(readTestProgress(null, 19).answers, []);
+  discardLegacyTestProgress();
+  assert.equal(storage.getItem('test_progress_19'), null);
+  assert.deepEqual(readTestProgress(7, 19), progress);
 });
 
 test('Шкалы портрета сохраняют крайние значения и поддерживаемые форматы', () => {

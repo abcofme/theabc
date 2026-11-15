@@ -54,6 +54,8 @@ async def run_api():
         proxy_headers=True,
         forwarded_allow_ips="*",
         server_header=False,
+        # Query strings can contain short-lived download capabilities. TimingMiddleware records route metrics.
+        access_log=False,
     )
     await uvicorn.Server(config).serve()
 

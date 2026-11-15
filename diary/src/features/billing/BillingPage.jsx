@@ -1,3 +1,4 @@
+import { SERVICE_DESCRIPTIONS } from '../legal/serviceDescriptions';
 import { useCallback, useEffect, useRef, useState, useId } from 'react';
 import { Check, Sparkles, BalanceLeaf } from '../../components/ClayIcon';
 import Page from '../../components/Page';
@@ -7,7 +8,7 @@ import { useProfile } from '../../context/profile';
 import { api } from '../../utils/api';
 import { currentUser, isTelegram } from '../../utils/platform';
 import { formatLeaves } from '../diary/utils';
-import { SERVICE_DESCRIPTIONS, DeliveryInformation, ContactInformation } from '../legal/ServiceInformation';
+import { DeliveryInformation, ContactInformation } from '../legal/ServiceInformation';
 
 const WebApp = window.Telegram.WebApp;
 const QUICK_AMOUNTS = [100, 300, 500, 1000];

@@ -20,6 +20,8 @@ from fastapi import FastAPI, HTTPException, Request
 SAMPLE_RATE = 16000
 # Ограничение диктовки на фронте — 5 минут (diary/src/features/diary/useDictation.js), здесь с запасом
 MAX_SECONDS = 6 * 60
+MAX_BYTES = 16 * 1024 * 1024
+MAX_ACTIVE_REQUESTS = 3
 
 # На сервере 2 vCPU: одна запись за раз на оба ядра, остальные ждут в очереди
 _options = ort.SessionOptions()
@@ -33,6 +35,7 @@ _recognizer = _model.with_vad(_vad, min_silence_duration_ms=700, max_speech_dura
 _lock = asyncio.Lock()
 # Сколько диктовок ждут своей очереди прямо сейчас — для мониторинга (backend/scheduler/monitoring.py)
 _waiting = 0
+_active = 0
 _started = time.time()
 CGROUP = Path("/sys/fs/cgroup")
 
@@ -52,11 +55,17 @@ def _decode(data: bytes) -> np.ndarray:
     with av.open(io.BytesIO(data)) as container:
         resampler = av.AudioResampler(format="flt", layout="mono", rate=SAMPLE_RATE)
         chunks = []
+        samples = 0
         for frame in container.decode(audio=0):
-            chunks += [f.to_ndarray().reshape(-1) for f in resampler.resample(frame)]
-            if sum(map(len, chunks)) > MAX_SECONDS * SAMPLE_RATE:
+            resampled = resampler.resample(frame)
+            samples += sum(part.samples for part in resampled)
+            if samples > MAX_SECONDS * SAMPLE_RATE:
                 raise TooLong
-        chunks += [f.to_ndarray().reshape(-1) for f in resampler.resample(None)]
+            chunks.extend(part.to_ndarray().reshape(-1) for part in resampled)
+        remaining = resampler.resample(None)
+        if samples + sum(part.samples for part in remaining) > MAX_SECONDS * SAMPLE_RATE:
+            raise TooLong
+        chunks.extend(part.to_ndarray().reshape(-1) for part in remaining)
     return np.concatenate(chunks).astype(np.float32) if chunks else np.zeros(0, np.float32)
 
 
@@ -88,25 +97,56 @@ def _recognize(data: bytes) -> tuple[str, float]:
 
 @app.post("/transcribe")
 async def transcribe(request: Request):
-    global _waiting
-    data = await request.body()
-    arrived = time.monotonic()
-    _waiting += 1
+    global _active, _waiting
+    busy = HTTPException(503, "transcription busy", headers={"Retry-After": "10"})
+    if _active >= MAX_ACTIVE_REQUESTS:
+        raise busy
+
+    _active += 1
     try:
-        await _lock.acquire()
-    finally:
-        _waiting -= 1
-    try:
-        started = time.monotonic()
-        text, seconds = await asyncio.to_thread(_recognize, data)
+        data = bytearray()
+        try:
+            async with asyncio.timeout(40):
+                async for chunk in request.stream():
+                    if len(data) + len(chunk) > MAX_BYTES:
+                        raise TooLong
+                    data.extend(chunk)
+        except TimeoutError:
+            raise HTTPException(408, "upload timed out") from None
+        if not data:
+            raise BadAudio
+
+        arrived = time.monotonic()
+        _waiting += 1
+        try:
+            async with asyncio.timeout(120):
+                await _lock.acquire()
+        except TimeoutError:
+            raise busy from None
+        finally:
+            _waiting -= 1
+
+        try:
+            started = time.monotonic()
+            work = asyncio.create_task(asyncio.to_thread(_recognize, data))
+            try:
+                text, seconds = await asyncio.shield(work)
+            except asyncio.CancelledError:
+                # Cancelling the request cannot stop the native decoder; keep its slot until it finishes.
+                await asyncio.gather(work, return_exceptions=True)
+                raise
+        finally:
+            _lock.release()
+        return {
+            "text": text, "seconds": round(seconds, 2),
+            "wait": round(started - arrived, 2), "took": round(time.monotonic() - started, 2),
+        }
     except TooLong:
-        raise HTTPException(status_code=413, detail="too long")
+        raise HTTPException(413, "too long") from None
     except BadAudio:
-        raise HTTPException(status_code=422, detail="bad audio")
+        raise HTTPException(422, "bad audio") from None
     finally:
-        _lock.release()
-    # wait — очередь, took — само распознавание: по ним api решает, не пора ли поднять алерт
-    return {"text": text, "seconds": round(seconds, 2), "wait": round(started - arrived, 2), "took": round(time.monotonic() - started, 2)}
+        _active -= 1
 
 
 def _cgroup(name: str) -> str | None:

@@ -6,6 +6,9 @@ import ErrorBoundary from './ErrorBoundary.jsx'
 import ThemeProvider from './context/ThemeProvider.jsx'
 import './theme.css'
 import { isTelegram } from './utils/platform'
+import { discardLegacyTestProgress } from './features/tests/testProgress'
+
+discardLegacyTestProgress()
 
 // Установленному приложению нужен сервис-воркер: без него Android не предложит установку, а без сети не откроется.
 // В Telegram он не нужен

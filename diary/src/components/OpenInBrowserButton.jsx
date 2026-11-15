@@ -36,7 +36,8 @@ export default function OpenInBrowserButton({ query, label = 'Открыть в 
   const open = () => {
     if (link && Date.now() < link.refreshAt) {
       const url = new URL(window.location.origin);
-      url.search = new URLSearchParams({ ...query, login: link.code }).toString();
+      url.search = new URLSearchParams(query).toString();
+      url.hash = new URLSearchParams({ login: link.code }).toString();
       window.Telegram.WebApp.openLink(url.toString());
     }
     setLink(null);

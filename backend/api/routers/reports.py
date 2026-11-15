@@ -10,9 +10,10 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.analysis_results import format_test_results, load_analysis_test_results
+from backend.api.ai_jobs import MAX_AI_PROMPT_CHARS, check_prompt_size, start_ai_job
 from backend.api.common import AI_MODEL, GENDER_NEUTRAL_RULE, ai_endpoint, get_session, run_in_background
 from backend.api.security import validate_twa_data
-from backend.billing import charge, refund
+from backend.billing import refund
 from backend.bonuses import award
 from backend.database.models import BehavioralReport, ContentLog, DiaryEntry
 from backend.token_usage import complete_charge
@@ -109,6 +110,7 @@ REPORT_READY_NOTIFY_DELAY = 20
 # может не хватить для текста отчёта, особенно за длинный период.
 REPORT_MAX_TOKENS = 16000
 REPORT_AI_TIMEOUT = 180.0
+MAX_REPORT_ENTRIES = 366
 REPORT_GENERATION_ERROR = "Не удалось сформировать отчет. Попробуйте позже — листики с баланса не списаны."
 
 
@@ -145,7 +147,7 @@ async def _generate_report(user_id: int, report_type: str, report_title: str, re
             "max_tokens": REPORT_MAX_TOKENS,
             "messages": [{"role": "user", "content": report_prompt + "\n\n" + GENDER_NEUTRAL_RULE}]
         }
-        async with httpx.AsyncClient(timeout=REPORT_AI_TIMEOUT) as client:
+        async with asyncio.timeout(REPORT_AI_TIMEOUT), httpx.AsyncClient(timeout=REPORT_AI_TIMEOUT) as client:
             ai_response = await client.post(
                 ai_url,
                 headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
@@ -233,24 +235,45 @@ async def generate_report(
 
     start_d, end_d = _period_bounds(req.period, req.start_date, req.end_date)
 
-    # Достаем записи дневника за выбранный период
-    diary_query = _period_entries(select(DiaryEntry), user_id, start_d, end_d).order_by(DiaryEntry.date.asc())
-    entries = (await session.execute(diary_query)).scalars().all()
-
-    if not entries:
-        raise HTTPException(status_code=400, detail="Недостаточно записей в дневнике за этот период для формирования отчета.")
+    # Проверяем объём до чтения текста, включая записи, созданные до введения лимитов.
+    text_size = (
+        func.length(DiaryEntry.event) + func.length(DiaryEntry.reaction)
+        + func.coalesce(func.length(DiaryEntry.addition), 0)
+    ).label("chars")
+    selection = _period_entries(select(DiaryEntry.id, text_size), user_id, start_d, end_d).order_by(
+        DiaryEntry.date, DiaryEntry.id,
+    ).limit(MAX_REPORT_ENTRIES + 1).cte()
+    volume = select(func.count().label("count"), func.coalesce(func.sum(selection.c.chars), 0).label("chars")).cte()
+    # LEFT JOIN возвращает итог и для слишком большого или пустого периода, без самих записей.
+    diary_query = select(
+        volume.c.count, volume.c.chars, DiaryEntry.date, DiaryEntry.rating,
+        DiaryEntry.event, DiaryEntry.reaction, DiaryEntry.addition,
+    ).select_from(volume).outerjoin(
+        selection, (volume.c.count <= MAX_REPORT_ENTRIES) & (volume.c.chars <= MAX_AI_PROMPT_CHARS),
+    ).outerjoin(DiaryEntry, DiaryEntry.id == selection.c.id).order_by(DiaryEntry.date, DiaryEntry.id)
+    entries = (await session.execute(diary_query)).all()
+    entry_count, entry_chars = entries[0].count, entries[0].chars
+    if entry_count > MAX_REPORT_ENTRIES or entry_chars > MAX_AI_PROMPT_CHARS:
+        raise HTTPException(413, "Слишком много записей или текста для одного отчёта. Выбери более короткий период.")
+    if not entry_count:
+        raise HTTPException(400, "Недостаточно записей в дневнике за этот период для формирования отчета.")
 
     # Формируем текст записей для промпта
-    entries_text = ""
+    entries_text = []
+    chars = 0
     for e in entries:
         addition = f"\nДополнение: {e.addition}" if e.addition else ""
-        entries_text += f"- Дата: {e.date}\nСобытие: {e.event}\nРеакция: {e.reaction}{addition}\nОценка дня: {e.rating if e.rating else 'Не указана'}\n\n"
+        text = f"- Дата: {e.date}\nСобытие: {e.event}\nРеакция: {e.reaction}{addition}\nОценка дня: {e.rating if e.rating else 'Не указана'}\n\n"
+        chars += len(text)
+        if chars > MAX_AI_PROMPT_CHARS:
+            raise HTTPException(413, "Слишком много текста для одного отчёта. Выбери более короткий период.")
+        entries_text.append(text)
 
     analysis_context = f"""Результаты всех пройденных тестов:
 {format_test_results(test_results)}
 
 Записи дневника:
-{entries_text}
+{"".join(entries_text)}
 
 Просмотри все результаты и используй те, что связаны с темой отчёта. Наблюдения подтверждай записями, а связи с тестами формулируй как предположения. Если есть только балл без интерпретации, не додумывай его значение. Не делай выводы по тестам, результатов которых нет."""
 
@@ -336,8 +359,10 @@ async def generate_report(
     if not ai_url or not ai_token:
         raise HTTPException(status_code=500, detail="AI сервис не настроен")
 
-    charged = await charge(session, user_id, "report")
-    task = run_in_background(_generate_report_bg(user_id, req.report_type, report_title, report_prompt, start_d, end_d, ai_url, ai_token, len(entries), charged))
+    check_prompt_size(report_prompt, GENDER_NEUTRAL_RULE)
+    task = await start_ai_job(session, user_id, "report", lambda charged: _generate_report_bg(
+        user_id, req.report_type, report_title, report_prompt, start_d, end_d, ai_url, ai_token, entry_count, charged,
+    ))
     
     async def stream_generator():
         try:
@@ -362,9 +387,9 @@ async def generate_report(
             else:
                 import json
                 yield json.dumps(result).encode("utf-8")
-        except Exception as e:
+        except Exception:
             import json
-            yield json.dumps({"detail": f"Ошибка генерации отчета: {repr(e)}"}).encode("utf-8")
+            yield json.dumps({"detail": REPORT_GENERATION_ERROR}).encode("utf-8")
 
     from fastapi.responses import StreamingResponse
     return StreamingResponse(stream_generator(), media_type="application/json", headers={"X-Accel-Buffering": "no"})

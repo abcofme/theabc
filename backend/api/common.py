@@ -7,10 +7,6 @@ from backend.database import async_session
 from backend.database.models import User
 from settings import settings
 
-# Админы веб-панели — флаг users.admin. Ники — запасной вариант для тех, кому флаг ещё не выставлен
-ADMIN_USERNAMES = {"ingenfrid", "key_crp", "fondlife"}
-
-
 async def get_session() -> AsyncSession:
     async with async_session() as session:
         yield session
@@ -21,15 +17,13 @@ def avatar_url(user) -> str | None:
     return f"/api/avatar/{user.id}" if user and user.photo_url else None
 
 
-def is_admin(user, username: str | None = None) -> bool:
-    if user and user.admin:
-        return True
-    return bool({user.username if user else None, username} & ADMIN_USERNAMES)
+def is_admin(user: User | None) -> bool:
+    return bool(user and user.admin and not user.banned)
 
 
 async def require_admin(user_data: dict, session: AsyncSession) -> User:
-    user = await session.get(User, user_data.get("id"))
-    if not is_admin(user, user_data.get("username")):
+    user = await session.get(User, user_data.get("id"), populate_existing=True)
+    if not is_admin(user):
         raise HTTPException(status_code=403, detail="Access denied")
     return user
 

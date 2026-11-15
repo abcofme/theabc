@@ -1,4 +1,4 @@
-import { authHeader, clearSession, isTelegram } from './platform';
+import { apiHeaders, clearSession, getSession, isTelegram, onSessionChange } from './platform';
 
 // Мини-апп открывается через NL: из РФ режут ответы московского сервера на адреса многих VPN.
 // Если прямой путь в Москву быстрый, запросы к API идут напрямую, иначе — через домен страницы
@@ -16,6 +16,7 @@ let directFailed = false;
 // Ответ живет недолго — позже экран спросит сервер заново
 const PREFETCH_TTL_MS = 15000;
 const prefetched = new Map();
+onSessionChange(() => prefetched.clear());
 
 function fetchWithTimeout(url, init, timeoutMs) {
   const controller = new AbortController();
@@ -24,7 +25,7 @@ function fetchWithTimeout(url, init, timeoutMs) {
 }
 
 // Пробу шлём сразу при загрузке, а первые запросы идут через NL — соединение туда уже открыто страницей
-if (DIRECT_URL && DIRECT_URL !== RELAY_URL) {
+if (isTelegram && DIRECT_URL && DIRECT_URL !== RELAY_URL) {
   fetchWithTimeout(`${DIRECT_URL}/api/health`, { cache: 'no-store' }, PROBE_TIMEOUT_MS)
     .then((res) => { if (res.ok && !directFailed) useDirect = true; })
     .catch(() => {});
@@ -48,27 +49,29 @@ async function request(path, init, timeoutMs) {
 }
 
 // Сессия браузера закончилась или её отозвали — приложение вернётся на экран входа
-function checkSession(res) {
-  if (res.status === 401 && !isTelegram) clearSession();
+function checkSession(res, session) {
+  if (res.status === 401 && session && session === getSession()) clearSession({ announce: false });
 }
 
 // Запрос к API от имени пользователя Telegram. Ошибка HTTP становится исключением с текстом detail от бэкенда.
 // Blob (запись диктовки) уходит как есть, остальное — JSON
-export async function api(path, { method = 'GET', body } = {}) {
+export async function api(path, { method = 'GET', body, headers: extraHeaders } = {}) {
   if (method === 'GET') {
     const ready = takePrefetched(path);
     if (ready) return ready;
   }
   const raw = body instanceof Blob;
-  const headers = { Authorization: authHeader() };
+  const session = getSession();
+  const headers = { ...apiHeaders(), ...extraHeaders };
   if (body !== undefined) headers['Content-Type'] = raw ? body.type || 'application/octet-stream' : 'application/json';
 
   const res = await request(path, {
     method,
     headers,
+    cache: 'no-store',
     body: raw || body === undefined ? body : JSON.stringify(body),
   }, method === 'GET' ? DIRECT_GET_TIMEOUT_MS : null);
-  checkSession(res);
+  checkSession(res, session);
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     const error = new Error(data?.detail || `Ошибка сервера (${res.status})`);
@@ -94,12 +97,13 @@ function takePrefetched(path) {
 // Долгие запросы к ИИ: бэкенд держит соединение пробелами и в конце присылает JSON.
 // Ошибка приходит либо статусом (например, 402 — не хватает баланса), либо полем detail
 export async function apiStream(path, body) {
+  const session = getSession();
   const res = await request(path, {
     method: 'POST',
-    headers: { Authorization: authHeader(), 'Content-Type': 'application/json' },
+    headers: { ...apiHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   }, null);
-  checkSession(res);
+  checkSession(res, session);
   const text = await res.text();
   const start = text.indexOf('{');
   const data = start === -1 ? null : JSON.parse(text.slice(start));
@@ -109,4 +113,12 @@ export async function apiStream(path, body) {
     throw error;
   }
   return data;
+}
+
+export async function apiBlob(path, { signal } = {}) {
+  const session = getSession();
+  const res = await request(path, { method: 'GET', headers: apiHeaders(), cache: 'no-store', signal });
+  checkSession(res, session);
+  if (!res.ok) throw new Error(`Ошибка сервера (${res.status})`);
+  return res.blob();
 }

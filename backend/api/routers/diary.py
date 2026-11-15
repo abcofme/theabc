@@ -1,20 +1,36 @@
+import asyncio
+import re
 from datetime import datetime, timedelta
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.analysis_results import format_test_results, load_analysis_test_results
+from backend.api.ai_jobs import check_prompt_size, start_ai_job
 from backend.api.common import AI_MODEL, GENDER_NEUTRAL_RULE, ai_endpoint, get_session, run_in_background
 from backend.api.security import validate_twa_data
-from backend.billing import charge, refund
+from backend.billing import refund
 from backend.bonuses import award
 from backend.database.models import ContentLog, DiaryEntry
 from backend.token_usage import complete_charge
 from settings import settings
 
 router = APIRouter()
+MAX_DIARY_TEXT = 12_000
+MAX_DIARY_ADDITIONS = 24_000
+MAX_ACTIVE_DICTATIONS = 3
+_active_dictations: set[int] = set()
+
+
+def _diary_text(value, empty_message):
+    if not isinstance(value, str) or not value.strip():
+        raise HTTPException(400, empty_message)
+    if len(value) > MAX_DIARY_TEXT:
+        raise HTTPException(413, f"В поле дневника может быть не больше {MAX_DIARY_TEXT} символов.")
+    return value.strip()
 
 
 def _serialize_diary_entry(e: DiaryEntry) -> dict:
@@ -49,17 +65,24 @@ def _count_streak(dates, today):
         day -= timedelta(days=1)
     return streak
 
-async def _start_reaction_analysis(user_id: int, entry_id: int, session: AsyncSession, follow_up: dict | None = None) -> bool:
+async def _start_reaction_analysis(
+    user_id: int, entry_id: int, session: AsyncSession, follow_up: dict | None = None, *, prepare=None,
+) -> bool:
     """Запускает разбор записи в фоне, если есть результат в каждой категории и Premium или хватает баланса.
     Фронт по ответу решает, ждать ли разбор. follow_up — прежний разбор и дополнение к нему (см. add_diary_addition)."""
     test_results = await load_analysis_test_results(session, user_id)
     if not test_results:
         return False
     try:
-        charged = await charge(session, user_id, "diary_answer")
-    except HTTPException:
+        results_text = format_test_results(test_results)
+        await start_ai_job(session, user_id, "diary_answer", lambda charged: _analyze_reaction_bg(
+            user_id, entry_id, results_text, charged, follow_up,
+        ), prepare=prepare)
+    except HTTPException as error:
+        if prepare is not None and error.status_code in {429, 503}:
+            # Leave the addition in the form for retry if we could not reserve an AI slot.
+            raise
         return False
-    run_in_background(_analyze_reaction_bg(user_id, entry_id, format_test_results(test_results), charged, follow_up))
     return True
 
 # Эндпоинт 2: Получение записей дневника за месяц
@@ -138,16 +161,24 @@ async def create_diary_entry(
     session: AsyncSession = Depends(get_session)
 ):
     user_id = user_data.get("id")
-    entry_date = datetime.strptime(data["date"], "%Y-%m-%d").date()
+    try:
+        entry_date = datetime.strptime(data.get("date", ""), "%Y-%m-%d").date()
+    except (TypeError, ValueError):
+        raise HTTPException(400, "Укажи дату в формате YYYY-MM-DD.") from None
+    event = _diary_text(data.get("event"), "Заполни событие и реакцию.")
+    reaction = _diary_text(data.get("reaction"), "Заполни событие и реакцию.")
+    rating = data.get("rating")
+    if rating is not None and (type(rating) is not int or not -(2**31) <= rating < 2**31):
+        raise HTTPException(400, "Оценка должна быть целым числом.")
 
     created_at = datetime.utcnow()
     new_entry = DiaryEntry(
         user_id=user_id,
         created_at=created_at,
         date=entry_date,
-        event=data["event"],
-        reaction=data["reaction"],
-        rating=data.get("rating")
+        event=event,
+        reaction=reaction,
+        rating=rating,
     )
     session.add_all([new_entry, ContentLog(user_id=user_id, kind="diary_entry", created_at=created_at)])
     await session.commit()
@@ -162,6 +193,19 @@ async def create_diary_entry(
 # Доступ — Premium или одна пробная диктовка (backend/dictation.py)
 @router.post("/api/diary/transcribe")
 async def transcribe_dictation(request: Request, user_data: dict = Depends(validate_twa_data)):
+    user_id = user_data["id"]
+    if user_id in _active_dictations:
+        raise HTTPException(429, "Твоя диктовка уже распознаётся.")
+    if len(_active_dictations) >= MAX_ACTIVE_DICTATIONS:
+        raise HTTPException(503, "Диктовка сейчас занята. Попробуй чуть позже.", headers={"Retry-After": "10"})
+    _active_dictations.add(user_id)
+    try:
+        return await _transcribe_dictation(request, user_id)
+    finally:
+        _active_dictations.discard(user_id)
+
+
+async def _transcribe_dictation(request: Request, user_id: int):
     import time
 
     import httpx
@@ -172,7 +216,6 @@ async def transcribe_dictation(request: Request, user_data: dict = Depends(valid
     from backend.database.models import User
     from backend.redis_db import async_redis
 
-    user_id = user_data.get("id")
     # Короткие сессии к базе: соединение не должно висеть, пока запись ждет очереди на распознавание
     async with async_session() as session:
         trial = not is_premium(await session.get(User, user_id))
@@ -189,31 +232,37 @@ async def transcribe_dictation(request: Request, user_data: dict = Depends(valid
             raise HTTPException(status_code=429, detail=refusal)
 
         audio = bytearray()
-        async for chunk in request.stream():
-            audio += chunk
-            if len(audio) > dictation.MAX_BYTES:
-                raise HTTPException(status_code=413, detail="Запись слишком длинная")
+        try:
+            async with asyncio.timeout(40):
+                async for chunk in request.stream():
+                    if len(audio) + len(chunk) > dictation.MAX_BYTES:
+                        raise HTTPException(413, "Запись слишком длинная")
+                    audio.extend(chunk)
+        except TimeoutError:
+            raise HTTPException(408, "Истекло время отправки записи") from None
         if not audio:
             raise HTTPException(status_code=400, detail="Пустая запись")
 
         unavailable = "Распознавание речи сейчас недоступно. Попробуй позже или напиши текстом"
         started = time.monotonic()
         try:
-            async with httpx.AsyncClient(timeout=180) as client:
+            async with asyncio.timeout(180), httpx.AsyncClient(timeout=180) as client:
                 res = await client.post(f"{settings.STT_URL}/transcribe", content=bytes(audio))
-        except httpx.HTTPError as error:
-            print(f"STT unavailable: {error!r}")
+        except (httpx.HTTPError, TimeoutError) as error:
+            logger.warning("STT unavailable: {}", type(error).__name__)
             await dictation.record(user_id, "error", trial, total=time.monotonic() - started)
-            run_in_background(raise_alert("stt_down", "Диктовка не работает", f"Сервис распознавания не ответил: {error!r}"))
+            run_in_background(raise_alert("stt_down", "Диктовка не работает", f"Сервис распознавания не ответил: {type(error).__name__}"))
             raise HTTPException(status_code=503, detail=unavailable)
         if res.status_code == 413:
             raise HTTPException(status_code=413, detail="Запись слишком длинная")
         if res.status_code == 422:
             raise HTTPException(status_code=400, detail="Не удалось прочитать запись. Попробуй ещё раз")
+        if res.status_code == 503:
+            raise HTTPException(503, "Диктовка сейчас занята. Попробуй чуть позже.", headers={"Retry-After": "10"})
         if res.status_code != 200:
-            print(f"STT error {res.status_code}: {res.text[:200]}")
+            logger.warning("STT HTTP error: {}", res.status_code)
             await dictation.record(user_id, "error", trial, total=time.monotonic() - started)
-            run_in_background(raise_alert("stt_down", "Диктовка не работает", f"Сервис распознавания ответил {res.status_code}: {res.text[:200]}"))
+            run_in_background(raise_alert("stt_down", "Диктовка не работает", f"Сервис распознавания ответил {res.status_code}"))
             raise HTTPException(status_code=503, detail=unavailable)
 
         result = res.json()
@@ -239,10 +288,8 @@ async def update_diary_entry(
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")
 
-    event = (data.get("event") or "").strip()
-    reaction = (data.get("reaction") or "").strip()
-    if not event or not reaction:
-        raise HTTPException(status_code=400, detail="Заполните событие и реакцию")
+    event = _diary_text(data.get("event"), "Заполните событие и реакцию")
+    reaction = _diary_text(data.get("reaction"), "Заполните событие и реакцию")
 
     entry.event = event
     entry.reaction = reaction
@@ -264,17 +311,17 @@ async def add_diary_addition(
 ):
     user_id = user_data.get("id")
     entry = (await session.execute(
-        select(DiaryEntry).where(DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id)
+        select(DiaryEntry).where(DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id).with_for_update()
     )).scalars().first()
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")
 
-    text = (data.get("text") or "").strip()
-    if not text:
-        raise HTTPException(status_code=400, detail="Напишите, что хотите добавить")
+    text = _diary_text(data.get("text"), "Напишите, что хотите добавить")
 
     earlier_addition = entry.addition
-    entry.addition = f"{earlier_addition}\n\n{text}" if earlier_addition else text
+    addition = f"{earlier_addition}\n\n{text}" if earlier_addition else text
+    if len(addition) > MAX_DIARY_ADDITIONS:
+        raise HTTPException(413, f"В дополнениях может быть не больше {MAX_DIARY_ADDITIONS} символов.")
     previous = entry.portrait_match_score, entry.portrait_match_explanation
     # Дневник продолжает разговор о записи: видит свой прежний разбор и отвечает на дополнение к нему
     follow_up = {
@@ -282,14 +329,18 @@ async def add_diary_addition(
         "reply": previous[1],
         "earlier_addition": earlier_addition,
         "text": text,
+        "entry_text": (entry.event, entry.reaction, addition),
     } if previous[0] is not None and previous[1] else None
-    # Сбрасываем до запуска: фронт ждёт разбор, пока оценка пустая
-    entry.portrait_match_score = None
-    entry.portrait_match_explanation = None
-    await session.commit()
+    async def prepare():
+        # Сохраняем дополнение после того, как для его разбора зарезервировано место.
+        entry.addition = addition
+        entry.portrait_match_score = None
+        entry.portrait_match_explanation = None
+        await session.commit()
 
-    analysis_started = await _start_reaction_analysis(user_id, entry.id, session, follow_up)
+    analysis_started = await _start_reaction_analysis(user_id, entry.id, session, follow_up, prepare=prepare)
     if not analysis_started:
+        entry.addition = addition
         entry.portrait_match_score, entry.portrait_match_explanation = previous
         await session.commit()
 
@@ -386,8 +437,10 @@ async def _analyze_reaction_bg(user_id: int, entry_id: int, test_results_text: s
 async def _restore_reply(user_id: int, entry_id: int, follow_up: dict):
     from backend.database import async_session
     async with async_session() as db:
-        entry = (await db.execute(select(DiaryEntry).where(DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id))).scalars().first()
-        if entry and entry.portrait_match_score is None:
+        entry = (await db.execute(select(DiaryEntry).where(
+            DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id,
+        ).with_for_update())).scalars().first()
+        if entry and entry.portrait_match_score is None and (entry.event, entry.reaction, entry.addition) == follow_up["entry_text"]:
             entry.portrait_match_score = follow_up["score"]
             entry.portrait_match_explanation = follow_up["reply"]
             await db.commit()
@@ -411,97 +464,86 @@ def _follow_up_messages(follow_up: dict) -> list:
 
 async def _run_reaction_analysis(user_id: int, entry_id: int, test_results_text: str, follow_up: dict | None = None, charged: int | None = None):
     import httpx
-    import re
     from backend.database import async_session
 
     try:
         ai_url, ai_token = ai_endpoint()
         if not ai_url or not ai_token:
-            print("TIMEWEB_AI_URL / TIMEWEB_AI_TOKEN не заданы")
-            return
-            
+            logger.warning("Diary AI endpoint is not configured")
+            return None
+
+        query = select(DiaryEntry).where(DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id)
         async with async_session() as db:
-            entry = (await db.execute(select(DiaryEntry).where(DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id))).scalars().first()
-            if not entry:
-                return
-                
-            SYSTEM_PROMPT = DIARY_ANALYSIS_PROMPT + "\n\n" + DIARY_ANALYSIS_OUTPUT_FORMAT + "\n\n" + GENDER_NEUTRAL_RULE
+            entry = (await db.execute(query)).scalars().first()
+            if entry is None:
+                return None
+            entry_text = entry.event, entry.reaction, entry.addition
+        if follow_up and entry_text != follow_up["entry_text"]:
+            return None
 
-            # При дополнении первая реплика — запись в том виде, в каком дневник её уже разобрал
-            addition = follow_up["earlier_addition"] if follow_up else entry.addition
-            user_message = (
-                "Результаты всех пройденных тестов пользователя:\n"
-                + test_results_text
-                + "\n\nСобытие: " + entry.event
-                + "\nРеакция: " + entry.reaction
-                + ("\nДополнение (дописано позже): " + addition if addition else "")
+        event, reaction, addition = entry_text
+        if follow_up:
+            addition = follow_up["earlier_addition"]
+        user_message = (
+            f"Результаты всех пройденных тестов пользователя:\n{test_results_text}"
+            f"\n\nСобытие: {event}\nРеакция: {reaction}"
+            + (f"\nДополнение (дописано позже): {addition}" if addition else "")
+        )
+        system_prompt = DIARY_ANALYSIS_PROMPT + "\n\n" + DIARY_ANALYSIS_OUTPUT_FORMAT + "\n\n" + GENDER_NEUTRAL_RULE
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message},
+        ] + (_follow_up_messages(follow_up) if follow_up else [])
+        check_prompt_size(*(message["content"] for message in messages))
+
+        async with asyncio.timeout(120), httpx.AsyncClient(timeout=120.0) as client:
+            ai_response = await client.post(
+                ai_url,
+                headers={"Authorization": f"Bearer {ai_token}", "Content-Type": "application/json"},
+                json={"model": AI_MODEL, "max_tokens": 8192, "messages": messages},
             )
+        if ai_response.status_code >= 400:
+            logger.warning("Diary AI HTTP error: {}", ai_response.status_code)
+            return None
 
-            messages = [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_message}
-            ] + (_follow_up_messages(follow_up) if follow_up else [])
+        choice = (ai_response.json().get("choices") or [{}])[0]
+        generated_text = ((choice.get("message") or {}).get("content") or "").strip()
+        if not generated_text:
+            logger.warning("Diary AI returned an empty response")
+            return None
 
-            async with httpx.AsyncClient(timeout=120.0) as client:
-                ai_response = await client.post(
-                    ai_url,
-                    headers={
-                        "Authorization": f"Bearer {ai_token}",
-                        "Content-Type": "application/json"
-                    },
-                    json={
-                        "model": AI_MODEL,
-                        "max_tokens": 8192,
-                        "messages": messages
-                    }
-                )
+        score = 50
+        if "===" in generated_text:
+            score_part, explanation = generated_text.split("===", 1)
+            explanation = explanation.strip()
+            numbers = re.findall(r"\d+", score_part)
+            if "НЕТ" in score_part.upper() and not numbers:
+                score = NO_ANALYSIS_SCORE
+            elif numbers:
+                score = int(numbers[-1])
+        else:
+            match = re.search(r"\b(\d{1,3})\b", generated_text)
+            if match:
+                score = int(match.group(1))
+            explanation = generated_text
 
-                # Не используем raise_for_status() — обрабатываем явно.
-                # Сбой ИИ — не оценка: ничего не сохраняем, иначе в дневнике появится шкала 0%
-                if ai_response.status_code >= 400:
-                    print(f"AI API HTTP {ai_response.status_code}: {ai_response.text[:500]}")
-                    return None
+        if score != NO_ANALYSIS_SCORE:
+            score = max(0, min(100, score))
+        async with async_session() as db:
+            entry = (await db.execute(query.with_for_update().execution_options(populate_existing=True))).scalars().first()
+            if entry is None or (entry.event, entry.reaction, entry.addition) != entry_text:
+                return None
+            entry.portrait_match_score = score
+            entry.portrait_match_explanation = explanation
+            if score != NO_ANALYSIS_SCORE:
+                await complete_charge(db, charged)
+                db.add(ContentLog(user_id=user_id, kind="diary_answer"))
+            await db.commit()
+        return {"score": score, "explanation": explanation}
+    except Exception as error:
+        logger.warning("Diary analysis failed: {}", type(error).__name__)
+        return None
 
-                ai_data = ai_response.json()
-                generated_text = (ai_data.get("choices", [{}])[0].get("message", {}).get("content") or "").strip()
-                print(f"AI response for entry {entry_id}: len={len(generated_text)}, first200=[{generated_text[:200]}]")
-                if not generated_text:
-                    print(f"AI returned empty response for entry {entry_id}: {str(ai_data)[:500]}")
-                    return None
-
-                score = 50
-                explanation = ""
-
-                if "===" in generated_text:
-                    parts = generated_text.split("===", 1)
-                    score_part = parts[0].strip()
-                    explanation = parts[1].strip() if len(parts) > 1 else ""
-                    # Оценка — последнее число перед ===; «НЕТ» — разбора нет
-                    numbers = re.findall(r'\d+', score_part)
-                    if "НЕТ" in score_part.upper() and not numbers:
-                        score = NO_ANALYSIS_SCORE
-                    elif numbers:
-                        score = int(numbers[-1])
-                else:
-                    # AI didn't follow format — extract score from anywhere, use full text
-                    m = re.search(r'\b(\d{1,3})\b', generated_text)
-                    if m:
-                        score = int(m.group(1))
-                    explanation = generated_text
-
-                if score != NO_ANALYSIS_SCORE:
-                    score = max(0, min(100, score))
-
-                entry.portrait_match_score = score
-                entry.portrait_match_explanation = explanation
-                if score != NO_ANALYSIS_SCORE:
-                    await complete_charge(db, charged)
-                    db.add(ContentLog(user_id=user_id, kind="diary_answer"))
-                await db.commit()
-                return {"score": score, "explanation": explanation}
-                
-    except Exception as e:
-        print("BG analyze reaction failed:", e)
 
 @router.post("/api/analyze-reaction/{entry_id}")
 async def analyze_reaction(
@@ -513,10 +555,18 @@ async def analyze_reaction(
     test_results = await load_analysis_test_results(session, user_id)
     if not test_results:
         raise HTTPException(status_code=400, detail="Чтобы получить разбор записи, пройдите хотя бы по одному тесту в каждой категории.")
-    charged = await charge(session, user_id, "diary_answer")
-
-    # Повторный разбор пользователь запускает сам и ждёт его — выполняем сразу, без фона
-    result = await _analyze_reaction_bg(user_id, entry_id, format_test_results(test_results), charged)
+    results_text = format_test_results(test_results)
+    entry = (await session.execute(select(DiaryEntry).where(
+        DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id,
+    ))).scalars().first()
+    if entry is None:
+        raise HTTPException(404, "Запись не найдена.")
+    check_prompt_size(results_text, entry.event, entry.reaction, entry.addition or "")
+    task = await start_ai_job(session, user_id, "diary_answer", lambda charged: _analyze_reaction_bg(
+        user_id, entry_id, results_text, charged,
+    ))
+    # Списание и запись результата завершаются даже после закрытия страницы.
+    result = await asyncio.shield(task)
     if result is not None:
         return {"status": "success", "score": result["score"], "explanation": result["explanation"]}
     else:

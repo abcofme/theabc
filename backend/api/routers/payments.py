@@ -21,8 +21,9 @@ from settings import settings
 router = APIRouter()
 
 
-async def _start_payment(auth_header: str, **kwargs):
-    return_url = f"{settings.BOT_LINK.rstrip('/')}?startapp=billing" if auth_header.startswith("Bearer ") else None
+async def _start_payment(auth_header: str | None, **kwargs):
+    in_telegram = auth_header is not None and auth_header.startswith("Bearer ")
+    return_url = f"{settings.BOT_LINK.rstrip('/')}?startapp=billing" if in_telegram else None
     try:
         return await _create_payment(return_url=return_url, **kwargs)
     except ForbiddenError as e:
@@ -63,7 +64,7 @@ async def buy_subscription(
     req: SubscriptionPurchase | None = None,
     user_data: dict = Depends(validate_twa_data),
     session: AsyncSession = Depends(get_session),
-    auth_header: str = Security(header_scheme),
+    auth_header: str | None = Security(header_scheme),
     checkout_id: UUID4 | None = None,
     method: Literal["sbp"] | None = None,
 ):
@@ -119,7 +120,7 @@ async def buy_balance_topup(
     req: TopUpRequest,
     user_data: dict = Depends(validate_twa_data),
     session: AsyncSession = Depends(get_session),
-    auth_header: str = Security(header_scheme),
+    auth_header: str | None = Security(header_scheme),
     checkout_id: UUID4 | None = None,
     method: Literal["sbp"] | None = None,
 ):

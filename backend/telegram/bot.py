@@ -1,6 +1,7 @@
 import ssl
 
 from aiogram import Bot, Dispatcher, enums
+from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.telegram import TelegramAPIServer
 from aiogram.fsm.storage.redis import RedisStorage
@@ -21,7 +22,11 @@ def create_session() -> AiohttpSession | None:
     return session
 
 
-bot = Bot(token=settings.BOT_TOKEN, parse_mode=enums.ParseMode.HTML, session=create_session())
+bot = Bot(
+    token=settings.BOT_TOKEN,
+    default=DefaultBotProperties(parse_mode=enums.ParseMode.HTML),
+    session=create_session(),
+)
 # Кастомные эмодзи подставляются и в процессе бота, и в API (уведомления через notify)
 bot.session.middleware(CustomEmojiMiddleware())
 dp = Dispatcher(bot=bot, storage=RedisStorage(redis=async_redis))

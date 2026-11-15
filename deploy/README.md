@@ -17,10 +17,15 @@
     `app.` — запасное имя для проверки этого пути, не трогая основной домен.
   - без SNI — ретранслятор Bot API (`relay/nginx-tg-relay.conf`, слушает `127.0.0.1:8443`): из российских ДЦ
     `api.telegram.org` недоступен. Пускает только IP московского сервера (`geo` в stream),
-    сертификат самоподписанный, бот проверяет именно его.
+    сертификат самоподписанный, бот проверяет именно его. Ретранслятор проверяет сертификат
+    `api.telegram.org` по системным CA. Логи HTTP-запросов отключены, поскольку URL содержит токен бота.
   - мониторинг: раз в минуту проверяет `/api/health` и шлёт алерт в Telegram.
 
   Адрес NL и сертификат ретранслятора в репозиторий не кладём (`.env`, `/etc/theabc/relay-ca.pem`).
+  `TRUSTED_RELAY_IP` в серверном `.env` задаёт адрес NL для приёма PROXY protocol в Caddy.
+  Перед первым включением `proxy_protocol on` в nginx обновите Caddy и его окружение.
+  Затем одновременно загрузите `nginx-stream.conf` и `nginx-tg-relay.conf`, проверьте `nginx -t`
+  и перезагрузите nginx. Так API получает настоящий адрес клиента для ограничения попыток входа.
 - **Мини-апп** (`diary/src/utils/api.js`): страница всегда приходит через NL. При старте проба
   `direct.abcofme.ru/api/health` (2 с): если успела — запросы к API идут напрямую в Москву.
   Сетевая ошибка или GET дольше 8 с — до конца сессии через NL. Откат на чисто прямой путь —
@@ -29,7 +34,12 @@
 ## Деплой
 
 Автоматический: `theabc-autodeploy.timer` раз в минуту делает `git fetch` и при новом коммите в `main`
-запускает `docker compose up -d --build`. Упавший коммит повторно не собирается — нужен следующий.
+собирает Compose, ждёт готовности сервисов и перезагружает Caddy при изменении его конфигурации.
+Упавший коммит повторно не собирается автоматически.
+
+Обновление локальной копии Telegram WebApp SDK открывает PR. В настройках GitHub Actions разрешите
+создание PR, а в открытом PR одобрите запуск проверок. До слияния проверьте изменения SDK и результат
+`Check Telegram WebApp SDK`. Сборка сайта сверяет SHA-256 файла с `diary/telegram-web-app.sha256`.
 
 Ролик приветствия загружается на сервер в `/opt/theabc/backend/resources/videos/welcome.mp4` перед сборкой. Docker включает его в образ. Если файла нет, бот отправляет приветственную картинку.
 Для кнопки «Узнать подробнее» перед сборкой загружается `/opt/theabc/backend/resources/videos/details.mp4`.
@@ -70,7 +80,7 @@ gunzip -c /var/backups/theabc/db-ДАТА.sql.gz | docker compose exec -T db sh 
 
 Он ничего не хранит. Новый VPS за рубежом (1 vCPU / 1 ГБ):
 
-1. `apt install nginx`, сгенерировать сертификат с `subjectAltName=IP:<новый IP>`
+1. `apt install nginx ca-certificates`, сгенерировать сертификат с `subjectAltName=IP:<новый IP>`
    (команда — в истории настройки, `openssl req -x509 -newkey ec ...`), положить в `/etc/nginx/relay/`.
 2. `apt install libnginx-mod-stream`. Скопировать `relay/nginx-tg-relay.conf` в `/etc/nginx/sites-enabled/`,
    `relay/nginx-stream.conf` — в `/etc/nginx/stream.conf` и добавить `include /etc/nginx/stream.conf;`

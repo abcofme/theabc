@@ -3,6 +3,14 @@
 {
 	servers {
 		protocols h1 h2
+		listener_wrappers {
+			proxy_protocol {
+				allow {$TRUSTED_RELAY_IP:127.0.0.1}/32
+				fallback_policy reject
+				timeout 2s
+			}
+			tls
+		}
 	}
 }
 
@@ -13,13 +21,14 @@
 	header {
 		Strict-Transport-Security "max-age=31536000"
 		X-Content-Type-Options "nosniff"
-		Referrer-Policy "strict-origin-when-cross-origin"
+		Referrer-Policy "no-referrer"
 		-Server
 		# Сбрасывает закэшированное у клиентов объявление h3 (раньше было на 30 дней)
 		Alt-Svc "clear"
 	}
 
 	handle /api/* {
+		header Cache-Control "no-store"
 		reverse_proxy api:8000 {
 			# Генерация ИИ отдаёт ответ потоком (пробелы-пинги, потом JSON): не буферизуем
 			flush_interval -1

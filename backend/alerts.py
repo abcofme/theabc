@@ -7,7 +7,7 @@ import html
 from datetime import datetime
 
 from loguru import logger
-from sqlalchemy import or_, select, update
+from sqlalchemy import select, update
 
 from backend.database import async_session
 from backend.database.models import AdminAlert, User
@@ -18,9 +18,7 @@ ALERT_PAUSE_SECONDS = 30 * 60
 
 
 async def _admin_ids(session) -> list[int]:
-    from backend.api.common import ADMIN_USERNAMES
-
-    rows = await session.execute(select(User.id).where(or_(User.admin.is_(True), User.username.in_(list(ADMIN_USERNAMES)))))
+    rows = await session.execute(select(User.id).where(User.admin.is_(True), User.banned.is_not(True)))
     return [row[0] for row in rows]
 
 

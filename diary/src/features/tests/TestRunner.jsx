@@ -32,13 +32,13 @@ function storage(action) {
 }
 
 // Прохождение теста отдельной страницей: старт, карточки-свайпы «да/нет», результат
-export default function TestRunner({ test, categoryStyle, onClose }) {
+export default function TestRunner({ ownerId, test, categoryStyle, onClose }) {
   preload(symbolSprite, { as: 'image' });
   const image = categoryStyle?.image;
   const { profile, refreshProfile, generatePortrait, isGeneratingPortrait } = useProfile();
   const { navigate } = useAppNav();
   const handleError = useErrorHandler();
-  const [saved] = useState(() => readTestProgress(test.id));
+  const [saved] = useState(() => readTestProgress(ownerId, test.id));
   const [details, setDetails] = useState(null);
   const [index, setIndex] = useState(saved.index);
   const [answers, setAnswers] = useState(saved.answers);
@@ -88,9 +88,9 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
   // Прогресс сохраняется, чтобы продолжить с того же вопроса
   useEffect(() => {
     if (isStarted && !isSubmitting && !result) {
-      saveTestProgress(test.id, { answers, index, total: details?.questions?.length });
+      saveTestProgress(ownerId, test.id, { answers, index, total: details?.questions?.length });
     }
-  }, [test.id, index, answers, isStarted, isSubmitting, result, details]);
+  }, [ownerId, test.id, index, answers, isStarted, isSubmitting, result, details]);
 
   // Подсказка про свайпы — только на первом тесте, до первого касания или ответа
   const dismissTutorial = () => {
@@ -110,7 +110,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
     try {
       const data = await api(`/api/tests/${details.id}/submit`, { method: 'POST', body: { answer_ids: submittedAnswers } });
       setSubmission(data);
-      clearTestProgress(test.id);
+      clearTestProgress(ownerId, test.id);
       WebApp.HapticFeedback?.notificationOccurred('success');
       refreshProfile();
     } catch (err) {
@@ -127,7 +127,7 @@ export default function TestRunner({ test, categoryStyle, onClose }) {
     const newAnswers = [...answers, answerId];
     setAnswers(newAnswers);
     if (index < details.questions.length - 1) { setIndex(previous => previous + 1); return; }
-    saveTestProgress(test.id, { answers: newAnswers, index, total: details.questions.length });
+    saveTestProgress(ownerId, test.id, { answers: newAnswers, index, total: details.questions.length });
     submitAnswers(newAnswers);
   };
 

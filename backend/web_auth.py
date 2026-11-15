@@ -5,7 +5,7 @@
 поэтому в Redis попадают только подтверждённые. Забрать вход может только тот, у кого секрет из ответа сайту:
 ссылку с кодом видно, секрет — нет.
 
-Из мини-аппа в браузер ведёт одноразовая ссылка ?login=<код> (handoff): пользователь уже подтверждён Telegram"""
+Из мини-аппа в браузер ведёт одноразовая ссылка #login=<код> (handoff)."""
 import base64
 import hashlib
 import hmac
@@ -20,8 +20,8 @@ from settings import settings
 LOGIN_PREFIX = "login_"
 LOGIN_TTL = 10 * 60
 HANDOFF_TTL = 10 * 60
-# Сессия продлевается при каждом запросе: выкидывает только после полугода без входа
 SESSION_TTL = 180 * 24 * 60 * 60
+SESSION_COOKIE = "__Host-theabc-session"
 
 _KEY = hmac.new(b"web-login", settings.BOT_TOKEN.encode(), hashlib.sha256).digest()
 _NONCE_LEN, _EXPIRES_LEN = 12, 7
@@ -50,7 +50,7 @@ def new_login_code() -> tuple[str, str]:
 
 def parse_login_code(code: str, grace: int = 0) -> str | None:
     """nonce кода, если подпись верна и срок (плюс grace секунд) не вышел"""
-    if len(code) != _CODE_LEN:
+    if len(code) != _CODE_LEN or not code.isascii():
         return None
     nonce, expires, signature = code[:_NONCE_LEN], code[_NONCE_LEN:-16], code[-16:]
     if not hmac.compare_digest(signature, _sign("code", nonce, expires)):
@@ -75,7 +75,7 @@ async def claim_login(code: str, secret: str) -> tuple[str, int | None]:
     """('ok', id пользователя) один раз после подтверждения, иначе ('pending', None) или ('expired', None).
     Подтвердить можно до конца срока кода, поэтому забрать вход — ещё LOGIN_TTL после него"""
     nonce = parse_login_code(code, grace=LOGIN_TTL)
-    if not nonce or not hmac.compare_digest(secret, _sign("secret", nonce)):
+    if not nonce or not secret.isascii() or not hmac.compare_digest(secret, _sign("secret", nonce)):
         return "expired", None
     user_id = await async_redis.getdel(f"weblogin:{nonce}")
     if user_id:
@@ -94,20 +94,35 @@ async def claim_handoff(code: str) -> int | None:
     return int(user_id) if user_id else None
 
 
-def _session_key(token: str) -> str:
+async def read_handoff(code: str) -> int | None:
+    user_id = await async_redis.get(f"webhandoff:{code}")
+    return int(user_id) if user_id else None
+
+
+def _session_key(token: str, *, legacy: bool = False) -> str:
     # В Redis лежит хэш: утечка базы не даёт готовых токенов
-    return "websession:" + hashlib.sha256(token.encode()).hexdigest()
+    prefix = "websession:" if legacy else "websession:v2:"
+    return prefix + hashlib.sha256(token.encode()).hexdigest()
 
 
-async def create_session(user_data: dict) -> str:
+async def create_session(user_id: int, *, ttl: int = SESSION_TTL) -> str:
     token = secrets.token_urlsafe(32)
-    await async_redis.set(_session_key(token), json.dumps(user_data), ex=SESSION_TTL)
+    await async_redis.set(_session_key(token), user_id, ex=ttl)
     return token
 
 
-async def read_session(token: str) -> dict | None:
-    raw = await async_redis.getex(_session_key(token), ex=SESSION_TTL)
-    return json.loads(raw) if raw else None
+async def read_session(token: str) -> int | None:
+    raw = await async_redis.get(_session_key(token))
+    return int(raw) if raw else None
+
+
+async def claim_legacy_session(token: str) -> tuple[int | None, int]:
+    key = _session_key(token, legacy=True)
+    async with async_redis.pipeline(transaction=True) as pipe:
+        pipe.ttl(key)
+        pipe.getdel(key)
+        ttl, raw = await pipe.execute()
+    return (json.loads(raw)["id"], min(ttl, SESSION_TTL)) if raw and ttl > 0 else (None, 0)
 
 
 async def drop_session(token: str):

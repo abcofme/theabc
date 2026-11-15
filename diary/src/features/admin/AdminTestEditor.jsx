@@ -2,7 +2,7 @@ import Select from '../../components/Select';
 import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Plus, Trash2, Save, X, LoaderCircle } from '../../components/ClayIcon';
 import { useBackHandler } from '../../navigation/backStack';
-import { authHeader } from '../../utils/platform';
+import { apiHeaders } from '../../utils/platform';
 
 const WebApp = window.Telegram.WebApp;
 const API_URL = window.location.origin;
@@ -24,7 +24,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
   useEffect(() => {
     if (testId) {
       fetch(`${API_URL}/api/admin/tests/${testId}`, {
-        headers: { "Authorization": authHeader() }
+        headers: apiHeaders()
       })
       .then(res => res.json())
       .then(data => {
@@ -96,7 +96,7 @@ export default function AdminTestEditor({ testId, categories, onClose }) {
       const response = await fetch(url, {
         method,
         headers: { 
-          "Authorization": authHeader(),
+          ...apiHeaders(),
           "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
