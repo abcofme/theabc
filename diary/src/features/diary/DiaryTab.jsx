@@ -106,7 +106,7 @@ export default function DiaryTab() {
 
       <WeekStrip today={today} daysWithEntries={daysWithEntries} onSelect={selectDay} />
 
-      {showPath && <div className="mb-4"><AnalysisPath testProgress={lock.testProgress} onNavigate={closeSheets} /></div>}
+      {showPath && <div className="mb-4"><AnalysisPath onNavigate={closeSheets} /></div>}
 
       {overviewStatus === 'loading' ? (
         <ScreenState loading title="Загружаем записи…" />

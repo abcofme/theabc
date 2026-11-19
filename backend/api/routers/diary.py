@@ -14,7 +14,7 @@ from backend.api.common import AI_MODEL, GENDER_NEUTRAL_RULE, ai_endpoint, get_s
 from backend.api.security import validate_twa_data
 from backend.billing import refund
 from backend.bonuses import award
-from backend.database.models import ContentLog, DiaryEntry
+from backend.database.models import Category, ContentLog, DiaryEntry, Test
 from backend.token_usage import complete_charge
 from settings import settings
 
@@ -68,9 +68,9 @@ def _count_streak(dates, today):
 async def _start_reaction_analysis(
     user_id: int, entry_id: int, session: AsyncSession, follow_up: dict | None = None, *, prepare=None,
 ) -> bool:
-    """Запускает разбор записи в фоне, если есть результат в каждой категории и Premium или хватает баланса.
+    """Запускает разбор в фоне, если есть хотя бы один результат и Premium или хватает баланса.
     Фронт по ответу решает, ждать ли разбор. follow_up — прежний разбор и дополнение к нему (см. add_diary_addition)."""
-    test_results = await load_analysis_test_results(session, user_id)
+    test_results = await load_analysis_test_results(session, user_id, require_all_categories=False)
     if not test_results:
         return False
     try:
@@ -389,7 +389,9 @@ async def delete_diary_rating(
     return {"status": "success"}
 
 # Промпт ИИ-разбора записей дневника — в отдельном файле, чтобы его можно было менять, не трогая код.
-DIARY_ANALYSIS_PROMPT = (Path(__file__).resolve().parents[2] / "prompts" / "diary_analysis.txt").read_text(encoding="utf-8").strip()
+DIARY_PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts"
+DIARY_ANALYSIS_PROMPT = (DIARY_PROMPTS_DIR / "diary_analysis.txt").read_text(encoding="utf-8").strip()
+DIARY_ANALYSIS_MISSING_TESTS = (DIARY_PROMPTS_DIR / "diary_missing_tests.txt").read_text(encoding="utf-8").strip()
 
 # Формат ответа читает парсер в _analyze_reaction_bg (оценка → шкала в приложении, текст → разбор),
 # поэтому он живёт в коде, а не в файле промпта.
@@ -478,8 +480,15 @@ async def _run_reaction_analysis(user_id: int, entry_id: int, test_results_text:
             if entry is None:
                 return None
             entry_text = entry.event, entry.reaction, entry.addition
-        if follow_up and entry_text != follow_up["entry_text"]:
-            return None
+            if follow_up and entry_text != follow_up["entry_text"]:
+                return None
+            catalog = await db.execute(
+                select(Test.name, Category.name, Test.description).join(Category).order_by(Test.id)
+            )
+            catalog_text = "\n".join(
+                f"«{name}» ({category})" + (f" — {description.strip()}" if description else "")
+                for name, category, description in catalog
+            )
 
         event, reaction, addition = entry_text
         if follow_up:
@@ -489,7 +498,13 @@ async def _run_reaction_analysis(user_id: int, entry_id: int, test_results_text:
             f"\n\nСобытие: {event}\nРеакция: {reaction}"
             + (f"\nДополнение (дописано позже): {addition}" if addition else "")
         )
-        system_prompt = DIARY_ANALYSIS_PROMPT + "\n\n" + DIARY_ANALYSIS_OUTPUT_FORMAT + "\n\n" + GENDER_NEUTRAL_RULE
+        system_prompt = "\n\n".join((
+            DIARY_ANALYSIS_PROMPT,
+            DIARY_ANALYSIS_OUTPUT_FORMAT,
+            GENDER_NEUTRAL_RULE,
+            DIARY_ANALYSIS_MISSING_TESTS,
+            f"КАТАЛОГ ТЕСТОВ ПРИЛОЖЕНИЯ\n{catalog_text}",
+        ))
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_message},
@@ -552,9 +567,9 @@ async def analyze_reaction(
     session: AsyncSession = Depends(get_session)
 ):
     user_id = user_data.get("id")
-    test_results = await load_analysis_test_results(session, user_id)
+    test_results = await load_analysis_test_results(session, user_id, require_all_categories=False)
     if not test_results:
-        raise HTTPException(status_code=400, detail="Чтобы получить разбор записи, пройдите хотя бы по одному тесту в каждой категории.")
+        raise HTTPException(status_code=400, detail="Чтобы получить разбор записи, пройди любой тест.")
     results_text = format_test_results(test_results)
     entry = (await session.execute(select(DiaryEntry).where(
         DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id,

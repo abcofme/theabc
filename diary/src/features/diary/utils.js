@@ -25,12 +25,10 @@ export const formatLeaves = n => `${n.toLocaleString('ru-RU')} ${plural(Math.abs
 // Почему дневник не может ответить и куда вести пользователя (action: tests | billing). null — ответ доступен
 export function analysisLock(profile) {
   if (!profile) return { text: null };
-  const testProgress = analysisTestProgress(profile);
-  if (testProgress.total === 0 || testProgress.covered < testProgress.total) {
+  if (analysisTestProgress(profile).covered === 0) {
     return {
-      text: 'Пройди хотя бы по одному тесту в каждой категории, чтобы дневник мог ответить',
+      text: 'Пройди любой тест, чтобы дневник мог ответить',
       action: 'tests',
-      testProgress,
     };
   }
   if (profile.access_level !== 'Premium' && profile.balance < profile.prices.diary_answer) {

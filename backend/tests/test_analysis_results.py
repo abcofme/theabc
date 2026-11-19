@@ -63,7 +63,7 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
             Test(id=10, category_id=1, name="Копинг"),
             Test(id=11, category_id=2, name="Тип мотивации"),
             Test(id=12, category_id=1, name="Шкала самооценки"),
-            Test(id=13, category_id=1, name="Чужой тест"),
+            Test(id=13, category_id=1, name="Чужой тест", description="Показывает привычные способы общения."),
             Result(id=1, test_id=11, range_from=0, range_to=4, name="Низкая мотивация"),
             Result(id=2, test_id=11, range_from=5, range_to=None, name="Сильная мотивация"),
             Progress(id=1, test_id=10, user_id=1, created_at=second_day, hardcode_value="Устаревший результат"),
@@ -143,7 +143,12 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(result["score"], 75)
         charge.assert_awaited_once_with(self.session, 1, "diary_answer")
-        prompt = client.post.call_args.kwargs["json"]["messages"][1]["content"]
+        system_message, user_message = client.post.call_args.kwargs["json"]["messages"]
+        self.assertTrue(system_message["content"].startswith(diary.DIARY_ANALYSIS_PROMPT + "\n\n"))
+        self.assertIn(diary.DIARY_ANALYSIS_MISSING_TESTS, system_message["content"])
+        self.assertIn("«Чужой тест» (Личность) — Показывает привычные способы общения.", system_message["content"])
+        self.assertNotIn("Результат другого пользователя", system_message["content"])
+        prompt = user_message["content"]
         for text in ("Новый результат", "Вторая шкала", "Сильная мотивация", "Шкала самооценки", "Реакция дневника"):
             self.assertIn(text, prompt)
         self.assertNotIn("Результат другого пользователя", prompt)
@@ -190,17 +195,34 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn("Дополнительная деталь", messages[3]["content"])
         self.assertEqual(entry.portrait_match_explanation, "Новый разбор")
 
-    async def test_diary_requires_results_in_every_category_before_charging(self):
+    async def test_diary_requires_one_result_before_charging(self):
+        self.db.add(Progress(id=14, test_id=11, user_id=3, hardcode_value="  "))
+        self.db.commit()
         with patch.object(ai_jobs, "charge", new_callable=AsyncMock) as charge:
-            for user_id in (2, 3, 4):
-                with self.subTest(user_id=user_id):
-                    self.assertFalse(await diary._start_reaction_analysis(user_id, user_id, self.session))
-                    with self.assertRaises(HTTPException) as error:
-                        await diary.analyze_reaction(user_id, {"id": user_id}, self.session)
-                    self.assertEqual(error.exception.status_code, 400)
-                    self.assertIn("в каждой категории", error.exception.detail)
+            self.assertFalse(await diary._start_reaction_analysis(3, 3, self.session))
+            with self.assertRaises(HTTPException) as error:
+                await diary.analyze_reaction(3, {"id": 3}, self.session)
+            self.assertEqual(error.exception.status_code, 400)
+            self.assertIn("пройди любой тест", error.exception.detail)
 
         charge.assert_not_awaited()
+
+    async def test_diary_allows_background_and_manual_analysis_after_one_career_test(self):
+        reply = {"score": 75, "explanation": "Разбор"}
+        with (
+            patch.object(ai_jobs, "charge", new_callable=AsyncMock, return_value=None) as charge,
+            patch.object(diary, "_analyze_reaction_bg", new_callable=AsyncMock, return_value=reply) as analyze,
+        ):
+            self.assertTrue(await diary._start_reaction_analysis(4, 4, self.session))
+            await asyncio.sleep(0)
+            response = await diary.analyze_reaction(4, {"id": 4}, self.session)
+
+        self.assertEqual(response, {"status": "success", **reply})
+        self.assertEqual(charge.await_count, 2)
+        self.assertEqual(analyze.await_count, 2)
+        for call in analyze.await_args_list:
+            self.assertIn("Сильная мотивация", call.args[2])
+            self.assertNotIn("Копинг", call.args[2])
 
     async def test_all_report_types_send_all_results_without_a_portrait(self):
         with (

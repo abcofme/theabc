@@ -107,24 +107,23 @@ test('Новая запись остается первой после сохр�
   assert.deepEqual([entries[2], entries[1], entries[0]].sort(newestEntryFirst).map(entry => entry.id), [42, 31, 7]);
 });
 
-test('Дневник требует по одному результату из каждой категории и показывает сохранённые ответы', () => {
-  const profile = { balance: 47, prices: { diary_answer: 47 }, passed_tests: 2, portrait: null };
-  const missingCategory = {
+test('Дневник отвечает после первого результата в любой категории и показывает сохранённые ответы', () => {
+  const profile = { balance: 47, prices: { diary_answer: 47 }, passed_tests: 0, portrait: null };
+  const withoutResults = {
     ...profile,
     categories: [
-      { name: 'Темперамент', tests: [{ id: 1, passed: true }, { id: 2, passed: true }] },
+      { name: 'Темперамент', tests: [{ id: 1, passed: false }] },
       { name: 'Профориентация', has_test_result: false, tests: [{ id: 3, passed: true }] },
       { name: 'Пустая категория', tests: [] },
     ],
   };
-  assert.equal(analysisLock({ ...profile, portrait: { content: 'Сохранённый портрет' } }).action, 'tests');
-  const lock = analysisLock(missingCategory);
+  const lock = analysisLock({ ...withoutResults, portrait: { content: 'Сохранённый портрет' } });
   assert.equal(lock.action, 'tests');
-  assert.deepEqual(lock.testProgress, { covered: 1, total: 2 });
+  assert.match(lock.text, /любой тест/);
   assert.equal(analysisState({ portrait_match_score: 0 }, false, lock), 'done');
   const ready = {
-    ...missingCategory,
-    categories: missingCategory.categories.map(category => category.name === 'Профориентация'
+    ...withoutResults,
+    categories: withoutResults.categories.map(category => category.name === 'Профориентация'
       ? { ...category, has_test_result: true }
       : category),
   };

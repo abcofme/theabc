@@ -17,8 +17,10 @@ def has_test_result(hardcoded: str | None, points: int | None) -> bool:
     return bool((hardcoded or "").strip()) or points is not None
 
 
-async def load_analysis_test_results(session: AsyncSession, user_id: int) -> list[TestResult]:
-    """Возвращает результаты для анализа, если в каждой категории с тестами есть результат."""
+async def load_analysis_test_results(
+    session: AsyncSession, user_id: int, *, require_all_categories: bool = True,
+) -> list[TestResult]:
+    """Возвращает актуальные результаты пользователя, при необходимости проверяя охват всех категорий."""
     interpretation = (
         select(Result.name)
         .where(
@@ -56,7 +58,9 @@ async def load_analysis_test_results(session: AsyncSession, user_id: int) -> lis
                 text += f"\n{description.strip()}"
         results.append(TestResult(name=name, category=category, text=text))
         completed_categories.add(category_id)
-    return results if completed_categories == test_categories else []
+    if require_all_categories and completed_categories != test_categories:
+        return []
+    return results
 
 
 def format_test_results(results: list[TestResult]) -> str:

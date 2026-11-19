@@ -2,11 +2,10 @@ import ClayText from '../../components/ClayText';
 import { useAppNav } from '../../navigation/appNav';
 import headerVine from '../../assets/profile/header-vine-handmade.webp';
 
-export default function AnalysisPath({ testProgress, onNavigate }) {
+export default function AnalysisPath({ onNavigate }) {
   const { navigate } = useAppNav();
-  const { covered, total } = testProgress;
   const steps = [
-    { title: 'Пройди по одному тесту в каждой категории', hint: total > 0 ? `Прогресс по категориям · ${covered} из ${total}` : '' },
+    { title: 'Пройди любой тест' },
     { title: 'Получи ответ дневника', hint: 'Он учтёт результаты всех пройденных тестов' },
   ];
   const go = () => {

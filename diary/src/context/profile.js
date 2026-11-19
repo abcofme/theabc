@@ -12,7 +12,7 @@ export const ProfileContext = createContext({
 // Статус пользователя (доступ, баланс, портрет, прогресс тестов), общий для всех вкладок
 export const useProfile = () => useContext(ProfileContext);
 
-// Для анализа важна каждая категория с тестами, включая профориентацию.
+// Считаем категории с тестами, включая профориентацию.
 export function analysisTestProgress(profile) {
   const categories = (profile.categories ?? []).filter(category => category.tests.length > 0);
   const covered = categories.filter(category =>
