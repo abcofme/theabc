@@ -1,4 +1,3 @@
-from asyncio import Lock
 from contextlib import suppress
 from datetime import datetime
 import html
@@ -30,6 +29,7 @@ from backend.telegram.keyboards.start import (
     about_diary_kb, categories_kb, contact_back_kb, contact_topics, contact_topics_kb, menu_kb, start_kb,
 )
 from backend.telegram.states.user import TechStates
+from backend.telegram.utils.media import send_cached_media
 from backend.telegram.utils.message import (
     schedule_message_edition,
     delete_pending_messages,
@@ -42,8 +42,6 @@ from settings import settings
 
 WELCOME_VIDEO = Path(IMAGES.parent / "videos" / "welcome.mp4")
 DETAILS_VIDEO = WELCOME_VIDEO.with_name("details.mp4")
-_details_upload_lock = Lock()
-_details_video_file_id: str | None = None
 
 
 START_TEXT = "<b>Что такое «Азбука Я»?</b>"
@@ -59,35 +57,46 @@ contact_isolation = dp.storage.create_isolation()
 
 
 async def send_section_card(user: User, image: PurePath, caption: str, keyboard: InlineKeyboardMarkup) -> Message:
-    msg = await bot(SendPhoto(
-        chat_id=user.id,
-        photo=FSInputFile(image),
-        caption=caption,
-        show_caption_above_media=True,
-        reply_markup=keyboard,
-    ))
+    async def send(photo: str | FSInputFile) -> Message:
+        return await bot(SendPhoto(
+            chat_id=user.id,
+            photo=photo,
+            caption=caption,
+            show_caption_above_media=True,
+            reply_markup=keyboard,
+        ))
+
+    msg = await send_cached_media(bot.id, image, send)
     await schedule_message_edition(user, msg)
     return msg
 
 
 async def send_welcome(user: User) -> None:
     keyboard = start_kb(has_details_video=DETAILS_VIDEO.is_file())
-    if not WELCOME_VIDEO.is_file():
-        await send_section_card(user, IMAGES / "приветствие.jpg", START_TEXT, keyboard)
-        return
 
-    msg = await bot(SendVideo(
-        chat_id=user.id,
-        video=FSInputFile(WELCOME_VIDEO),
-        width=1080,
-        height=1920,
-        duration=26,
-        caption=START_TEXT,
-        show_caption_above_media=True,
-        reply_markup=keyboard,
-        supports_streaming=True,
-    ))
-    await schedule_message_edition(user, msg)
+    async def send(video: str | FSInputFile) -> Message:
+        return await bot(SendVideo(
+            chat_id=user.id,
+            video=video,
+            width=1080,
+            height=1920,
+            duration=26,
+            caption=START_TEXT,
+            show_caption_above_media=True,
+            reply_markup=keyboard,
+            supports_streaming=True,
+        ))
+
+    if WELCOME_VIDEO.is_file():
+        try:
+            msg = await send_cached_media(bot.id, WELCOME_VIDEO, send)
+        except TelegramBadRequest as exc:
+            logger.warning("Telegram отклонил приветственное видео: {}", exc.message)
+        else:
+            await schedule_message_edition(user, msg)
+            return
+
+    await send_section_card(user, IMAGES / "приветствие.jpg", START_TEXT, keyboard)
 
 
 @dp.message(CommandStart())
@@ -142,24 +151,18 @@ async def edit_details_video(message: Message, video: str | FSInputFile) -> Mess
 
 @dp.callback_query(AboutProject.filter())
 async def about_project_callback(callback: CallbackQuery):
-    global _details_video_file_id
-
     if not isinstance(callback.message, Message) or not DETAILS_VIDEO.is_file():
         await callback.answer("Видео пока недоступно.", show_alert=True)
         return
 
-    await callback.answer("Открываю видео…" if _details_video_file_id is None else None)
-    try:
-        if _details_video_file_id is not None:
-            await edit_details_video(callback.message, _details_video_file_id)
-            return
+    await callback.answer("Открываю видео…")
+    message = callback.message
 
-        async with _details_upload_lock:
-            msg = await edit_details_video(
-                callback.message, _details_video_file_id or FSInputFile(DETAILS_VIDEO)
-            )
-            if isinstance(msg, Message) and msg.video:
-                _details_video_file_id = msg.video.file_id
+    async def send(video: str | FSInputFile) -> Message | bool:
+        return await edit_details_video(message, video)
+
+    try:
+        await send_cached_media(bot.id, DETAILS_VIDEO, send)
     except TelegramBadRequest as exc:
         if "message is not modified" not in exc.message:
             raise
@@ -167,6 +170,7 @@ async def about_project_callback(callback: CallbackQuery):
 
 @dp.callback_query(AboutDiary.filter())
 async def AboutDiary_callback(callback: CallbackQuery, user: User, state: FSMContext):
+    await callback.answer()
     await callback.message.delete()
     await delete_pending_messages(user)
     await delete_editing_message(user)
