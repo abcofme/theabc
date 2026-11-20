@@ -38,14 +38,17 @@ async def _credit_bonus(session: AsyncSession, user_id: int, kind: str, amount: 
     return amount
 
 
-async def award(user_id: int, kind: str) -> int:
+async def award(user_id: int, kind: str, *, session: AsyncSession | None = None) -> int:
     """Начисляет бонус, если его еще не было. Возвращает начисленные токены, 0 — если бонус уже получен.
     Сбой не мешает самому действию: бонус только пропадает, поэтому ошибки здесь не выходят наружу"""
     amount = BONUSES[kind]
     try:
-        async with async_session() as session:
-            credited = await _credit_bonus(session, user_id, kind, amount)
-            await session.commit()
+        if session is not None:
+            async with session.begin_nested():
+                return await _credit_bonus(session, user_id, kind, amount)
+        async with async_session() as db:
+            credited = await _credit_bonus(db, user_id, kind, amount)
+            await db.commit()
     except Exception:
         logger.exception(f"Bonus {kind} for {user_id} failed")
         return 0

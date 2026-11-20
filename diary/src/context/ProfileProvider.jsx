@@ -16,11 +16,27 @@ export default function ProfileProvider({ children }) {
   const [profileError, setProfileError] = useState(null);
   const [isStartingPortrait, setIsStartingPortrait] = useState(false);
   const portraitRequest = useRef(false);
+  const profileRequests = useRef({ started: 0, applied: 0 });
   const [portraitJob, setPortraitJob] = useState(null); // { since, previous } — пока строится портрет
 
-  const refreshProfile = useCallback(() => api('/api/profile')
-    .then(data => { setProfile(data); setProfileError(null); return data; })
-    .catch(err => { setProfileError(err); console.error(err); return null; }), []);
+  const refreshProfile = useCallback(() => {
+    const requests = profileRequests.current;
+    const request = ++requests.started;
+    return api('/api/profile')
+      .then(data => {
+        if (request > requests.applied) {
+          requests.applied = request;
+          setProfile(data);
+          setProfileError(null);
+        }
+        return data;
+      })
+      .catch(err => {
+        if (request === requests.started) setProfileError(err);
+        console.error(err);
+        return null;
+      });
+  }, []);
 
   useEffect(() => {
     refreshProfile();
@@ -61,19 +77,14 @@ export default function ProfileProvider({ children }) {
     const interval = setInterval(async () => {
       const job = jobRef.current;
       if (!job) return;
-      try {
-        const data = await api('/api/profile');
-        setProfile(data);
-        if (data.portrait && data.portrait.updated_at !== job.previous) {
-          setPortraitJob(null);
-          WebApp.HapticFeedback?.notificationOccurred('success');
-        } else if (Date.now() - job.since > PORTRAIT_POLL_TIMEOUT) {
-          setPortraitJob(null);
-          WebApp.showAlert('Портрет не удалось сформировать. Попробуйте ещё раз чуть позже.');
-          refreshProfile();
-        }
-      } catch (err) {
-        console.error('Ошибка проверки портрета:', err);
+      const data = await refreshProfile();
+      if (!data || jobRef.current !== job) return;
+      if (data.portrait && data.portrait.updated_at !== job.previous) {
+        setPortraitJob(null);
+        WebApp.HapticFeedback?.notificationOccurred('success');
+      } else if (Date.now() - job.since > PORTRAIT_POLL_TIMEOUT) {
+        setPortraitJob(null);
+        WebApp.showAlert('Портрет не удалось сформировать. Попробуйте ещё раз чуть позже.');
       }
     }, PORTRAIT_POLL_INTERVAL);
     return () => clearInterval(interval);

@@ -24,7 +24,7 @@ from sqlalchemy.orm import Session
 from backend.analysis_results import format_test_results, load_analysis_test_results
 from backend.api import ai_jobs
 from backend.api.routers import diary, reports
-from backend.database.models import Category, ContentLog, DiaryEntry, PersonalityPortrait, Progress, Result, Test, User
+from backend.database.models import Category, ContentLog, DiaryEntry, PersonalityPortrait, Progress, Result, Test, TokenMovement, User
 
 
 class SQLiteSession:
@@ -33,6 +33,9 @@ class SQLiteSession:
 
     async def execute(self, statement):
         return self.session.execute(statement)
+
+    async def scalar(self, statement):
+        return self.session.scalar(statement)
 
     def add(self, instance):
         if isinstance(instance, ContentLog):
@@ -47,7 +50,7 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         engine = create_engine("sqlite://")
         self.addCleanup(engine.dispose)
-        for model in (User, Category, Test, Progress, Result, DiaryEntry, PersonalityPortrait, ContentLog):
+        for model in (User, Category, Test, Progress, Result, DiaryEntry, PersonalityPortrait, ContentLog, TokenMovement):
             model.__table__.create(engine)
         self.db = Session(engine, expire_on_commit=False)
         self.addCleanup(self.db.close)
@@ -137,12 +140,13 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
             patch("httpx.AsyncClient", ai_client),
             patch.object(diary, "ai_endpoint", return_value=("https://ai.example", "test")),
             patch.object(ai_jobs, "charge", new_callable=AsyncMock, return_value=None) as charge,
-            patch.object(diary, "award", new_callable=AsyncMock),
+            patch.object(diary, "award", new_callable=AsyncMock) as award,
         ):
             result = await diary.analyze_reaction(1, {"id": 1}, self.session)
 
         self.assertEqual(result["score"], 75)
         charge.assert_awaited_once_with(self.session, 1, "diary_answer")
+        award.assert_awaited_once_with(1, "diary_answer", session=self.session)
         system_message, user_message = client.post.call_args.kwargs["json"]["messages"]
         self.assertTrue(system_message["content"].startswith(diary.DIARY_ANALYSIS_PROMPT + "\n\n"))
         self.assertIn(diary.DIARY_ANALYSIS_MISSING_TESTS, system_message["content"])
@@ -152,6 +156,42 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
         for text in ("Новый результат", "Вторая шкала", "Сильная мотивация", "Шкала самооценки", "Реакция дневника"):
             self.assertIn(text, prompt)
         self.assertNotIn("Результат другого пользователя", prompt)
+
+    async def test_diary_commits_free_reply_with_its_refund(self):
+        user = self.db.get(User, 1)
+        user.balance = 103
+        movement = TokenMovement(id=1, user_id=user.id, kind="spend", feature="diary_answer", amount=47)
+        self.db.add(movement)
+        self.db.commit()
+
+        @asynccontextmanager
+        async def database_session():
+            yield self.session
+
+        @asynccontextmanager
+        async def ai_client(**kwargs):
+            yield client
+
+        client = AsyncMock()
+        client.post.return_value = httpx.Response(200, json={
+            "choices": [{"message": {"content": "НЕТ\n===\nДля разбора не хватает деталей."}}],
+        })
+        with (
+            patch("backend.database.async_session", database_session),
+            patch("httpx.AsyncClient", ai_client),
+            patch.object(diary, "ai_endpoint", return_value=("https://ai.example", "test")),
+            patch.object(self.session, "commit", wraps=self.session.commit) as commit,
+        ):
+            result = await diary._analyze_reaction_bg(user.id, 1, "Результат теста", movement.id)
+
+        commit.assert_awaited_once()
+        self.db.refresh(user)
+        self.db.refresh(movement)
+        self.assertEqual(result["score"], diary.NO_ANALYSIS_SCORE)
+        self.assertEqual(self.db.get(DiaryEntry, 1).portrait_match_score, diary.NO_ANALYSIS_SCORE)
+        self.assertEqual(user.balance, 150)
+        self.assertIsNotNone(movement.refunded_at)
+        self.assertIsNone(movement.completed_at)
 
     async def test_diary_addition_reloads_results_and_keeps_earlier_reply_as_context(self):
         entry = self.db.get(DiaryEntry, 1)

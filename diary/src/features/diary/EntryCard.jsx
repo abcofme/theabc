@@ -171,6 +171,7 @@ export default function EntryCard({ entry, analysis, onDelete, onRetry, onEdit, 
       {analysis === 'ask' && (
         <>
           <Reply text={entry.portrait_match_explanation} />
+          <p className="ui-muted mt-2">Листики за этот ответ не списаны.</p>
           <button
             onClick={onEdit}
             className="ui-button ui-button--secondary mt-4"

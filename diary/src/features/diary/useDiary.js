@@ -31,6 +31,10 @@ export default function useDiary(today) {
 
   const startWaiting = useCallback((id) => setPending(prev => ({ ...prev, [id]: Date.now() })), []);
   const stopWaiting = useCallback((id) => setPending(prev => withoutKey(prev, id)), []);
+  const finishAnalysis = useCallback((id) => {
+    stopWaiting(id);
+    window.dispatchEvent(new Event('diary:answered'));
+  }, [stopWaiting]);
 
   const loadOverview = useCallback(async () => {
     try {
@@ -60,6 +64,7 @@ export default function useDiary(today) {
   const updateEntry = useCallback(async (entry, event, reaction) => {
     const res = await api(`/api/diary/${entry.id}`, { method: 'PATCH', body: { event, reaction } });
     upsert([{ ...entry, event, reaction, portrait_match_score: null, portrait_match_explanation: null }]);
+    window.dispatchEvent(new Event('diary:changed'));
     if (res.analysis_started) startWaiting(entry.id);
   }, [upsert, startWaiting]);
 
@@ -69,6 +74,7 @@ export default function useDiary(today) {
     upsert([res.analysis_started
       ? { ...entry, addition: res.addition, portrait_match_score: null, portrait_match_explanation: null }
       : { ...entry, addition: res.addition }]);
+    window.dispatchEvent(new Event('diary:changed'));
     if (res.analysis_started) startWaiting(entry.id);
   }, [upsert, startWaiting]);
 
@@ -89,9 +95,9 @@ export default function useDiary(today) {
         ? { ...prev, [id]: { ...prev[id], portrait_match_score: res.score, portrait_match_explanation: res.explanation } }
         : prev);
     } finally {
-      stopWaiting(id);
+      finishAnalysis(id);
     }
-  }, [startWaiting, stopWaiting]);
+  }, [startWaiting, finishAnalysis]);
 
   // Опрос записей, по которым идёт разбор
   const pendingRef = useRef(pending);
@@ -110,19 +116,18 @@ export default function useDiary(today) {
           const entry = await api(`/api/diary/${id}`);
           if (entry.portrait_match_score !== null) {
             upsert([entry]);
-            stopWaiting(id);
-            window.dispatchEvent(new Event('diary:answered'));
+            finishAnalysis(id);
           } else if (now - since > POLL_TIMEOUT) {
-            stopWaiting(id);
+            finishAnalysis(id);
           }
         } catch (err) {
-          if (err.status === 404 || now - since > POLL_TIMEOUT) stopWaiting(id);
+          if (err.status === 404 || now - since > POLL_TIMEOUT) finishAnalysis(id);
         }
       }));
       busy = false;
     }, POLL_INTERVAL);
     return () => clearInterval(interval);
-  }, [hasPending, upsert, stopWaiting]);
+  }, [hasPending, upsert, finishAnalysis]);
 
   return {
     entries: Object.values(entriesById),

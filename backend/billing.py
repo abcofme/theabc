@@ -50,17 +50,23 @@ async def charge(session: AsyncSession, user_id: int, feature: str) -> int | Non
     return movement.id
 
 
+async def refund_charge(session: AsyncSession, user_id: int, charge_id: int | None):
+    if charge_id is None:
+        return
+    amount = await session.scalar(update(TokenMovement).where(
+        TokenMovement.id == charge_id, TokenMovement.user_id == user_id,
+        TokenMovement.kind == "spend", TokenMovement.completed_at.is_(None), TokenMovement.refunded_at.is_(None),
+    ).values(refunded_at=datetime.utcnow()).returning(TokenMovement.amount))
+    if amount is not None:
+        await session.execute(update(User).where(User.id == user_id).values(balance=User.balance + amount))
+
+
 async def refund(user_id: int, charge_id: int | None):
     if charge_id is None:
         return
     async with async_session() as session:
-        amount = await session.scalar(update(TokenMovement).where(
-            TokenMovement.id == charge_id, TokenMovement.user_id == user_id,
-            TokenMovement.kind == "spend", TokenMovement.completed_at.is_(None), TokenMovement.refunded_at.is_(None),
-        ).values(refunded_at=datetime.utcnow()).returning(TokenMovement.amount))
-        if amount is not None:
-            await session.execute(update(User).where(User.id == user_id).values(balance=User.balance + amount))
-            await session.commit()
+        await refund_charge(session, user_id, charge_id)
+        await session.commit()
 
 
 async def top_up(session: AsyncSession, user_id: int, rubles: int):

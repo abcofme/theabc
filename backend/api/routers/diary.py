@@ -12,7 +12,7 @@ from backend.analysis_results import format_test_results, load_analysis_test_res
 from backend.api.ai_jobs import check_prompt_size, start_ai_job
 from backend.api.common import AI_MODEL, GENDER_NEUTRAL_RULE, ai_endpoint, get_session, run_in_background
 from backend.api.security import validate_twa_data
-from backend.billing import refund
+from backend.billing import refund, refund_charge
 from backend.bonuses import award
 from backend.database.models import Category, ContentLog, DiaryEntry, Test
 from backend.token_usage import complete_charge
@@ -425,14 +425,11 @@ NO_ANALYSIS_SCORE = -1
 
 async def _analyze_reaction_bg(user_id: int, entry_id: int, test_results_text: str, charged: int | None, follow_up: dict | None = None):
     result = await _run_reaction_analysis(user_id, entry_id, test_results_text, follow_up, charged)
-    # Платят только за разбор: сбой ИИ или просьба дописать запись бесплатны
-    if result is None or result["score"] == NO_ANALYSIS_SCORE:
+    if result is None:
         await refund(user_id, charged)
-    else:
-        await award(user_id, "diary_answer")
-    # Сбой ИИ после дополнения не должен стирать оплаченный прежний ответ
-    if result is None and follow_up:
-        await _restore_reply(user_id, entry_id, follow_up)
+        # Сбой ИИ после дополнения не должен стирать оплаченный прежний ответ
+        if follow_up:
+            await _restore_reply(user_id, entry_id, follow_up)
     return result
 
 
@@ -550,9 +547,13 @@ async def _run_reaction_analysis(user_id: int, entry_id: int, test_results_text:
                 return None
             entry.portrait_match_score = score
             entry.portrait_match_explanation = explanation
-            if score != NO_ANALYSIS_SCORE:
+            # Ответ становится виден одновременно с итоговым балансом.
+            if score == NO_ANALYSIS_SCORE:
+                await refund_charge(db, user_id, charged)
+            else:
                 await complete_charge(db, charged)
                 db.add(ContentLog(user_id=user_id, kind="diary_answer"))
+                await award(user_id, "diary_answer", session=db)
             await db.commit()
         return {"score": score, "explanation": explanation}
     except Exception as error:
