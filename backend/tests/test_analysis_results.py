@@ -235,7 +235,8 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
             await tasks[0]
 
         messages = client.post.call_args.kwargs["json"]["messages"]
-        self.assertTrue(messages[0]["content"].endswith("ВСЕ ТЕСТЫ ПРОЙДЕНЫ"))
+        self.assertIn("Переданы результаты всех тестов актуального каталога приложения.", messages[0]["content"])
+        self.assertNotIn(diary.DIARY_ANALYSIS_MISSING_TESTS, messages[0]["content"])
         self.assertIn("Чужой тест", messages[1]["content"])
         self.assertIn("Результат после повторного теста", messages[1]["content"])
         self.assertIn("Прежний ответ по портрету", messages[2]["content"])

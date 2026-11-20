@@ -494,10 +494,17 @@ async def _run_reaction_analysis(
             f"«{name}» ({category})" + (f" — {description.strip()}" if description else "")
             for name, category, description in missing_tests
         )
-        tests_context = (
-            f"ТЕСТЫ БЕЗ РЕЗУЛЬТАТА (укажи в «Зеркале» {min(2, len(missing_tests))} из них)\n{missing_tests_text}"
-            if missing_tests else "ВСЕ ТЕСТЫ ПРОЙДЕНЫ"
-        )
+        if missing_tests:
+            tests_context = (
+                f"{DIARY_ANALYSIS_MISSING_TESTS}\n\n"
+                f"ТЕСТЫ БЕЗ РЕЗУЛЬТАТА (укажи в «Зеркале» {min(2, len(missing_tests))} из них)\n{missing_tests_text}"
+            )
+        else:
+            tests_context = (
+                "Переданы результаты всех тестов актуального каталога приложения. "
+                "Некоторые тесты из описания кластеров могут отсутствовать в каталоге. "
+                "Дай полный разбор в пяти частях. Не добавляй в ответ упоминаний о недостающих тестах или предложений пройти тест."
+            )
         event, reaction, addition = entry_text
         if follow_up:
             addition = follow_up["earlier_addition"]
@@ -510,7 +517,6 @@ async def _run_reaction_analysis(
             DIARY_ANALYSIS_PROMPT,
             DIARY_ANALYSIS_OUTPUT_FORMAT,
             GENDER_NEUTRAL_RULE,
-            DIARY_ANALYSIS_MISSING_TESTS,
             tests_context,
         ))
         messages = [
