@@ -8,7 +8,7 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.analysis_results import format_test_results, load_analysis_test_results
+from backend.analysis_results import TestResult, format_test_results, load_analysis_test_results
 from backend.api.ai_jobs import check_prompt_size, start_ai_job
 from backend.api.common import AI_MODEL, GENDER_NEUTRAL_RULE, ai_endpoint, get_session, run_in_background
 from backend.api.security import validate_twa_data
@@ -74,9 +74,8 @@ async def _start_reaction_analysis(
     if not test_results:
         return False
     try:
-        results_text = format_test_results(test_results)
         await start_ai_job(session, user_id, "diary_answer", lambda charged: _analyze_reaction_bg(
-            user_id, entry_id, results_text, charged, follow_up,
+            user_id, entry_id, test_results, charged, follow_up,
         ), prepare=prepare)
     except HTTPException as error:
         if prepare is not None and error.status_code in {429, 503}:
@@ -423,8 +422,10 @@ DIARY_ANALYSIS_OUTPUT_FORMAT = """ТЕХНИЧЕСКИЙ ФОРМАТ ВЫВОД
 NO_ANALYSIS_SCORE = -1
 
 
-async def _analyze_reaction_bg(user_id: int, entry_id: int, test_results_text: str, charged: int | None, follow_up: dict | None = None):
-    result = await _run_reaction_analysis(user_id, entry_id, test_results_text, follow_up, charged)
+async def _analyze_reaction_bg(
+    user_id: int, entry_id: int, test_results: list[TestResult], charged: int | None, follow_up: dict | None = None,
+):
+    result = await _run_reaction_analysis(user_id, entry_id, test_results, follow_up, charged)
     if result is None:
         await refund(user_id, charged)
         # Сбой ИИ после дополнения не должен стирать оплаченный прежний ответ
@@ -461,7 +462,9 @@ def _follow_up_messages(follow_up: dict) -> list:
     ]
 
 
-async def _run_reaction_analysis(user_id: int, entry_id: int, test_results_text: str, follow_up: dict | None = None, charged: int | None = None):
+async def _run_reaction_analysis(
+    user_id: int, entry_id: int, test_results: list[TestResult], follow_up: dict | None = None, charged: int | None = None,
+):
     import httpx
     from backend.database import async_session
 
@@ -479,19 +482,27 @@ async def _run_reaction_analysis(user_id: int, entry_id: int, test_results_text:
             entry_text = entry.event, entry.reaction, entry.addition
             if follow_up and entry_text != follow_up["entry_text"]:
                 return None
-            catalog = await db.execute(
-                select(Test.name, Category.name, Test.description).join(Category).order_by(Test.id)
-            )
-            catalog_text = "\n".join(
-                f"«{name}» ({category})" + (f" — {description.strip()}" if description else "")
-                for name, category, description in catalog
-            )
+            completed_ids = [result.test_id for result in test_results]
+            missing_tests = (await db.execute(
+                select(Test.name, Category.name, Test.description)
+                .join(Category)
+                .where(Test.id.not_in(completed_ids))
+                .order_by(Test.id)
+            )).all()
 
+        missing_tests_text = "\n".join(
+            f"«{name}» ({category})" + (f" — {description.strip()}" if description else "")
+            for name, category, description in missing_tests
+        )
+        tests_context = (
+            f"ТЕСТЫ БЕЗ РЕЗУЛЬТАТА (укажи в «Зеркале» {min(2, len(missing_tests))} из них)\n{missing_tests_text}"
+            if missing_tests else "ВСЕ ТЕСТЫ ПРОЙДЕНЫ"
+        )
         event, reaction, addition = entry_text
         if follow_up:
             addition = follow_up["earlier_addition"]
         user_message = (
-            f"Результаты всех пройденных тестов пользователя:\n{test_results_text}"
+            f"Результаты всех пройденных тестов пользователя:\n{format_test_results(test_results)}"
             f"\n\nСобытие: {event}\nРеакция: {reaction}"
             + (f"\nДополнение (дописано позже): {addition}" if addition else "")
         )
@@ -500,7 +511,7 @@ async def _run_reaction_analysis(user_id: int, entry_id: int, test_results_text:
             DIARY_ANALYSIS_OUTPUT_FORMAT,
             GENDER_NEUTRAL_RULE,
             DIARY_ANALYSIS_MISSING_TESTS,
-            f"КАТАЛОГ ТЕСТОВ ПРИЛОЖЕНИЯ\n{catalog_text}",
+            tests_context,
         ))
         messages = [
             {"role": "system", "content": system_prompt},
@@ -571,15 +582,14 @@ async def analyze_reaction(
     test_results = await load_analysis_test_results(session, user_id, require_all_categories=False)
     if not test_results:
         raise HTTPException(status_code=400, detail="Чтобы получить разбор записи, пройди любой тест.")
-    results_text = format_test_results(test_results)
     entry = (await session.execute(select(DiaryEntry).where(
         DiaryEntry.id == entry_id, DiaryEntry.user_id == user_id,
     ))).scalars().first()
     if entry is None:
         raise HTTPException(404, "Запись не найдена.")
-    check_prompt_size(results_text, entry.event, entry.reaction, entry.addition or "")
+    check_prompt_size(format_test_results(test_results), entry.event, entry.reaction, entry.addition or "")
     task = await start_ai_job(session, user_id, "diary_answer", lambda charged: _analyze_reaction_bg(
-        user_id, entry_id, results_text, charged,
+        user_id, entry_id, test_results, charged,
     ))
     # Списание и запись результата завершаются даже после закрытия страницы.
     result = await asyncio.shield(task)

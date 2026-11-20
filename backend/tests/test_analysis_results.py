@@ -150,7 +150,10 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
         system_message, user_message = client.post.call_args.kwargs["json"]["messages"]
         self.assertTrue(system_message["content"].startswith(diary.DIARY_ANALYSIS_PROMPT + "\n\n"))
         self.assertIn(diary.DIARY_ANALYSIS_MISSING_TESTS, system_message["content"])
-        self.assertIn("«Чужой тест» (Личность) — Показывает привычные способы общения.", system_message["content"])
+        self.assertTrue(system_message["content"].endswith(
+            "ТЕСТЫ БЕЗ РЕЗУЛЬТАТА (укажи в «Зеркале» 1 из них)\n"
+            "«Чужой тест» (Личность) — Показывает привычные способы общения."
+        ))
         self.assertNotIn("Результат другого пользователя", system_message["content"])
         prompt = user_message["content"]
         for text in ("Новый результат", "Вторая шкала", "Сильная мотивация", "Шкала самооценки", "Реакция дневника"):
@@ -163,6 +166,7 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
         movement = TokenMovement(id=1, user_id=user.id, kind="spend", feature="diary_answer", amount=47)
         self.db.add(movement)
         self.db.commit()
+        test_results = await load_analysis_test_results(self.session, user.id, require_all_categories=False)
 
         @asynccontextmanager
         async def database_session():
@@ -182,7 +186,7 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
             patch.object(diary, "ai_endpoint", return_value=("https://ai.example", "test")),
             patch.object(self.session, "commit", wraps=self.session.commit) as commit,
         ):
-            result = await diary._analyze_reaction_bg(user.id, 1, "Результат теста", movement.id)
+            result = await diary._analyze_reaction_bg(user.id, 1, test_results, movement.id)
 
         commit.assert_awaited_once()
         self.db.refresh(user)
@@ -198,6 +202,7 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
         entry.portrait_match_score = 50
         entry.portrait_match_explanation = "Прежний ответ по портрету"
         self.db.get(Progress, 2).hardcode_value = "Результат после повторного теста"
+        self.db.add(Progress(id=14, test_id=13, user_id=1, value=0))
         self.db.commit()
 
         tasks = []
@@ -230,6 +235,8 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
             await tasks[0]
 
         messages = client.post.call_args.kwargs["json"]["messages"]
+        self.assertTrue(messages[0]["content"].endswith("ВСЕ ТЕСТЫ ПРОЙДЕНЫ"))
+        self.assertIn("Чужой тест", messages[1]["content"])
         self.assertIn("Результат после повторного теста", messages[1]["content"])
         self.assertIn("Прежний ответ по портрету", messages[2]["content"])
         self.assertIn("Дополнительная деталь", messages[3]["content"])
@@ -261,8 +268,9 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(charge.await_count, 2)
         self.assertEqual(analyze.await_count, 2)
         for call in analyze.await_args_list:
-            self.assertIn("Сильная мотивация", call.args[2])
-            self.assertNotIn("Копинг", call.args[2])
+            results = call.args[2]
+            self.assertEqual([result.test_id for result in results], [11])
+            self.assertIn("Сильная мотивация", results[0].text)
 
     async def test_all_report_types_send_all_results_without_a_portrait(self):
         with (

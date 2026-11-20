@@ -8,6 +8,7 @@ from backend.database.models import Category, Progress, Result, Test
 
 @dataclass(frozen=True)
 class TestResult:
+    test_id: int
     name: str
     category: str
     text: str
@@ -56,7 +57,7 @@ async def load_analysis_test_results(
             text = f"Баллы: {points}"
             if description and description.strip():
                 text += f"\n{description.strip()}"
-        results.append(TestResult(name=name, category=category, text=text))
+        results.append(TestResult(test_id=test_id, name=name, category=category, text=text))
         completed_categories.add(category_id)
     if require_all_categories and completed_categories != test_categories:
         return []
