@@ -6,6 +6,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from backend.analysis_results import has_test_result
 from backend.api.common import get_session
 from backend.api.security import validate_twa_data
 from backend.bonuses import available_test_bonus, award_test_bonus
@@ -18,6 +19,15 @@ router = APIRouter()
 
 class SubmitTestRequest(BaseModel):
     answer_ids: List[int]
+
+
+async def _has_current_result(session, user_id, test_id):
+    latest = await session.scalar(
+        select(Progress).where(Progress.test_id == test_id, Progress.user_id == user_id)
+        .order_by(Progress.created_at.desc(), Progress.id.desc()).limit(1)
+    )
+    return latest is not None and has_test_result(latest.hardcode_value, latest.value)
+
 
 @router.get("/api/tests/{test_id}")
 async def get_test_details(
@@ -36,8 +46,7 @@ async def get_test_details(
     
     user_id = user_data.get("id")
 
-    progress_query = select(Progress.id).where(Progress.test_id == test_id, Progress.user_id == user_id).limit(1)
-    passed = await session.scalar(progress_query) is not None
+    passed = await _has_current_result(session, user_id, test_id)
     bonus = None if passed else await available_test_bonus(session, user_id, test_id, len(test.questions))
     
     return {
@@ -70,9 +79,7 @@ async def submit_test(
     try:
         user_id = user_data.get("id")
         await lock_user_progress(session, user_id)
-        progress_query = select(Progress).where(Progress.test_id == test_id, Progress.user_id == user_id)
-        progress = (await session.execute(progress_query)).scalars().first()
-        if progress:
+        if await _has_current_result(session, user_id, test_id):
             return {"result": "Вы уже прошли этот тест.", "bonus_amount": 0}
         
         query = select(Test).options(selectinload(Test.category)).where(Test.id == test_id)

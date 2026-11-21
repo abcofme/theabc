@@ -7,7 +7,6 @@ PORTRAIT_CATEGORIES = {
     "sociability": "Общительность",
     "career": "Профориентация",
 }
-REQUIRED_PORTRAIT_CATEGORIES = tuple(name for key, name in PORTRAIT_CATEGORIES.items() if key != "career")
 
 
 def parse_portrait_block(answer):
@@ -31,8 +30,8 @@ def build_portrait(interpretations, test_groups):
     sections = []
     progress_ids = {}
     markdown = []
-    for key, category in PORTRAIT_CATEGORIES.items():
-        tests = test_groups.get(key, [])
+    for key, tests in test_groups.items():
+        category = PORTRAIT_CATEGORIES.get(key) or tests[0].category
         lead = interpretation = ""
         if tests:
             lead, interpretation = interpretations[key]

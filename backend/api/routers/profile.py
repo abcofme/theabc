@@ -19,7 +19,7 @@ from backend.database.models import (
     DiaryEntry, BehavioralReport, CompatibilityReport, Friendship, PartnerAccount, Payment,
 )
 from backend.friends import befriend, inviter_from_payload
-from backend.portrait_content import PORTRAIT_CATEGORIES, REQUIRED_PORTRAIT_CATEGORIES, read_portrait_metadata
+from backend.portrait_content import read_portrait_metadata
 from backend.pricing import AI_PRICES, AUTORENEW_TERMS_VERSION, MAX_TOPUP, MIN_TOPUP, PREMIUM_PERIOD_DAYS, PREMIUM_PRICE, TOKENS_PER_RUBLE
 from backend.referrals import capture_referral
 from settings import settings
@@ -166,7 +166,6 @@ async def get_profile(
             user_results[p.test_id] = p.hardcode_value
         else:
             if p.value is None:
-                user_results[p.test_id] = "Баллы: 0"
                 continue
 
             # Ищем текстовый результат по баллам в памяти
@@ -179,7 +178,6 @@ async def get_profile(
 
             user_results[p.test_id] = matched_name if matched_name else f"Балл: {p.value}"
 
-    # Профориентация входит в портрет по мере прохождения тестов.
     result_data = []
     total_tests = 0
     passed_tests = 0
@@ -193,17 +191,16 @@ async def get_profile(
             "tests": [],
         }
         for t in cat.tests:
-            if cat.name in REQUIRED_PORTRAIT_CATEGORIES:
-                total_tests += 1
-                passed_tests += t.id in tests_with_results
-            if cat.name in PORTRAIT_CATEGORIES.values() and t.id in tests_with_results:
+            total_tests += 1
+            passed = t.id in tests_with_results
+            if passed:
+                passed_tests += 1
                 portrait_progress_ids[str(t.id)] = latest_progress[t.id].id
-            passed = t.id in user_results
             cat_data["tests"].append({
                 "id": t.id,
                 "name": t.name,
                 "passed": passed,
-                "result_text": user_results.get(t.id, None)
+                "result_text": user_results.get(t.id) if passed else None
             })
         result_data.append(cat_data)
 

@@ -102,6 +102,27 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
             self.assertIn(result.name, context)
             self.assertIn(result.text, context)
 
+    async def test_portrait_requires_every_test_including_all_career_tests(self):
+        self.db.add_all([
+            Progress(id=14, test_id=13, user_id=1, value=0),
+            Test(id=14, category_id=2, name="Ещё один тест профориентации"),
+        ])
+        self.db.commit()
+        with (
+            patch.object(portrait, "ai_endpoint", return_value=("https://ai.example", "test")),
+            patch.object(portrait, "start_ai_job", new_callable=AsyncMock) as start_job,
+        ):
+            with self.assertRaises(HTTPException) as error:
+                await portrait.generate_personality_portrait({"id": 1}, self.session)
+            self.assertEqual(error.exception.status_code, 400)
+            start_job.assert_not_awaited()
+
+            self.db.add(Progress(id=15, test_id=14, user_id=1, value=0))
+            self.db.commit()
+            response = await portrait.generate_personality_portrait({"id": 1}, self.session)
+            self.assertEqual(response, {"status": "generating"})
+            start_job.assert_awaited_once()
+
     async def test_portrait_retries_a_truncated_category_response(self):
         url = "https://example.test/chat/completions"
         request = httpx.Request("POST", url)

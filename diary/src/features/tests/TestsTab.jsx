@@ -51,7 +51,7 @@ export default function TestsTab({ request }) {
     if (request?.category && requestedCategoryId) document.getElementById(`test-category-panel-${requestedCategoryId}`)?.parentElement?.scrollIntoView({ block: 'start', behavior: 'auto' });
   }, [request?.id, request?.category, requestedCategoryId]);
   const categoryOf = id => categories.find(c => c.tests.some(t => t.id === id));
-  const remaining = categories.filter(c => c.name !== 'Профориентация').flatMap(c => c.tests).filter(test => !test.passed);
+  const remaining = categories.flatMap(c => c.tests).filter(test => !test.passed);
   const nextTest = remaining.find(test => readTestProgress(ownerId, test.id).index > 0) || remaining[0];
   const openTest = test => {
     if (test.passed) { setSelectedResult(test); WebApp.HapticFeedback?.selectionChanged(); }

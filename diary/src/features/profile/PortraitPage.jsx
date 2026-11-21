@@ -54,19 +54,20 @@ function PortraitCategory({ section, initiallyOpen, onOpenTests }) {
 }
 
 function PortraitTests({ profile, onOpenTests }) {
-  const required = categories.filter(category => category.key !== 'career').flatMap(category => {
-    const tests = profile.categories?.find(item => item.name === category.name)?.tests;
-    return tests?.length ? [{ ...category, count: tests.length }] : [];
-  });
+  const required = profile.categories.filter(category => category.tests.length > 0);
   return (
     <section>
       <h3 className="portrait-section-title">Обязательные тесты</h3>
       {required.length ? <div className="portrait-list">
-        {required.map(({ key, name, art, count }) => <button key={key} type="button" className="portrait-row" onClick={() => onOpenTests(name)}>
-          <img className="portrait-row__art" src={art} alt="" width="60" height="60" />
-          <span className="portrait-row__label"><strong>{name}</strong><small>{testCount(count)}</small></span>
-          <ChevronRight size={20} />
-        </button>)}
+        {required.map(({ id, name, tests }) => {
+          const art = categories.find(category => category.name === name)?.art;
+          const passed = tests.filter(test => test.passed).length;
+          return <button key={id} type="button" className="portrait-row" onClick={() => onOpenTests(name)}>
+            {art && <img className="portrait-row__art" src={art} alt="" width="60" height="60" />}
+            <span className="portrait-row__label"><strong>{name}</strong><small>Пройдено {passed} из {tests.length}</small></span>
+            <ChevronRight size={20} />
+          </button>;
+        })}
       </div> : <button type="button" className="ui-button ui-button--primary" onClick={() => onOpenTests()}>К тестам</button>}
     </section>
   );
@@ -126,7 +127,8 @@ export default function PortraitPage({ onBack }) {
   });
   const toTests = category => { onBack(); navigate({ tab: 'tests', category }); };
   const updatedAt = !isGeneratingPortrait && portrait?.updated_at;
-  const showProgress = !portrait && !isGeneratingPortrait;
+  const hasRemaining = profile.passed_tests < profile.total_tests;
+  const showProgress = (!portrait || hasRemaining) && !isGeneratingPortrait;
   return (
     <Page title="Портрет личности" onBack={onBack} clayTitle>
       <div className="portrait-page">
@@ -137,7 +139,8 @@ export default function PortraitPage({ onBack }) {
         {showProgress && <section className="portrait-progress">
           <div className="portrait-progress-label"><h3>Пройдено тестов</h3><strong>{profile.passed_tests} из {profile.total_tests}</strong></div>
           <progress aria-label="Пройдено обязательных тестов" value={profile.passed_tests} max={profile.total_tests || 1} />
-          {state === 'tests' && <p>Пройди обязательные тесты, чтобы получить свой разбор.</p>}
+          {hasRemaining && <p>{portrait ? 'Пройди оставшиеся тесты, чтобы обновить портрет.' : 'Пройди все тесты, чтобы получить свой разбор.'}</p>}
+          {portrait && hasRemaining && <button type="button" onClick={() => toTests()} className="ui-button ui-button--outline mt-4">К тестам</button>}
         </section>}
         {isGeneratingPortrait ? <GenerationProgress text="Портрет личности формируется…" /> : <>
           {state === 'outdated' && <section className="portrait-action">
@@ -151,7 +154,7 @@ export default function PortraitPage({ onBack }) {
               <PortraitCategory key={section.key} section={section} initiallyOpen={index === 0} onOpenTests={() => toTests(section.category)} />
             ))}</div>
           </section> : portrait ? <ResultContent content={content} titles={['Портрет личности', 'Мой портрет личности']} components={portraitComponents} contents={false} variant="document" clayHeadings /> : state === 'ready' ? <section className="portrait-action">
-            <h3>Все обязательные тесты пройдены</h3>
+            <h3>Все тесты пройдены</h3>
             <p>Теперь можно собрать результаты в портрет и прочитать разбор по категориям.</p>
             <button type="button" onClick={generate} className="ui-button ui-button--primary"><Wand2 size={20} />Сформировать портрет</button>
           </section> : <PortraitTests profile={profile} onOpenTests={toTests} />}

@@ -20,9 +20,9 @@ def has_test_result(hardcoded: str | None, points: int | None) -> bool:
 
 
 async def load_analysis_test_results(
-    session: AsyncSession, user_id: int, *, require_all_categories: bool = True,
+    session: AsyncSession, user_id: int, *, require_all_categories: bool = True, require_all_tests: bool = False,
 ) -> list[TestResult]:
-    """Возвращает актуальные результаты пользователя, при необходимости проверяя охват всех категорий."""
+    """Возвращает актуальные результаты пользователя, проверяя запрошенный охват тестов и категорий."""
     interpretation = (
         select(Result.name)
         .where(
@@ -54,6 +54,8 @@ async def load_analysis_test_results(
         seen_tests.add(test_id)
         test_categories.add(category_id)
         if not has_test_result(hardcoded, points):
+            if require_all_tests:
+                return []
             continue
 
         text = (hardcoded or "").strip()

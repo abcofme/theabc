@@ -15,8 +15,8 @@ from backend.api.security import validate_twa_data
 from backend.billing import refund
 from backend.bonuses import award
 from backend.database import async_session
-from backend.database.models import Category, PersonalityPortrait, PortraitLog, Test
-from backend.portrait_content import PORTRAIT_CATEGORIES, REQUIRED_PORTRAIT_CATEGORIES, build_portrait, parse_portrait_block
+from backend.database.models import PersonalityPortrait, PortraitLog
+from backend.portrait_content import PORTRAIT_CATEGORIES, build_portrait, parse_portrait_block
 from backend.token_usage import complete_charge
 
 router = APIRouter()
@@ -101,7 +101,7 @@ async def _generate_portrait(user_id, tests_count, test_groups, evidence, ai_url
     from backend.telegram.notify import notify
 
     await notify(
-        user_id, "<b>Портрет личности готов</b>\n\nВ нём собраны твои результаты по пяти категориям.",
+        user_id, "<b>Портрет личности готов</b>\n\nВ нём собраны твои результаты по категориям тестов.",
         "tab=profile&page=portrait", "Открыть портрет",
     )
 
@@ -112,24 +112,21 @@ async def generate_personality_portrait(
     session: AsyncSession = Depends(get_session),
 ):
     user_id = user_data["id"]
-    required_count = await session.scalar(
-        select(func.count(Test.id)).join(Category).where(Category.name.in_(REQUIRED_PORTRAIT_CATEGORIES))
-    )
-    results = await load_analysis_test_results(session, user_id, require_all_categories=False)
-    if not required_count or sum(result.category in REQUIRED_PORTRAIT_CATEGORIES for result in results) < required_count:
-        raise HTTPException(status_code=400, detail="Пройди оставшиеся тесты, чтобы сформировать портрет.")
+    results = await load_analysis_test_results(session, user_id, require_all_tests=True)
+    if not results:
+        raise HTTPException(status_code=400, detail="Пройди все тесты, чтобы сформировать портрет.")
 
-    test_groups = {}
-    for key, category in PORTRAIT_CATEGORIES.items():
-        tests = [result for result in results if result.category == category]
-        if tests:
-            test_groups[key] = tests
+    keys_by_category = {name: key for key, name in PORTRAIT_CATEGORIES.items()}
+    test_groups = {key: [] for key in PORTRAIT_CATEGORIES}
+    for result in results:
+        key = keys_by_category.get(result.category, f"category:{result.category}")
+        test_groups.setdefault(key, []).append(result)
     evidence = {
         key: json.dumps({
             "category": key,
             "tests": [{"test": result.name, "result": result.text} for result in tests],
         }, ensure_ascii=False)
-        for key, tests in test_groups.items()
+        for key, tests in test_groups.items() if tests
     }
     check_prompt_size(PORTRAIT_PROMPT, *evidence.values())
     ai_url, ai_token = ai_endpoint()
@@ -137,6 +134,6 @@ async def generate_personality_portrait(
         raise HTTPException(status_code=500, detail="AI сервис не настроен")
 
     await start_ai_job(session, user_id, "portrait", lambda charged: _generate_portrait(
-        user_id, required_count, test_groups, evidence, ai_url, ai_token, charged,
+        user_id, len(results), test_groups, evidence, ai_url, ai_token, charged,
     ))
     return {"status": "generating"}

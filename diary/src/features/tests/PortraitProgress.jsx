@@ -21,7 +21,7 @@ export default function PortraitProgress({ nextTest, onContinue }) {
       <div className="flex items-baseline justify-between gap-3"><h2 className="text-lg leading-6 font-semibold">Портрет личности</h2><span className="ui-secondary shrink-0 tabular-nums">{Math.min(passed, total)} из {total}</span></div>
       <div className="clay-pressed h-1.5 bg-rose-950 rounded-full overflow-hidden my-3" role="progressbar" aria-label="Пройденные тесты" aria-valuenow={Math.min(passed, total)} aria-valuemin={0} aria-valuemax={total || 1}><div className="h-full bg-[var(--ui-sage)] transition-[width] duration-300" style={{ width: `${percent}%` }} /></div>
       <p className="ui-secondary">{text}</p>
-      {state === 'tests' && nextTest && <>
+      {passed < total && nextTest && <>
         <button type="button" onClick={onContinue} className="ui-button ui-button--primary mt-4">Продолжить тест</button>
         <p className="ui-muted mt-3">{nextTest.name}</p>
       </>}
