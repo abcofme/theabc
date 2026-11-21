@@ -10,14 +10,24 @@ PORTRAIT_CATEGORIES = {
 REQUIRED_PORTRAIT_CATEGORIES = tuple(name for key, name in PORTRAIT_CATEGORIES.items() if key != "career")
 
 
-def build_portrait(answer, test_groups):
-    answer = answer.strip()
-    if answer.startswith("```json\n") and answer.endswith("```"):
-        answer = answer[8:-3].strip()
-    interpretations = json.loads(answer)
-    if not isinstance(interpretations, dict) or interpretations.keys() != test_groups.keys():
-        raise ValueError("Unexpected portrait categories")
+def parse_portrait_block(answer):
+    if not isinstance(answer, str) or "{" not in answer:
+        raise ValueError("Portrait response has no JSON object")
+    # Провайдер иногда оборачивает JSON в Markdown или предваряет его пояснением.
+    start = answer.index("{")
+    block, _ = json.JSONDecoder().raw_decode(answer, start)
+    if not isinstance(block, dict) or block.keys() != {"lead", "interpretation"}:
+        raise ValueError("Invalid portrait category")
+    lead, interpretation = block["lead"], block["interpretation"]
+    if (
+        not isinstance(lead, str) or not 1 <= len(lead.strip()) <= 140
+        or not isinstance(interpretation, str) or not 1 <= len(interpretation.strip()) <= 680
+    ):
+        raise ValueError("Invalid portrait text")
+    return " ".join(lead.split()), " ".join(interpretation.split())
 
+
+def build_portrait(interpretations, test_groups):
     sections = []
     progress_ids = {}
     markdown = []
@@ -25,17 +35,7 @@ def build_portrait(answer, test_groups):
         tests = test_groups.get(key, [])
         lead = interpretation = ""
         if tests:
-            block = interpretations[key]
-            if not isinstance(block, dict) or block.keys() != {"lead", "interpretation"}:
-                raise ValueError("Invalid portrait category")
-            lead, interpretation = block["lead"], block["interpretation"]
-            if (
-                not isinstance(lead, str) or not 1 <= len(lead.strip()) <= 140
-                or not isinstance(interpretation, str) or not 1 <= len(interpretation.strip()) <= 680
-            ):
-                raise ValueError("Invalid portrait text")
-            lead = " ".join(lead.split())
-            interpretation = " ".join(interpretation.split())
+            lead, interpretation = interpretations[key]
             markdown.append(f"## {category}\n\n**{lead}**\n\n{interpretation}")
             progress_ids.update({str(result.test_id): result.progress_id for result in tests})
         sections.append({

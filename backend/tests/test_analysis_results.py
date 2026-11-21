@@ -23,7 +23,7 @@ from sqlalchemy.orm import Session
 
 from backend.analysis_results import format_test_results, load_analysis_test_results
 from backend.api import ai_jobs
-from backend.api.routers import diary, reports
+from backend.api.routers import diary, portrait, reports
 from backend.database.models import Category, ContentLog, DiaryEntry, PersonalityPortrait, Progress, Result, Test, TokenMovement, User
 
 
@@ -101,6 +101,24 @@ class AnalysisResultsTest(unittest.IsolatedAsyncioTestCase):
         for result in results:
             self.assertIn(result.name, context)
             self.assertIn(result.text, context)
+
+    async def test_portrait_retries_a_truncated_category_response(self):
+        url = "https://example.test/chat/completions"
+        request = httpx.Request("POST", url)
+        client = AsyncMock()
+        answers = [
+            '{"lead": "Незаконченный вывод',
+            '```JSON\n{"lead": "Тебе удобнее обдумать решение", "interpretation": "Ты обычно сначала собираешь детали."}\n```',
+        ]
+        client.post.side_effect = [
+            httpx.Response(200, request=request, json={"choices": [{"message": {"content": answer}}]})
+            for answer in answers
+        ]
+
+        interpretation = await portrait._interpret_category(client, url, "test", '{"category": "personality"}')
+
+        self.assertEqual(interpretation, ("Тебе удобнее обдумать решение", "Ты обычно сначала собираешь детали."))
+        self.assertEqual(client.post.await_count, 2)
 
     async def test_one_result_per_nonempty_category_is_enough(self):
         self.assertEqual(await load_analysis_test_results(self.session, 4), [])

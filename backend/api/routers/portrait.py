@@ -16,13 +16,14 @@ from backend.billing import refund
 from backend.bonuses import award
 from backend.database import async_session
 from backend.database.models import Category, PersonalityPortrait, PortraitLog, Test
-from backend.portrait_content import PORTRAIT_CATEGORIES, REQUIRED_PORTRAIT_CATEGORIES, build_portrait
+from backend.portrait_content import PORTRAIT_CATEGORIES, REQUIRED_PORTRAIT_CATEGORIES, build_portrait, parse_portrait_block
 from backend.token_usage import complete_charge
 
 router = APIRouter()
 PORTRAIT_PROMPT = (Path(__file__).resolve().parents[2] / "prompts" / "personality_portrait.txt").read_text(
     encoding="utf-8"
 ).strip() + "\n\n" + GENDER_NEUTRAL_RULE
+JSON_RETRY = "\n\nНачни с {, закончи }, верни только JSON с полями lead и interpretation."
 
 
 async def _find_portrait(session, user_id):
@@ -42,25 +43,41 @@ async def clear_personality_portrait(
     return {"status": "not_found", "message": "Портрет не найден"}
 
 
+async def _interpret_category(client, ai_url, ai_token, evidence):
+    messages = [
+        {"role": "system", "content": PORTRAIT_PROMPT},
+        {"role": "user", "content": evidence},
+    ]
+    for attempt in range(2):
+        response = await client.post(
+            ai_url,
+            headers={"Authorization": f"Bearer {ai_token}"},
+            json={"model": AI_MODEL, "messages": messages},
+        )
+        if response.status_code == 404 and attempt == 0:
+            continue
+        response.raise_for_status()
+        try:
+            return parse_portrait_block(response.json()["choices"][0]["message"]["content"])
+        except (ValueError, KeyError, IndexError, TypeError):
+            if attempt == 1:
+                raise
+            messages[0]["content"] += JSON_RETRY
+
+
 async def _generate_portrait(user_id, tests_count, test_groups, evidence, ai_url, ai_token, charged):
     try:
-        async with asyncio.timeout(90), httpx.AsyncClient(timeout=90.0) as client:
-            request = {
-                "headers": {"Authorization": f"Bearer {ai_token}"},
-                "json": {
-                    "model": AI_MODEL,
-                    "messages": [
-                        {"role": "system", "content": PORTRAIT_PROMPT},
-                        {"role": "user", "content": evidence},
-                    ],
-                },
-            }
-            response = await client.post(ai_url, **request)
-            if response.status_code == 404:
-                response = await client.post(ai_url, **request)
-            response.raise_for_status()
-            answer = response.json()["choices"][0]["message"]["content"]
-            content, metadata = build_portrait(answer, test_groups)
+        # Короткие ответы по одной категории не упираются в общий лимит ответа агента.
+        async with asyncio.timeout(120), httpx.AsyncClient(timeout=45.0) as client:
+            slots = asyncio.Semaphore(2)
+
+            async def interpret(data):
+                async with slots:
+                    return await _interpret_category(client, ai_url, ai_token, data)
+
+            async with asyncio.TaskGroup() as group:
+                tasks = {key: group.create_task(interpret(data)) for key, data in evidence.items()}
+            content, metadata = build_portrait({key: task.result() for key, task in tasks.items()}, test_groups)
 
         async with async_session() as db:
             portrait = await _find_portrait(db, user_id)
@@ -107,11 +124,14 @@ async def generate_personality_portrait(
         tests = [result for result in results if result.category == category]
         if tests:
             test_groups[key] = tests
-    evidence = json.dumps(
-        {key: [{"test": result.name, "result": result.text} for result in tests] for key, tests in test_groups.items()},
-        ensure_ascii=False,
-    )
-    check_prompt_size(PORTRAIT_PROMPT, evidence)
+    evidence = {
+        key: json.dumps({
+            "category": key,
+            "tests": [{"test": result.name, "result": result.text} for result in tests],
+        }, ensure_ascii=False)
+        for key, tests in test_groups.items()
+    }
+    check_prompt_size(PORTRAIT_PROMPT, *evidence.values())
     ai_url, ai_token = ai_endpoint()
     if not ai_url or not ai_token:
         raise HTTPException(status_code=500, detail="AI сервис не настроен")
