@@ -48,7 +48,7 @@
   text-wrap: balance;
 }
 
-.portrait-list, .portrait-action {
+.portrait-list, .portrait-action, .portrait-document {
   border: 1px solid var(--ui-line);
   border-radius: 22px;
   background: var(--color-rose-900);
@@ -67,30 +67,40 @@
 }
 
 .portrait-row:hover { background: var(--ui-hover); }
-.portrait-list > :first-child:is(button), .portrait-list > :first-child summary { border-radius: 21px 21px 0 0; }
-.portrait-list > :last-child:is(button), .portrait-list > :last-child:not([open]) summary { border-radius: 0 0 21px 21px; }
+.portrait-list > button:first-child { border-radius: 21px 21px 0 0; }
+.portrait-list > button:last-child { border-radius: 0 0 21px 21px; }
 .portrait-row__art { flex: none; width: clamp(46px, 12vw, 60px); height: auto; }
 .portrait-row__label { flex: 1; min-width: 0; }
 .portrait-row__label strong { display: block; font-size: clamp(17px, 4.6vw, 21px); line-height: 1.3; }
 .portrait-row__label small { display: block; margin-top: 3px; color: var(--ui-muted); font-size: 13px; }
 
-.portrait-list .portrait-chapter__body {
-  margin: 0 clamp(16px, 4vw, 24px);
-  padding: 16px 0 22px;
-  border-top: 1px solid var(--ui-border);
-  color: var(--ui-secondary);
-  line-height: 1.65;
+.portrait-document {
+  padding: clamp(18px, 4.5vw, 32px);
   overflow-wrap: anywhere;
+  line-height: 1.65;
 }
 
-.portrait-chapter__lead {
-  margin-bottom: 10px;
-  padding-left: 14px;
-  border-left: 3px solid var(--ui-sage);
-  color: var(--ui-text);
-  font: 500 clamp(20px, 5vw, 26px)/1.35 Georgia, serif;
-  text-wrap: pretty;
+.portrait-chapter + .portrait-chapter {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--ui-line);
 }
+
+.portrait-chapter header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 10px;
+}
+
+.portrait-chapter h3 {
+  font: 600 clamp(23px, 5vw, 29px)/1.25 Georgia, serif;
+}
+
+.portrait-chapter small { color: var(--ui-muted); font-size: 13px; }
+.portrait-chapter p { color: var(--ui-secondary); }
+.portrait-chapter .portrait-chapter__lead { margin-bottom: 6px; color: var(--ui-text); font-weight: 600; }
 
 .portrait-action { padding: clamp(18px, 4vw, 26px); }
 .portrait-action p { margin-bottom: 16px; color: var(--ui-secondary); }

@@ -17,39 +17,30 @@ import career from '../../assets/profile/portrait/career.webp';
 import './portrait-cards.css';
 
 const WebApp = window.Telegram.WebApp;
-const categories = [
-  { key: 'temperament', name: 'Темперамент', art: temperament },
-  { key: 'personality', name: 'Личность', art: personality },
-  { key: 'self-esteem', name: 'Самооценка', art: selfEsteem },
-  { key: 'sociability', name: 'Общительность', art: sociability },
-  { key: 'career', name: 'Профориентация', art: career },
-];
+const categoryArt = {
+  'Темперамент': temperament,
+  'Личность': personality,
+  'Самооценка': selfEsteem,
+  'Общительность': sociability,
+  'Профориентация': career,
+};
 
-function testCount(count) {
-  return `${count} ${plural(count, ['тест', 'теста', 'тестов'])}`;
-}
-
-function PortraitCategory({ section, initiallyOpen, onOpenTests }) {
-  const art = categories.find(category => category.key === section.key)?.art;
+function PortraitCategory({ section, onOpenTests }) {
+  const { category, test_count: count, lead, interpretation } = section;
   return (
-    <details className="portrait-chapter ui-disclosure" open={initiallyOpen}>
-      <summary className="portrait-row">
-        {art && <img className="portrait-row__art" src={art} alt="" width="60" height="60" />}
-        <span className="portrait-row__label">
-          <strong>{section.category}</strong>
-          <small>{section.test_count ? testCount(section.test_count) : 'Пока нет результатов'}</small>
-        </span>
-      </summary>
-      <div className="portrait-chapter__body">
-        {section.test_count > 0 ? <>
-          <p className="portrait-chapter__lead">{section.lead}</p>
-          <p>{section.interpretation}</p>
-        </> : <>
-          <p>Пройди тест в этой категории, чтобы добавить её в портрет.</p>
-          <button type="button" onClick={onOpenTests} className="ui-button ui-button--outline mt-4">К тестам категории</button>
-        </>}
-      </div>
-    </details>
+    <section className="portrait-chapter">
+      <header>
+        <h3>{category}</h3>
+        {count > 0 && <small>{count} {plural(count, ['тест', 'теста', 'тестов'])}</small>}
+      </header>
+      {count > 0 ? <>
+        <p className="portrait-chapter__lead">{lead}</p>
+        <p>{interpretation}</p>
+      </> : <>
+        <p>Пройди тест в этой категории, чтобы добавить её в портрет.</p>
+        <button type="button" onClick={onOpenTests} className="ui-button ui-button--outline mt-4">К тестам категории</button>
+      </>}
+    </section>
   );
 }
 
@@ -60,7 +51,7 @@ function PortraitTests({ profile, onOpenTests }) {
       <h3 className="portrait-section-title">Обязательные тесты</h3>
       {required.length ? <div className="portrait-list">
         {required.map(({ id, name, tests }) => {
-          const art = categories.find(category => category.name === name)?.art;
+          const art = categoryArt[name];
           const passed = tests.filter(test => test.passed).length;
           return <button key={id} type="button" className="portrait-row" onClick={() => onOpenTests(name)}>
             {art && <img className="portrait-row__art" src={art} alt="" width="60" height="60" />}
@@ -115,7 +106,7 @@ export default function PortraitPage({ onBack }) {
   const portrait = profile?.portrait;
   const sections = portrait?.sections;
   let content = portrait?.content || '';
-  if (!sections && content && !content.includes('```json')) content = content.replace(/(\[\s*\{[\s\S]*"leftValue"[\s\S]*\}\s*\])/, '```json\n$1\n```');
+  if (!sections?.length && content && !content.includes('```json')) content = content.replace(/(\[\s*\{[\s\S]*"leftValue"[\s\S]*\}\s*\])/, '```json\n$1\n```');
   const generate = () => generatePortrait().catch(err => handleError(err));
   const remove = () => WebApp.showConfirm('Удалить портрет личности?', async (confirmed) => {
     if (!confirmed) return;
@@ -148,12 +139,9 @@ export default function PortraitPage({ onBack }) {
             <p>{sections ? 'В тестах появились новые результаты. Обнови портрет, чтобы их учесть.' : 'Обнови портрет, чтобы увидеть отдельный разбор по каждой категории.'}</p>
             <button type="button" onClick={generate} className="ui-button ui-button--primary"><Wand2 size={20} />Обновить портрет</button>
           </section>}
-          {sections ? <section>
-            <h3 className="portrait-section-title">Разбор по категориям</h3>
-            <div className="portrait-list">{sections.map((section, index) => (
-              <PortraitCategory key={section.key} section={section} initiallyOpen={index === 0} onOpenTests={() => toTests(section.category)} />
-            ))}</div>
-          </section> : portrait ? <ResultContent content={content} titles={['Портрет личности', 'Мой портрет личности']} components={portraitComponents} contents={false} variant="document" clayHeadings /> : state === 'ready' ? <section className="portrait-action">
+          {sections?.length ? <article className="portrait-document" aria-label="Разбор по категориям">
+            {sections.map(section => <PortraitCategory key={section.key} section={section} onOpenTests={() => toTests(section.category)} />)}
+          </article> : portrait ? <ResultContent content={content} titles={['Портрет личности', 'Мой портрет личности']} components={portraitComponents} contents={false} variant="document" clayHeadings /> : state === 'ready' ? <section className="portrait-action">
             <h3>Все тесты пройдены</h3>
             <p>Теперь можно собрать результаты в портрет и прочитать разбор по категориям.</p>
             <button type="button" onClick={generate} className="ui-button ui-button--primary"><Wand2 size={20} />Сформировать портрет</button>
