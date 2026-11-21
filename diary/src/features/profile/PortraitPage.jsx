@@ -30,21 +30,25 @@ function PortraitCategory({ section, onOpenTests }) {
   const { category, test_count: count, lead, interpretation } = section;
   const art = categoryArt[category];
   return (
-    <section className="portrait-chapter">
-      <header>
+    <section className="portrait-chapter" data-category={section.key}>
+      <header className="portrait-chapter__header">
+        {art && <span className="portrait-chapter__seal">
+          <img className="portrait-chapter__art" src={art} alt="" width="72" height="72" decoding="async" />
+        </span>}
         <div className="portrait-chapter__title">
           <ClayText as="h3" text={category} />
           {count > 0 && <small>{count} {plural(count, ['тест', 'теста', 'тестов'])}</small>}
         </div>
-        {art && <img className="portrait-chapter__art" src={art} alt="" width="64" height="64" decoding="async" />}
       </header>
-      {count > 0 ? <>
-        <p className="portrait-chapter__lead">{lead}</p>
-        <p>{interpretation}</p>
-      </> : <>
-        <p>Пройди тест в этой категории, чтобы добавить её в портрет.</p>
-        <button type="button" onClick={onOpenTests} className="ui-button ui-button--outline mt-4">К тестам категории</button>
-      </>}
+      <div className="portrait-chapter__body">
+        {count > 0 ? <>
+          <p className="portrait-chapter__lead">{lead}</p>
+          <p>{interpretation}</p>
+        </> : <>
+          <p>Пройди тест в этой категории, чтобы добавить её в портрет.</p>
+          <button type="button" onClick={onOpenTests} className="ui-button ui-button--outline mt-4">К тестам категории</button>
+        </>}
+      </div>
     </section>
   );
 }
@@ -144,7 +148,7 @@ export default function PortraitPage({ onBack }) {
             <p>{sections ? 'В тестах появились новые результаты. Обнови портрет, чтобы их учесть.' : 'Обнови портрет, чтобы увидеть отдельный разбор по каждой категории.'}</p>
             <button type="button" onClick={generate} className="ui-button ui-button--primary"><Wand2 size={20} />Обновить портрет</button>
           </section>}
-          {sections?.length ? <article className="ui-card portrait-document" aria-label="Разбор по категориям">
+          {sections?.length ? <article className="portrait-document" aria-label="Разбор по категориям">
             {sections.map(section => <PortraitCategory key={section.key} section={section} onOpenTests={() => toTests(section.category)} />)}
           </article> : portrait ? <ResultContent content={content} titles={['Портрет личности', 'Мой портрет личности']} components={portraitComponents} contents={false} variant="document" clayHeadings /> : state === 'ready' ? <section className="ui-card portrait-action">
             <ClayText as="h3" text="Все тесты пройдены" />

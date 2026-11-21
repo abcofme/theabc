@@ -71,32 +71,104 @@
 .portrait-row__label small { display: block; margin-top: 3px; color: var(--ui-muted); font-size: 13px; }
 
 .portrait-document {
-  padding: clamp(18px, 4.5vw, 32px);
+  display: grid;
+  gap: clamp(18px, 4vw, 26px);
+}
+
+.portrait-chapter {
+  --chapter-pigment: #a8996c;
+  --chapter-wash: color-mix(in srgb, var(--chapter-pigment) 32%, var(--color-rose-950));
+  --chapter-edge: color-mix(in srgb, var(--chapter-pigment) 45%, var(--ui-line));
+  min-width: 0;
+  overflow: hidden;
   overflow-wrap: anywhere;
-  line-height: 1.65;
+  border: 1px solid var(--chapter-edge);
+  border-radius: 24px 30px 23px 26px;
+  background: var(--color-rose-900);
+  box-shadow: var(--clay-raised);
 }
 
-.portrait-chapter + .portrait-chapter {
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid var(--ui-line);
-}
+.portrait-chapter[data-category='temperament'] { --chapter-pigment: #cf8157; }
+.portrait-chapter[data-category='personality'] { --chapter-pigment: #8d9e68; }
+.portrait-chapter[data-category='self-esteem'] { --chapter-pigment: #bd8699; }
+.portrait-chapter[data-category='sociability'] { --chapter-pigment: #82a69b; }
+.portrait-chapter[data-category='career'] { --chapter-pigment: #caac6d; }
 
-.portrait-chapter header {
+.portrait-chapter__header {
+  position: relative;
+  isolation: isolate;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: clamp(10px, 3.5vw, 20px);
+  padding: 14px clamp(14px, 4vw, 28px);
+  border-bottom: 1px solid var(--chapter-edge);
+  background: linear-gradient(110deg, color-mix(in srgb, var(--chapter-pigment) 48%, var(--color-rose-950)), var(--chapter-wash) 62%);
+  box-shadow: inset 0 2px 1px #fff6d826, inset 0 -2px 1px #30130d24;
+}
+
+.portrait-chapter__header::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: url('../../assets/textures/clay-beige.webp') center / 420px;
+  mix-blend-mode: soft-light;
+  opacity: .24;
+  pointer-events: none;
+}
+
+/* Оттиск лозы занимает только свободное место после названия. */
+.portrait-chapter__header::after {
+  content: '';
+  align-self: stretch;
+  flex: 1 1 0;
+  min-width: 0;
+  margin: -14px calc(-1 * clamp(14px, 4vw, 28px)) -14px 0;
+  background: url('../../assets/profile/header-vine-thick.webp') right top / auto 104% no-repeat;
+  filter: grayscale(1);
+  mix-blend-mode: soft-light;
+  mask-image: linear-gradient(to right, transparent, black 28px);
+  opacity: .68;
+  pointer-events: none;
+}
+
+.portrait-chapter__seal {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: clamp(51px, 15vw, 78px);
+  aspect-ratio: 1;
+  border-radius: 48% 52% 47% 53%;
+  background: color-mix(in srgb, var(--chapter-pigment) 30%, var(--color-rose-900));
+  box-shadow: var(--clay-pressed);
+}
+
+.portrait-chapter__art {
+  display: block;
+  width: 88%;
+  height: auto;
+  filter: drop-shadow(0 2px 1px #37241038);
 }
 
 .portrait-chapter__title { min-width: 0; }
-.portrait-chapter h3 { display: block; font-size: clamp(18px, calc(8vw - 7px), 29px); }
+.portrait-chapter h3 { display: block; font-size: clamp(18px, calc(8vw - 7px), 30px); }
 .portrait-page .clay-text__word { display: inline-block; max-width: 100%; white-space: normal; }
-.portrait-chapter__art { width: clamp(48px, 15.5vw, 72px); height: auto; flex: none; }
-.portrait-chapter small { display: block; margin-top: 4px; color: var(--ui-muted); font-size: 13px; }
-.portrait-chapter p { color: var(--ui-secondary); }
-.portrait-chapter .portrait-chapter__lead { margin-bottom: 6px; color: var(--ui-text); font-weight: 600; }
+.portrait-chapter small { display: block; margin-top: 4px; color: var(--ui-secondary); font-size: 13px; }
+
+.portrait-chapter__body {
+  padding: clamp(18px, 4.5vw, 28px);
+  color: var(--ui-secondary);
+  line-height: 1.65;
+}
+
+.portrait-chapter__lead {
+  margin-bottom: 12px;
+  color: var(--ui-text);
+  font-size: clamp(19px, 5vw, 24px);
+  font-weight: 650;
+  line-height: 1.32;
+  text-wrap: pretty;
+}
 
 .portrait-action { padding: clamp(18px, 4vw, 26px); }
 .portrait-action p { margin-bottom: 16px; color: var(--ui-secondary); }
