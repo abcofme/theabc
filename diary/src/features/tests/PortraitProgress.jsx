@@ -15,7 +15,7 @@ export default function PortraitProgress({ nextTest, onContinue }) {
     try { await generatePortrait(); openPortrait(); }
     catch (err) { handleError(err); }
   };
-  const text = isGeneratingPortrait ? 'Портрет формируется — это займет пару минут.' : state === 'tests' ? 'Пройди оставшиеся тесты, чтобы сформировать портрет.' : state === 'ready' ? 'Все тесты пройдены — можно сформировать портрет.' : state === 'outdated' ? 'Есть новые результаты — портрет можно обновить.' : 'Портрет готов. В нём собраны твои сильные стороны и особенности.';
+  const text = isGeneratingPortrait ? 'Портрет формируется — это займет пару минут.' : state === 'tests' ? 'Пройди оставшиеся тесты, чтобы сформировать портрет.' : state === 'ready' ? 'Все тесты пройдены — можно сформировать портрет.' : state === 'outdated' ? 'Портрет можно обновить.' : 'Портрет готов. В нём собраны выводы по результатам тестов.';
   return (
     <section className="ui-card" aria-label="Путь к портрету личности">
       <div className="flex items-baseline justify-between gap-3"><h2 className="text-lg leading-6 font-semibold">Портрет личности</h2><span className="ui-secondary shrink-0 tabular-nums">{Math.min(passed, total)} из {total}</span></div>

@@ -34,8 +34,8 @@ const PAGES = ['portrait', 'offer', 'contacts', 'admin', 'install', 'referral'];
 const PORTRAIT_CAPTIONS = {
   tests: (p) => `Пройдено ${p.passed_tests} из ${p.total_tests} тестов`,
   ready: () => 'Все тесты пройдены — можно сформировать портрет',
-  outdated: () => 'Есть новые результаты — портрет можно обновить',
-  done: () => 'Подробный анализ черт характера',
+  outdated: () => 'Портрет можно обновить',
+  done: () => 'Интерпретация результатов тестов',
 };
 
 function MenuRow({ icon: Icon, label, hint, onClick, children }) {

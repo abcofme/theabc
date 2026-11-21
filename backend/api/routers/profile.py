@@ -19,6 +19,7 @@ from backend.database.models import (
     DiaryEntry, BehavioralReport, CompatibilityReport, Friendship, PartnerAccount, Payment,
 )
 from backend.friends import befriend, inviter_from_payload
+from backend.portrait_content import PORTRAIT_CATEGORIES, REQUIRED_PORTRAIT_CATEGORIES, read_portrait_metadata
 from backend.pricing import AI_PRICES, AUTORENEW_TERMS_VERSION, MAX_TOPUP, MIN_TOPUP, PREMIUM_PERIOD_DAYS, PREMIUM_PRICE, TOKENS_PER_RUBLE
 from backend.referrals import capture_referral
 from settings import settings
@@ -178,10 +179,11 @@ async def get_profile(
 
             user_results[p.test_id] = matched_name if matched_name else f"Балл: {p.value}"
 
-    # Счётчики портрета не включают тесты профориентации
+    # Профориентация входит в портрет по мере прохождения тестов.
     result_data = []
     total_tests = 0
     passed_tests = 0
+    portrait_progress_ids = {}
 
     for cat in categories:
         cat_data = {
@@ -191,11 +193,12 @@ async def get_profile(
             "tests": [],
         }
         for t in cat.tests:
-            if cat.name != "Профориентация":
+            if cat.name in REQUIRED_PORTRAIT_CATEGORIES:
                 total_tests += 1
+                passed_tests += t.id in tests_with_results
+            if cat.name in PORTRAIT_CATEGORIES.values() and t.id in tests_with_results:
+                portrait_progress_ids[str(t.id)] = latest_progress[t.id].id
             passed = t.id in user_results
-            if passed and cat.name != "Профориентация":
-                passed_tests += 1
             cat_data["tests"].append({
                 "id": t.id,
                 "name": t.name,
@@ -208,9 +211,12 @@ async def get_profile(
     portrait_obj = (await session.execute(portrait_query)).scalars().first()
     portrait_data = None
     if portrait_obj:
+        metadata = read_portrait_metadata(portrait_obj.technical_summary)
         portrait_data = {
             "content": portrait_obj.content,
             "tests_count": portrait_obj.tests_count,
+            "sections": metadata["sections"] if metadata else None,
+            "needs_update": metadata is None or metadata["progress_ids"] != portrait_progress_ids,
             # По смене времени приложение понимает, что новый портрет готов
             "updated_at": portrait_obj.updated_at.isoformat() if portrait_obj.updated_at else None,
         }

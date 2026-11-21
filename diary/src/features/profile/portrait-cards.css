@@ -1,0 +1,52 @@
+.portrait-categories {
+  display: grid;
+  gap: 16px;
+}
+
+.portrait-category {
+  min-width: 0;
+  padding: clamp(16px, 4vw, 24px);
+}
+
+.portrait-category__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(56px, 19vw, 86px);
+  align-items: center;
+  gap: 4px;
+  margin-top: -6px;
+  margin-bottom: 6px;
+}
+
+.portrait-category__header > h3 {
+  font-size: clamp(19px, 6vw, 33px);
+  line-height: 1.25;
+}
+
+.portrait-category__header > img {
+  width: 100%;
+  height: auto;
+}
+
+.portrait-category__lead {
+  margin-bottom: 8px;
+  font-size: clamp(18px, 4.6vw, 23px);
+  font-weight: 650;
+  line-height: 1.3;
+  text-wrap: pretty;
+}
+
+.portrait-category__interpretation {
+  color: var(--ui-secondary);
+  font-size: 16px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.portrait-category__coverage {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ui-line);
+  color: var(--ui-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}

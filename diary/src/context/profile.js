@@ -27,5 +27,5 @@ export function portraitState(profile) {
   const { passed_tests: passed, total_tests: total, portrait } = profile;
   const allPassed = total > 0 && passed >= total;
   if (!portrait) return allPassed ? 'ready' : 'tests';
-  return allPassed && passed > portrait.tests_count ? 'outdated' : 'done';
+  return allPassed && (portrait.needs_update ?? passed > portrait.tests_count) ? 'outdated' : 'done';
 }

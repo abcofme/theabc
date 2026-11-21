@@ -12,6 +12,7 @@ class TestResult:
     name: str
     category: str
     text: str
+    progress_id: int
 
 
 def has_test_result(hardcoded: str | None, points: int | None) -> bool:
@@ -34,7 +35,10 @@ async def load_analysis_test_results(
         .scalar_subquery()
     )
     query = (
-        select(Test.id, Test.name, Category.id, Category.name, Progress.hardcode_value, Progress.value, interpretation)
+        select(
+            Test.id, Test.name, Category.id, Category.name,
+            Progress.id, Progress.hardcode_value, Progress.value, interpretation,
+        )
         .select_from(Test)
         .join(Category, Test.category_id == Category.id)
         .outerjoin(Progress, and_(Progress.test_id == Test.id, Progress.user_id == user_id))
@@ -44,7 +48,7 @@ async def load_analysis_test_results(
     seen_tests = set()
     test_categories = set()
     completed_categories = set()
-    for test_id, name, category_id, category, hardcoded, points, description in await session.execute(query):
+    for test_id, name, category_id, category, progress_id, hardcoded, points, description in await session.execute(query):
         if test_id in seen_tests:
             continue
         seen_tests.add(test_id)
@@ -57,7 +61,7 @@ async def load_analysis_test_results(
             text = f"Баллы: {points}"
             if description and description.strip():
                 text += f"\n{description.strip()}"
-        results.append(TestResult(test_id=test_id, name=name, category=category, text=text))
+        results.append(TestResult(test_id=test_id, name=name, category=category, text=text, progress_id=progress_id))
         completed_categories.add(category_id)
     if require_all_categories and completed_categories != test_categories:
         return []
