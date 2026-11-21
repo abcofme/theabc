@@ -1,6 +1,7 @@
 import { ChevronRight, Trash2, Wand2 } from '../../components/ClayIcon';
 import Page from '../../components/Page';
 import ClayBanner from '../../components/ClayBanner';
+import ClayText from '../../components/ClayText';
 import ResultContent from '../../components/ResultContent';
 import GenerationProgress from '../../components/GenerationProgress';
 import { useProfile, portraitState } from '../../context/profile';
@@ -9,11 +10,11 @@ import { useAppNav, useErrorHandler } from '../../navigation/appNav';
 import { api } from '../../utils/api';
 import { parseScales, scaleValue } from './portraitScales';
 import portraitBanner from '../../assets/profile/portrait-woman-handmade.webp';
-import temperament from '../../assets/profile/portrait/temperament.webp';
-import personality from '../../assets/profile/portrait/personality.webp';
-import selfEsteem from '../../assets/profile/portrait/self-esteem.webp';
-import sociability from '../../assets/profile/portrait/sociability.webp';
-import career from '../../assets/profile/portrait/career.webp';
+import temperament from '../../assets/profile/portrait-symbols/temperament.webp';
+import personality from '../../assets/profile/portrait-symbols/personality.webp';
+import selfEsteem from '../../assets/profile/portrait-symbols/self-esteem.webp';
+import sociability from '../../assets/profile/portrait-symbols/sociability.webp';
+import career from '../../assets/profile/portrait-symbols/career.webp';
 import './portrait-cards.css';
 
 const WebApp = window.Telegram.WebApp;
@@ -27,11 +28,15 @@ const categoryArt = {
 
 function PortraitCategory({ section, onOpenTests }) {
   const { category, test_count: count, lead, interpretation } = section;
+  const art = categoryArt[category];
   return (
     <section className="portrait-chapter">
       <header>
-        <h3>{category}</h3>
-        {count > 0 && <small>{count} {plural(count, ['тест', 'теста', 'тестов'])}</small>}
+        <div className="portrait-chapter__title">
+          <ClayText as="h3" text={category} />
+          {count > 0 && <small>{count} {plural(count, ['тест', 'теста', 'тестов'])}</small>}
+        </div>
+        {art && <img className="portrait-chapter__art" src={art} alt="" width="64" height="64" decoding="async" />}
       </header>
       {count > 0 ? <>
         <p className="portrait-chapter__lead">{lead}</p>
@@ -48,14 +53,14 @@ function PortraitTests({ profile, onOpenTests }) {
   const required = profile.categories.filter(category => category.tests.length > 0);
   return (
     <section>
-      <h3 className="portrait-section-title">Обязательные тесты</h3>
-      {required.length ? <div className="portrait-list">
+      <ClayText as="h3" className="portrait-section-title" text="Обязательные тесты" />
+      {required.length ? <div className="ui-card portrait-list">
         {required.map(({ id, name, tests }) => {
           const art = categoryArt[name];
           const passed = tests.filter(test => test.passed).length;
           return <button key={id} type="button" className="portrait-row" onClick={() => onOpenTests(name)}>
             {art && <img className="portrait-row__art" src={art} alt="" width="60" height="60" />}
-            <span className="portrait-row__label"><strong>{name}</strong><small>Пройдено {passed} из {tests.length}</small></span>
+            <span className="portrait-row__label"><ClayText text={name} /><small>Пройдено {passed} из {tests.length}</small></span>
             <ChevronRight size={20} />
           </button>;
         })}
@@ -127,22 +132,22 @@ export default function PortraitPage({ onBack }) {
           <ClayBanner id="portrait-hero" kind="profile" title="Мой портрет личности" description="Интерпретация результатов тестов" image={portraitBanner} />
           {updatedAt && <p className="portrait-updated">Обновлено <time dateTime={updatedAt}>{formatDate(updatedAt)}</time></p>}
         </header>
-        {showProgress && <section className="portrait-progress">
-          <div className="portrait-progress-label"><h3>Пройдено тестов</h3><strong>{profile.passed_tests} из {profile.total_tests}</strong></div>
+        {showProgress && <section className="ui-card portrait-progress">
+          <div className="portrait-progress-label"><ClayText as="h3" text="Пройдено тестов" /><strong>{profile.passed_tests} из {profile.total_tests}</strong></div>
           <progress aria-label="Пройдено обязательных тестов" value={profile.passed_tests} max={profile.total_tests || 1} />
           {hasRemaining && <p>{portrait ? 'Пройди оставшиеся тесты, чтобы обновить портрет.' : 'Пройди все тесты, чтобы получить свой разбор.'}</p>}
           {portrait && hasRemaining && <button type="button" onClick={() => toTests()} className="ui-button ui-button--outline mt-4">К тестам</button>}
         </section>}
         {isGeneratingPortrait ? <GenerationProgress text="Портрет личности формируется…" /> : <>
-          {state === 'outdated' && <section className="portrait-action">
-            <h3>Можно обновить портрет</h3>
+          {state === 'outdated' && <section className="ui-card portrait-action">
+            <ClayText as="h3" text="Можно обновить портрет" />
             <p>{sections ? 'В тестах появились новые результаты. Обнови портрет, чтобы их учесть.' : 'Обнови портрет, чтобы увидеть отдельный разбор по каждой категории.'}</p>
             <button type="button" onClick={generate} className="ui-button ui-button--primary"><Wand2 size={20} />Обновить портрет</button>
           </section>}
-          {sections?.length ? <article className="portrait-document" aria-label="Разбор по категориям">
+          {sections?.length ? <article className="ui-card portrait-document" aria-label="Разбор по категориям">
             {sections.map(section => <PortraitCategory key={section.key} section={section} onOpenTests={() => toTests(section.category)} />)}
-          </article> : portrait ? <ResultContent content={content} titles={['Портрет личности', 'Мой портрет личности']} components={portraitComponents} contents={false} variant="document" clayHeadings /> : state === 'ready' ? <section className="portrait-action">
-            <h3>Все тесты пройдены</h3>
+          </article> : portrait ? <ResultContent content={content} titles={['Портрет личности', 'Мой портрет личности']} components={portraitComponents} contents={false} variant="document" clayHeadings /> : state === 'ready' ? <section className="ui-card portrait-action">
+            <ClayText as="h3" text="Все тесты пройдены" />
             <p>Теперь можно собрать результаты в портрет и прочитать разбор по категориям.</p>
             <button type="button" onClick={generate} className="ui-button ui-button--primary"><Wand2 size={20} />Сформировать портрет</button>
           </section> : <PortraitTests profile={profile} onOpenTests={toTests} />}

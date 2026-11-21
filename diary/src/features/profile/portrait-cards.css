@@ -16,7 +16,7 @@
   background: var(--ui-quote);
 }
 
-.portrait-progress h3 { font-weight: 600; }
+.portrait-progress h3 { font-size: clamp(16px, 4.5vw, 20px); }
 .portrait-progress p { margin-top: 10px; font-size: 14px; color: var(--ui-secondary); }
 .portrait-progress-label {
   display: flex;
@@ -44,16 +44,12 @@
 
 .portrait-section-title, .portrait-action h3 {
   margin: 0 0 12px;
-  font: 600 clamp(22px, 5vw, 29px)/1.25 Georgia, serif;
+  display: block;
+  font-size: clamp(20px, 5vw, 26px);
   text-wrap: balance;
 }
 
-.portrait-list, .portrait-action, .portrait-document {
-  border: 1px solid var(--ui-line);
-  border-radius: 22px;
-  background: var(--color-rose-900);
-  box-shadow: var(--clay-raised);
-}
+.ui-card.portrait-list { padding: 0; }
 
 .portrait-list > * + * { border-top: 1px solid var(--ui-line); }
 
@@ -71,7 +67,7 @@
 .portrait-list > button:last-child { border-radius: 0 0 21px 21px; }
 .portrait-row__art { flex: none; width: clamp(46px, 12vw, 60px); height: auto; }
 .portrait-row__label { flex: 1; min-width: 0; }
-.portrait-row__label strong { display: block; font-size: clamp(17px, 4.6vw, 21px); line-height: 1.3; }
+.portrait-row__label .clay-text { display: block; font-size: clamp(15px, 4.25vw, 22px); }
 .portrait-row__label small { display: block; margin-top: 3px; color: var(--ui-muted); font-size: 13px; }
 
 .portrait-document {
@@ -88,17 +84,17 @@
 
 .portrait-chapter header {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 2px 12px;
-  margin-bottom: 10px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
-.portrait-chapter h3 {
-  font: 600 clamp(23px, 5vw, 29px)/1.25 Georgia, serif;
-}
-
-.portrait-chapter small { color: var(--ui-muted); font-size: 13px; }
+.portrait-chapter__title { min-width: 0; }
+.portrait-chapter h3 { display: block; font-size: clamp(18px, calc(8vw - 7px), 29px); }
+.portrait-page .clay-text__word { display: inline-block; max-width: 100%; white-space: normal; }
+.portrait-chapter__art { width: clamp(48px, 15.5vw, 72px); height: auto; flex: none; }
+.portrait-chapter small { display: block; margin-top: 4px; color: var(--ui-muted); font-size: 13px; }
 .portrait-chapter p { color: var(--ui-secondary); }
 .portrait-chapter .portrait-chapter__lead { margin-bottom: 6px; color: var(--ui-text); font-weight: 600; }
 
