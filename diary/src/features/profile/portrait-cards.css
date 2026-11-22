@@ -95,26 +95,14 @@
 .portrait-chapter[data-category='career'] { --chapter-pigment: #caac6d; }
 
 .portrait-chapter__header {
-  position: relative;
   isolation: isolate;
   display: flex;
   align-items: center;
   gap: clamp(10px, 3.5vw, 20px);
   padding: 14px clamp(14px, 4vw, 28px);
   border-bottom: 1px solid var(--chapter-edge);
-  background: linear-gradient(110deg, color-mix(in srgb, var(--chapter-pigment) 48%, var(--color-rose-950)), var(--chapter-wash) 62%);
+  background-color: var(--chapter-wash);
   box-shadow: inset 0 2px 1px #fff6d826, inset 0 -2px 1px #30130d24;
-}
-
-.portrait-chapter__header::before {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  background: url('../../assets/textures/clay-beige.webp') center / 420px;
-  mix-blend-mode: soft-light;
-  opacity: .24;
-  pointer-events: none;
 }
 
 /* Оттиск лозы занимает только свободное место после названия. */
@@ -124,10 +112,9 @@
   flex: 1 1 0;
   min-width: 0;
   margin: -14px calc(-1 * clamp(14px, 4vw, 28px)) -14px 0;
-  background: url('../../assets/profile/header-vine-thick.webp') right top / auto 104% no-repeat;
+  background: url('../../assets/profile/header-vine-thick.webp') right top / contain no-repeat;
   filter: grayscale(1);
   mix-blend-mode: soft-light;
-  mask-image: linear-gradient(to right, transparent, black 28px);
   opacity: .68;
   pointer-events: none;
 }
