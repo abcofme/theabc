@@ -10,6 +10,7 @@ import { useAppNav, useErrorHandler } from '../../navigation/appNav';
 import { api } from '../../utils/api';
 import { parseScales, scaleValue } from './portraitScales';
 import portraitBanner from '../../assets/profile/portrait-woman-handmade.webp';
+import portraitVine from '../../assets/profile/header-vine-thick.webp';
 import temperament from '../../assets/profile/portrait-symbols/temperament.webp';
 import personality from '../../assets/profile/portrait-symbols/personality.webp';
 import selfEsteem from '../../assets/profile/portrait-symbols/self-esteem.webp';
@@ -30,15 +31,10 @@ function PortraitCategory({ section, onOpenTests }) {
   const { category, test_count: count, lead, interpretation } = section;
   const art = categoryArt[category];
   return (
-    <section className="portrait-chapter" data-category={section.key}>
+    <section className="portrait-chapter" aria-label={category}>
       <header className="portrait-chapter__header">
-        {art && <span className="portrait-chapter__seal">
-          <img className="portrait-chapter__art" src={art} alt="" width="72" height="72" decoding="async" />
-        </span>}
-        <div className="portrait-chapter__title">
-          <ClayText as="h3" text={category} />
-          {count > 0 && <small>{count} {plural(count, ['тест', 'теста', 'тестов'])}</small>}
-        </div>
+        {art && <img className="portrait-chapter__art" src={art} alt="" width="88" height="88" decoding="async" />}
+        <ClayText as="h3" text={category} />
       </header>
       <div className="portrait-chapter__body">
         {count > 0 ? <>
@@ -49,6 +45,7 @@ function PortraitCategory({ section, onOpenTests }) {
           <button type="button" onClick={onOpenTests} className="ui-button ui-button--outline mt-4">К тестам категории</button>
         </>}
       </div>
+      {count > 0 && <p className="portrait-chapter__source">По результатам {count} {plural(count, ['теста', 'тестов', 'тестов'])}</p>}
     </section>
   );
 }
@@ -149,6 +146,8 @@ export default function PortraitPage({ onBack }) {
             <button type="button" onClick={generate} className="ui-button ui-button--primary"><Wand2 size={20} />Обновить портрет</button>
           </section>}
           {sections?.length ? <article className="portrait-document" aria-label="Разбор по категориям">
+            <img className="portrait-document__vine portrait-document__vine--start" src={portraitVine} alt="" width="76" height="76" aria-hidden="true" />
+            <img className="portrait-document__vine portrait-document__vine--end" src={portraitVine} alt="" width="76" height="76" aria-hidden="true" />
             {sections.map(section => <PortraitCategory key={section.key} section={section} onOpenTests={() => toTests(section.category)} />)}
           </article> : portrait ? <ResultContent content={content} titles={['Портрет личности', 'Мой портрет личности']} components={portraitComponents} contents={false} variant="document" clayHeadings /> : state === 'ready' ? <section className="ui-card portrait-action">
             <ClayText as="h3" text="Все тесты пройдены" />

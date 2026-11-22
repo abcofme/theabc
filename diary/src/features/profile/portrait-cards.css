@@ -71,90 +71,96 @@
 .portrait-row__label small { display: block; margin-top: 3px; color: var(--ui-muted); font-size: 13px; }
 
 .portrait-document {
-  display: grid;
-  gap: clamp(18px, 4vw, 26px);
-}
-
-.portrait-chapter {
-  --chapter-pigment: #a8996c;
-  --chapter-wash: color-mix(in srgb, var(--chapter-pigment) 32%, var(--color-rose-950));
-  --chapter-edge: color-mix(in srgb, var(--chapter-pigment) 45%, var(--ui-line));
-  min-width: 0;
-  overflow: hidden;
-  overflow-wrap: anywhere;
-  border: 1px solid var(--chapter-edge);
-  border-radius: 24px 30px 23px 26px;
+  position: relative;
+  isolation: isolate;
+  padding: 8px clamp(20px, 6vw, 44px);
+  border: 1px solid var(--ui-border);
+  border-radius: 28px;
   background: var(--color-rose-900);
   box-shadow: var(--clay-raised);
 }
 
-.portrait-chapter[data-category='temperament'] { --chapter-pigment: #cf8157; }
-.portrait-chapter[data-category='personality'] { --chapter-pigment: #8d9e68; }
-.portrait-chapter[data-category='self-esteem'] { --chapter-pigment: #bd8699; }
-.portrait-chapter[data-category='sociability'] { --chapter-pigment: #82a69b; }
-.portrait-chapter[data-category='career'] { --chapter-pigment: #caac6d; }
-
-.portrait-chapter__header {
-  isolation: isolate;
-  display: flex;
-  align-items: center;
-  gap: clamp(10px, 3.5vw, 20px);
-  padding: 14px clamp(14px, 4vw, 28px);
-  border-bottom: 1px solid var(--chapter-edge);
-  background-color: var(--chapter-wash);
-  box-shadow: inset 0 2px 1px #fff6d826, inset 0 -2px 1px #30130d24;
-}
-
-/* Оттиск лозы занимает только свободное место после названия. */
-.portrait-chapter__header::after {
+.portrait-document::before {
   content: '';
-  align-self: stretch;
-  flex: 1 1 0;
-  min-width: 0;
-  margin: -14px calc(-1 * clamp(14px, 4vw, 28px)) -14px 0;
-  background: url('../../assets/profile/header-vine-thick.webp') right top / contain no-repeat;
-  filter: grayscale(1);
-  mix-blend-mode: soft-light;
-  opacity: .68;
+  position: absolute;
+  z-index: -1;
+  inset: 7px;
+  border: 1px solid var(--ui-border);
+  border-radius: 21px;
   pointer-events: none;
 }
 
-.portrait-chapter__seal {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: clamp(51px, 15vw, 78px);
-  aspect-ratio: 1;
-  border-radius: 48% 52% 47% 53%;
-  background: color-mix(in srgb, var(--chapter-pigment) 30%, var(--color-rose-900));
-  box-shadow: var(--clay-pressed);
+.portrait-document__vine {
+  position: absolute;
+  z-index: -1;
+  width: 76px;
+  height: auto;
+  opacity: .85;
+  pointer-events: none;
+}
+
+.portrait-document__vine--start { top: 2px; left: 2px; transform: scaleX(-1); }
+.portrait-document__vine--end { bottom: 2px; right: 2px; transform: scaleY(-1); }
+
+.portrait-chapter {
+  min-width: 0;
+  padding-block: 26px 30px;
+  overflow-wrap: anywhere;
+}
+
+.portrait-chapter + .portrait-chapter {
+  border-top: 1px solid var(--ui-line);
+}
+
+.portrait-chapter__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 22px;
+  text-align: center;
 }
 
 .portrait-chapter__art {
   display: block;
-  width: 88%;
+  width: clamp(72px, 20vw, 96px);
   height: auto;
-  filter: drop-shadow(0 2px 1px #37241038);
+  filter: drop-shadow(0 3px 2px #301c1029);
 }
 
-.portrait-chapter__title { min-width: 0; }
-.portrait-chapter h3 { display: block; font-size: clamp(18px, calc(8vw - 7px), 30px); }
-.portrait-page .clay-text__word { display: inline-block; max-width: 100%; white-space: normal; }
-.portrait-chapter small { display: block; margin-top: 4px; color: var(--ui-secondary); font-size: 13px; }
+.portrait-chapter h3 {
+  display: block;
+  max-width: 100%;
+  font-size: clamp(25px, 7vw, 36px);
+  line-height: 1.3;
+}
+
+.portrait-page .clay-text__word {
+  display: inline-block;
+  max-width: 100%;
+  white-space: normal;
+}
 
 .portrait-chapter__body {
-  padding: clamp(18px, 4.5vw, 28px);
   color: var(--ui-secondary);
-  line-height: 1.65;
+  font-size: 16px;
+  line-height: 1.7;
 }
 
 .portrait-chapter__lead {
   margin-bottom: 12px;
   color: var(--ui-text);
-  font-size: clamp(19px, 5vw, 24px);
-  font-weight: 650;
-  line-height: 1.32;
+  font-size: clamp(19px, 5vw, 23px);
+  font-weight: 600;
+  line-height: 1.4;
   text-wrap: pretty;
+}
+
+.portrait-chapter__source {
+  margin-top: 18px;
+  color: var(--ui-muted);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .portrait-action { padding: clamp(18px, 4vw, 26px); }
