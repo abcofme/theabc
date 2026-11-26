@@ -21,6 +21,9 @@
     сертификат самоподписанный, бот проверяет именно его. Ретранслятор проверяет сертификат
     `api.telegram.org` по системным CA. Логи HTTP-запросов отключены, поскольку URL содержит токен бота.
   - мониторинг: раз в минуту проверяет `/api/health` и шлёт алерт в Telegram.
+  - `relay/nginx-restart.conf` устанавливается как `/etc/systemd/system/nginx.service.d/restart.conf`:
+    systemd повторяет запуск nginx через 10 секунд при ошибке. Это нужно, если после загрузки ОС
+    DNS ещё не отвечает и `api.telegram.org` не разрешается при проверке конфигурации nginx.
 
   Адрес NL и сертификат ретранслятора в репозиторий не кладём (`.env`, `/etc/theabc/relay-ca.pem`).
   `TRUSTED_RELAY_IP` в серверном `.env` задаёт адрес NL для приёма PROXY protocol в Caddy.
@@ -134,6 +137,8 @@ gunzip -c /var/backups/theabc/db-ДАТА.sql.gz | docker compose exec -T db sh 
 2. `apt install libnginx-mod-stream`. Скопировать `relay/nginx-tg-relay.conf` в `/etc/nginx/sites-enabled/`,
    `relay/nginx-stream.conf` — в `/etc/nginx/stream.conf` и добавить `include /etc/nginx/stream.conf;`
    в `nginx.conf` вне блока `http`. ufw: открыть 80 и 443.
+   Установить `relay/nginx-restart.conf` в `/etc/systemd/system/nginx.service.d/restart.conf`,
+   выполнить `systemctl daemon-reload` и `systemctl enable --now nginx`.
 3. На московском сервере обновить `/etc/theabc/relay-ca.pem` и `TELEGRAM_API_URL` в `.env`,
    затем `docker compose up -d bot`.
 4. В DNS перевести `abcofme.ru`, `www` и `app` на новый IP.
