@@ -256,7 +256,7 @@ async def TestCategoryDesc_callback(callback: CallbackQuery, callback_data: Test
     builder = InlineKeyboardBuilder()
     builder.button(
         text="Открыть тесты",
-        web_app=WebAppInfo(url=settings.WEB_APP_URL + "?tab=tests")
+        web_app=WebAppInfo(url=settings.telegram_web_app_url + "?tab=tests")
     )
     builder.button(text="← Назад", callback_data=AboutTests().pack())
     builder.adjust(1)

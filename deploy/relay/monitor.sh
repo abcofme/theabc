@@ -2,7 +2,7 @@
 # Мониторинг продакшена с ретранслятора (theabc-monitor.timer, раз в минуту).
 # После 2 неудачных проверок подряд шлёт алерт в Telegram, после восстановления — сообщение «снова работает».
 # Настройки в /etc/theabc-monitor.env: BOT_TOKEN, ALERT_CHAT_IDS (через пробел),
-# HEALTH_URL — один или несколько через пробел: путь через NL (abcofme.ru) и прямой (direct.abcofme.ru)
+# HEALTH_URL — один или несколько через пробел: путь через NL (app.abcofme.ru) и прямой (my.abcofme.ru)
 set -uo pipefail
 source /etc/theabc-monitor.env
 

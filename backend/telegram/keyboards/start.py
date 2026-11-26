@@ -11,7 +11,7 @@ from settings import settings
 
 diary_btn = InlineKeyboardButton(
     text="Личный дневник",
-    web_app=WebAppInfo(url=settings.WEB_APP_URL),
+    web_app=WebAppInfo(url=settings.telegram_web_app_url),
     style="primary",
 )
 
@@ -88,7 +88,7 @@ def about_diary_kb() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.row(InlineKeyboardButton(
         text="Открыть личный дневник",
-        web_app=WebAppInfo(url=settings.WEB_APP_URL)
+        web_app=WebAppInfo(url=settings.telegram_web_app_url)
     ))
     builder.row(main_menu_btn)
     return builder.as_markup()
@@ -99,7 +99,7 @@ def categories_kb() -> InlineKeyboardMarkup:
     
     builder.row(InlineKeyboardButton(
         text="Открыть тесты",
-        web_app=WebAppInfo(url=settings.WEB_APP_URL + "?tab=tests")
+        web_app=WebAppInfo(url=settings.telegram_web_app_url + "?tab=tests")
     ))
     
     for category in categories:

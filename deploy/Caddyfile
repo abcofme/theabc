@@ -17,7 +17,7 @@
 import geo/entry.caddy
 
 # Основной домен выбирает путь; поддомены — конечные адреса приложения.
-{$SITE_DOMAIN}, app.{$SITE_DOMAIN}, direct.{$SITE_DOMAIN} {
+{$SITE_DOMAIN}, my.{$SITE_DOMAIN}, app.{$SITE_DOMAIN}, direct.{$SITE_DOMAIN} {
 	encode zstd gzip
 	import geo_entry
 

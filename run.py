@@ -29,12 +29,14 @@ async def run_bot():
     from backend.scheduler import scheduler
     from backend.telegram.bot import dp, bot
     from backend.telegram.middlewares import register_middlewares
+    from backend.telegram.web_app import configure_web_app_menu
 
     register_middlewares(bot)
 
     from backend.telegram import handlers  # NOQA
 
     await bot.delete_webhook()
+    await configure_web_app_menu(bot)
     # Планировщик живёт только в процессе бота: рассылки и продления подписок шлются через него
     scheduler.start()
 

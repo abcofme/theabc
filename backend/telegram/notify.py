@@ -13,7 +13,7 @@ async def notify(user_id: int, text: str, query: str = "", button: str = "Отк
     например tab=reports&report=12). Ошибка отправки — например, бот заблокирован — не мешает основному действию"""
     if user_id <= 0:
         return False  # У отдельного браузерного профиля нет чата Telegram.
-    url = settings.WEB_APP_URL + (f"?{query}" if query else "")
+    url = settings.telegram_web_app_url + (f"?{query}" if query else "")
     markup = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=button, web_app=WebAppInfo(url=url))]])
     try:
         await bot.send_message(chat_id=user_id, text=text, reply_markup=markup)
