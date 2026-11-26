@@ -24,8 +24,8 @@ async def validation_error(request: Request, error: RequestValidationError):
     return await request_validation_exception_handler(request, error)
 
 
-# Фронтенд отдаётся с домена WEB_APP_URL. Когда прямой путь быстрый, он ходит в API через direct.<домен> —
-# это другой origin, поэтому разрешаем фронтенд. max_age: preflight кэшируется (Chromium — до 2 часов)
+# Разрешаем origin WEB_APP_URL для совместимости с уже открытыми версиями мини-аппа,
+# которые обращаются к direct.<домен>. Новая версия использует API на домене страницы.
 _web_app = urlsplit(settings.WEB_APP_URL)
 app.add_middleware(RequestLimits)
 app.add_middleware(

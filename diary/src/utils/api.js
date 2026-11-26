@@ -1,52 +1,13 @@
-import { apiHeaders, clearSession, getSession, isTelegram, onSessionChange } from './platform';
+import { apiHeaders, clearSession, getSession, onSessionChange } from './platform';
 
-// Мини-апп открывается через NL: из РФ режут ответы московского сервера на адреса многих VPN.
-// Если прямой путь в Москву быстрый, запросы к API идут напрямую, иначе — через домен страницы
-const RELAY_URL = window.location.origin;
-const DIRECT_URL = import.meta.env.VITE_DIRECT_API_URL;
-// Холодное соединение: DNS, TCP и TLS. Дольше — прямой путь считаем медленным
-const PROBE_TIMEOUT_MS = 2000;
-// Обычный запрос по прямому пути дольше этого — зависание, повторяем через NL
-const DIRECT_GET_TIMEOUT_MS = 8000;
-
-let useDirect = false;
-let directFailed = false;
+// Страница и API используют один домен: маршрут выбирает DNS, а не скорость пробного запроса.
+// Это сохраняет выбранный путь и в браузере, и в Telegram, включая потоковые ответы и аватарки.
 
 // Запросы первого экрана отправляем при запуске вместе с профилем, а не после него: экран заберет готовый ответ.
 // Ответ живет недолго — позже экран спросит сервер заново
 const PREFETCH_TTL_MS = 15000;
 const prefetched = new Map();
 onSessionChange(() => prefetched.clear());
-
-function fetchWithTimeout(url, init, timeoutMs) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  return fetch(url, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
-}
-
-// Пробу шлём сразу при загрузке, а первые запросы идут через NL — соединение туда уже открыто страницей
-if (isTelegram && DIRECT_URL && DIRECT_URL !== RELAY_URL) {
-  fetchWithTimeout(`${DIRECT_URL}/api/health`, { cache: 'no-store' }, PROBE_TIMEOUT_MS)
-    .then((res) => { if (res.ok && !directFailed) useDirect = true; })
-    .catch(() => {});
-}
-
-// Сетевая ошибка или зависание прямого пути — до конца сессии ходим через NL.
-// Повторяем сразу только GET: POST мог дойти до сервера, повтор списал бы баланс дважды
-async function request(path, init, timeoutMs) {
-  if (useDirect) {
-    try {
-      return timeoutMs
-        ? await fetchWithTimeout(`${DIRECT_URL}${path}`, init, timeoutMs)
-        : await fetch(`${DIRECT_URL}${path}`, init);
-    } catch (error) {
-      useDirect = false;
-      directFailed = true;
-      if (init.method !== 'GET') throw error;
-    }
-  }
-  return fetch(`${RELAY_URL}${path}`, init);
-}
 
 // Сессия браузера закончилась или её отозвали — приложение вернётся на экран входа
 function checkSession(res, session) {
@@ -65,12 +26,12 @@ export async function api(path, { method = 'GET', body, headers: extraHeaders } 
   const headers = { ...apiHeaders(), ...extraHeaders };
   if (body !== undefined) headers['Content-Type'] = raw ? body.type || 'application/octet-stream' : 'application/json';
 
-  const res = await request(path, {
+  const res = await fetch(path, {
     method,
     headers,
     cache: 'no-store',
     body: raw || body === undefined ? body : JSON.stringify(body),
-  }, method === 'GET' ? DIRECT_GET_TIMEOUT_MS : null);
+  });
   checkSession(res, session);
   const data = await res.json().catch(() => null);
   if (!res.ok) {
@@ -98,11 +59,11 @@ function takePrefetched(path) {
 // Ошибка приходит либо статусом (например, 402 — не хватает баланса), либо полем detail
 export async function apiStream(path, body) {
   const session = getSession();
-  const res = await request(path, {
+  const res = await fetch(path, {
     method: 'POST',
     headers: { ...apiHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
-  }, null);
+  });
   checkSession(res, session);
   const text = await res.text();
   const start = text.indexOf('{');
@@ -117,7 +78,7 @@ export async function apiStream(path, body) {
 
 export async function apiBlob(path, { signal } = {}) {
   const session = getSession();
-  const res = await request(path, { method: 'GET', headers: apiHeaders(), cache: 'no-store', signal });
+  const res = await fetch(path, { method: 'GET', headers: apiHeaders(), cache: 'no-store', signal });
   checkSession(res, session);
   if (!res.ok) throw new Error(`Ошибка сервера (${res.status})`);
   return res.blob();

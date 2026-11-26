@@ -14,7 +14,7 @@
 	}
 }
 
-# app. — проверка входа через NL, direct. — прямой путь в Москву для запросов к API (diary/src/utils/api.js)
+# app. — проверка входа через NL, direct. — проверка прямого входа в Москву.
 {$SITE_DOMAIN}, app.{$SITE_DOMAIN}, direct.{$SITE_DOMAIN} {
 	encode zstd gzip
 
