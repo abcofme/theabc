@@ -15,8 +15,8 @@
 			import ru-ips.caddy
 		}
 		handle @russian {
-			header Location https://direct.{$SITE_DOMAIN}{uri}
-			respond "<!doctype html><html lang='ru'><meta charset='utf-8'><title>Азбука Я</title><p><a href='https://direct.{$SITE_DOMAIN}/'>Открыть приложение</a></p><p><a href='https://db-ip.com/'>IP Geolocation by DB-IP</a> · CC BY 4.0</p></html>" 302
+			header Location https://my.{$SITE_DOMAIN}{uri}
+			respond "<!doctype html><html lang='ru'><meta charset='utf-8'><title>Азбука Я</title><p><a href='https://my.{$SITE_DOMAIN}/'>Открыть приложение</a></p><p><a href='https://db-ip.com/'>IP Geolocation by DB-IP</a> · CC BY 4.0</p></html>" 302
 		}
 		handle {
 			header Location https://app.{$SITE_DOMAIN}{uri}

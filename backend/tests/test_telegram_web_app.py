@@ -1,6 +1,7 @@
-import importlib
+import importlib.util
 import os
 import unittest
+from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 
@@ -54,7 +55,10 @@ class TelegramWebAppTest(unittest.IsolatedAsyncioTestCase):
             patch.object(self.settings, "TELEGRAM_WEB_APP_URL", "https://app.example/"),
             patch("aiogram.utils.i18n.gettext", side_effect=lambda text: text),
         ):
-            keyboards = importlib.import_module("backend.telegram.keyboards.start")
+            source = Path(__file__).resolve().parents[1] / "telegram" / "keyboards" / "start.py"
+            spec = importlib.util.spec_from_file_location("launch_keyboards_test", source)
+            keyboards = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(keyboards)
             for keyboard in [keyboards.start_kb(), keyboards.about_diary_kb(), keyboards.categories_kb()]:
                 links = [button.web_app.url for row in keyboard.inline_keyboard for button in row if button.web_app]
                 self.assertEqual(len(links), 1)
