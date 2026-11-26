@@ -15,7 +15,7 @@ deployed=$(cat .deployed-commit 2>/dev/null || true)
 echo "Deploying $target"
 git reset -q --hard "$target"
 reload_web_config() {
-    if [ -n "$deployed" ] && git diff --quiet "$deployed" "$target" -- deploy/Caddyfile; then
+    if [ -n "$deployed" ] && git diff --quiet "$deployed" "$target" -- deploy/Caddyfile deploy/geo; then
         return 0
     fi
     docker compose exec -T web caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile

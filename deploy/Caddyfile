@@ -14,9 +14,12 @@
 	}
 }
 
-# app. — проверка входа через NL, direct. — проверка прямого входа в Москву.
+import geo/entry.caddy
+
+# Основной домен выбирает путь; поддомены — конечные адреса приложения.
 {$SITE_DOMAIN}, app.{$SITE_DOMAIN}, direct.{$SITE_DOMAIN} {
 	encode zstd gzip
+	import geo_entry
 
 	header {
 		Strict-Transport-Security "max-age=31536000"
